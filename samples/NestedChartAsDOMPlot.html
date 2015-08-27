@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Nested chart as DOM Plot</title>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="../ext/modernizr/modernizr.js"></script>
+    <script src="../ext/jquery/dist/jquery.min.js"></script>
+    <script src="../ext/rxjs/dist/rx.lite.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            InteractiveDataDisplay.asPlot('innerChart');
+            InteractiveDataDisplay.asPlot('chart');
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div data-idd-placement="bottom" class="idd-horizontalTitle">X</div>
+        <div data-idd-placement="left" class="idd-verticalTitle" style="width: 20px">
+            <div style="position: absolute; top: 50%; margin-top: -0.5em; height: 10em; width: 100px;">
+                Y
+            </div>
+        </div>
+
+        <div id="p" data-idd-plot="polyline" data-idd-style="stroke: rgb(89,150,255); thickness: 3">
+            x   y
+            0   0
+            1   0.5
+            2   0
+        </div>
+
+        <div id="dom" data-idd-plot="dom">
+
+            <div data-idd-position="0.5 0.5" data-idd-scale="none" id="innerChart" data-idd-plot="chart" style="width: 250px; height: 250px;">
+                <div id="p2" data-idd-plot="polyline" data-idd-style="stroke: orange; thickness: 2;">
+                    x   y
+                            0   0
+                            1   1
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

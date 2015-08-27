@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>02 Markers with custom color and size series</title>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="../ext/modernizr/modernizr.js"></script>
+    <script src="../ext/jquery/dist/jquery.min.js"></script>
+    <script src="../ext/rxjs/dist/rx.lite.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var markers = InteractiveDataDisplay.asPlot("chart").get("markers");
+            var N = 100;
+            var x = new Array(N);
+            var y = new Array(N);
+            var color = new Array(N);
+            var size = new Array(N);
+            var sizePalette = new InteractiveDataDisplay.SizePalette(true, { min: 5, max: 30 });
+            var colorPalette = InteractiveDataDisplay.palettes.grayscale;
+            for (var i = 0; i < N; i++) {
+                x[i] = Math.random() * N;
+                y[i] = Math.random() * N;
+                color[i] = Math.random() * 100 - 50;
+                size[i] = Math.random() * 100 - 50;
+            }
+            markers.draw({ x: x, y: y, size: size, sizePalette: sizePalette, color: color, colorPalette: colorPalette });
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div data-idd-name="markers" data-idd-plot="markers" data-idd-style="border:grey; shape: cross;">
+        </div>
+    </div>
+</body>
+</html>

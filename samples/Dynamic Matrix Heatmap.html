@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Dynamic Matrix Heatmap</title>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="../ext/modernizr/modernizr.js"></script>
+    <script src="../ext/jquery/dist/jquery.min.js"></script>
+    <script src="../ext/rxjs/dist/rx.lite.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        var N = 200;
+        var M = 200;
+        var phase = 0.0;
+
+        // 1D arrays for grids x,y and 1D array for values f.
+        // Size of data array here is one less than size of the grid.
+        // HeatmapGraph will render in matrix mode, when grid of size (N+1) x (M+1) 
+        // defines N x M rectangular cells filled with solid color according to 
+        // corresponding element of data array.
+        var x, y, f;
+        var heatmap;
+
+        $(document).ready(function () {
+                    // Initializing chart
+                    heatmap = InteractiveDataDisplay.asPlot('chart').get("heatmap");
+                    // Allocating arrays
+                    x = new Array(N + 1);
+                    y = new Array(M + 1);
+                    f = new Array(N);
+                    for (var i = 0; i < N; i++) f[i] = new Array(M);
+                    // Coordinate grid is constant and it is initialized once
+                    for (var i = 0; i <= N; i++) x[i] = -Math.PI + 2 * i * Math.PI / N;
+                    for (var j = 0; j <= M; j++) y[j] = -Math.PI / 2 + j * Math.PI / M;
+                    // Running the model for the first time
+                    modelRun();
+                });
+
+        function modelRun() {
+            // Compute next iteration and store it in data array
+            for (var i = 0; i < N; i++)
+                for (var j = 0; j < M; j++)
+                    f[i][j] = Math.sqrt(x[i] * x[i] + y[j] * y[j])
+                              * Math.abs(Math.cos(x[i] * x[i] + y[j] * y[j] + phase));
+            phase += 0.1;
+            heatmap.draw({ x: x, y: y, f: f });
+            setTimeout(modelRun, 1000 / 60.0);
+        }
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;" >
+        <div data-idd-placement="top" style="text-align: center">Dynamic Heatmap</div>
+        <div id="heatmap" data-idd-plot="heatmap" data-idd-style="palette:0=#00A8C6,#40C0CB,#F9F2E7,#AEE239,#8FBE00=3;">
+        </div>
+    </div>
+</body>
+</html>

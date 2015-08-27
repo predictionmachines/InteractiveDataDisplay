@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Bing Maps With No Axis Sample</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="../ext/modernizr/modernizr.js"></script>
+    <script src="../ext/jquery/dist/jquery.min.js"></script>
+    <script src="../ext/rxjs/dist/rx.lite.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+
+            //Adding basic navigation
+            var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream($("#chart"));
+            chart.navigation.gestureSource = gestureSource;
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="bingMaps"  data-idd-mapkey="--place your key here--" style="width: 800px; height: 600px;">
+    </div>
+</body>
+
+</html>

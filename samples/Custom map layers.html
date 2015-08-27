@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Custom map layers.html</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="../ext/modernizr/modernizr.js"></script>
+    <script src="../ext/jquery/dist/jquery.min.js"></script>
+    <script src="../ext/rxjs/dist/rx.lite.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            InteractiveDataDisplay.asPlot("chart").yDataTransform = InteractiveDataDisplay.mercatorTransform;
+            InteractiveDataDisplay.asPlot("map").setMap(Microsoft.Maps.MapTypeId.aerial);
+
+            $("#select").change(function () {
+                switch ($(this).val()) {
+                    case "aerial":
+                        InteractiveDataDisplay.asPlot("map").setMap(Microsoft.Maps.MapTypeId.aerial);
+                        return;
+                    case "road":
+                        InteractiveDataDisplay.asPlot("map").setMap(Microsoft.Maps.MapTypeId.road);
+                        return;
+                    case "openstreet":
+                        InteractiveDataDisplay.asPlot("map").setMap(InteractiveDataDisplay.BingMaps.OpenStreetMap.GetTileSource());
+                        return;
+                    case "WorldTopo":
+                        InteractiveDataDisplay.asPlot("map").setMap(InteractiveDataDisplay.BingMaps.ESRI.GetWorldTopo());
+                        return;
+                    case "DeLorme":
+                        InteractiveDataDisplay.asPlot("map").setMap(InteractiveDataDisplay.BingMaps.ESRI.GetDeLorme());
+                        return;
+                    case "WorldImagery":
+                        InteractiveDataDisplay.asPlot("map").setMap(InteractiveDataDisplay.BingMaps.ESRI.GetWorldImagery());
+                        return;
+                    case "OceanBasemap":
+                        InteractiveDataDisplay.asPlot("map").setMap(InteractiveDataDisplay.BingMaps.ESRI.GetOceanBasemap());
+                        return;
+                    case "NationalGeographicMap":
+                        InteractiveDataDisplay.asPlot("map").setMap(InteractiveDataDisplay.BingMaps.ESRI.GetNationalGeographicMap());
+                        return;
+                    case "WorldShadedRelief":
+                        InteractiveDataDisplay.asPlot("map").setMap(InteractiveDataDisplay.BingMaps.ESRI.GetWorldShadedRelief());
+                        return;
+                    case "WorldTerrainBase":
+                        InteractiveDataDisplay.asPlot("map").setMap(InteractiveDataDisplay.BingMaps.ESRI.GetWorldTerrainBase());
+                        return;
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Bing Maps Chart</div>
+        <div id="map" data-idd-plot="bingMaps" data-idd-mapkey="--place your key here--">
+        </div>
+    </div>
+    <select id="select">
+        <option value="aerial" selected="selected">BingMap's aerial</option>
+        <option value="road">BingMap's road</option>
+        <option value="openstreet">Open Street Map</option>
+        <option value="WorldImagery">ESRI World Imagery</option>
+        <option value="DeLorme">ESRI De Lorme</option>
+        <option value="WorldTopo">ESRI World Topo</option>
+        <option value="OceanBasemap">ESRI Ocean Basemap</option>
+        <option value="NationalGeographicMap">ESRI National Geographic Map</option>
+        <option value="WorldShadedRelief">ESRI World Shaded Relief</option>
+        <option value="WorldTerrainBase">ESRI World Terrain Base</option>
+    </select>
+</body>
+</html>

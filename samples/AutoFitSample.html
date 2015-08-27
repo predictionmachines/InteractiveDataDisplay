@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>InteractiveDataDisplay AutoFit Sample</title>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="../ext/modernizr/modernizr.js"></script>
+    <script src="../ext/jquery/dist/jquery.min.js"></script>
+    <script src="../ext/rxjs/dist/rx.lite.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+
+            chart.get("line1").draw({
+                x: [0, 0.3, 0.8, NaN, 1],
+                y: [-0.044, 0.7, 0.0, NaN, 0],
+                thickness: 4,
+                lineCap: 'round',
+                lineJoin: 'round'
+            });
+
+            var chb = $("#afmchb");
+            chb.prop("checked", chart.isAutoFitEnabled);
+
+            chart.host.bind("isAutoFitEnabledChanged", function () {
+                chb.prop("checked", chart.isAutoFitEnabled);
+            });
+
+            $("#fittoviewbtn").click(function () {
+                chart.fitToView();
+            });
+
+            $("#addPoint").click(function () {
+                var x = [];
+                var y = [];
+                var a = Math.random() * 100;
+
+                for (var i = 0; i < 10; i++) {
+                    x.push(i);
+                    y.push(a * Math.random());
+                }
+
+                chart.get("line1").draw({
+                    x: x,
+                    y: y,
+                    thickness: 4,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                });
+            });
+
+            chb.click(function () {
+                chart.isAutoFitEnabled = chb.prop("checked");
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <!--Adding line-->
+        <div id="line1" data-idd-plot="polyline" data-idd-style="stroke: orange"></div>
+    </div>
+    <input id="afmchb" type="checkbox" />
+    AutoFit Mode<br />
+    <button id="fittoviewbtn">Fit To View</button>
+    <button id="addPoint">Update Data</button>
+</body>
+</html>

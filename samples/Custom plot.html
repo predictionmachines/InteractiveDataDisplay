@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Custom plot</title>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="../ext/modernizr/modernizr.js"></script>
+    <script src="../ext/jquery/dist/jquery.min.js"></script>
+    <script src="../ext/rxjs/dist/rx.lite.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        var ZeroLinesPlot = function (jqDiv, master) {
+            this.base = InteractiveDataDisplay.CanvasPlot;
+            this.base(jqDiv, master);
+        
+            this.renderCore = function (plotRect, screenSize) {
+                var t = this.getTransform();
+                var dataToScreenX = t.dataToScreenX;
+                var dataToScreenY = t.dataToScreenY;
+        
+                var context = this.getContext(true);
+                context.beginPath();
+                context.strokeStyle = 'rgb(60,60,60)';
+        
+                var hs = t.dataToScreenY(0); // Y screen coordinate of the horizontal line
+                if (hs >= 0 && hs < screenSize.height) {
+                    context.moveTo(0, hs);
+                    context.lineTo(screenSize.width - 1, hs);
+                }
+        
+                var ws = t.dataToScreenX(0);
+                if (ws >= 0 && ws < screenSize.width) {
+                    context.moveTo(ws, 0);
+                    context.lineTo(ws, screenSize.height - 1);
+                }
+        
+                context.stroke();
+            }
+        };
+        ZeroLinesPlot.prototype = new InteractiveDataDisplay.CanvasPlot;
+        
+        $(document).ready(function () {
+            InteractiveDataDisplay.register('zeroLines', function (jqDiv, master) { return new ZeroLinesPlot(jqDiv, master); });
+            InteractiveDataDisplay.asPlot('chart').navigation.setVisibleRect({ x: -1, y: -1, width: 2, height: 2 });
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div data-idd-plot="zeroLines"></div>
+    </div>
+</body>
+</html>

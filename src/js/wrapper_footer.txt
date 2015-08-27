@@ -1,0 +1,13 @@
+﻿}
+(function () {
+    if (window.define) {
+        define(['jquery', 'rx', 'rx.jquery'],
+            function ($, Rx) {
+                IDD($, Rx);
+                return InteractiveDataDisplay;
+            });
+    } else {
+        IDD($, Rx);
+        window.InteractiveDataDisplay = InteractiveDataDisplay;
+    }
+}());

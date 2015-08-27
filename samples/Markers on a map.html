@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Markers on a map</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="../ext/modernizr/modernizr.js"></script>
+    <script src="../ext/jquery/dist/jquery.min.js"></script>
+    <script src="../ext/rxjs/dist/rx.lite.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            InteractiveDataDisplay.asPlot("chart").get("markers").yDataTransform = InteractiveDataDisplay.mercatorTransform;
+            InteractiveDataDisplay.asPlot("chart").getAxes("left")[0].dataTransform = InteractiveDataDisplay.mercatorTransform;
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Bing Maps Chart</div>
+        <div data-idd-plot="bingMaps">
+        </div>
+        <div id="markers" data-idd-plot="markers" data-idd-style="shape: triangle; color: yellow; size: 20;">
+            x   y
+            -1.3174 51.7828
+            16.1450064726981    69.2923853345889
+            36.8418531340113    -1.26065068958957
+            -0.12456397132825092    51.50064068372273
+            37.61806507988748   55.751810400951186
+            2.2946168987417703  48.85851040838576
+            -73.98587708777025  40.74829606871251
+            25.852425882170028  -17.923747000541198
+        </div>
+    </div>
+</body>
+
+</html>

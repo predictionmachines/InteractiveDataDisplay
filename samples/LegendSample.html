@@ -1,0 +1,437 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Legend Sample Page</title>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="../ext/modernizr/modernizr.js"></script>
+    <script src="../ext/jquery/dist/jquery.min.js"></script>
+    <script src="../ext/rxjs/dist/rx.lite.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        var chart, figure, markersChart;
+        var polyline1, polyline2;
+        var heatmap1, heatmap2;
+        var markers1, markers2, markers3;
+        var remove = false;
+        var state = 1;
+        var isVisible = true;
+
+        var xData = [0, 0.3, 0.8];
+
+        $(document).ready(function () {
+
+            chart = InteractiveDataDisplay.asPlot($("#chart"));
+            figure = InteractiveDataDisplay.asPlot($("#figure"));
+            markersChart = InteractiveDataDisplay.asPlot($("#markersChart"));
+
+            polyline1 = chart.get("line1");
+            polyline1.draw({
+                x: xData,
+                y: [-1, 1, 0.0],
+                thickness: 4,
+                lineCap: 'round',
+                lineJoin: 'round'
+            });
+
+            polyline2 = figure.get("polyline2");
+
+            heatmap1 = chart.get('heat1');
+            heatmap1.palette = InteractiveDataDisplay.ColorPalette.parse("#00ffff,#00ff00");
+            heatmap1.draw(getHeatmapData(0, 1, -1, 1));
+
+            heatmap2 = figure.get('heat2');
+            heatmap2.palette = InteractiveDataDisplay.ColorPalette.parse("#00ffff,#00ff00");
+            heatmap2.draw(getHeatmapData(-1.5, 3, -1, 1));
+
+            var dataX = [];
+            var dataY = [];
+            var dataC = [];
+            var dataS = [];
+            var dataD = [];
+            for (var i = 0; i < 100; i++) {
+                dataX[i] = Math.random();
+                dataY[i] = Math.random() * 2 - 1;
+                dataC[i] = Math.random();
+                dataS[i] = Math.random();
+                dataD[i] = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 };
+            }
+
+            markers1 = chart.markers("markers",
+                {
+                    x: dataX,
+                    y: dataY,
+                    color: "orange",
+                    shape: "cross"
+                });
+            markers2 = figure.get('markers');
+            markers3 = markersChart.markers("markers",
+                {
+                    x: dataX,
+                    y: dataY,
+                    color: "orange",
+                    shape: $("#shapeList").val(),
+                    size: 10,
+                    border: "black",
+                    direction: dataD
+                });
+
+            $("#newLine").click(function () {
+                if (remove) {
+                    $("#newLine").html("add new line");
+                    chart.get("line2").remove();
+                    remove = false;
+                } else {
+                    $("#newLine").html("remove line");
+                    remove = true;
+                    add();
+                }
+            });
+
+            $("#delete").click(function () {
+                chart.legend.remove();
+            });
+
+            $("#visible").click(function () {
+                isVisible = !isVisible;
+                chart.legend.isVisible = isVisible;
+                if (isVisible) $("#visible").html("hide legend");
+                else $("#visible").html("show legend");
+            });
+
+            $("#update").click(function () {
+                if (state == 0) {
+                    polyline1.stroke = "blue";
+                    markers2.color = "orange";
+                    polyline2.thickness = 1;
+                    state = 1;
+                }
+                else {
+                    polyline1.stroke = "green";
+                    markers2.color = "red";
+                    polyline2.thickness = 4;
+                    state = 0;
+                }
+            });
+
+            $("#markerSizeInput").attr("value", markers3.size)
+             .change(function () {
+                 var size = $("#markerSizeInput").attr("value");
+                 if (size == "") markers3.size = 0;
+                 else markers3.size = size;
+                 if (sizePalette.checked) {
+                     sizePalette.checked = false;
+                 }
+             });
+            $("#sizePalette").change(function () {
+                var val = sizePalette.checked;
+                if (val) {
+                    markers3.size = dataS;
+                    markers3.sizePalette = new InteractiveDataDisplay.SizePalette(true, { min: 10, max: 50 }, { min: 0, max: 1 });
+                }
+                else {
+                    markerSizeInput.value = 10;
+                    markers3.size = 10;
+                }
+            });
+
+            $("#markerColorInput").attr("value", markers3.color)
+             .change(function () {
+                 var color = $("#markerColorInput").attr("value");
+                 if (colorPalette.checked) {
+                     markers3.colorPalette = InteractiveDataDisplay.ColorPalette.parse(color);
+                 }
+                 else {
+                     if (color == "") markers3.color = "white";
+                     else markers3.color = color;
+                 }
+             });
+            $("#colorPalette").change(function () {
+                var val = colorPalette.checked;
+                if (val) {
+                    markers3.color = dataC;
+                    markers3.colorPalette = InteractiveDataDisplay.ColorPalette.parse($("#markerColorInput").attr("value"));
+                }
+                else {
+                    markerColorInput.value = "orange";
+                    markers3.color = "orange";
+                }
+            });
+            $("#border").change(function () {
+                var val = border.checked;
+                if (val) markers3.border = "black";
+                else markers3.border = undefined;
+            });
+
+            $("#shapeList").change(function () {
+                var val = $("#shapeList").val();
+                if (val == "custom") {
+                    markers3.shape = { draw: markerShapeFunc, getLegendItem: markerLegendShapeFunc };
+                }
+                else markers3.shape = val;
+            });
+
+            var line = figure.get("polyline1");
+            line.getLegend = function () {
+                var div = $("<div>custom legend for " + this.name + "</div>");
+                return { div: div };
+            };
+            line.fireChildrenChanged(null);
+
+            var markerShapeFunc = function (marker, plotRect, screenSize, transform, context) {
+                var xs = transform.dataToScreenX(marker.x);
+                var ys = transform.dataToScreenY(marker.y);
+
+                var size = marker.size / 2;
+                var dirX = marker.direction.x;
+                var dirY = marker.direction.y;
+
+                var dirLen = Math.sqrt(dirX * dirX + dirY * dirY);
+                dirX = size * dirX / dirLen;
+                dirY = size * dirY / dirLen;
+
+                var normX = dirY / 3;
+                var normY = -dirX / 3;
+
+                context.beginPath();
+                context.moveTo(xs - dirX + normX, ys - dirY + normY);
+                context.lineTo(xs - dirX - normX, ys - dirY - normY)
+                context.lineTo(xs + dirX, ys + dirY);
+                context.closePath();
+
+                context.fillStyle = marker.color;
+                context.fill();
+                if (marker.border) {
+                    context.strokeStyle = marker.border;
+                    context.stroke();
+                }
+            };
+
+            var markerLegendShapeFunc = function (marker) {
+                var size = marker.size;
+                var dirX = 1;
+                var dirY = 1;
+
+                var xs = size;
+                var ys = size;
+
+                var dirLen = Math.sqrt(dirX * dirX + dirY * dirY);
+                dirX = size * dirX / dirLen;
+                dirY = size * dirY / dirLen;
+
+                var normX = dirY / 3;
+                var normY = -dirX / 3;
+
+                var canvas = $("<canvas style='margin-right: 10px; display: inline-block'></canvas>");
+                canvas[0].width = xs + dirX;
+                canvas[0].height = ys + dirY;
+                var context = canvas.get(0).getContext("2d");
+
+                context.beginPath();
+                context.moveTo(xs - dirX + normX, ys - dirY + normY);
+                context.lineTo(xs - dirX - normX, ys - dirY - normY)
+                context.lineTo(xs + dirX, ys + dirY);
+                context.closePath();
+
+                context.fillStyle = marker.color;
+                context.fill();
+                if (marker.border) {
+                    context.strokeStyle = marker.border;
+                    context.stroke();
+                }
+
+                return canvas;
+            };
+        });
+
+        function add() {
+            if (remove) {
+                chart.polyline("line2",
+                        {
+                            x: xData,
+                            y: [-1.0, 0.7, -0.3],
+                            thickness: 2,
+                            lineCap: 'round',
+                            lineJoin: 'round',
+                            stroke: "black"
+                        });
+            }
+        };
+
+        function getHeatmapData(xmin, xmax, ymin, ymax) {
+            var n = 101;
+            var m = 101;
+
+            var x = new Array(n),
+                y = new Array(m),
+                f = new Array(n - 1);
+            for (var i = 0; i < n; i++) {
+                x[i] = i / (n - 1) * (xmax - xmin) + xmin;
+            }
+            for (var j = 0; j < m; j++) {
+                y[j] = j / (m - 1) * (ymax - ymin) + ymin;
+            }
+
+            for (var i = 0; i < n - 1; i++) {
+                f[i] = new Array(m - 1);
+                for (var j = 0; j < m - 1; j++) {
+                    f[i][j] = Math.abs(Math.sin((y[j]) * Math.PI * 0.05));
+                }
+            }
+
+            return { x: x, y: y, f: f };
+        };
+    </script>
+</head>
+<body>
+    <div id="markersChart" data-idd-plot="chart" style="width: 800px; height: 400px"></div>
+    <div style="margin: 10px 0 20px 10px">
+        <div style="float: left; margin-right: 5px">
+            size:
+            <input id="markerSizeInput" style="width: 50px" />
+        </div>
+        <div style="float: left; margin-right: 25px">
+            as palette:
+            <input id="sizePalette" type="checkbox" />
+        </div>
+        <div style="float: left; margin-right: 5px">
+            color:
+            <input id="markerColorInput" style="width: 100px" />
+        </div>
+        <div style="float: left; margin-right: 5px">
+            as palette:
+            <input id="colorPalette" type="checkbox" />
+        </div>
+        <div style="float: left; margin-right: 25px">
+            border:
+            <input id="border" type="checkbox" checked="checked" />
+        </div>
+        <div style="float: left">
+            shape:
+            <select id="shapeList">
+                <option value="box">Box</option>
+                <option value="circle">Circle</option>
+                <option value="diamond">Diamond</option>
+                <option value="cross">Cross</option>
+                <option value="triangle">Triangle</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 400px; margin: 50px 0 0 0">
+        <div id="heat1" data-idd-plot="heatmap"></div>
+        <div id="line1" data-idd-plot="polyline" data-idd-style="stroke: blue"></div>
+    </div>
+    <div style="margin: 10px 0 20px 10px">
+        <button id="update">update style</button>
+        <button id="newLine" style="margin: 0 15px">add new line</button>
+        <button id="visible" style="margin: 0 15px 0 0">hide legend</button>
+        <button id="delete">delete legend</button>
+    </div>
+
+    <div id="figure" data-idd-plot="figure" data-idd-legend="figureLegend" style="width: 800px; height: 400px; float: left">
+        <div id="axis1" data-idd-axis="numeric" data-idd-placement="bottom"></div>
+        <div id="axis2" data-idd-axis="numeric" data-idd-placement="left"></div>
+        <div id="heat2" data-idd-plot="heatmap" data-idd-legend="p1Legend"></div>
+        <div id="polyline1" data-idd-plot="polyline" data-idd-legend="p2Legend" data-idd-style="stroke: blue" data-idd-datasource="InteractiveDataDisplay.readTable">
+            <table>
+                <tr>
+                    <th class="auto-style1">x</th>
+                    <th class="auto-style2">y</th>
+                </tr>
+                <tr>
+                    <td class="auto-style1">-1.0</td>
+                    <td class="auto-style2">0.5</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">0.1</td>
+                    <td class="auto-style2">0.4</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">1.1</td>
+                    <td class="auto-style2">0.1</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">2.4</td>
+                    <td class="auto-style2">-0.1</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">2.8</td>
+                    <td class="auto-style2">0.2</td>
+                </tr>
+            </table>
+        </div>
+        <div id="polyline2" data-idd-plot="polyline" data-idd-legend="p3Legend" data-idd-style="stroke: green" data-idd-datasource="InteractiveDataDisplay.readTable">
+            <table>
+                <tr>
+                    <th class="auto-style1">x</th>
+                    <th class="auto-style2">y</th>
+                </tr>
+                <tr>
+                    <td class="auto-style1">-1.0</td>
+                    <td class="auto-style2">-0.5</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">0.1</td>
+                    <td class="auto-style2">-0.4</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">1.1</td>
+                    <td class="auto-style2">-0.1</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">2.4</td>
+                    <td class="auto-style2">0.1</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">2.8</td>
+                    <td class="auto-style2">-0.2</td>
+                </tr>
+            </table>
+        </div>
+        <div id="markers" data-idd-plot="markers" data-idd-legend="p4Legend" data-idd-style="size: 20; shape: box; color: orange" data-idd-datasource="InteractiveDataDisplay.readTable">
+            <table>
+                <tr>
+                    <th class="auto-style1">x</th>
+                    <th class="auto-style2">y</th>
+                </tr>
+                <tr>
+                    <td class="auto-style1">-1.0</td>
+                    <td class="auto-style2">0.5</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">0.1</td>
+                    <td class="auto-style2">0.4</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">1.1</td>
+                    <td class="auto-style2">0.1</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">2.4</td>
+                    <td class="auto-style2">-0.1</td>
+                </tr>
+                <tr>
+                    <td class="auto-style1">2.8</td>
+                    <td class="auto-style2">0.2</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div style="float: left">
+        <div id="figureLegend"></div>
+        <div id="p1Legend"></div>
+    </div>
+    <div style="float: left">
+        <div id="p2Legend"></div>
+        <div id="p3Legend"></div>
+        <div id="p4Legend"></div>
+    </div>
+
+</body>
+</html>

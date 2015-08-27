@@ -1,0 +1,6 @@
+/ext/**
+/dist/**
+/node_modules/**
+/sln/*.suo
+
+

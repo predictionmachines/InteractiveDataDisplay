@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Add and Remove plots using API</title>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="../ext/modernizr/modernizr.js"></script>
+    <script src="../ext/jquery/dist/jquery.min.js"></script>
+    <script src="../ext/rxjs/dist/rx.lite.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        var state = 0;
+        var chart;
+
+        $(document).ready(function () {
+            $("#but").click(function () {
+                if (state == 0) { // add chart
+                    chart = InteractiveDataDisplay.asPlot($("<div data-idd-plot='chart'></div>").appendTo("#container"));
+                    chart.host.width(800).height(600);
+                    chart.requestUpdateLayout();
+                    $("#but").attr("value", "Draw polyline");
+                }
+                else if (state == 1) { // add polyline
+                    chart.polyline("polyline", { y: [0.1, 0.2, 0.0, 0.3, 0.2, 0.1, 0.3] });
+                    $("#but").attr("value", "Remove polyline");
+                } else if (state == 2) { // remove polyline
+                    chart.get("polyline").remove();
+                    $("#but").attr("value", "Remove chart");
+                }
+                else if (state == 3) { // remove chart
+                    chart.remove();
+                    $("#but").attr("value", "Add chart");
+                    state = -1;
+                }
+                state++;
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="container"></div>
+    <input type="button" id="but" value="Add chart" />
+</body>
+</html>
+
