@@ -3,25 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "idd", "http://localhost:8603", "{5EDC0499-89A4-40C3-B9DD-61CA2ED7674B}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "InteractiveDataDisplay", "http://localhost:6822", "{5EDC0499-89A4-40C3-B9DD-61CA2ED7674B}"
 	ProjectSection(WebsiteProperties) = preProject
-		UseIISExpress = "true"
+		UseIISExpress = "false"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
-		Debug.AspNetCompiler.VirtualPath = "/localhost_8603"
-		Debug.AspNetCompiler.PhysicalPath = "..\..\idd\"
-		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_8603\"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_6822"
+		Debug.AspNetCompiler.PhysicalPath = "..\..\InteractiveDataDisplay\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_6822\"
 		Debug.AspNetCompiler.Updateable = "true"
 		Debug.AspNetCompiler.ForceOverwrite = "true"
 		Debug.AspNetCompiler.FixedNames = "false"
 		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.VirtualPath = "/localhost_8603"
-		Release.AspNetCompiler.PhysicalPath = "..\..\idd\"
-		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_8603\"
+		Release.AspNetCompiler.VirtualPath = "/localhost_6822"
+		Release.AspNetCompiler.PhysicalPath = "..\..\InteractiveDataDisplay\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_6822\"
 		Release.AspNetCompiler.Updateable = "true"
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		SlnRelativePath = "..\..\idd\"
+		SlnRelativePath = "../"
 		DefaultWebSiteLanguage = "Visual C#"
 	EndProjectSection
 EndProject
