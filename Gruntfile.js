@@ -57,7 +57,9 @@
         copy: {
             main: {
                 files: [
-                    { src: 'src/css/idd.css', dest: 'dist/idd.css' }
+                    { src: 'src/css/idd.css', dest: 'dist/idd.css' },
+                    { src: 'src/js/idd.heatmapworker.js', dest: 'dist/idd.heatmapworker.js' },
+                    { src: 'src/js/idd.transforms.js', dest: 'dist/idd.transforms.js' }
                 ]
             },
         },
