@@ -12,6 +12,11 @@
     <script src="../dist/idd.min.js"></script>
 
     <script type="text/javascript">
+        //Heatmaps are generated with a web worker
+        //We need to set the path to the directory where Web worker code is hosted
+        //in our case this is the same dir as idd.min.js
+        InteractiveDataDisplay.SetWebWorkersPath("../dist/");
+    
         $(document).ready(function () {
             var chart = InteractiveDataDisplay.asPlot($("#chart"));
         });

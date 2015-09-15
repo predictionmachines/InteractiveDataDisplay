@@ -1,8 +1,20 @@
-﻿// See http://jsperf.com/rendering-a-frame-in-image-data
-InteractiveDataDisplay.heatmapBackgroundRenderer = new InteractiveDataDisplay.SharedRenderWorker("script/idd.heatmapworker.js",
-    function (heatmapPlot, completedTask) {
-        heatmapPlot.onRenderTaskCompleted(completedTask);
-    });
+﻿InteractiveDataDisplay._WebWorkersPath=InteractiveDataDisplay._WebWorkersPath || "script"; //a path to load web workers from
+
+// See http://jsperf.com/rendering-a-frame-in-image-data
+InteractiveDataDisplay._reinitHeatmapBackgroundRenderer = function() {
+    InteractiveDataDisplay.heatmapBackgroundRenderer = new InteractiveDataDisplay.SharedRenderWorker(
+        InteractiveDataDisplay._WebWorkersPath+"/idd.heatmapworker.js",
+        function (heatmapPlot, completedTask) {
+            heatmapPlot.onRenderTaskCompleted(completedTask);
+        });
+    };
+
+InteractiveDataDisplay._reinitHeatmapBackgroundRenderer();
+
+InteractiveDataDisplay.SetWebWorkersPath = function(path) {
+    InteractiveDataDisplay._WebWorkersPath = path;
+    InteractiveDataDisplay._reinitHeatmapBackgroundRenderer();
+};
 
 // Renders a fuction  f(x,y) on a regular grid (x,y) as a heat map using color palette
 InteractiveDataDisplay.Heatmap = function (div, master) {
