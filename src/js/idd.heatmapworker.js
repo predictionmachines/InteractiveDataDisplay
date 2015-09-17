@@ -1,4 +1,3 @@
-﻿importScripts("idd.transforms.js");
 
 self.onmessage = function (event) {
     var xscale = event.data.scaleX, xoffset = event.data.offsetX, yscale = event.data.scaleY, yoffset = event.data.offsetY;

@@ -1,4 +1,4 @@
-﻿InteractiveDataDisplay = typeof InteractiveDataDisplay == 'undefined' ? {} : InteractiveDataDisplay;
+InteractiveDataDisplay = typeof InteractiveDataDisplay == 'undefined' ? {} : InteractiveDataDisplay;
  
 InteractiveDataDisplay.DataTransform = function (dataToPlot, plotToData, domain, type) {
     this.dataToPlot = dataToPlot;
