@@ -3,7 +3,13 @@
 InteractiveDataDisplay.SharedRenderWorker = function (scriptUri, onTaskCompleted) {
     var isWorkerAvailable = !!window.Worker;
     if (!isWorkerAvailable && window.console) console.log("Web workers are not available");
-    var worker = isWorkerAvailable ? new Worker(scriptUri) : null;
+    var worker = null;
+    try {
+        worker = isWorkerAvailable ? new Worker(scriptUri) : null;
+    }
+    catch (e) {
+        console.error("Error creating Web worker from " + scriptUri + ": " + e.message);
+    }
     var isWorking = false;
     // Array of task source descriptors: { source, pendingTask, index /* in this array */ }
     var sources = [];
@@ -44,7 +50,7 @@ InteractiveDataDisplay.SharedRenderWorker = function (scriptUri, onTaskCompleted
         return undefined;
     };
 
-    if (isWorkerAvailable) {
+    if (worker) {
         worker.onmessage = function (event) {
             var task = event.data;
             var completedDescr = sources[task.sourceIndex];

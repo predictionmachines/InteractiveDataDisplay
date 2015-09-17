@@ -166,7 +166,7 @@ describe('InteractiveDataDisplay.Plot', function () {
 });
 
 describe('Initialization of InteractiveDataDisplay.Plot', function () {
-    it(':> InteractiveDataDisplay.Chart using .asPlot() with 2 children plots', function () {
+    it('supports .asPlot() with 2 children plots', function () {
         var innerPlot1 = newPlotNoInitialization("plot1", "heatmap");
         var innerPlot2 = newPlotNoInitialization("plot2", "heatmap");
         var master = newPlotNoInitialization("master");
@@ -196,11 +196,11 @@ describe('Initialization of InteractiveDataDisplay.Plot', function () {
         expect(child2).toBe(InteractiveDataDisplay.asPlot(innerPlot2));
     });
 
-    it(' for non-existing <div> should throw an exception', function () {
+    it('should throw an exception for non-existing <div>', function () {
         expect(function () { InteractiveDataDisplay.asPlot("nonexistingdiv"); }).toThrow();
     });
 
-    it(' for <p> should throw an exception', function () {
+    it('should throw an exception for <p>', function () {
         var p = document.createElement("p");
         p.setAttribute("data-idd-plot", "plot");
         p.setAttribute("data-idd-name", "name");
@@ -279,7 +279,7 @@ describe('InteractiveDataDisplay.Heatmap', function () {
         expect(function () { master.heatmap("heat4", { f: [[1, 2, 3]], x: [0], y: [0, 1, 2] }); }).toThrow();
     });
 
-    /*  it('renders a gradient heatmap', function () {
+    /* it('renders a gradient heatmap', function () {
           var w = 2048;
           var h = 1024;
           var n = 1000;
@@ -310,5 +310,5 @@ describe('InteractiveDataDisplay.Heatmap', function () {
           renderGradient(img, x, y, f, 0, 3, palette, { x: x[0], y: y[0], width: x[n - 1] - x[0], height: y[n - 1] - y[0] },
               function (x) { return x; }, function (x) { return x; }, function (y) { return y; }, function (y) { return y; }, false, false);
   
-      });*/
-});
+      }); */
+}); 

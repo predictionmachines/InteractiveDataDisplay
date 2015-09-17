@@ -2,17 +2,28 @@
 
     grunt.initConfig({
         concat: {
-            heatmap_worker: {
+            heatmap_worker: { // Concatenate idd.heatmapworker.js и idd.transforms.js for tests
+                options: {
+                     separator: ';'
+                },
+                src: [ 
+                    "src/js/idd.transforms.js",
+                    "src/js/idd.heatmapworker.js",
+                ],
+                dest: 'idd.heatmapworker.js',
+                nonull: true
+            },
+            heatmap_worker_embedded: {
                   options: {
                     separator: ''
                   },
                   src: [
                     "src/js/heatmap_worker_header.txt",
-                    "src/heatmapworker.b64",
+                    "generated/heatmapworker.b64",
                     "src/js/heatmap_worker_footer.txt"
                   ],
-                  dest: 'src/js/idd.heatmapworker_loader.js'                  
-              },
+                  dest: 'generated/idd.heatmapworker_embedded.js'                  
+            },
             dist: {
                 options: {
                   separator: ';'
@@ -33,7 +44,7 @@
                     "src/js/idd.bingMapsAnimation.js",
                     "src/js/idd.navigation.js",
                     "src/js/idd.multithreading.js",
-                    "src/js/idd.heatmapworker_loader.js",
+                    "generated/idd.heatmapworker_embedded.js",
                     "src/js/idd.figure.js",
                     "src/js/idd.chart.js",
                     "src/js/idd.markers.js",
@@ -43,7 +54,8 @@
                 ],
                 dest: 'dist/idd.js',
                 nonull: true
-            }
+            },
+            
         },
         uglify: {
             options: {
@@ -57,6 +69,7 @@
         },
         jasmine: {
             options: {
+                keepRunner: true,
                 vendor: [
                     "ext/jquery/dist/jquery.js",
                     "ext/rxjs/dist/rx.lite.js",
@@ -82,10 +95,10 @@
         base64: {
           heatmap_worker: {         
             files: {
-              'src/heatmapworker.b64': ['src/js/idd.transforms.js', 'src/js/idd.heatmapworker.js']
+              'generated/heatmapworker.b64': ['<%= concat.heatmap_worker.dest %>']
             }
-        }
-  }
+          }
+       }
 
     });
 
@@ -96,6 +109,6 @@
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-bower-task');
 
-    grunt.registerTask('default', ['bower', 'base64','concat', 'uglify', 'copy', 'jasmine']);
+    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'copy', 'jasmine']);
     grunt.registerTask('test', ['bower', 'jasmine']);
 };

@@ -1,20 +1,18 @@
 ﻿// See http://jsperf.com/rendering-a-frame-in-image-data
 InteractiveDataDisplay.heatmapBackgroundRenderer = new InteractiveDataDisplay.SharedRenderWorker(
     function() {
-    var workerCodeUri;
-    if(typeof InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64 === 'undefined') {
-        //Debug mode
-        //Build process usually initializes the heatmapBackgroundRendererCodeBase64 with Base64 coded idd.heatmapworker.js and idd.transforms.js.
-        //If it is not set it means that the curetly executed code is not concatinated idd.js but standalone source file.
-        //Falling back to load webworker from static location
-        workerCodeUri = "script/idd.heatmapworker.js";
-    }
-    else {
-        var workerBlob = new Blob([ window.atob(InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64) ], { type: 'text/javascript' });
-        workerCodeUri = window.URL.createObjectURL(workerBlob);
-    }
-    
-    return workerCodeUri}(),
+        var workerCodeUri;
+        if(typeof InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64 === 'undefined' || /PhantomJS/.test(window.navigator.userAgent)) {
+            // Build process usually initializes the heatmapBackgroundRendererCodeBase64 with base64 encoded 
+            // concatenation of idd.heatmapworker.js and idd.transforms.js.
+            workerCodeUri = "idd.heatmapworker.js";
+        }
+        else {
+           var workerBlob = new Blob([ window.atob(InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64) ], { type: 'text/javascript' });
+           workerCodeUri = window.URL.createObjectURL(workerBlob);
+        }
+        return workerCodeUri
+    } (),
     function (heatmapPlot, completedTask) {
         heatmapPlot.onRenderTaskCompleted(completedTask);
     });
