@@ -55,17 +55,16 @@
                 }
             }
         },
-        jasmine: {
+        connect: {
+          jasmine: {
             options: {
-                vendor: [
-                    "ext/jquery/dist/jquery.js",
-                    "ext/rxjs/dist/rx.lite.js",
-                    "<%= concat.dist.dest %>"
-                ]
-            },
-
-            src: ['test/**/*.js']
-        },
+              port: 8000,
+              directory:'.',
+              open:"http://localhost:8000/test/SpecRunner.html",
+              keepalive:true
+              }
+           }
+        },        
         copy: {
             main: {
                 files: [
@@ -73,7 +72,7 @@
                 ]
             },
         },
-        bower: {
+        bower: {            
             options: {
                 copy: false
             },
@@ -91,11 +90,16 @@
 
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-jasmine');
+    grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-base64');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-bower-task');
+   
+    grunt.registerTask('warn-no-exit', function() {
+        grunt.log.writeln();
+        grunt.log.writeln("\tBuild succeded! When the tests finish hit Ctrl-C and terminate Grunt job to stop the web server");
+        grunt.log.writeln();
+    });
 
-    grunt.registerTask('default', ['bower', 'base64','concat', 'uglify', 'copy', 'jasmine']);
-    grunt.registerTask('test', ['bower', 'jasmine']);
+    grunt.registerTask('default', ['bower', 'base64','concat', 'uglify', 'copy', 'warn-no-exit','connect']);    
 };
