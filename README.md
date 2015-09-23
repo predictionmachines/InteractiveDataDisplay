@@ -25,7 +25,7 @@ Now you can build and test IDD by running the grunt command without arguments:
 
 `grunt`
 
-File IDDSamples.html in the root of idd repository contains many samples. Note that Chrome and Firefox don't run web workers from local file system
+File IDDSamples.html in the root of idd repository contains many samples. Note that some browsers don't run web workers from local file system
 for security reasons so some samples may not work if opening IDDSamples.html as local file.
 
 Referencing IDD
