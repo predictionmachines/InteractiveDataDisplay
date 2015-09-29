@@ -33,7 +33,7 @@ Referencing IDD
 
 Interactive Data Display is available as Bower package. You can download IDD as bower package by running:
 
-'bower install <idd-git-repo> --production'
+'bower install https://github.com/predictionmachines/InteractiveDataDisplay.git'
 
 Licensing
 ---------
