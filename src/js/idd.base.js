@@ -48,7 +48,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return window.oRequestAnimationFrame(callback);
         };
     }
-
+    
     var initializePlot = function (jqDiv, master) {
 
         if (typeof (Modernizr) != 'undefined' && jqDiv) {
@@ -74,29 +74,75 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         if (jqDiv.hasClass("idd-plot-master") || jqDiv.hasClass("idd-plot-dependant"))
             throw "The div element already is initialized as a plot";
-
+        
+        var plot = undefined;
         var plotType = jqDiv.attr("data-idd-plot");
         switch (plotType) {
             case "plot":
-                return new InteractiveDataDisplay.Plot(jqDiv, master);
+                plot = new InteractiveDataDisplay.Plot(jqDiv, master);
+                break;
             case "polyline":
-                return new InteractiveDataDisplay.Polyline(jqDiv, master);
+                plot = new InteractiveDataDisplay.Polyline(jqDiv, master);
+                break;
             case "dom":
-                return new InteractiveDataDisplay.DOMPlot(jqDiv, master);
+                plot = new InteractiveDataDisplay.DOMPlot(jqDiv, master);
+                break;
             case "figure":
-                return new InteractiveDataDisplay.Figure(jqDiv, master);
+                plot = new InteractiveDataDisplay.Figure(jqDiv, master);
+                break;
             case "chart":
-                return new InteractiveDataDisplay.Chart(jqDiv, master);
+                plot = new InteractiveDataDisplay.Chart(jqDiv, master);
+                break;
             case "grid":
-                return new InteractiveDataDisplay.GridlinesPlot(jqDiv, master);
+                plot = new InteractiveDataDisplay.GridlinesPlot(jqDiv, master);
+                break;
             case "markers":
-                return new InteractiveDataDisplay.Markers(jqDiv, master);
+                plot = new InteractiveDataDisplay.Markers(jqDiv, master);
+				break;
             case "area":
-                return new InteractiveDataDisplay.Area(jqDiv, master);
+                plot = new InteractiveDataDisplay.Area(jqDiv, master);
+				break;
             case "bingMaps":
-                return new InteractiveDataDisplay.BingMapsPlot(jqDiv, master);
+                plot = new InteractiveDataDisplay.BingMapsPlot(jqDiv, master);
+                break;
         }
-
+        
+        var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+        if(MutationObserver) {
+          var observer = new MutationObserver(function(mutations, observer) {
+            mutations.forEach(function(mutation) {
+              var added=mutation.addedNodes, removed = mutation.removedNodes;
+              if(added.length>0)
+                for(var i=0; i< added.length;i++) {
+                  var jqAdded = $(added[i]);
+                  if(jqAdded.attr("data-idd-plot") && !(jqAdded.hasClass("idd-plot-master")))
+                    plot.addChild(initializePlot(jqAdded,master));
+                  };
+              if(removed.length>0)
+                for(var i=0; i< removed.length;i++) {
+                  plot.removeChild(InteractiveDataDisplay.asPlot($(removed[i])));        
+                  }
+            });
+          });
+          
+          observer.observe(jqDiv[0], {
+            subtree: false,
+            characterData: false,
+            attributes: false,
+            childList: true,
+            attributeOldValue: false,
+            characterDataOldValue: false
+          });
+        }
+        else {
+          console.warn("MutationObservers are not supported by the browser. DOM changes are not tracked by IDD");
+        }
+        
+        if(plot) {
+          return plot;
+        };
+          
+        
         var factory = InteractiveDataDisplay.factory[plotType];
         if (factory) {
             return factory(jqDiv, master);
@@ -2333,7 +2379,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 jqe.remove();
             };
 
-            if (typeof element.remove == "function") {
+            if (element.jquery) {
                 removeJQ(element);
             } else {
                 removeJQ($(element));
