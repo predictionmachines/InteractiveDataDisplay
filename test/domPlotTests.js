@@ -7,10 +7,12 @@
 // https://github.com/pivotal/jasmine/wiki 
 
 describe('InteractiveDataDisplay.DOMPlot', function () {
-    var plot;
+    var plot,div;
 
+    var isPhantomJS = /PhantomJS/.test(window.navigator.userAgent);
+    
     beforeEach(function () {
-        var div = document.createElement("div");
+        div = document.createElement("div");
         div.setAttribute("data-idd-plot", "dom");
         div.setAttribute("data-idd-name", "dom");
         plot = InteractiveDataDisplay.asPlot($(div));
@@ -106,5 +108,38 @@ describe('InteractiveDataDisplay.DOMPlot', function () {
         expect(bb.width).toBe(1.4);
         expect(bb.height).toBe(2.8);
     });
+    
+    if (!isPhantomJS) {
+      it('should track added dom elements', function(done) {
+        plot.onChildrenChanged = function() {
+          expect(plot.children.length).toBe(1);          
+          expect(div.children.length).toBe(3);
+          done();
+        }
+        expect(plot.children.length).toBe(0);
+        $(div).append("<div></div>"); //element without idd-data-plot attribute must not be registered
+        $(div).append("<div data-idd-plot='polyline' class='idd-plot-master'></div>"); //element with idd-data-plot attribute AND idd-plot-master class must not be regestered (as already registered manually)
+        $(div).append("<div data-idd-plot='polyline'></div>"); //element with idd-data-plot attribute must be registered as plot
+      });
+      
+      it('should track removed dom elements', function(done) {
+        var polyline;
+        var element = document.createElement("div");
+        element.setAttribute("data-idd-plot","polyline");
+        plot.onChildrenChanged = function() {
+          expect(plot.children.length).toBe(1);          
+          expect(div.children.length).toBe(1);
+          plot.onChildrenChanged = function() {
+            expect(plot.children.length).toBe(0);
+            expect(div.children.length).toBe(0);
+            done();
+          };
+          $(element).remove();
+          
+        }
+        
+        polyline = $(div).append(element); //element with idd-data-plot attribute must be registered as plot
+      });
+    }
 });
 
