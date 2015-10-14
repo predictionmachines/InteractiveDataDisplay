@@ -1,7 +1,7 @@
 ﻿}
 (function () {
     if (window.define) {
-        define(['jquery', 'rx', 'rx.jquery'],
+        define(['jquery', 'rx'],
             function ($, Rx) {
                 IDD($, Rx);
                 return InteractiveDataDisplay;
