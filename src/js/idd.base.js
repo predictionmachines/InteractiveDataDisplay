@@ -110,14 +110,21 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             mutations.forEach(function(mutation) {
               var added=mutation.addedNodes, removed = mutation.removedNodes;
               if(added.length>0)
-                for(var i=0; i< added.length;i++) {
-                  var jqAdded = $(added[i]);
-                  if(jqAdded.attr("data-idd-plot") && !(jqAdded.hasClass("idd-plot-master")))
-                    plot.addChild(initializePlot(jqAdded,master));
-                  };
+                  for(var i=0; i< added.length;i++) {
+                      var jqAdded = $(added[i]);
+                      if(jqAdded.attr("data-idd-plot")) {
+                          jqAdded.removeClass("idd-plot-master").removeClass("idd-plot-dependant");
+                          plot.addChild(initializePlot(jqAdded,master));
+                      };
+                  }
               if(removed.length>0)
                 for(var i=0; i< removed.length;i++) {
-                  plot.removeChild(InteractiveDataDisplay.asPlot($(removed[i])));        
+                  var elem = removed[i];
+                  if(typeof elem.getAttribute === "function") {
+                    var plotAttr = elem.getAttribute("data-idd-plot");
+                    if(plotAttr != null)
+                      plot.removeChild(elem.plot);        
+                    }
                   }
             });
           });
