@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>    
+    <meta http-equiv="X-UA-Compatible" content="IE=10" /> 
+    <title>Axes and navigation</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/predictionmachines/InteractiveDataDisplay/v1.0.2/dist/idd.css" />
+    <!-- link rel="stylesheet" type="text/css" href="../css/D3Theme.css" / -->
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.4.min.js"></script>
+    <script src="https://cdn.rawgit.com/Reactive-Extensions/RxJS/v4.0.6/dist/rx.lite.min.js" type="text/javascript"></script>
+    <script src="https://cdn.rawgit.com/Reactive-Extensions/rxjs-jquery/v1.1.7/rx.jquery.min.js" type="text/javascript"></script>
+    <script src="https://cdn.rawgit.com/predictionmachines/InteractiveDataDisplay/v1.0.2/dist/idd.min.js" type="text/javascript"></script>
+    <script>
+        $(document).ready(function(){
+            var chart = InteractiveDataDisplay.asPlot('chart');
+            var x = [];
+            var y = [];
+            var c = [];
+            var d = [];
+            var N = 100;
+            for (var i = 0; i < N; i++)
+            {
+                x[i] = Math.random() * N;
+                y[i] = Math.random() * N;
+                c[i] = 100 + 200 * Math.random();
+                d[i] = 200 * Math.random();
+            }
+            var plot = chart.markers("species distribution",
+                {x:x, 
+                 y:y, 
+                 size:c, 
+                 color:d, 
+                 shape:"circle",
+                 colorPalette: InteractiveDataDisplay.ColorPalette.parse("#2222FF,#22FF22,#FF2222"), 
+                 sizePalette: new InteractiveDataDisplay.SizePalette(true,{min:5,max:50})});
+            },
+            {title: "species distribution", x:"latitude", y:"longitude", size:"population",color: "age"});
+    </script>
+</head>
+<body>
+    <div class="wrapper">
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+    </div>
+    </div>
+</body>
+</html>
