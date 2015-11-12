@@ -267,6 +267,12 @@ th, td {
 dt {
   color: #222;
   font-weight: 700;
+  clear: right;
+}
+dt a img {
+  float: right;
+  margin-bottom: 10px;
+  margin-left: 10px;
 }
 
 th {
