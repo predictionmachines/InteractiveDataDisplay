@@ -2,5 +2,7 @@
 /dist/**
 /node_modules/**
 /sln/*.suo
-
-
+/sln/.vs/**
+/generated/**
+idd.heatmapworker.js
+/.grunt/**

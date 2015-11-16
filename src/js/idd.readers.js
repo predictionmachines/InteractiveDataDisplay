@@ -39,6 +39,7 @@ InteractiveDataDisplay.readTable = function (jqPlotDiv) {
 
 InteractiveDataDisplay.Utils.getAndClearTextContent = function(jqElement)
 {
+    jqElement[0].normalize(); // In a normalized sub-tree, no text nodes in the sub-tree are empty and there are no adjacent text nodes
     // we take here first text node
     var content = jqElement.contents().filter(
         function () {

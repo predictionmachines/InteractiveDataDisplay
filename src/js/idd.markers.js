@@ -73,7 +73,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
     // border (optional) is a color, value "none" means no border.
     // size is either a number, or an array of numbers (length(size) = length(y)) those are sizes in pixel or values for sizePalette.
     // sizePalette is InteractiveDataDisplay.SizePalette, if size is an array of numbers it is used to get the pixel size of a marker by size element.
-    this.draw = function (data) {
+    this.draw = function (data, titles) {
         var y2 = data.y;
         if (!y2) throw "Data series y is undefined";
         var n = y2.length;
@@ -105,12 +105,13 @@ InteractiveDataDisplay.Markers = function (div, master) {
             if (!isStandartShape(_shape))
                 _shape = eval(_shape);
         }
-
+        
         _dataUpdated = true;
 
         this.invalidateLocalBounds();
 
         this.requestNextFrameOrUpdate();
+        this.setTitles(titles, true);
         this.fireAppearanceChanged();
     };
 
@@ -551,10 +552,11 @@ InteractiveDataDisplay.Markers = function (div, master) {
             var content = undefined;
             for (var prop in markerInfo) {
                 if (markerInfo.hasOwnProperty(prop)) {
+                    var propTitle = that.getTitle(prop);
                     if (content)
-                        content += "<br/><b>" + prop + "</b>: " + markerInfo[prop];
+                        content += "<br/><b>" + propTitle + "</b>: " + markerInfo[prop];
                     else
-                        content = "<b>" + prop + "</b>: " + markerInfo[prop];
+                        content = "<b>" + propTitle + "</b>: " + markerInfo[prop];
                 }
             }
             return "<div>" + content + "</div>";
@@ -665,6 +667,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
     });
 
     this.getLegend = function () {
+        var that = this;
         var div = $("<div class='idd-legend-item'></div>");
 
         var itemDiv = $("<div></div>").appendTo(div);
@@ -684,7 +687,11 @@ InteractiveDataDisplay.Markers = function (div, master) {
         var canvasStyle = canvas[0].style;
         var context = canvas.get(0).getContext("2d");
 
-        var name = $("<span style='vertical-align: top'>" + this.name + "</span>").appendTo(itemDiv);
+        var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(itemDiv);
+        var setName = function () {
+            nameDiv.text(that.name);
+        }
+        setName();
 
         var item, itemDivStyle;
         var itemIsVisible = 0;
@@ -697,16 +704,22 @@ InteractiveDataDisplay.Markers = function (div, master) {
         var sizeDiv, sizeDivStyle, sizeControl;
         var sizeIsVisible = 0;
 
+        var sizeTitle;
         var refreshSize = function () {
             sizeIsArray = InteractiveDataDisplay.Utils.isArray(_data.size);
             if (sizeIsArray) {
                 size = maxSize;
                 if (_sizePalette) {
+                    var szTitleText = that.getTitle("size");
                     if (sizeIsVisible == 0) {
                         sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
+                        sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
                         sizeDivStyle = sizeDiv[0].style;
-                        sizeControl = new InteractiveDataDisplay.SizePaletteViewer(sizeDiv);
+                        var paletteDiv = $("<div></div>").appendTo(sizeDiv);
+                        sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
                         sizeIsVisible = 2;
+                    } else {
+                        sizeTitle.text(szTitleText);
                     }
                     sizeControl.palette = _sizePalette;
                     if (_sizePalette.isNormalized) {
@@ -728,15 +741,21 @@ InteractiveDataDisplay.Markers = function (div, master) {
             halfSize = size / 2;
         };
 
+        var colorTitle;
         var refreshColor = function () {
             colorIsArray = InteractiveDataDisplay.Utils.isArray(_data.color);
             drawBorder = false;
             if (colorIsArray && _colorPalette) {
-                if (colorIsVisible == 0) {
+                var clrTitleText = that.getTitle("color");
+                if (colorIsVisible == 0) {                    
                     colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
+                    colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                     colorDivStyle = colorDiv[0].style;
-                    colorControl = new InteractiveDataDisplay.ColorPaletteViewer(colorDiv);
+                    var paletteDiv = $("<div></div>").appendTo(colorDiv);
+                    colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
                     colorIsVisible = 2;
+                } else {
+                    colorTitle.text(clrTitleText);
                 }
                 colorControl.palette = _colorPalette;
                 if (_colorPalette.isNormalized) {
@@ -881,11 +900,12 @@ InteractiveDataDisplay.Markers = function (div, master) {
 
         this.host.bind("appearanceChanged",
             function (event, propertyName) {
-                if (!propertyName || propertyName == "color" || propertyName == "colorPalette") {
+                if (!propertyName || propertyName == "name")
+                    setName();
+                if (!propertyName || propertyName == "color" || propertyName == "colorPalette") 
                     refreshColor();
-                }
                 if (!propertyName || propertyName == "size" || propertyName == "sizePalette")
-                    refreshSize();
+                    refreshSize();                
                 renderShape();
             });
 
