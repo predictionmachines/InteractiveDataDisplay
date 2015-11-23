@@ -363,6 +363,20 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         );
 
+        Object.defineProperty(this, "titles",
+            {
+                get: function () { return $.extend({}, _titles); },
+
+                // Allows to set titles for the plot's properties.
+                // E.g. "{ color:'age' }" sets the 'age' title for the color data series.
+                // Given titles are displayed in legends and tooltips.
+                set: function (titles) {
+                    this.setTitles(titles, false);
+                }
+            }
+        );
+
+
         this.selfMapRefresh = function () {
             if (!_isMaster) {
                 return;
@@ -394,13 +408,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return property;
         }
 
-        this.getTitles = function () {
-            return _titles;
-        }
-
-        // Allows to set titles for the plot's properties.
-        // E.g. "{ color:'age' }" sets the 'age' title for the color data series.
-        // Given titles are displayed in legends and tooltips.
         this.setTitles = function (titles, suppressFireAppearanceChanged) {
             _titles = titles;
             if (!suppressFireAppearanceChanged)

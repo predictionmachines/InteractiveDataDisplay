@@ -38,15 +38,15 @@
 
         function changeColorTitle()
         {
-            var titles = markers.getTitles();
+            var titles = markers.titles;
             titles.color = $("#colorTitle").val();
-            markers.setTitles(titles);
+            markers.titles = titles;
         }
 
         function changeSizeTitle() {
-            var titles = markers.getTitles();
+            var titles = markers.titles;
             titles.size = $("#sizeTitle").val();
-            markers.setTitles(titles);
+            markers.titles = titles;
         }
     </script>
 </head>
