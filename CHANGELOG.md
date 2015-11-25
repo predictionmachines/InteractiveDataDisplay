@@ -1,3 +1,14 @@
+## 1.0.3 (November 25, 2015)
+
+Features:
+
+  - IDD supports titles of individual data series
+
+Bugfixes:
+
+  - Legend changes when plot name is changed.
+  - Adding dependencies to the package manifest file
+
 ## 1.0.2 (October 14, 2015)
 
 Bugfixes:
