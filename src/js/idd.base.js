@@ -168,6 +168,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _isFlatRenderingOn = false;
         var _width, _height;
         var _name = "";
+        // Contains user-readable titles for data series of a plot. They should be used in tooltips and legends.
+        var _titles = {};
         // The flag is set in setVisibleRegion when it is called at me as a bound plot to notify that another plot is changed his visible.
         // I set this flag to suppress echo, i.e. I will not notify bound plots about my new visible rectangle.
         // The flag is reset when any other update request is received.
@@ -361,6 +363,20 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         );
 
+        Object.defineProperty(this, "titles",
+            {
+                get: function () { return $.extend({}, _titles); },
+
+                // Allows to set titles for the plot's properties.
+                // E.g. "{ color:'age' }" sets the 'age' title for the color data series.
+                // Given titles are displayed in legends and tooltips.
+                set: function (titles) {
+                    this.setTitles(titles, false);
+                }
+            }
+        );
+
+
         this.selfMapRefresh = function () {
             if (!_isMaster) {
                 return;
@@ -381,6 +397,21 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     }
                 }
             }
+        }
+
+        // Returns a user-readable title for a property of a plot.
+        // E.g. can return "age" for property "color".
+        // If there is no user-defined title, returns the given property name as it is.
+        this.getTitle = function (property) {
+            if (typeof _titles !== "undefined" && typeof _titles[property] !== "undefined")
+                return _titles[property];
+            return property;
+        }
+
+        this.setTitles = function (titles, suppressFireAppearanceChanged) {
+            _titles = titles;
+            if (!suppressFireAppearanceChanged)
+                this.fireAppearanceChanged();
         }
 
         // Uninitialize the plot (clears its input)
@@ -1267,7 +1298,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return plot;
         };
 
-        this.markers = function (name, data) {
+        this.markers = function (name, data, titles) {
             var plot = this.get(name);
             if (!plot) {
                 var div = $("<div></div>")
@@ -1277,7 +1308,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 this.addChild(plot);
             }
             if (data !== undefined) {
-                plot.draw(data);
+                plot.draw(data, titles);
             }
 
             return plot;
@@ -1965,10 +1996,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             ctx.lineTo(20, 20);
             ctx.stroke();
 
-            var name = $("<span>" + this.name + "</span>").appendTo(div);
+            var that = this;
+            var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
+            var setName = function () {
+                nameDiv.text(that.name);
+            }
+            setName();
 
             this.host.bind("appearanceChanged",
-                function () {
+                function (event, propertyName) {
+                    if (!propertyName || propertyName == "name")
+                        setName();
+
                     ctx.clearRect(0, 0, canvas[0].width, canvas[0].height);
                     ctx.strokeStyle = _stroke;
                     ctx.lineWidth = _thickness;

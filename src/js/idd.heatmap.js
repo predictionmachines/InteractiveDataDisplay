@@ -513,7 +513,13 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     });
 
     this.getLegend = function () {
-        var div = $("<div class='idd-legend-item'>" + this.name + "</div>");
+        var div = $("<div class='idd-legend-item'></div>");
+        var that = this;
+        var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
+        var setName = function () {
+            nameDiv.text(that.name);
+        }
+        setName();
 
         var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
         var paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette);
@@ -521,10 +527,10 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             paletteControl.dataRange = { min: _fmin, max: _fmax };
         }
 
-        var that = this; 
-
         this.host.bind("appearanceChanged",
             function (event, propertyName) {
+                if (!propertyName || propertyName == "name")
+                    setName();
                 if (!propertyName || propertyName == "palette") paletteControl.palette = _palette;
                 var oldRange = paletteControl.dataRange;
                 if (_palette && _palette.isNormalized && (oldRange == undefined || oldRange.min != _fmin || oldRange.max != _fmax)) {

@@ -73,7 +73,7 @@
             for (; i < N; i++) {
                 y[i] = N - i;
             }
-            bars.draw({ y: y, color: y, colorPalette: colorPalette, barWidth: 0.9, shadow: 'grey', shape: barMarker });
+            bars.draw({ y: y, color: y, colorPalette: colorPalette, barWidth: 0.9, shadow: 'grey', shape: barMarker }, { color: "depth, m" });
         
             chart.yDataTransform =
                 new InteractiveDataDisplay.DataTransform(

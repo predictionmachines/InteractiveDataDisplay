@@ -126,7 +126,18 @@
 
 .idd-legend-item
 {
-    margin: 5px;
+    margin: 5px;    
+}
+
+.idd-legend-item-title
+{    
+    vertical-align: top;
+}
+
+.idd-legend-item-property
+{    
+    margin-bottom: 1px;
+    font-size: smaller;
 }
 
 .idd-verticalText
