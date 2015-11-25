@@ -1,11 +1,14 @@
 {
   "name": "idd",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "authors": [
     "Microsoft Corporation"
   ],
   "description": "A JavaScript visualization library for dynamic data",
-  "main": "./dist/idd.min.js",
+  "main": [
+	"./dist/idd.min.js",
+	"./dist/idd.css"
+  ]
   "moduleType": [
     "amd"
   ],
@@ -33,8 +36,8 @@
     "package.json",
     "Gruntfile.js"
   ],
-  "devDependencies": {
-    "rxjs": "~2.5.2",
+  "dependencies": {
+    "rxjs": "~4.0.6",
     "jasmine": "~2.3.4",
     "jquery": "~2.1.4",
     "modernizr": "~2.8.3"
