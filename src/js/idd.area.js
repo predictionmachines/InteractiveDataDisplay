@@ -1,0 +1,150 @@
+﻿// Area plot takes data with coordinates named 'x', 'y1', 'y2' and a fill colour named 'fill'. 
+
+InteractiveDataDisplay.Area = function (div, master) {
+    var that = this;
+    var defaultFill = "rgba(0,0,0,0.2)";
+
+    // Initialization (#1)
+    var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
+    var initialData = initializer(div);
+
+    this.base = InteractiveDataDisplay.CanvasPlot;
+    this.base(div, master);
+
+
+    var _x = []; // an array of horizontal axis coordinates
+    var _y1 = [];
+    var _y2 = []; // arrays of lower and upper limits of the band
+    var _fill = defaultFill;
+
+    // default styles:
+    if (initialData) {
+        _fill = typeof initialData.fill != "undefined" ? initialData.fill : defaultFill;
+
+    }
+
+    this.draw = function (data) {
+        var y1 = data.y1;
+        if (!y1) throw "Data series y1 is undefined";
+        var n = y1.length;
+
+        var y2 = data.y2;
+        if (!y2) throw "Data series y2 is undefined";
+        if (y2.length !== n)
+            throw "Data series y1 and y2 have different lengths";
+
+        var x = data.x;
+        if (!x) {
+            x = InteractiveDataDisplay.Utils.range(0, n - 1);
+        }
+        if (x.length !== n)
+            throw "Data series x and y1, y2 have different lengths";
+
+        _y1 = y1;
+        _y2 = y2;
+        _x = x;
+
+        // styles:
+        _fill = typeof data.fill != "undefined" ? data.fill : defaultFill;
+
+        this.invalidateLocalBounds();
+
+        this.requestNextFrameOrUpdate();
+        this.fireAppearanceChanged();
+    };
+
+    // Returns a rectangle in the plot plane.
+    this.computeLocalBounds = function () {
+        var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
+        var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
+
+        var y1 = InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_x, _y1, dataToPlotX, dataToPlotY);
+        var y2 = InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_x, _y2, dataToPlotX, dataToPlotY);
+
+        return InteractiveDataDisplay.Utils.unionRects(y1, y2);
+    };
+
+    // Returns 4 margins in the screen coordinate system
+    this.getLocalPadding = function () {
+        return { left: 0, right: 0, top: 0, bottom: 0 };
+    };
+
+    this.renderCore = function (plotRect, screenSize) {
+        InteractiveDataDisplay.Area.prototype.renderCore.call(this, plotRect, screenSize);
+        var context = that.getContext(true);
+
+        if (_x === undefined || _y1 == undefined || _y2 == undefined)
+            return;
+        var n = _y1.length;
+        if (n == 0) return;
+
+        var t = that.getTransform();
+        var dataToScreenX = t.dataToScreenX;
+        var dataToScreenY = t.dataToScreenY;
+
+        // size of the canvas
+        var w_s = screenSize.width;
+        var h_s = screenSize.height;
+        var xmin = 0, xmax = w_s;
+        var ymin = 0, ymax = h_s;
+
+        context.fillStyle = _fill;
+
+        //Drawing polygons
+        var polygons = [];
+        var curInd = undefined;
+        for (var i = 0; i < n; i++) {
+            if (isNaN(_x[i]) || isNaN(_y1[i]) || isNaN(_y2[i])) {
+                if (curInd === undefined) {
+                    curInd = i;
+                }
+                else {
+                    polygons.push([curInd, i]);
+                    curInd = undefined;
+                }
+            } else {
+                if (curInd === undefined) {
+                    curInd = i;
+                }
+                else {
+                    if (i === n - 1) {
+                        polygons.push([curInd, i]);
+                        curInd = undefined;
+                    }
+                }
+            }
+        }
+
+        var nPoly = polygons.length;
+        for (var i = 0; i < nPoly; i++) {
+            context.beginPath();
+            var curPoly = polygons[i];
+            context.moveTo(dataToScreenX(_x[curPoly[0]]), dataToScreenY(_y1[curPoly[0]]));
+            for (var j = curPoly[0] + 1; j <= curPoly[1]; j++) {
+                context.lineTo(dataToScreenX(_x[j]), dataToScreenY(_y1[j]));
+            }
+            for (var j = curPoly[1]; j >= curPoly[0]; j--) {
+                context.lineTo(dataToScreenX(_x[j]), dataToScreenY(_y2[j]));
+            }
+            context.fill();
+        }
+    };
+
+    // Clipping algorithms
+    var code = function (x, y, xmin, xmax, ymin, ymax) {
+        return (x < xmin) << 3 | (x > xmax) << 2 | (y < ymin) << 1 | (y > ymax);
+    };
+
+
+    // Others
+    this.onDataTransformChanged = function (arg) {
+        this.invalidateLocalBounds();
+        InteractiveDataDisplay.Area.prototype.onDataTransformChanged.call(this, arg);
+    };
+
+    // Initialization 
+    if (initialData && initialData.x && initialData.y1 && initialData.y2)
+        this.draw(initialData);
+}
+
+InteractiveDataDisplay.Area.prototype = new InteractiveDataDisplay.CanvasPlot;
