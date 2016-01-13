@@ -6,7 +6,7 @@
   ],
   "description": "A JavaScript visualization library for dynamic data",
   "main": [
-	"./dist/idd.min.js",
+	"./dist/idd.js",
 	"./dist/idd.css"
   ],
   "moduleType": [
