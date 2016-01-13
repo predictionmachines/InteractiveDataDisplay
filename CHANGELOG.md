@@ -1,3 +1,13 @@
+## 1.0.4 (January 13, 2016)
+
+Features:
+
+  - Introducing new Area plot type.
+  
+Changes:
+
+  - Bower installs idd.js, not minified version. 
+
 ## 1.0.3 (November 25, 2015)
 
 Features:
