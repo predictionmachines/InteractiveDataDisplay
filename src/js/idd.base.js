@@ -91,6 +91,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 return new InteractiveDataDisplay.GridlinesPlot(jqDiv, master);
             case "markers":
                 return new InteractiveDataDisplay.Markers(jqDiv, master);
+            case "area":
+                return new InteractiveDataDisplay.Area(jqDiv, master);
             case "bingMaps":
                 return new InteractiveDataDisplay.BingMapsPlot(jqDiv, master);
         }
@@ -1309,6 +1311,23 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
             if (data !== undefined) {
                 plot.draw(data, titles);
+            }
+
+            return plot;
+        };
+
+        this.area = function (name, data) {
+            var plot = this.get(name);
+            if (!plot) {
+                var div = $("<div></div>")
+                           .attr("data-idd-name", name)
+                           .attr("data-idd-plot", "area")
+                           .appendTo(this.host);
+                plot = new InteractiveDataDisplay.Area(div);
+                this.addChild(plot);
+            }
+            if (data !== undefined) {
+                plot.draw(data);
             }
 
             return plot;
