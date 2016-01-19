@@ -207,7 +207,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         }
 
         var _constraint = undefined;
-
+        var _plotConstraint = undefined;
         var that = this;
 
         // Plot properties
@@ -375,6 +375,26 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 set: function (titles) {
                     this.setTitles(titles, false);
                 }
+            }
+        );
+
+        Object.defineProperty(this, "plotConstraint",
+            {
+                get: function () { return _plotConstraint; },
+
+                // Allows to set function to constraint plot rect
+                // Constraint(plotRect, screenSize): plotRect
+                // Given function is used at last step of updateLayout stage
+                set: function (value) {
+                    if (_isMaster) {
+                        _plotConstraint = value;
+                    } else {
+                        _master._plotConstraint = value;
+                    }
+
+                    _master.updateLayout();
+                },
+                configurable: false
             }
         );
 
@@ -884,6 +904,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
 
             if (finalPath) {
+                if (_plotConstraint !== undefined) {
+                    outputRect = _plotConstraint(outputRect, screenSize);
+                }
                 _plotRect = outputRect;
             }
             return outputRect;
