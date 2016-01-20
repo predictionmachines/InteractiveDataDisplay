@@ -207,7 +207,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         }
 
         var _constraint = undefined;
-        var _plotConstraint = undefined;
         var that = this;
 
         // Plot properties
@@ -378,26 +377,24 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         );
 
-        Object.defineProperty(this, "plotConstraint",
-            {
-                get: function () { return _plotConstraint; },
-
-                // Allows to set function to constraint plot rect
-                // Constraint(plotRect, screenSize): plotRect
-                // Given function is used at last step of updateLayout stage
-                set: function (value) {
-                    if (_isMaster) {
-                        _plotConstraint = value;
-                    } else {
-                        _master._plotConstraint = value;
+        var _visibleRectConstraint = undefined;
+        Object.defineProperty(this, "visibleRectConstraint", {
+            get: function () { return _isMaster ? _visibleRectConstraint : _master.visibleRectConstraint; },
+            set: function (value) {
+                if (_isMaster) {
+                    if (_visibleRectConstraint !== value) {
+                        _visibleRectConstraint = value;
+                        if (_visibleRectConstraint !== undefined) {
+                            _plot.updateLayout();
+                        }
                     }
+                } else {
+                    _master.visibleRectConstraint = value;
+                }
 
-                    _master.updateLayout();
-                },
-                configurable: false
-            }
-        );
-
+            },
+            configurable: false
+        });
 
         this.selfMapRefresh = function () {
             if (!_isMaster) {
@@ -843,6 +840,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (bounds.x != bounds.x || bounds.y != bounds.y || bounds.width != bounds.width || bounds.height != bounds.height)
                     bounds = { x: 0, width: 1, y: 0, height: 1 }; // todo: this is an exceptional situation which should be properly handled
                 _plotRect = bounds;
+
+
+                if (_visibleRectConstraint !== undefined) {
+                    _plotRect = _visibleRectConstraint(_plotRect);
+                }
+
                 var padding = aggregated.isDefault ? { left: 0, top: 0, bottom: 0, right: 0 } : _master.aggregatePadding();
                 _coordinateTransform = InteractiveDataDisplay.Utils.calcCSWithPadding(_plotRect, screenSize, padding, _master.aspectRatio);
 
@@ -887,6 +890,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     }
                 }
 
+
+                if (_visibleRectConstraint !== undefined) {
+                    _plotRect = _visibleRectConstraint(_plotRect);
+                }
+
                 if (padding !== undefined) {
                     _coordinateTransform = InteractiveDataDisplay.Utils.calcCSWithPadding(_plotRect, screenSize, padding, _master.aspectRatio);
                 } else {
@@ -904,9 +912,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
 
             if (finalPath) {
-                if (_plotConstraint !== undefined) {
-                    outputRect = _plotConstraint(outputRect, screenSize);
-                }
                 _plotRect = outputRect;
             }
             return outputRect;
@@ -1021,7 +1026,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (that.isAutoFitEnabled) {
                 that.isAutoFitEnabled = false;
             }
-
 
             _plotRect = plotRect;
 
