@@ -38,17 +38,15 @@
     
         // Ensures that IDD controls within tabs reacts responsively
         // to windows resize and tab switching
-        function makeResponsiveIddTabs(jqTabs) {
-            var selectedPanel = null;
+        function makeResponsiveIddTabs(jqTabs, jqInitPanel) {
+            var selectedPanel = jqInitPanel;
             jqTabs.on("tabsactivate", function(event, ui) {
                 selectedPanel = ui.newPanel; 
-                if(selectedPanel)
-                    InteractiveDataDisplay.updateLayouts(selectedPanel);
+                InteractiveDataDisplay.updateLayouts(selectedPanel);
             });
             $(window).resize(function() {
                 jqTabs.tabs("refresh");
-                if(selectedPanel)
-                    InteractiveDataDisplay.updateLayouts(selectedPanel);
+                InteractiveDataDisplay.updateLayouts(selectedPanel);
             });            
         }
     
@@ -58,7 +56,7 @@
                 heightStyle: "fill"
             });
         
-            makeResponsiveIddTabs(jqTabs);
+            makeResponsiveIddTabs(jqTabs, $("#graph1"));
             InteractiveDataDisplay.asPlot($("#chart1"));
             InteractiveDataDisplay.asPlot($("#chart2"));
         });
