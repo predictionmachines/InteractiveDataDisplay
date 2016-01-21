@@ -1,3 +1,10 @@
+## 1.0.5 (January 21, 2016)
+
+Features:
+
+  -IDD plots observe changes of the DOM and add/remove child plots when DOM elements are added or removed.
+  -InteractiveDataDisplay.updateLayouts function for responsive layouts support.
+
 ## 1.0.4 (January 13, 2016)
 
 Features:
