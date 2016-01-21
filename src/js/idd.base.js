@@ -188,6 +188,32 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         }
     };
 
+    // Tries to get IDD plot object from jQuery selector
+    // Returns null if selector is null or DOM object is not an IDD master plot
+    InteractiveDataDisplay.tryGetMasterPlot = function (jqElem) {
+        if(jqElem && jqElem.hasClass("idd-plot-master")) {
+            var domElem = jqElem.get(0);
+            if('plot' in domElem)
+                return domElem.plot;
+            else
+                return null;
+        }
+        return null; 
+    }
+
+    // Traverses descendants of jQuery selector and invokes updateLayout 
+    // for all IDD master plots
+    InteractiveDataDisplay.updateLayouts = function (jqElem) {            
+        var plot = InteractiveDataDisplay.tryGetMasterPlot(jqElem);
+        if(plot)
+            plot.updateLayout();
+        else {
+            var c = jqElem.children();
+            for(var i = 0;i<c.length;i++)
+                InteractiveDataDisplay.updateLayouts(c.eq(i));        
+        }
+    }
+
     InteractiveDataDisplay.Event = InteractiveDataDisplay.Event || {};
     InteractiveDataDisplay.Event.appearanceChanged = jQuery.Event("appearanceChanged");
     InteractiveDataDisplay.Event.childrenChanged = jQuery.Event("childrenChanged");
