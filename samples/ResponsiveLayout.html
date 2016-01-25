@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Bar chart</title>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <style>
+        html, body { 
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+        
+        #top {
+            width: 100%;
+            height: 50%;
+        }
+        
+        #bottom {
+            width: 100%;
+            height: 50%;
+        }
+        
+        #bottom-right {
+            width: 50%;
+            height: 100%;
+            float: right;
+        }
+
+        #bottom-left {
+            width: 50%;
+            height: 100%;
+            float: left;
+        }
+        
+        .chart { 
+            width: 100%;
+            height: 100%;
+        }
+
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        $(function() {
+            InteractiveDataDisplay.asPlot($("#top-chart"));
+            InteractiveDataDisplay.asPlot($("#bl-chart"));
+            InteractiveDataDisplay.asPlot($("#br-chart"));
+            
+            // Make charts react on window resize
+            $(window).resize(function() {
+                InteractiveDataDisplay.updateLayouts($(document));
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="top">
+        <div id="top-chart" data-idd-plot="chart" class="chart"></div>
+    </div>
+    <div id="bottom">
+        <div id="bottom-left">
+            <div id="bl-chart" data-idd-plot="chart" class="chart"></div>
+        </div>
+        <div id="bottom-right">
+            <div id="br-chart" data-idd-plot="chart" class="chart"></div>
+        </div>
+    </div>
+</body>
+</html>

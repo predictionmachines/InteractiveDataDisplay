@@ -7,10 +7,12 @@
 // https://github.com/pivotal/jasmine/wiki 
 
 describe('InteractiveDataDisplay.DOMPlot', function () {
-    var plot;
+    var plot,div;
 
+    var isPhantomJS = /PhantomJS/.test(window.navigator.userAgent);
+    
     beforeEach(function () {
-        var div = document.createElement("div");
+        div = document.createElement("div");
         div.setAttribute("data-idd-plot", "dom");
         div.setAttribute("data-idd-name", "dom");
         plot = InteractiveDataDisplay.asPlot($(div));

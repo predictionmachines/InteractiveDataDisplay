@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Edit titles of a plot and its data series</title>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="../dist/idd.js"></script>
+    <script type="text/javascript">
+        var markers;
+
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot("chart");
+            var N = 100;
+            var x = new Array(N);
+            var y = new Array(N);
+            var color = new Array(N);
+            var size = new Array(N);
+            var sizePalette = new InteractiveDataDisplay.SizePalette(true, { min: 5, max: 30 });
+            var colorPalette = InteractiveDataDisplay.palettes.grayscale;
+            for (var i = 0; i < N; i++) {
+                x[i] = Math.random() * N;
+                y[i] = Math.random() * N;
+                color[i] = Math.random() * 100000;
+                size[i] = Math.random() * 100;
+            }
+            markers = chart.markers("age/population",
+                { x: x, y: y, size: size, sizePalette: sizePalette, color: color, colorPalette: colorPalette },
+                { color: "population", size: "age" });
+        });
+
+        function changeName() {
+            markers.name = $("#name").val();
+        }
+
+        function changeColorTitle()
+        {
+            var titles = markers.titles;
+            titles.color = $("#colorTitle").val();
+            markers.titles = titles;
+        }
+
+        function changeSizeTitle() {
+            var titles = markers.titles;
+            titles.size = $("#sizeTitle").val();
+            markers.titles = titles;
+        }
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+    </div>
+    <div>
+        Name of the plot: <input type="text" id="name" value="age/population" onchange="changeName()" />
+    </div>
+    <div>
+        Title for color data series: <input type="text" id="colorTitle" value="population" onchange="changeColorTitle()" />
+    </div>
+    <div>
+        Title for size data series: <input type="text" id="sizeTitle" value="age" onchange="changeSizeTitle()" />
+    </div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-﻿/// <reference path="../ext/jasmine/jasmine.js" />
+﻿/// <reference path="../ext/jasmine/lib/jasmine-core/jasmine.js" />
 /// <reference path="../ext/jquery/dist/jquery.min.js" />
 /// <reference path="../dist/idd.js" />
 
@@ -6,23 +6,22 @@
 // http://pivotal.github.com/jasmine/ 
 // https://github.com/pivotal/jasmine/wiki 
 
-var newPlot = function (name, plot) {
-    var div = document.createElement("div");
-    div.setAttribute("data-idd-plot", plot || "plot");
-    div.setAttribute("data-idd-name", name);
-    var plot = InteractiveDataDisplay.asPlot($(div));
-    return plot;
-};
-
-var newPlotNoInitialization = function (name, plot) {
+function newPlotNoInitialization(name, plot) {
     var div = document.createElement("div");
     div.setAttribute("data-idd-plot", plot || "plot");
     div.setAttribute("data-idd-name", name);
     return div;
 };
 
+function newPlot(name, plot) {
+    var div = newPlotNoInitialization(name, plot);
+    var plot = InteractiveDataDisplay.asPlot($(div));
+    return plot;
+};
+
 describe('InteractiveDataDisplay.Plot', function () {
     var plot;
+    var isPhantomJS = /PhantomJS/.test(window.navigator.userAgent);
 
     beforeEach(function () {
         plot = newPlot("master");
@@ -37,6 +36,40 @@ describe('InteractiveDataDisplay.Plot', function () {
         expect(plot.children).toBeDefined();
         expect(plot.children.length).toBe(0);
     });
+
+    if (!isPhantomJS) {
+      it('should create plots for new dom elements', function(done) {
+        plot.onChildrenChanged = function() {
+          expect(plot.children.length).toBe(1);          
+          expect(div.children().length).toBe(3);
+          done();
+        }
+        expect(plot.children.length).toBe(0);
+        var div = plot.host;
+        $(div).append("<div></div>"); //element without idd-data-plot attribute are not converted to plots
+        $(div).append("<div data-idd-plot='polyline' class='idd-plot-master'></div>"); // element with idd-data-plot attribute AND idd-plot-master class are not converted to plots (as they are already converted manually)
+        $(div).append("<div data-idd-plot='polyline'></div>"); //element with idd-data-plot is converted to plot
+      });
+      
+      it('should remove plots when corresponding dom elements are removed', function(done) {
+        var element = newPlotNoInitialization("line1", "polyline");
+        var div = plot.host;
+        plot.onChildrenChanged = function() {
+          // This should be true when polyline div is appended
+          expect(plot.children.length).toBe(1);          
+          expect(div.children().length).toBe(1);
+          
+          plot.onChildrenChanged = function() {
+            // This should be true when polyline div is removed
+            expect(plot.childre).length).toBe(0);
+            expect(div.children().length).toBe(0);
+            done();
+          };
+          $(element).remove();          
+        }        
+        $(div).append(element); //element with idd-data-plot attribute must be registered as plot
+      });
+    }    
 
     it('.addChild() should add new plot object to the children collection and fire the event', function () {
         var spyMaster = jasmine.createSpy("master.childrenChanged");

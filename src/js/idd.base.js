@@ -48,7 +48,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return window.oRequestAnimationFrame(callback);
         };
     }
-
+    
     var initializePlot = function (jqDiv, master) {
 
         if (typeof (Modernizr) != 'undefined' && jqDiv) {
@@ -74,27 +74,82 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         if (jqDiv.hasClass("idd-plot-master") || jqDiv.hasClass("idd-plot-dependant"))
             throw "The div element already is initialized as a plot";
-
+        
+        var plot = undefined;
         var plotType = jqDiv.attr("data-idd-plot");
         switch (plotType) {
             case "plot":
-                return new InteractiveDataDisplay.Plot(jqDiv, master);
+                plot = new InteractiveDataDisplay.Plot(jqDiv, master);
+                break;
             case "polyline":
-                return new InteractiveDataDisplay.Polyline(jqDiv, master);
+                plot = new InteractiveDataDisplay.Polyline(jqDiv, master);
+                break;
             case "dom":
-                return new InteractiveDataDisplay.DOMPlot(jqDiv, master);
+                plot = new InteractiveDataDisplay.DOMPlot(jqDiv, master);
+                break;
             case "figure":
-                return new InteractiveDataDisplay.Figure(jqDiv, master);
+                plot = new InteractiveDataDisplay.Figure(jqDiv, master);
+                break;
             case "chart":
-                return new InteractiveDataDisplay.Chart(jqDiv, master);
+                plot = new InteractiveDataDisplay.Chart(jqDiv, master);
+                break;
             case "grid":
-                return new InteractiveDataDisplay.GridlinesPlot(jqDiv, master);
+                plot = new InteractiveDataDisplay.GridlinesPlot(jqDiv, master);
+                break;
             case "markers":
-                return new InteractiveDataDisplay.Markers(jqDiv, master);
+                plot = new InteractiveDataDisplay.Markers(jqDiv, master);
+				break;
+            case "area":
+                plot = new InteractiveDataDisplay.Area(jqDiv, master);
+				break;
             case "bingMaps":
-                return new InteractiveDataDisplay.BingMapsPlot(jqDiv, master);
+                plot = new InteractiveDataDisplay.BingMapsPlot(jqDiv, master);
+                break;
         }
-
+        
+        var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+        if(MutationObserver) {
+          var observer = new MutationObserver(function(mutations, observer) {
+            mutations.forEach(function(mutation) {
+              var added=mutation.addedNodes, removed = mutation.removedNodes;
+              if(added.length>0)
+                  for(var i=0; i< added.length;i++) {
+                      var jqAdded = $(added[i]);
+                      if(jqAdded.attr("data-idd-plot")) {
+                          jqAdded.removeClass("idd-plot-master").removeClass("idd-plot-dependant");
+                          plot.addChild(initializePlot(jqAdded,master));
+                      };
+                  }
+              if(removed.length>0)
+                for(var i=0; i< removed.length;i++) {
+                  var elem = removed[i];
+                  if(typeof elem.getAttribute === "function") {
+                    var plotAttr = elem.getAttribute("data-idd-plot");
+                    if(plotAttr != null)
+                      plot.removeChild(elem.plot);        
+                    }
+                  }
+            });
+          });
+          
+          observer.observe(jqDiv[0], {
+            subtree: false,
+            characterData: false,
+            attributes: false,
+            childList: true,
+            attributeOldValue: false,
+            characterDataOldValue: false
+          });
+        }
+        else {
+          console.warn("MutationObservers are not supported by the browser. DOM changes are not tracked by IDD");
+        }
+        
+        if(plot) {
+          return plot;
+        };
+          
+        
         var factory = InteractiveDataDisplay.factory[plotType];
         if (factory) {
             return factory(jqDiv, master);
@@ -133,6 +188,32 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         }
     };
 
+    // Tries to get IDD plot object from jQuery selector
+    // Returns null if selector is null or DOM object is not an IDD master plot
+    InteractiveDataDisplay.tryGetMasterPlot = function (jqElem) {
+        if(jqElem && jqElem.hasClass("idd-plot-master")) {
+            var domElem = jqElem.get(0);
+            if('plot' in domElem)
+                return domElem.plot;
+            else
+                return null;
+        }
+        return null; 
+    }
+
+    // Traverses descendants of jQuery selector and invokes updateLayout 
+    // for all IDD master plots
+    InteractiveDataDisplay.updateLayouts = function (jqElem) {            
+        var plot = InteractiveDataDisplay.tryGetMasterPlot(jqElem);
+        if(plot)
+            plot.updateLayout();
+        else {
+            var c = jqElem.children();
+            for(var i = 0;i<c.length;i++)
+                InteractiveDataDisplay.updateLayouts(c.eq(i));        
+        }
+    }
+
     InteractiveDataDisplay.Event = InteractiveDataDisplay.Event || {};
     InteractiveDataDisplay.Event.appearanceChanged = jQuery.Event("appearanceChanged");
     InteractiveDataDisplay.Event.childrenChanged = jQuery.Event("childrenChanged");
@@ -168,6 +249,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _isFlatRenderingOn = false;
         var _width, _height;
         var _name = "";
+        // Contains user-readable titles for data series of a plot. They should be used in tooltips and legends.
+        var _titles = {};
         // The flag is set in setVisibleRegion when it is called at me as a bound plot to notify that another plot is changed his visible.
         // I set this flag to suppress echo, i.e. I will not notify bound plots about my new visible rectangle.
         // The flag is reset when any other update request is received.
@@ -361,6 +444,20 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         );
 
+        Object.defineProperty(this, "titles",
+            {
+                get: function () { return $.extend({}, _titles); },
+
+                // Allows to set titles for the plot's properties.
+                // E.g. "{ color:'age' }" sets the 'age' title for the color data series.
+                // Given titles are displayed in legends and tooltips.
+                set: function (titles) {
+                    this.setTitles(titles, false);
+                }
+            }
+        );
+
+
         this.selfMapRefresh = function () {
             if (!_isMaster) {
                 return;
@@ -381,6 +478,21 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     }
                 }
             }
+        }
+
+        // Returns a user-readable title for a property of a plot.
+        // E.g. can return "age" for property "color".
+        // If there is no user-defined title, returns the given property name as it is.
+        this.getTitle = function (property) {
+            if (typeof _titles !== "undefined" && typeof _titles[property] !== "undefined")
+                return _titles[property];
+            return property;
+        }
+
+        this.setTitles = function (titles, suppressFireAppearanceChanged) {
+            _titles = titles;
+            if (!suppressFireAppearanceChanged)
+                this.fireAppearanceChanged();
         }
 
         // Uninitialize the plot (clears its input)
@@ -1267,13 +1379,30 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return plot;
         };
 
-        this.markers = function (name, data) {
+        this.markers = function (name, data, titles) {
             var plot = this.get(name);
             if (!plot) {
                 var div = $("<div></div>")
                            .attr("data-idd-name", name)
                            .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Markers(div);
+                this.addChild(plot);
+            }
+            if (data !== undefined) {
+                plot.draw(data, titles);
+            }
+
+            return plot;
+        };
+
+        this.area = function (name, data) {
+            var plot = this.get(name);
+            if (!plot) {
+                var div = $("<div></div>")
+                           .attr("data-idd-name", name)
+                           .attr("data-idd-plot", "area")
+                           .appendTo(this.host);
+                plot = new InteractiveDataDisplay.Area(div);
                 this.addChild(plot);
             }
             if (data !== undefined) {
@@ -1965,10 +2094,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             ctx.lineTo(20, 20);
             ctx.stroke();
 
-            var name = $("<span>" + this.name + "</span>").appendTo(div);
+            var that = this;
+            var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
+            var setName = function () {
+                nameDiv.text(that.name);
+            }
+            setName();
 
             this.host.bind("appearanceChanged",
-                function () {
+                function (event, propertyName) {
+                    if (!propertyName || propertyName == "name")
+                        setName();
+
                     ctx.clearRect(0, 0, canvas[0].width, canvas[0].height);
                     ctx.strokeStyle = _stroke;
                     ctx.lineWidth = _thickness;
@@ -2275,7 +2412,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 jqe.remove();
             };
 
-            if (typeof element.remove == "function") {
+            if (element.jquery) {
                 removeJQ(element);
             } else {
                 removeJQ($(element));

@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>    
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>05 Update polyline</title>
+    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        var n = 1000;
+        var t = 0;
+
+        function getData() {
+                    var x = new Array(n);
+                    var y = new Array(n);
+                    var y2 = new Array(n);
+
+                    for (var i = 0; i < n; i++) {
+                        var d = i * 0.003;
+                        x[i] = d;
+                        var k = 1 + 0.5 * Math.sin(t / 100 * Math.PI);
+                        y[i] = d == 0 ? k : k * Math.sin(d * k * Math.PI) / (d * k * Math.PI);
+                        y2[i] = 0.5*y[i];
+                    }
+                    t++;
+                    return { x: x, y: y, y2: y2 };
+                }
+
+        function polyline() {
+            var data = getData();
+            InteractiveDataDisplay.asPlot('chart').area("p2", { x: data.x, y1: data.y, y2: data.y2 });
+
+            setTimeout(polyline, 25);
+        }
+
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot('chart');
+            polyline();
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div data-idd-placement="bottom" class="idd-horizontalTitle">X</div>
+        <div data-idd-placement="left" class="idd-verticalTitle" style="width: 20px">
+            <div style="position: absolute; top: 50%; margin-top: -0.5em; height: 10em; width: 100px;">
+                Y
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

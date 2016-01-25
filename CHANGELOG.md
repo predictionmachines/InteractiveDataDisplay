@@ -1,3 +1,31 @@
+## 1.0.5 (January 21, 2016)
+
+Features:
+
+  -IDD plots observe changes of the DOM and add/remove child plots when DOM elements are added or removed.
+  -InteractiveDataDisplay.updateLayouts function for responsive layouts support.
+
+## 1.0.4 (January 13, 2016)
+
+Features:
+
+  - Introducing new Area plot type.
+  
+Changes:
+
+  - Bower installs idd.js, not minified version. 
+
+## 1.0.3 (November 25, 2015)
+
+Features:
+
+  - IDD supports titles of individual data series
+
+Bugfixes:
+
+  - Legend changes when plot name is changed.
+  - Adding dependencies to the package manifest file
+
 ## 1.0.2 (October 14, 2015)
 
 Bugfixes:

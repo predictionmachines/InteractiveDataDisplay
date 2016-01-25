@@ -48,6 +48,7 @@
                     "src/js/idd.figure.js",
                     "src/js/idd.chart.js",
                     "src/js/idd.markers.js",
+                    "src/js/idd.area.js",
                     "src/js/idd.heatmap.js",
                     "src/js/idd.bingmapsplot.js",
                     "src/js/wrapper_footer.txt"
