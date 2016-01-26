@@ -100,6 +100,20 @@
         var newPlotRect = undefined;
         if (gesture.Type == "Pan") {
             newPlotRect = panPlotRect(vis, size, gesture);
+
+            if (plot.visibleRectConstraint !== undefined) {
+                newPlotRect = plot.visibleRectConstraint(newPlotRect);
+
+                if (Math.abs(newPlotRect.x - vis.x) < 1e-10 && Math.abs(newPlotRect.y - vis.y) < 1e-10)
+                {
+                    if (that.animation && that.animation.isInAnimation) {
+                        that.stop();
+                        that.setVisibleRect(newPlotRect, false, undefined);
+                    }
+                    return;
+                }
+            }
+
             prevCalcedPlotRect = newPlotRect
         } else if (gesture.Type == "Zoom") {
             newPlotRect = zoomPlotRect(vis, ct, gesture);
@@ -112,6 +126,18 @@
             if (newPlotRect.height < 1e-9) {
                 newPlotRect.height = vis.height;
                 newPlotRect.y = vis.y;
+            }
+
+            if (plot.visibleRectConstraint !== undefined) {
+                newPlotRect = plot.visibleRectConstraint(newPlotRect);
+
+                if (Math.abs(newPlotRect.width - vis.width) < 1e-10 && Math.abs(newPlotRect.width - vis.width) < 1e-10) {
+                    if (that.animation && that.animation.isInAnimation) {
+                        that.stop();
+                        that.setVisibleRect(newPlotRect, false, undefined);
+                    }
+                    return;
+                }
             }
 
             prevCalcedPlotRect = newPlotRect;
