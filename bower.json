@@ -7,7 +7,10 @@
   "description": "A JavaScript visualization library for dynamic data",
   "main": [
 	"./dist/idd.js",
-	"./dist/idd.css"
+  "./dist/idd.css",
+  "./dist/chartViewer.js",
+  "./dist/chartViewer.css",
+  "./dist/chartViewer.d.ts"
   ],
   "moduleType": [
     "amd"
@@ -34,13 +37,18 @@
     ".bowerrc",
     ".gitignore",
     "package.json",
-    "Gruntfile.js"
+    "Gruntfile.js",
+    ".tscache",
+    "tsd.json"   
   ],
   "dependencies": {
     "rxjs": "~4.0.6",
     "jquery": "~2.1.4",
-    "modernizr": "~2.8.3"
+    "modernizr": "~2.8.3",
+    "jqueryui": "~1.11.4"
   },
   "devDependencies": {
-    "jasmine": "~2.3.4"
+    "jasmine": "~2.3.4",
+    "requirejs": "~2.1.22",
+    "require-css": "~0.1.8"
   }}

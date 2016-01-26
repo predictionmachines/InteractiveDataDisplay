@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Markers with size uncertain data</title>
+    <link rel="stylesheet" type="text/css" href="../../dist/chartViewer.css" />
+    <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
+    <!-- bower:css -->
+    <!-- endbower -->
+    <!-- bower:js -->
+    <script src="../../ext/modernizr/modernizr.js"></script>
+    <script src="../../ext/jquery/dist/jquery.js"></script>
+    <script src="../../ext/rxjs/dist/rx.all.js"></script>
+    <script src="../../ext/jqueryui/jquery-ui.js"></script>
+    <!-- endbower -->
+    <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+    <script type="text/javascript" src="../../dist/idd.js"></script>
+    <script type="text/javascript" src="../../dist/chartViewer.js"></script>
+    <meta charset="utf-8" />
+    <script>
+        $(document).ready(function () {
+            $.get("data/uwheat.csv", function (data) {
+                var size_mean = [];
+                var size_l68 = [];
+                var size_u68 = [];
+                var size_l95 = [];
+                var size_u95 = [];
+                var x = [];
+                var y = [];
+                var color = [];
+
+                var allTextLines = data.split(/\r\n|\n/);
+                var headers = allTextLines[0].split(',');
+                for (var i = 1; i < allTextLines.length; i++) {
+                    var data1 = allTextLines[i].split(',');
+                    for (var j = 0; j < data1.length; j++) {
+                        if (headers[j] == 'lon') x.push(parseFloat(data1[j]));
+                        else if (headers[j] == 'lat') y.push(parseFloat(data1[j]));
+                        else if (headers[j] == 'w_median') {
+                            var v = parseFloat(data1[j]);
+                            color.push(v*v);
+                            size_mean.push(v);
+                        }
+                        else if (headers[j] == 'w_lb68') size_l68.push(parseFloat(data1[j]));
+                        else if (headers[j] == 'w_ub68') size_u68.push(parseFloat(data1[j]));
+                        else if (headers[j] == 'w_lb95') size_l95.push(parseFloat(data1[j]));
+                        else if (headers[j] == 'w_ub95') size_u95.push(parseFloat(data1[j]));
+                    }
+                }
+                ChartViewer.show($("#chart"), {
+                    "markers": Plot.markers({
+                        x: x, y: y, color: color, size: { median: size_mean, lower95: size_l95, upper95: size_u95, lower68: size_l68, upper68: size_u68 },
+                        colorPalette: 'brown, orange, yellow, lightgreen, lightblue', displayName: 'petals', titles: { x: "lon", y: "lat", color: "wheat square", size: "wheat" }
+                    })
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" style="width:100%; height:100%"></div>
+</body>
+</html>

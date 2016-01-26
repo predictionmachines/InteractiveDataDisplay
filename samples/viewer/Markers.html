@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Markers</title>
+    <link rel="stylesheet" type="text/css" href="../../dist/chartViewer.css" />
+    <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
+    <!-- bower:css -->
+    <!-- endbower -->
+    <!-- bower:js -->
+    <script src="../../ext/modernizr/modernizr.js"></script>
+    <script src="../../ext/jquery/dist/jquery.js"></script>
+    <script src="../../ext/rxjs/dist/rx.all.js"></script>
+    <script src="../../ext/jqueryui/jquery-ui.js"></script>
+    <!-- endbower -->
+    <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+    <script type="text/javascript" src="../../dist/idd.js"></script>
+    <script type="text/javascript" src="../../dist/chartViewer.js"></script>
+    <meta charset="utf-8" />
+    <script>
+        $(document).ready(function () {
+            $.get("data/wheat.csv", function (data) {
+                var x = [];
+                var y = [];
+               
+                var allTextLines = data.split(/\r\n|\n/);
+                var headers = allTextLines[0].split(',');
+                for (var i = 1; i < allTextLines.length; i++) {
+                    var data1 = allTextLines[i].split(',');
+                    if (data1.length == headers.length) {
+                        for (var j = 0; j < data1.length; j++) {
+                            if (headers[j] == 'Lon') x.push(parseFloat(data1[j]));
+                            if (headers[j] == 'Lat') y.push(parseFloat(data1[j]));
+                        }
+                    }
+                }
+                ChartViewer.show($("#chart"), { "markers": Plot.markers({ x: x, y: y, shape: Plot.MarkerShape.Cross, color: 'red', size: 10, displayName: 'y[x]', titles: { x: "lon", y: "lat" } }) });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" style="width:100%; height:100%"></div>
+</body>
+</html>
