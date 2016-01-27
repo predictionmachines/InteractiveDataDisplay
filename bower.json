@@ -6,11 +6,11 @@
   ],
   "description": "A JavaScript visualization library for dynamic data",
   "main": [
-	"./dist/idd.js",
-  "./dist/idd.css",
-  "./dist/chartViewer.js",
-  "./dist/chartViewer.css",
-  "./dist/chartViewer.d.ts"
+    "./dist/idd.js",
+    "./dist/idd.css",
+    "./dist/chartViewer.js",
+    "./dist/chartViewer.css",
+    "./dist/chartViewer.d.ts"
   ],
   "moduleType": [
     "amd"
@@ -24,6 +24,7 @@
   ],
   "license": "Apache-2.0",
   "ignore": [
+    "**/.*",
     "bower.json",
     "node_modules",
     "test",
@@ -39,7 +40,7 @@
     "package.json",
     "Gruntfile.js",
     ".tscache",
-    "tsd.json"   
+    "tsd.json"
   ],
   "dependencies": {
     "rxjs": "~4.0.6",
