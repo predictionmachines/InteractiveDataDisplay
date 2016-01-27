@@ -57,9 +57,6 @@
                 nonull: true
             },
             dist2: {
-                options: {
-                    separator: ';'
-                },
                 src: [
                         "src/viewer/Chart.header.js",
                         "src/viewer/MathUtils.js",
@@ -96,9 +93,9 @@
             main: {
                 files: [
                     { src: 'src/css/idd.css', dest: 'dist/idd.css' },
-                    { expand: true, src: "src/icons/*", dest: "dist/icons/", flatten: true},
                     { src: "src/css/chartViewer.css", dest: "dist/chartViewer.css"},
-                    { src: "src/viewer/chartViewer.d.ts", dest: "dist/chartViewer.d.ts"}
+                    { src: "src/viewer/chartViewer.d.ts", dest: "dist/chartViewer.d.ts" },
+                    { expand: true, src: "src/icons/*", dest: "dist/icons/", flatten: true }
                 ]
             },
         },
@@ -161,11 +158,11 @@
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-base64');
     grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-bower-task');
     grunt.loadNpmTasks("grunt-ts");
     grunt.loadNpmTasks('grunt-wiredep');
     grunt.loadNpmTasks('grunt-tsd');
+    grunt.loadNpmTasks('grunt-bower-task');
 
-    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'ts', 'concat:dist', 'concat:dist2', 'uglify', 'copy', 'wiredep', 'tsd', 'jasmine']);
+    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'ts', 'concat:dist2', 'copy', 'wiredep', 'tsd', 'jasmine']);
     grunt.registerTask('test', ['bower', 'jasmine']);
 };
