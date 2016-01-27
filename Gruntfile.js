@@ -57,13 +57,17 @@
                 nonull: true
             },
             dist2: {
-                dest: "dist/chartViewer.js",
+                options: {
+                    separator: ';'
+                },
                 src: [
                         "src/viewer/Chart.header.js",
                         "src/viewer/MathUtils.js",
                         "src/viewer/chartViewer2.js",
                         "src/viewer/Chart.footer.js"
-                ]
+                ],
+                dest: "dist/chartViewer.js",
+                nonull: true
             }
         },
         uglify: {
@@ -162,6 +166,6 @@
     grunt.loadNpmTasks('grunt-wiredep');
     grunt.loadNpmTasks('grunt-tsd');
 
-    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'copy', 'ts', 'wiredep', 'tsd', 'jasmine']);
+    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'ts', 'concat:dist', 'concat:dist2', 'uglify', 'copy', 'wiredep', 'tsd', 'jasmine']);
     grunt.registerTask('test', ['bower', 'jasmine']);
 };
