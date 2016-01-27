@@ -61,13 +61,13 @@ describe('InteractiveDataDisplay.Plot', function () {
           
           plot.onChildrenChanged = function() {
             // This should be true when polyline div is removed
-            expect(plot.childre).length).toBe(0);
+            expect(plot.children.length).toBe(0);
             expect(div.children().length).toBe(0);
             done();
           };
           $(element).remove();          
         }        
-        $(div).append(element); //element with idd-data-plot attribute must be registered as plot
+        $(div).append("<div data-idd-plot='polyline'></div>"); //element with idd-data-plot attribute must be registered as plot
       });
     }    
 
