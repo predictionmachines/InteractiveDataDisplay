@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Band</title>
+    <link rel="stylesheet" type="text/css" href="../../dist/chartViewer.css" />
+    <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
+    <!-- bower:css -->
+    <!-- endbower -->
+    <!-- bower:js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0-beta.1/jquery-ui.min.js"></script>
+    <!-- endbower -->
+    <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+    <script type="text/javascript" src="../../dist/idd.js"></script>
+    <script type="text/javascript" src="../../dist/chartViewer.js"></script>
+    
+    <meta charset="utf-8" />
+    <script>
+        $(document).ready(function () {
+            var n = 1000;
+            var t = 2;
+            var x = new Array(n);
+            var y1 = new Array(n);
+            var y2 = new Array(n);
+
+            for (var i = 0; i < n; i++) {
+                var d = i * 0.003;
+                x[i] = d;
+                var k = 1 + 0.5 * Math.sin(t / 100 * Math.PI);
+                y1[i] = d == 0 ? k : k * Math.sin(d * k * Math.PI) / (d * k * Math.PI);
+                y2[i] = 0.5 * y1[i];
+            }
+            ChartViewer.show(document.getElementById("chart"), {
+                "p2": Plot.band({ x: x, y1: y1, y2: y2 })
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" style="width:100%; height:100%"></div>
+</body>
+</html>

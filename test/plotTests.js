@@ -37,7 +37,7 @@ describe('InteractiveDataDisplay.Plot', function () {
         expect(plot.children.length).toBe(0);
     });
 
-    if (!isPhantomJS) {
+    //if (!isPhantomJS) {
       it('should create plots for new dom elements', function(done) {
         plot.onChildrenChanged = function() {
           expect(plot.children.length).toBe(1);          
@@ -61,7 +61,7 @@ describe('InteractiveDataDisplay.Plot', function () {
           
           plot.onChildrenChanged = function() {
             // This should be true when polyline div is removed
-            expect(plot.childre).length).toBe(0);
+            expect(plot.children.length).toBe(0);
             expect(div.children().length).toBe(0);
             done();
           };
@@ -69,7 +69,7 @@ describe('InteractiveDataDisplay.Plot', function () {
         }        
         $(div).append(element); //element with idd-data-plot attribute must be registered as plot
       });
-    }    
+   // }    
 
     it('.addChild() should add new plot object to the children collection and fire the event', function () {
         var spyMaster = jasmine.createSpy("master.childrenChanged");

@@ -6,3 +6,13 @@
 /generated/**
 idd.heatmapworker.js
 /.grunt/**
+/.tscache/**
+/typings/**
+# JS Map files
+src/viewer/*.js.map
+
+# JS files
+src/viewer/*.js
+!src/viewer/MathUtils.js
+!src/viewer/Chart.header.js
+!src/viewer/Chart.footer.js
