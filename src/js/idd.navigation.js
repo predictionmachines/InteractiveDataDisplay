@@ -116,7 +116,7 @@
 
             prevCalcedPlotRect = newPlotRect
         } else if (gesture.Type == "Zoom") {
-            newPlotRect = zoomPlotRect(vis, ct, gesture);
+            newPlotRect = zoomPlotRect(vis, ct, gesture, plot.visibleRectConstraint, plot.aspectRatio);
 
             if (newPlotRect.width < 1e-9) {
                 newPlotRect.width = vis.width;
@@ -126,18 +126,6 @@
             if (newPlotRect.height < 1e-9) {
                 newPlotRect.height = vis.height;
                 newPlotRect.y = vis.y;
-            }
-
-            if (plot.visibleRectConstraint !== undefined) {
-                newPlotRect = plot.visibleRectConstraint(newPlotRect);
-
-                if (Math.abs(newPlotRect.width - vis.width) < 1e-10 && Math.abs(newPlotRect.width - vis.width) < 1e-10) {
-                    if (that.animation && that.animation.isInAnimation) {
-                        that.stop();
-                        that.setVisibleRect(newPlotRect, false, undefined);
-                    }
-                    return;
-                }
             }
 
             prevCalcedPlotRect = newPlotRect;
@@ -215,7 +203,7 @@ InteractiveDataDisplay.NavigationUtils.calcPannedRect = function (plotRect, scre
     return { x: plotRect.x - panX, y: plotRect.y - panY, width: plotRect.width, height: plotRect.height };
 };
 
-InteractiveDataDisplay.NavigationUtils.calcZoomedRect = function (plotRect, coordinateTransform, zoomGesture) {
+InteractiveDataDisplay.NavigationUtils.calcZoomedRect = function (plotRect, coordinateTransform, zoomGesture, constraint, aspectRatio) {
     //console.log("zoom origin: " + zoomGesture.xOrigin + ", " + zoomGesture.yOrigin);
     //console.log("zoom origin plot: " + coordinateTransform.screenToPlotX(zoomGesture.xOrigin) + ", " + coordinateTransform.screenToPlotY(zoomGesture.yOrigin));
 
@@ -234,6 +222,21 @@ InteractiveDataDisplay.NavigationUtils.calcZoomedRect = function (plotRect, coor
     var newX = pannedRect.x + pannedRect.width / 2 - newWidth / 2;
     var newY = pannedRect.y + pannedRect.height / 2 - newHeight / 2;
 
-    return { x: newX - zoomGesture.scaleFactor * panOffsetX / scale.x, y: newY + zoomGesture.scaleFactor * panOffsetY / scale.y, width: newWidth, height: newHeight, zoomOrigin: { x: coordinateTransform.screenToPlotX(zoomGesture.xOrigin), y: coordinateTransform.screenToPlotY(zoomGesture.yOrigin) } };
+    var resultRect = { x: newX - zoomGesture.scaleFactor * panOffsetX / scale.x, y: newY + zoomGesture.scaleFactor * panOffsetY / scale.y, width: newWidth, height: newHeight };
+
+    if (constraint === undefined) {
+        resultRect.zoomOrigin = { x: coordinateTransform.screenToPlotX(zoomGesture.xOrigin), y: coordinateTransform.screenToPlotY(zoomGesture.yOrigin) };
+        return resultRect;
+    } else {
+        var constrainedRect = constraint(resultRect);
+        var screenSize = { left: 0, top: 0, width: plotRect.width * scale.x, height: plotRect.height * scale.y };
+        var newCS = new InteractiveDataDisplay.CoordinateTransform(constrainedRect, screenSize, aspectRatio);
+        constrainedRect = newCS.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
+        var deltaWidth = constrainedRect.width / plotRect.width;
+        var deltaHeight = constrainedRect.height / plotRect.height;
+        newX = pannedRect.x + pannedRect.width / 2 - constrainedRect.width / 2;
+        newY = pannedRect.y + pannedRect.height / 2 - constrainedRect.height / 2;
+        return { x: newX - deltaWidth * panOffsetX / scale.x, y: newY + deltaHeight * panOffsetY / scale.y, width: constrainedRect.width, height: constrainedRect.height };
+    }
 }
 

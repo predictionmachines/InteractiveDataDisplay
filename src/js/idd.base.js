@@ -384,9 +384,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (_isMaster) {
                     if (_visibleRectConstraint !== value) {
                         _visibleRectConstraint = value;
-                        if (_visibleRectConstraint !== undefined) {
-                            _plot.updateLayout();
-                        }
+                        //if (_visibleRectConstraint !== undefined) {
+                        //    _plot.updateLayout();
+                        //}
                     }
                 } else {
                     _master.visibleRectConstraint = value;
