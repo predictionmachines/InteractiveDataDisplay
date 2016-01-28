@@ -11,7 +11,7 @@
     "grunt-bower-task": "^0.4.0",
     "grunt-contrib-concat": "^0.5.1",
     "grunt-contrib-copy": "^0.8.2",
-    "grunt-contrib-jasmine": "^0.8.2",
+    "grunt-contrib-jasmine": "^1.0.0",
     "grunt-contrib-uglify": "^0.9.1",
     "grunt-ts": "^5.2.0",
     "grunt-tsd": "^0.1.0", 

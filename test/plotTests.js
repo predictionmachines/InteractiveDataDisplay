@@ -37,7 +37,7 @@ describe('InteractiveDataDisplay.Plot', function () {
         expect(plot.children.length).toBe(0);
     });
 
-    if (!isPhantomJS) {
+    //if (!isPhantomJS) {
       it('should create plots for new dom elements', function(done) {
         plot.onChildrenChanged = function() {
           expect(plot.children.length).toBe(1);          
@@ -67,9 +67,9 @@ describe('InteractiveDataDisplay.Plot', function () {
           };
           $(element).remove();          
         }        
-        $(div).append("<div data-idd-plot='polyline'></div>"); //element with idd-data-plot attribute must be registered as plot
+        $(div).append(element); //element with idd-data-plot attribute must be registered as plot
       });
-    }    
+   // }    
 
     it('.addChild() should add new plot object to the children collection and fire the event', function () {
         var spyMaster = jasmine.createSpy("master.childrenChanged");

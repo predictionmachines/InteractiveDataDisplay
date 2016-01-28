@@ -163,6 +163,6 @@
     grunt.loadNpmTasks('grunt-tsd');
     grunt.loadNpmTasks('grunt-bower-task');
 
-    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'ts', 'concat:dist2', 'copy', 'wiredep', 'tsd', 'jasmine']);
+    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'tsd', 'ts', 'concat:dist2', 'copy', 'wiredep', 'jasmine']);
     grunt.registerTask('test', ['bower', 'jasmine']);
 };
