@@ -392,17 +392,24 @@ module ChartViewer {
             
             // Sets the correct z-order of plots depending on values of ZIndex property.
             var z = 0;
+            var currentPlotslength = 0;
+            for (var id in this.currentPlots) ++currentPlotslength;
             for (var id in this.currentPlots) {
                 var p = this.currentPlots[id];
-                if (p.ZIndex) z = Math.max(p.ZIndex, z);
-            }
-            for (var id in this.currentPlots) {
-                var p = this.currentPlots[id];
-                if (!p.ZIndex) p.ZIndex = ++z;
+                p.ZIndex = currentPlotslength - z;//Math.max(p.ZIndex, z);
+                ++z;
                 if (!p.Plots) continue;
                 for (var j = 0; j < p.Plots.length; ++j)
                     p.Plots[j].host.css("z-index", p.ZIndex);//p.ZIndex
+            
             }
+            //for (var id in this.currentPlots) {
+            //    var p = this.currentPlots[id];
+            //    if (!p.ZIndex) p.ZIndex = ++z;
+            //    if (!p.Plots) continue;
+            //    for (var j = 0; j < p.Plots.length; ++j)
+            //        p.Plots[j].host.css("z-index", p.ZIndex);//p.ZIndex
+            //}
 
             if (this.persistentViewState.selectedPlots)
                 this.setupPlotsVisibility();
