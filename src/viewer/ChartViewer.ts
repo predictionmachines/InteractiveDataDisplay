@@ -1,10 +1,33 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="chartViewer.d.ts" />
 /// <reference path="chartviewercontrol.ts" />
 
 declare var InteractiveDataDisplay: any;
 
 module ChartViewer {
+    export interface ViewState {
+        [name: string]: any;
+    }
+    export interface Titles {
+        [seriesName: string]: string;
+    }
+    export interface PlotInfo {
+        kind: string;
+        displayName: string;
+        titles?: Titles;
+        [propertyName: string]: any;
+
+    }
+    export interface ChartInfo {
+        [id: string]: PlotInfo;
+    }
+    export interface PropertyTitles {
+        [prop: string]: string;
+    }
+    export interface ViewerControl {
+        update(plots: ChartInfo);
+        viewState: ViewState;
+        dispose(): void;
+    }
     export function ProbesVM(initialProbes) {
         var that = this;
 

@@ -1,14 +1,13 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="draggabledomplot.ts" />
-/// <reference path="chartviewer.d.ts" />
 /// <reference path="onscreennavigation.ts" />
 
 declare var InteractiveDataDisplay: any;
 declare var Microsoft: any;
 module ChartViewer {
 
-    type IDDPlot = any;
-    type PlotId = string;
+    export type IDDPlot = any;
+    export type PlotId = string;
 
     export type PlotViewerItem = {
         Id: PlotId;

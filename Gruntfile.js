@@ -65,6 +65,22 @@
                 ],
                 dest: "dist/chartViewer.js",
                 nonull: true
+            },
+            umd: {
+                src: [
+                    "src/viewer/Chart.header.js",
+                    "src/viewer/MathUtils.js",
+                    "src/chartViewer2.js",
+                    "src/viewer/Chart.footer.js"
+                ],
+                dest: "dist/chartViewer.umd.js",
+            },
+            umdTs: {
+                dest: "dist/chartViewer.umd.d.ts",
+                src: ["src/viewer/chartViewer2.d.ts"],
+                options: {
+                    footer: "export = Plot; export = ChartViewer;"
+                }
             }
         },
         uglify: {
@@ -94,7 +110,7 @@
                 files: [
                     { src: 'src/css/idd.css', dest: 'dist/idd.css' },
                     { src: "src/css/chartViewer.css", dest: "dist/chartViewer.css"},
-                    { src: "src/viewer/chartViewer.d.ts", dest: "dist/chartViewer.d.ts" },
+                    { src: "src/viewer/chartViewer2.d.ts", dest: "dist/chartViewer.d.ts"},
                     { expand: true, src: "src/icons/*", dest: "dist/icons/", flatten: true }
                 ]
             },
@@ -115,7 +131,8 @@
         ts: {
             options: {
                 target: 'es3',
-                sourceMap: false
+                sourceMap: false,
+                declaration: true
             },
             dev: {
                 src: ["src/viewer/*.ts"],
@@ -163,6 +180,6 @@
     grunt.loadNpmTasks('grunt-tsd');
     grunt.loadNpmTasks('grunt-bower-task');
 
-    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'tsd', 'ts', 'concat:dist2', 'copy', 'wiredep', 'jasmine']);
+    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'tsd', 'ts', 'concat:dist2', 'copy','concat:umd', 'concat:umdTs', 'wiredep', 'jasmine']);
     grunt.registerTask('test', ['bower', 'jasmine']);
 };

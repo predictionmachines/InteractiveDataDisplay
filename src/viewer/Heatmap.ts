@@ -1,5 +1,4 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="chartviewer.d.ts" />
 /// <reference path="plotregistry.ts" />
 /// <reference path="utils.ts" />
 declare var InteractiveDataDisplay: any;

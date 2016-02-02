@@ -1,5 +1,4 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="chartviewer.d.ts" />
 
 module ChartViewer {   
 
@@ -7,7 +6,7 @@ module ChartViewer {
         [plotKind: string]: IDDPlotFactory;
     }
 
-    export type IDDPlot = any;
+    //export type IDDPlot = any;
     export type PlotCardContent = {}
 
     export interface IDDPlotFactory {
