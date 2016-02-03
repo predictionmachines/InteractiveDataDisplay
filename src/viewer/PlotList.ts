@@ -1,5 +1,4 @@
-﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
+﻿
 /// <reference path="viewstate.ts" />
 /// <reference path="utils.ts" />
 /// <reference path="plotregistry.ts" />

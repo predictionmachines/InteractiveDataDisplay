@@ -1,6 +1,5 @@
-/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="chartviewercontrol.ts" />
-
+/// <reference path="../../typings/jquery/jquery.d.ts" />
 declare var InteractiveDataDisplay: any;
 
 module ChartViewer {

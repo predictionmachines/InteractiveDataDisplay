@@ -14,9 +14,10 @@
         }
         else if ( window.jQuery && window.InteractiveDataDisplay )
         {
-            var expr = factory( window.jQuery, window.InteractiveDataDisplay );
-            window.ChartViewer = expr.ChartViewer;
-            window.Plot = expr.Plot;
+            console.error("chartViewer.umd.js cannot be used without RequireJS or CommonJS");
+            //var expr = factory( window.jQuery, window.InteractiveDataDisplay );
+            //window.ChartViewer = expr.ChartViewer;
+            //window.Plot = expr.Plot;
         }
     })
     (function($, InteractiveDataDisplay){ // factory, returns "{ChartViewer, Plot}"
