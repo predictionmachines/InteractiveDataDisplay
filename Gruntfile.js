@@ -70,7 +70,7 @@
                 src: [
                     "src/viewer/Chart.header.js",
                     "src/viewer/MathUtils.js",
-                    "src/chartViewer2.js",
+                    "src/viewer/chartViewer2.js",
                     "src/viewer/Chart.footer.js"
                 ],
                 dest: "dist/chartViewer.umd.js",
@@ -110,7 +110,6 @@
                 files: [
                     { src: 'src/css/idd.css', dest: 'dist/idd.css' },
                     { src: "src/css/chartViewer.css", dest: "dist/chartViewer.css" },
-                    { src: "src/css/chartViewer.css", dest: "dist/chartViewer.umd.css" },
                     { src: "src/viewer/chartViewer2.d.ts", dest: "dist/chartViewer.d.ts"},
                     { expand: true, src: "src/icons/*", dest: "dist/icons/", flatten: true }
                 ]
@@ -139,6 +138,16 @@
                 src: ["src/viewer/*.ts"],
                 out: 'src/viewer/chartViewer2.js',
             },
+        },
+        lineremover: {
+            customExclude: {
+                files: {
+                    'src/viewer/chartViewer2.d.ts': 'src/viewer/chartViewer2.d.ts'
+                },
+                options: {
+                    exclusionPattern: /^\/\/\/ <reference path=.*\/>*/
+                }
+            }
         },
         wiredep: {
             task: {
@@ -169,9 +178,6 @@
                 }
             }
         },
-        fileref_replace: {
-            src: 'src/viewer/chartViewer2.d.ts'
-        }
     });
 
     grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -183,7 +189,8 @@
     grunt.loadNpmTasks('grunt-wiredep');
     grunt.loadNpmTasks('grunt-tsd');
     grunt.loadNpmTasks('grunt-bower-task');;
+    grunt.loadNpmTasks('grunt-line-remover');
 
-    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'tsd', 'ts', 'concat:dist2', 'copy','concat:umd', 'concat:umdTs', 'wiredep', 'jasmine']);
+    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'tsd', 'ts', 'lineremover', 'concat:dist2', 'copy','concat:umd', 'concat:umdTs', 'wiredep', 'jasmine']);
     grunt.registerTask('test', ['bower', 'jasmine']);
 };

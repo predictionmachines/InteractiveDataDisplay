@@ -21,12 +21,29 @@ module Plot {
         export var Function = "function";
         export var Trajectory = "trajectory";
     }
-	export type Quantiles = {
+    /**allows to represent an array of uncertain values by providing the quantiles for each uncertain value*/
+    export type Quantiles = {
         median: number[];
         lower68: number[];
         upper68: number[];
         lower95: number[];
         upper95: number[];
+    }
+    export type MarkerShape = {
+        Box: string;
+        Circle: string;
+        Diamond: string;
+        Cross: string;
+        Triangle: string;
+    }
+    export type HeatmapRenderType = {
+        Gradient: string;
+        Discrete: string;
+    }
+    /**If treatAs is "Function" (default value), the series x[i] and y[i] are sorted by increasing values x. Otherwise, "Trajectory": the arrays are rendered as is.*/
+    export type LineTreatAs = {
+        Function: string;
+        Trajectory: string;
     }
 	/**SizeRange is { min: number; max: number }*/
     export type SizeRange = { min: number, max: number };
@@ -132,6 +149,9 @@ interface PlotFactory {
     band(element: Plot.BandDefinition): ChartViewer.PlotInfo;
     /**The plot draws a colored boxplot.*/
     boxplot(element: Plot.BoxPlotDefinition): ChartViewer.PlotInfo;
+    MarkerShape: Plot.MarkerShape;
+    HeatmapRenderType: Plot.HeatmapRenderType;
+    LineTreatAs: Plot.LineTreatAs;
 }
 
 interface ChartFactory {

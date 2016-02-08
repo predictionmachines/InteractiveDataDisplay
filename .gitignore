@@ -1,3 +1,4 @@
+*.txt
 /ext/**
 /dist/**
 /node_modules/**
