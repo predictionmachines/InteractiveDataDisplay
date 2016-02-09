@@ -77,7 +77,7 @@
             },
             umdTs: {
                 dest: "dist/chartViewer.umd.d.ts",
-                src: ["src/viewer/chartViewer2.d.ts"],
+                src: ["src/viewer/chartViewer.d.ts"],
                 options: {
                     footer: "export = { ChartViewer, Plot };"
                 }
@@ -110,7 +110,7 @@
                 files: [
                     { src: 'src/css/idd.css', dest: 'dist/idd.css' },
                     { src: "src/css/chartViewer.css", dest: "dist/chartViewer.css" },
-                    { src: "src/viewer/chartViewer2.d.ts", dest: "dist/chartViewer.d.ts"},
+                    { src: "src/viewer/chartViewer.d.ts", dest: "dist/chartViewer.d.ts"},
                     { expand: true, src: "src/icons/*", dest: "dist/icons/", flatten: true }
                 ]
             },
@@ -129,24 +129,31 @@
             }
         },
         ts: {
-            options: {
-                target: 'es5',
-                sourceMap: false,
-                declaration: true
-            },
-            dev: {
-                src: ["src/viewer/*.ts"],
-                out: 'src/viewer/chartViewer2.js',
-            },
-        },
-        lineremover: {
-            customExclude: {
-                files: {
-                    'src/viewer/chartViewer2.d.ts': 'src/viewer/chartViewer2.d.ts'
-                },
+            dist: {
                 options: {
-                    exclusionPattern: /^\/\/\/ <reference path=.*\/>*/
-                }
+                    target: 'es5',
+                    sourceMap: false
+                },
+                dev: {
+                    src: ["src/viewer/*.ts", "!src/viewer/chartViewer.d.ts"],
+                    out: 'src/viewer/chartViewer2.js',
+                },
+            },
+            testGlobal: {
+                options: {
+                    target: 'es5',
+                    sourceMap: false,
+                    module: ""
+                },
+                files: [{src: "test/manual/mainGlobal.ts", outDir: 'test/manual'} ]
+            },
+            test: {
+                options: {
+                    target: 'es5',
+                    sourceMap: false,
+                    module: 'amd'
+                },
+                files: [{ src: "test/manual/main.ts", outDir: 'test/manual' }]
             }
         },
         wiredep: {
@@ -191,6 +198,6 @@
     grunt.loadNpmTasks('grunt-bower-task');;
     grunt.loadNpmTasks('grunt-line-remover');
 
-    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'tsd', 'ts', 'lineremover', 'concat:dist2', 'copy','concat:umd', 'concat:umdTs', 'wiredep', 'jasmine']);
+    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'tsd', 'ts:dist', 'concat:dist2', 'copy','concat:umd', 'concat:umdTs', 'wiredep', 'ts:testGlobal', 'ts:test', 'jasmine']);
     grunt.registerTask('test', ['bower', 'jasmine']);
 };

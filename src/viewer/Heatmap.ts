@@ -127,7 +127,7 @@ module ChartViewer {
 
 
     PlotRegistry["heatmap"] = {
-        initialize(plotDefinition: PlotInfo, viewState: ViewState, chart: IDDPlot) {
+        initialize(plotDefinition: PlotInfo, viewState, chart: IDDPlot) {
             var heatmap = chart.heatmap(plotDefinition.displayName);
             var heatmap_nav = chart.heatmap(plotDefinition.displayName + "__nav_");
             var plots = [heatmap, heatmap_nav];
@@ -207,6 +207,40 @@ module ChartViewer {
                 }
                 return undefined;
             }
+
+            var callback = function (vs, propName, extraData) {
+                if (plots === undefined && plots[0] === undefined && plots[1] === undefined) {
+                    viewState.unsubscribe(this);
+                    return;
+                }
+
+                if (plots[1].f_median === undefined || plots[1].f_lb === undefined || plots[1].f_ub === undefined) {
+                    return;
+                }
+
+                if (propName === "uncertaintyRange") {
+                    var range = vs.uncertaintyRange;
+
+                    if (range === undefined) {
+                        plots[1].host.css("visibility", "hidden");
+                        return;
+                    }
+
+                    var fmedian = plots[1].f_median;
+                    var shadeData = new Array(fmedian.length);
+                    for (var i = 0; i < fmedian.length; i++) {
+                        var fmedian_i = fmedian[i]
+                        shadeData[i] = new Array(fmedian_i.length);
+                        for (var j = 0; j < fmedian_i.length; j++) {
+                            shadeData[i][j] = (plots[1].f_lb[i][j] < range.max && plots[1].f_ub[i][j] > range.min) ? 0 : 1;
+                        }
+                    }
+                    plots[1].draw({ x: plots[1].x, y: plots[1].y, f: shadeData });
+                    plots[1].host.css("visibility", "visible");
+                }
+            }
+            if (plots !== undefined && plots[0] !== undefined && plots[1] !== undefined && viewState !== undefined) viewState.subscribe(callback);
+
             return plots;
         },
  
@@ -329,46 +363,6 @@ module ChartViewer {
                 paletteViewer: paletteViewer,
                 paletteDiv: paletteDiv,
             };
-        },
-
-        subscribeToViewState: function (plots, persistentViewState) {
-            if (plots === undefined || plots[0] === undefined || plots[1] === undefined || persistentViewState === undefined) {
-                return;
-            }
-
-            var callback = function (vs, propName, extraData) {
-                if (plots === undefined && plots[0] === undefined && plots[1] === undefined) {
-                    persistentViewState.unsubscribe(this);
-                    return;
-                }
-
-                if (plots[1].f_median === undefined || plots[1].f_lb === undefined || plots[1].f_ub === undefined) {
-                    return;
-                }
-
-                if (propName === "uncertaintyRange") {
-                    var range = vs.uncertaintyRange;
-
-                    if (range === undefined) {
-                        plots[1].host.css("visibility", "hidden");
-                        return;
-                    }
-
-                    var fmedian = plots[1].f_median;
-                    var shadeData = new Array(fmedian.length);
-                    for (var i = 0; i < fmedian.length; i++) {
-                        var fmedian_i = fmedian[i]
-                        shadeData[i] = new Array(fmedian_i.length);
-                        for (var j = 0; j < fmedian_i.length; j++) {
-                            shadeData[i][j] = (plots[1].f_lb[i][j] < range.max && plots[1].f_ub[i][j] > range.min) ? 0 : 1;
-                        }
-                    }
-                    plots[1].draw({ x: plots[1].x, y: plots[1].y, f: shadeData });
-                    plots[1].host.css("visibility", "visible");
-                }
-            }
-
-            persistentViewState.subscribe(callback);
-        },
+        }
     }
 }

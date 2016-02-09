@@ -132,35 +132,3 @@ module Plot {
         return plotInfo;
     }
 }
-interface PlotFactory {
-    /**line draws a grid function y[i] = y(x[i]) where y[i] is either a scalar value or a random variable distribution.
-    In former case, a single polyline is drawn; in the latter case, a median polyline along with filled bands for percentiles of the distribution is rendered.*/
-    line(element: Plot.LineDefinition): ChartViewer.PlotInfo;
-    /**Displays data as a collection of points, each having the value of one variable determining 
-    the position on the horizontal axis and the value of the other variable determining the position on the vertical axis. 
-    Also variables can be bound to marker size and color. 
-    Dependent variable, size-bound variable or color-bound variable 
-    can be real or uncertain; the latter is represented as a set of quantiles.*/
-    markers(element: Plot.MarkersDefinition): ChartViewer.PlotInfo;
-    /**Heatmap plot renders values defined on a rectangular grid using color palette*/
-    heatmap(element: Plot.HeatmapDefinition): ChartViewer.PlotInfo;
-    /**The plot draws a colored band between two scalar grid functions.
-    The space between lines y1[i](x[i]) and y2[i](x[i]) is filled with a solid color; the boundaries are not stroked.*/
-    band(element: Plot.BandDefinition): ChartViewer.PlotInfo;
-    /**The plot draws a colored boxplot.*/
-    boxplot(element: Plot.BoxPlotDefinition): ChartViewer.PlotInfo;
-    MarkerShape: Plot.MarkerShape;
-    HeatmapRenderType: Plot.HeatmapRenderType;
-    LineTreatAs: Plot.LineTreatAs;
-}
-
-interface ChartFactory {
-    /**ChartViewer.show() gets a map of pairs (plot identifier, plot definition) as a second argument.
-    Plot definition is a collection of key- value pairs specifying properties of a plot, such as line stroke or marker shape.
-    Each plot definition has at least one property which is type; it determines a rendering method and must be known to the ChartViewer.*/
-    show(domElement: HTMLElement, plots: ChartViewer.ChartInfo, viewState?: ChartViewer.ViewState): ChartViewer.ViewerControl;
-}
-interface Charting {
-    ChartViewer: ChartFactory;
-    Plot: PlotFactory;
-}

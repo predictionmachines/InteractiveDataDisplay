@@ -67,9 +67,6 @@ module ChartViewer {
             return {
                 content: titleDiv
             }
-        },
-        subscribeToViewState: function (plots, persistentViewState) {
-
-        },
+        }
     }
 }

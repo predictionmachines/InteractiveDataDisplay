@@ -909,10 +909,6 @@ module ChartViewer {
                 }
             }
             return result;
-        },
-
-        subscribeToViewState: function (plots, persistentViewState) {
-
-        },
+        }
     }
 }

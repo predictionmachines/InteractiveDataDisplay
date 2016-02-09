@@ -3,7 +3,7 @@
         // Define as an AMD module if possible
         if ( typeof define === 'function' && define.amd )
         {
-            define( ['jquery', 'idd', 'css!idd-css', 'css!chartViewer', 'jquery-ui'], function($, InteractiveDataDisplay){
+            define( ['jquery', 'idd', 'css!idd-css', 'chartViewer', 'css!chartViewer-css', 'jquery-ui'], function($, InteractiveDataDisplay){
                 var expr = factory ($, InteractiveDataDisplay);
                 return {"ChartViewer" : expr.ChartViewer, "Plot": expr.Plot};
             });

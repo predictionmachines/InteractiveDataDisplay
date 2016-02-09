@@ -1,8 +1,8 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="draggabledomplot.ts" />
+/// <reference path="utils.ts" />
 /// <reference path="onscreennavigation.ts" />
-
 declare var InteractiveDataDisplay: any;
 declare var Microsoft: any;
 module ChartViewer {
@@ -233,7 +233,6 @@ module ChartViewer {
         private addPlot(p: PlotViewerItem) {
             var factory = PlotRegistry[p.Definition.kind] ? PlotRegistry[p.Definition.kind] : PlotRegistry["fallback"];
             p.Plots = factory.initialize(p.Definition, this.persistentViewState, this.iddChart);
-            factory.subscribeToViewState(p.Plots, this.persistentViewState);
             try {
                 factory.draw(p.Plots, p.Definition);
             } catch (ex) {

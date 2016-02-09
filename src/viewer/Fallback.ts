@@ -29,8 +29,6 @@ module ChartViewer {
             return {
                 content: content
             }
-        },
-        subscribeToViewState: function (plots, persistentViewState) {
-        },
+        }
     }
 }
