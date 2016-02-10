@@ -18,7 +18,7 @@ ChartViewer:
 
 Add following line to `bower.json` to get all required scripts and resources:
 
-	"ChartViewer": "git+https://msr-cs.visualstudio.com/DefaultCollection/_git/IDD-plotviewer#~0.0.3"
+	"ChartViewer": "https://github.com/predictionmachines/InteractiveDataDisplay.git"
 
 Dependencies:
 
