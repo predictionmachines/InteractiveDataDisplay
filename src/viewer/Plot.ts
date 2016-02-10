@@ -86,7 +86,7 @@ module Plot {
     }
     export type MarkersDefinition = {
         x: number[];
-        y: number[] | Quantiles;
+        y: number[];
         shape?: string;
         color?: Color | number[] | Quantiles;
         colorPalette?: ColorPalette;

@@ -29,6 +29,6 @@ module main {
                 colorPalette: "red, purple",
                 displayName: "map"
             })
-        });
+        });  
     }
 }

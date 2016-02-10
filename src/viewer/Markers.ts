@@ -655,7 +655,6 @@ module ChartViewer {
         },
 
         draw(plots: IDDPlot[], plotDefinition: PlotInfo) {
-           
                 var plot = <Plot.MarkersDefinition><any>plotDefinition;
                 if (!plot.shape) {
                     plot.shape = "box";
