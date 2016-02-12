@@ -1,3 +1,4 @@
+*.txt
 /ext/**
 /dist/**
 /node_modules/**
@@ -16,3 +17,6 @@ src/viewer/*.js
 !src/viewer/MathUtils.js
 !src/viewer/Chart.header.js
 !src/viewer/Chart.footer.js
+
+test/manual/.baseDir.ts
+test/manual/.baseDir.js

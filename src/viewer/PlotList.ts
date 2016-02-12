@@ -1,5 +1,4 @@
-﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
+﻿
 /// <reference path="viewstate.ts" />
 /// <reference path="utils.ts" />
 /// <reference path="plotregistry.ts" />
@@ -85,7 +84,7 @@ module ChartViewer {
         function getPlotInfo() {
             var plotinfo: PlotViewerItems = {};
             for (var i = 0; i < _plots.length; i++) {
-                _plots[i].ZIndex = _plots.length - i;
+                _plots[i].ZIndex = i + 1;
                 plotinfo[_plots[i].Id] = _plots[i];
             }
             return plotinfo;
@@ -173,7 +172,7 @@ module ChartViewer {
             for (var id in plots) 
                 _plots.push(plots[id]);
             _plots.sort(function (a: PlotViewerItem, b: PlotViewerItem) {
-                return b.ZIndex - a.ZIndex;
+                return a.ZIndex - b.ZIndex;
             });
             rebuildUI();
         }

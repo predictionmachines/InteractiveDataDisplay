@@ -1,5 +1,4 @@
-﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="plotlist.ts" />
+﻿/// <reference path="plotlist.ts" />
 /// <reference path="plotviewer.ts" />
 /// <reference path="ViewState.ts" />
 module ChartViewer {
