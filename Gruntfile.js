@@ -196,7 +196,6 @@
     grunt.loadNpmTasks('grunt-wiredep');
     grunt.loadNpmTasks('grunt-tsd');
     grunt.loadNpmTasks('grunt-bower-task');;
-    grunt.loadNpmTasks('grunt-line-remover');
 
     grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'tsd', 'ts:dist', 'concat:dist2', 'copy','concat:umd', 'concat:umdTs', 'wiredep', 'ts:testGlobal', 'ts:test', 'jasmine']);
     grunt.registerTask('test', ['bower', 'jasmine']);
