@@ -466,7 +466,7 @@ module ChartViewer {
                 Petal.drawSample(context, x1, y1, halfSize / 2, halfSize, sampleColor);
             }
             else {
-                var y = <Plot.Quantiles>plotInfo.y;
+                var y = <Plot.Quantiles><any>plotInfo.y;
                 var shp = plotInfo.shape;
                 if (y.upper95 && y.lower95 && shp !== "boxwhisker" && shp !== "boxnowhisker" && shp !== "whisker")
                     shp = "boxwhisker";
@@ -696,7 +696,7 @@ module ChartViewer {
                 if (drawArgs.y === undefined && Array.isArray(plot.y))
                     drawArgs.y = plot.y;
                 else
-                    drawArgs.y = (<Plot.Quantiles>plot.y).median;
+                    drawArgs.y = (<Plot.Quantiles><any>plot.y).median;
 
                 var len = Math.min(drawArgs.x.length, drawArgs.y.length);
                 if (drawArgs.y !== undefined) {
@@ -735,7 +735,7 @@ module ChartViewer {
                             drawArgs.shape = Markers.BoxWhisker;
                             break;
                     }
-                    var y = <Plot.Quantiles>plot.y;
+                    var y = <Plot.Quantiles><any>plot.y;
                     drawArgs.u95 = y.upper95;
                     drawArgs.l95 = y.lower95;
                     drawArgs.u68 = y.upper68;

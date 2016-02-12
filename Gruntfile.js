@@ -134,10 +134,8 @@
                     target: 'es5',
                     sourceMap: false
                 },
-                dev: {
-                    src: ["src/viewer/*.ts", "!src/viewer/chartViewer.d.ts"],
-                    out: 'src/viewer/chartViewer2.js',
-                },
+                src: ["src/viewer/*.ts", "!src/viewer/chartViewer.d.ts"],
+                out: 'src/viewer/chartViewer2.js'
             },
             testGlobal: {
                 options: {

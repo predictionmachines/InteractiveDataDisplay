@@ -84,7 +84,7 @@ module ChartViewer {
         function getPlotInfo() {
             var plotinfo: PlotViewerItems = {};
             for (var i = 0; i < _plots.length; i++) {
-                _plots[i].ZIndex = i + 1;
+                _plots[i].ZIndex = _plots.length - i;
                 plotinfo[_plots[i].Id] = _plots[i];
             }
             return plotinfo;
@@ -172,7 +172,7 @@ module ChartViewer {
             for (var id in plots) 
                 _plots.push(plots[id]);
             _plots.sort(function (a: PlotViewerItem, b: PlotViewerItem) {
-                return a.ZIndex - b.ZIndex;
+                return b.ZIndex - a.ZIndex;
             });
             rebuildUI();
         }
