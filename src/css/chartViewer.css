@@ -419,7 +419,7 @@ body {
 
 .dsv-plotcard-unresolved {
     display: inline-block;
-    color: gray;
+    color: red;
     font-style: italic;
 }
 .dsv-plotcard-title {
