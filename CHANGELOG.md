@@ -1,3 +1,10 @@
+## 1.1.2 (February 15, 2016)
+
+  - ChartViewer contains two *.d.ts files - one when used through Globals, another when using as UMD.
+  - ChartViewer allows to reorder plots using drag-and-drop.
+  - ChartViewer accurately handles incorrect plot definitions.
+
+
 ## 1.1.0 (January 28, 2016)
 
 Features:
