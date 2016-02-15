@@ -1,5 +1,4 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="chartviewer.d.ts" />
 /// <reference path="utils.ts" />
 /// <reference path="plotregistry.ts" />
 /// <reference path="uncertainlineplot.ts" />
@@ -30,8 +29,6 @@ module ChartViewer {
             return {
                 content: content
             }
-        },
-        subscribeToViewState: function (plots, persistentViewState) {
-        },
+        }
     }
 }
