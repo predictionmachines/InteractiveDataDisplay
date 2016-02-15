@@ -18,7 +18,7 @@ ChartViewer:
 
 Add following line to `bower.json` to get all required scripts and resources:
 
-	"ChartViewer": "https://github.com/predictionmachines/InteractiveDataDisplay.git"
+	"ChartViewer": "idd"
 
 Dependencies:
 
