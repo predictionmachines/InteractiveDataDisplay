@@ -5,7 +5,7 @@
 /sln/*.suo
 /sln/.vs/**
 /generated/**
-idd.heatmapworker.js
+/idd.heatmapworker.js
 /.grunt/**
 /.tscache/**
 /typings/**
