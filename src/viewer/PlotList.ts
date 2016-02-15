@@ -101,14 +101,14 @@ module ChartViewer {
 
             if (plot.Definition.kind == null) {
                 var existingplot = getPlotById(plot.Id);
-                if (PlotRegistry[existingplot.Definition.kind] !== undefined && plot.Definition["error"] == undefined)
-                   card = PlotRegistry[existingplot.Definition.kind].createPlotCardContent(existingplot.Definition);
-                else
+                if (PlotRegistry[existingplot.Definition.kind] !== undefined && plot.Definition["error"] == undefined) 
+                    card = PlotRegistry[existingplot.Definition.kind].createPlotCardContent(existingplot.Definition);
+                else 
                     card = PlotRegistry["fallback"].createPlotCardContent(plot.Definition);//createDefaultCardContent(existingplot.Definition);
             } else {
-                if (PlotRegistry[plot.Definition.kind] !== undefined && plot.Definition["error"] == undefined)
+                if (PlotRegistry[plot.Definition.kind] !== undefined && plot.Definition["error"] == undefined) 
                     card = PlotRegistry[plot.Definition.kind].createPlotCardContent(plot.Definition);
-                else
+                else 
                     card = PlotRegistry["fallback"].createPlotCardContent(plot.Definition);//createDefaultCardContent(plot.Definition);
             }
             _cards[plot.Id] = card;
