@@ -154,7 +154,7 @@ Use `Plot.line(LineDefinition) : PlotInfo` to a define a line plot.
 		titles?: LineTitles;
 	}
 
-`treatAs` may be one of pre-defined values:
+`treatAs` is one of pre-defined values:
 
 	module LineTreatAs {
 		var Function = "function";
@@ -290,7 +290,7 @@ Use `Plot.heatmap(HeatmapDefinition) : PlotInfo` to a define a heatmap plot.
 		titles?: HeatmapTitles;
 	}
 
-`treatAs` may be one of pre-defined values:
+`treatAs` is one of pre-defined values:
 
 	module HeatmapRenderType {        
 		var Gradient = "gradient";
