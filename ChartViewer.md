@@ -18,7 +18,7 @@ ChartViewer:
 
 Add following line to `bower.json` to get all required scripts and resources:
 
-	"ChartViewer": "idd"
+	"idd": "~1.1.0"
 
 Dependencies:
 
@@ -67,7 +67,7 @@ The variables `ChartViewer` and `Plot` are globally defined.
 
 3. Require `chartViewer` module and get `Charting` object which has two properties: `ChartViewer` and `Plot`:
 
-		require(["chartViewer"], function (Charting) {
+		require(["chartViewer.umd"], function (Charting) {
 				Charting.ChartViewer.show(chartDiv, {
 					"y(x)": Charting.Plot.line({ x: [0,1,2], y: [3,4,2] })
 				});
@@ -129,7 +129,10 @@ Use `Plot.line(LineDefinition) : PlotInfo` to a define a line plot.
 
 where
 
-	enum LineTreatAs {Function,Trajectory}
+	module LineTreatAs {
+		var Function = "function";
+		var Trajectory = "trajectory";
+	}
 
 If `treatAs` is `"Function"` (default value), the series `x[i]` and `y[i]` are sorted by increasing values `x`. Otherwise, the arrays are rendered as is.
 
@@ -167,7 +170,7 @@ Example:
 ### BoxPlot
 
 The plot draws a colored boxplot.
-Use `Plot.boxplot(BoxPlotDefinition) : PlotInfo` to a define a box plot.
+Use `Plot.boxplot(BoxPlotDefinition) : PlotInfo` to a define a box plot (https://en.wikipedia.org/wiki/Box_plot).  
 
 	type BoxPlotDefinition = {
 		y: Quantiles;
@@ -181,7 +184,9 @@ Use `Plot.boxplot(BoxPlotDefinition) : PlotInfo` to a define a box plot.
 Example:
 
 	ChartViewer.show(chartDiv, {
-		"boxplot": Plot.boxplot({ y: { median: [1,2,3], lower68: [0,0,0], upper68: [4,4,4], lower95: [0.5,1,2], upper95: [2,3,3.5] }, x : [1,2,3], border: 'red', fill: 'gray' })
+		"boxplot": Plot.boxplot({ 
+			y: { median: [1,2,3], lower68: [0,0,0], upper68: [4,4,4], lower95: [0.5,1,2], upper95: [2,3,3.5] }, 
+			x : [1,2,3], border: 'red', fill: 'gray' })
 	});
 
 
@@ -195,8 +200,8 @@ Use `Plot.markers(MarkersDefinition) : PlotInfo` to a define a markers plot.
 
 	type MarkersDefinition = {
 		x: number[];
-		y: number[] | Quantiles;
-		shape?: MarkerShape | string;		
+		y: number[];
+		shape?: string;		
 		color?: Color | number[] | Quantiles;
 		colorPalette?: ColorPalette;
 		size?: number | number[] | Quantiles;
@@ -216,12 +221,12 @@ and proportional to the corresponding value of the array `size`:
 
 Marker shape is either one of pre-defined shapes or a cutom marker shape identified by a string:
 
-	type MarkerShape = {        
-		Box,
-        Circle,
-        Diamond,
-        Cross,
-        Triangle
+	module MarkerShape {        
+		var Box = "box";
+        var Circle = "circle";
+        var Diamond = "diamond";
+        var Cross = "cross";
+        var Triangle = "triangle";
 	}
 
 Example:
@@ -233,8 +238,6 @@ Example:
 
 #### Remarks
 
-* If `y` is a value of `Quantiles`, then `color` and `size` must not be of types `Quantiles`, `shape` is ignored
-	and [box plots](https://en.wikipedia.org/wiki/Box_plot)	are displayed.   
 * If `color` is a value of `Color`, the `colorPalette` is ignored.
 * If `color` is a value of `Quantiles`, `size` must be a `number`; `shape` is ignored
 	and markers are rendered as so-called 'bull-eyes' glyphs when outer and inner colors indicate level of uncertainty.
@@ -262,9 +265,9 @@ Use `Plot.heatmap(HeatmapDefinition) : PlotInfo` to a define a heatmap plot.
 
 where:
 
-	type HeatmapRenderType = {        
-		Gradient,
-		Discrete
+	module HeatmapRenderType {        
+		var Gradient = "gradient";
+		var Discrete =  "discrete";
 	}
 
 #### Tabular input

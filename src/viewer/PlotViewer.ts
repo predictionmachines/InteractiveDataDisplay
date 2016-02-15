@@ -1,14 +1,14 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
+/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="draggabledomplot.ts" />
-/// <reference path="chartviewer.d.ts" />
+/// <reference path="utils.ts" />
 /// <reference path="onscreennavigation.ts" />
-
 declare var InteractiveDataDisplay: any;
 declare var Microsoft: any;
 module ChartViewer {
 
-    type IDDPlot = any;
-    type PlotId = string;
+    export type IDDPlot = any;
+    export type PlotId = string;
 
     export type PlotViewerItem = {
         Id: PlotId;
@@ -233,7 +233,6 @@ module ChartViewer {
         private addPlot(p: PlotViewerItem) {
             var factory = PlotRegistry[p.Definition.kind] ? PlotRegistry[p.Definition.kind] : PlotRegistry["fallback"];
             p.Plots = factory.initialize(p.Definition, this.persistentViewState, this.iddChart);
-            factory.subscribeToViewState(p.Plots, this.persistentViewState);
             try {
                 factory.draw(p.Plots, p.Definition);
             } catch (ex) {
@@ -392,16 +391,16 @@ module ChartViewer {
             
             // Sets the correct z-order of plots depending on values of ZIndex property.
             var z = 0;
+            var currentPlotslength = 0;
+            for (var id in this.currentPlots)++currentPlotslength;
             for (var id in this.currentPlots) {
                 var p = this.currentPlots[id];
-                if (p.ZIndex) z = Math.max(p.ZIndex, z);
-            }
-            for (var id in this.currentPlots) {
-                var p = this.currentPlots[id];
-                if (!p.ZIndex) p.ZIndex = ++z;
+                p.ZIndex = currentPlotslength - z;//Math.max(p.ZIndex, z);
+                ++z;
                 if (!p.Plots) continue;
                 for (var j = 0; j < p.Plots.length; ++j)
                     p.Plots[j].host.css("z-index", p.ZIndex);//p.ZIndex
+            
             }
 
             if (this.persistentViewState.selectedPlots)
