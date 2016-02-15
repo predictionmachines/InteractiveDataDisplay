@@ -18,7 +18,7 @@ ChartViewer:
 
 Add following line to `bower.json` to get all required scripts and resources:
 
-	"idd": "~1.1.0"
+	"idd": "~1.1.1"
 
 Dependencies:
 
@@ -51,7 +51,7 @@ The variables `ChartViewer` and `Plot` are globally defined.
 
 1. Add reference to `require.js` script in HTML file.
 
-2. Create file config.js and configure following modules using `require.config` (please don't forget to update paths):
+2. Create file `config.js` and configure following modules using `require.config` (please don't forget to update paths):
 
         require.config({
             baseUrl: ".",
@@ -154,7 +154,7 @@ Use `Plot.line(LineDefinition) : PlotInfo` to a define a line plot.
 		titles?: LineTitles;
 	}
 
-`treatAs` may be one of pre-defined types:
+`treatAs` may be one of pre-defined values:
 
 	module LineTreatAs {
 		var Function = "function";
@@ -290,7 +290,7 @@ Use `Plot.heatmap(HeatmapDefinition) : PlotInfo` to a define a heatmap plot.
 		titles?: HeatmapTitles;
 	}
 
-`treatAs` may be one of pre-defined types:
+`treatAs` may be one of pre-defined values:
 
 	module HeatmapRenderType {        
 		var Gradient = "gradient";
