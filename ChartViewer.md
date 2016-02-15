@@ -186,10 +186,7 @@ Example:
 	ChartViewer.show(chartDiv, {
 		"boxplot": Plot.boxplot({ 
 			y: { median: [1,2,3], lower68: [0,0,0], upper68: [4,4,4], lower95: [0.5,1,2], upper95: [2,3,3.5] }, 
-			x : [1,2,3], 
-			border: 'red', 
-			fill: 'gray' 
-		})
+			x : [1,2,3], border: 'red', fill: 'gray' })
 	});
 
 
