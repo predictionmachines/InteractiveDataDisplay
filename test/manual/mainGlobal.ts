@@ -2,7 +2,7 @@
 
 module main {
     export function start() {
-        var el = document.getElementById("chart");
+        var el = document.getElementById("chart"); 
 
         ChartViewer.show(el, {
             "elem1": Plot.line({
