@@ -39,7 +39,7 @@ module ChartViewer {
             drawArgs.x = lineDef.x;
 
             var doSort = (!lineDef.treatAs || lineDef.treatAs == "function") && !IsOrderedArray(drawArgs.x);
-            if (Array.isArray(lineDef.y)) { // certain values
+            if (InteractiveDataDisplay.Utils.isArray(lineDef.y)) { // certain values
                 drawArgs.y_mean = <number[]>lineDef.y;
                 if (doSort) {
                     var len = Math.min(drawArgs.x.length, plot.y.length);
@@ -121,7 +121,7 @@ module ChartViewer {
 
             canvas.prop({ width: 20, height: 20 });
             var ctx = (<HTMLCanvasElement>canvas.get(0)).getContext("2d");
-            var isUncertainData = !Array.isArray(lineDef.y);
+            var isUncertainData = !InteractiveDataDisplay.Utils.isArray(lineDef.y);
             if (isUncertainData) {
                 ctx.globalAlpha = 0.5;
                 ctx.strokeStyle = lineDef.fill68;

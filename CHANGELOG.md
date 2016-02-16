@@ -1,3 +1,8 @@
+## Next
+
+Bugs:
+  - The plot definition's data series is allowed to be both an array and a native array.
+
 ## 1.1.2 (February 15, 2016)
 
   - ChartViewer contains two *.d.ts files - one when used through Globals, another when using as UMD.

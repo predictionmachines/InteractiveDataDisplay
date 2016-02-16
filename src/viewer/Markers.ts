@@ -688,12 +688,12 @@ module ChartViewer {
                 var toolTipFormatters = {};
                 var colorRange, sizeRange;
                 drawArgs.border = plot.borderColor;
-                if (plot.x == undefined && !Array.isArray(plot.y)) {
+                if (plot.x == undefined && !InteractiveDataDisplay.Utils.isArray(plot.y)) {
                     plot.x = [];
                     for (var i = 0; i < plot.y["median"].length; i++) plot.x.push(i);
                 }
                 drawArgs.x = plot.x;
-                if (drawArgs.y === undefined && Array.isArray(plot.y))
+                if (drawArgs.y === undefined && InteractiveDataDisplay.Utils.isArray(plot.y))
                     drawArgs.y = plot.y;
                 else
                     drawArgs.y = (<Plot.Quantiles><any>plot.y).median;
@@ -719,7 +719,7 @@ module ChartViewer {
                     return result;
                 }
 
-                if (!Array.isArray(plot.y)) {
+                if (!InteractiveDataDisplay.Utils.isArray(plot.y)) {
                     //Y is uncertainty, using box&whisker
                     switch (plot.shape) {
                         case "boxnowhisker":
@@ -754,14 +754,14 @@ module ChartViewer {
 
                 if (typeof plot.color === "undefined") {
                     if (drawArgs.shape === undefined) drawArgs.shape = plot.shape;
-                    if (Array.isArray(plot.y)) drawArgs.color = plot.color = "#1F497D";
+                    if (InteractiveDataDisplay.Utils.isArray(plot.y)) drawArgs.color = plot.color = "#1F497D";
                 }
                 else if (typeof plot.color === "string") {
                     if (drawArgs.shape === undefined) drawArgs.shape = plot.shape;
                     drawArgs.color = <string>plot.color;
 
                 }
-                else if (Array.isArray(plot.color)) {
+                else if (InteractiveDataDisplay.Utils.isArray(plot.color)) {
                     if (drawArgs.shape === undefined) drawArgs.shape = plot.shape;
                     toolTipData[getTitle(plotDefinition, "color")] = plot.color;
                     drawArgs.color = plot.color;
@@ -808,7 +808,7 @@ module ChartViewer {
                     sizeRange = { from: 0, to: maxDelta };
                     drawArgs.size = 15;
                 }
-                else if (Array.isArray(plot.size)) {
+                else if (InteractiveDataDisplay.Utils.isArray(plot.size)) {
                     toolTipData[getTitle(plotDefinition, "size")] = plot.size;
                     drawArgs.sizePalette = Markers.BuildSizePalette(plot);
                     drawArgs.size = <number[]>plot.size;
@@ -867,7 +867,7 @@ module ChartViewer {
 
 
             //// Add color palette
-            if (plot.colorPalette || Array.isArray(plot.color) || typeof (plot.size["median"]) != "undefined") {
+            if (plot.colorPalette || InteractiveDataDisplay.Utils.isArray(plot.color) || typeof (plot.size["median"]) != "undefined") {
                 $("<div></div>").text(getTitle(plotInfo, "color")).addClass("dsv-plotcard-title").width(180).css("margin-top", "5px").appendTo(content);
                 var cpalette = $("<div class='dsv-plotcard-palette'></div>").appendTo(content);
                 var paletteViewer = new InteractiveDataDisplay.ColorPaletteViewer(
@@ -878,13 +878,13 @@ module ChartViewer {
                         width: 180,
                         height: 10
                     });
-                paletteViewer.palette = Array.isArray(plot.color) ? Markers.BuildPalette(plot) : Markers.BuildPaletteForUncertain(plot);
+                paletteViewer.palette = InteractiveDataDisplay.Utils.isArray(plot.color) ? Markers.BuildPalette(plot) : Markers.BuildPaletteForUncertain(plot);
                 result.colorPaletteViewer = paletteViewer;
                 result.colorPaletteDiv = cpalette;
             }
 
             //// Add size palette
-            if (plot.sizeRange || Array.isArray(plot.size) || typeof (plot.size["median"]) != "undefined") {
+            if (plot.sizeRange || InteractiveDataDisplay.Utils.isArray(plot.size) || typeof (plot.size["median"]) != "undefined") {
                 $("<div></div>").text(getTitle(plotInfo, "size")).addClass("dsv-plotcard-title").width(180).appendTo(content);
                 if (plot.size && typeof(plot.size["median"]) != "undefined") {
                     var spalette = $("<div class='dsv-plotcard-regular' style='height:65px'></div>").appendTo(content);
