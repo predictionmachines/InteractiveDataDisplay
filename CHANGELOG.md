@@ -1,6 +1,6 @@
-## Next
+## 1.1.3 (February 16, 2016)
 
-Bugs:
+Bug fix:
   - The plot definition's data series is allowed to be both an array and a native array.
 
 ## 1.1.2 (February 15, 2016)
