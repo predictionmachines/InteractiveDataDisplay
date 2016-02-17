@@ -405,7 +405,6 @@ module ChartViewer {
 
             if (this.persistentViewState.selectedPlots)
                 this.setupPlotsVisibility();
-
             return this.currentPlots;
         }
 

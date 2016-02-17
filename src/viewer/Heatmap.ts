@@ -298,7 +298,7 @@ module ChartViewer {
 
                 plots[1].f_ub = r.ub68;
                 plots[1].f_ub_formatter = getFormatter(r.ub68, get2dRange);
-
+                plots[1].getLegend = undefined;
 
             }
             else {
@@ -333,6 +333,7 @@ module ChartViewer {
                 plots[1].f_ub_formatter = undefined;
                 plots[1].x = undefined;
                 plots[1].y = undefined;
+                plots[1].getLegend = undefined;
             }
 
             plots[0].range = get2dRange(drawArgs.f);

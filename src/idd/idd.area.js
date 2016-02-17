@@ -142,6 +142,69 @@ InteractiveDataDisplay.Area = function (div, master) {
         InteractiveDataDisplay.Area.prototype.onDataTransformChanged.call(this, arg);
     };
 
+    this.getLegend = function () {
+        var div = $("<div class='idd-legend-item'></div>");
+
+        var canvas = $("<canvas style='margin-right: 15px'></canvas>").appendTo(div);
+        canvas[0].width = 20;
+        canvas[0].height = 20;
+        var ctx = canvas.get(0).getContext("2d");
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = _fill;
+        ctx.fillStyle = _fill;
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, 5);
+        ctx.lineTo(15, 20);
+        ctx.lineTo(20, 20);
+        ctx.lineTo(20, 15);
+        ctx.lineTo(5, 0);
+        ctx.lineTo(0, 0);
+        ctx.fill();
+        ctx.stroke();
+        ctx.closePath();
+
+        var that = this;
+        var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
+        var setName = function () {
+            nameDiv.text(that.name);
+        }
+        setName();
+
+        this.host.bind("appearanceChanged",
+            function (event, propertyName) {
+                if (!propertyName || propertyName == "name")
+                    setName();
+
+                ctx.clearRect(0, 0, canvas[0].width, canvas[0].height);
+                ctx.strokeStyle = _fill;
+                ctx.fillStyle = _fill;
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, 5);
+                ctx.lineTo(15, 20);
+                ctx.lineTo(20, 20);
+                ctx.lineTo(20, 15);
+                ctx.lineTo(5, 0);
+                ctx.lineTo(0, 0);
+                ctx.fill();
+                ctx.stroke();
+                ctx.closePath();
+            });
+
+        var that = this;
+
+        var onLegendRemove = function () {
+            that.host.unbind("appearanceChanged");
+
+            div[0].innerHTML = "";
+            div.removeClass("idd-legend-item");
+        };
+
+        return { div: div, onLegendRemove: onLegendRemove };
+    };
     // Initialization 
     if (initialData && initialData.x && initialData.y1 && initialData.y2)
         this.draw(initialData);

@@ -41,7 +41,6 @@ module ChartViewer {
             leftPanel.append($("<div class='plotlist'></div>"));
             rightPanel.append($("<div class='dsv-visualization-preview'></div>"));
             var navigationDiv = $("<div class='dsv-navigation-container'></div>").appendTo(visControl);
-
             // creating hide/show leftpanel button
             var rightpanel = this.rightpanel = controlDiv.find(".dsv-rightpanel");
             var leftpanel = controlDiv.find(".dsv-leftpanel");
@@ -51,11 +50,12 @@ module ChartViewer {
 
             this.plotViewer = new PlotViewer(controlDiv.find(".dsv-visualization-preview"), navigationDiv, this.persistentViewState, this.transientViewState);
             var plotListDiv = controlDiv.find(".plotlist");
-            this.plotList = new PlotList(plotListDiv, this.persistentViewState, this.transientViewState);
-            this.plotList.isEditable = false;
-            this.plotList.subscribe(function (args) {
-                that.plotViewer.draw(args);
-            });
+            //var leg = new InteractiveDataDisplay.Legend(this.plotViewer.iddChart, plotListDiv);
+            this.plotList = new PlotList(plotListDiv, this.plotViewer, this.persistentViewState, this.transientViewState);
+            //this.plotList.isEditable = false;
+            //this.plotList.subscribe(function (args) {
+            //    that.plotViewer.draw(args);
+            //});
             hidebutton.click(function () {
                 if (isLeftpanelShown) {
                     isLeftpanelShown = false;
@@ -99,8 +99,8 @@ module ChartViewer {
                 }
                 else plotItems[id] = null;
             }
-            plotItems = this.plotViewer.draw(plotItems);
-            this.plotList.draw(plotItems);
+            plotItems = this.plotViewer.draw(plotItems); 
+            //this.plotList.draw(plotItems);
         }
         
         updateLayout() {

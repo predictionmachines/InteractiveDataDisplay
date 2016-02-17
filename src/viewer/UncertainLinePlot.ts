@@ -288,6 +288,112 @@ module ChartViewer {
                 this.invalidateLocalBounds();
                 UncertainLinePlot.prototype.onDataTransformChanged.call(this, arg);
             };
+
+            this.getLegend = function () {
+                var div = $("<div class='idd-legend-item'></div>");
+
+                var canvas = $("<canvas style='margin-right: 15px'></canvas>").appendTo(div);
+                canvas.prop({ width: 20, height: 20 });
+                var ctx = (<HTMLCanvasElement>canvas.get(0)).getContext("2d");
+
+                var isUncertainData = _y_u68 != undefined && _y_l68 != undefined && _y_u95 != undefined && _y_l95 != undefined;
+                if (isUncertainData) {
+                    ctx.globalAlpha = 0.5;
+                    ctx.strokeStyle = _fill_68;
+                    ctx.fillStyle = _fill_68;
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(0, 10);
+                    ctx.lineTo(10, 20);
+                    ctx.lineTo(20, 20);
+                    ctx.lineTo(20, 10);
+                    ctx.lineTo(10, 0);
+                    ctx.lineTo(0, 0);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.closePath();
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(0, 5);
+                    ctx.lineTo(15, 20);
+                    ctx.lineTo(20, 20);
+                    ctx.lineTo(20, 15);
+                    ctx.lineTo(5, 0);
+                    ctx.lineTo(0, 0);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+
+                ctx.strokeStyle = _stroke;
+                ctx.lineWidth = _thickness;
+                ctx.moveTo(0, 0);
+                ctx.lineTo(20, 20);
+                ctx.stroke();
+
+                var that = this;
+                var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
+                var setName = function () {
+                    nameDiv.text(that.name);
+                }
+                setName();
+
+                this.host.bind("appearanceChanged",
+                    function (event, propertyName) {
+                        if (!propertyName || propertyName == "name")
+                            setName();
+                        
+                        ctx.clearRect(0, 0, 20, 20);
+                        var isUncertainData = _y_u68 != undefined && _y_l68 != undefined && _y_u95 != undefined && _y_l95 != undefined;
+                        if (isUncertainData) {
+                            ctx.globalAlpha = 0.5;
+                            ctx.strokeStyle = _fill_68;
+                            ctx.fillStyle = _fill_68;
+
+                            ctx.beginPath();
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(0, 10);
+                            ctx.lineTo(10, 20);
+                            ctx.lineTo(20, 20);
+                            ctx.lineTo(20, 10);
+                            ctx.lineTo(10, 0);
+                            ctx.lineTo(0, 0);
+                            ctx.fill();
+                            ctx.stroke();
+                            ctx.closePath();
+
+                            ctx.beginPath();
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(0, 5);
+                            ctx.lineTo(15, 20);
+                            ctx.lineTo(20, 20);
+                            ctx.lineTo(20, 15);
+                            ctx.lineTo(5, 0);
+                            ctx.lineTo(0, 0);
+                            ctx.fill();
+                            ctx.stroke();
+                            ctx.closePath();
+                        }
+                        ctx.strokeStyle = _stroke;
+                        ctx.lineWidth = _thickness;
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(20, 20);
+                        ctx.stroke();
+                    });
+
+                var that = this;
+
+                var onLegendRemove = function () {
+                    that.host.unbind("appearanceChanged");
+
+                    div[0].innerHTML = "";
+                    div.removeClass("idd-legend-item");
+                };
+
+                return { div: div, onLegendRemove: onLegendRemove };
+            };
         }
     //}
     UncertainLinePlot.prototype = new InteractiveDataDisplay.CanvasPlot;
