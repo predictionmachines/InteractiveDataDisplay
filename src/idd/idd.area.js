@@ -143,6 +143,7 @@ InteractiveDataDisplay.Area = function (div, master) {
     };
 
     this.getLegend = function () {
+        var that = this;
         var div = $("<div class='idd-legend-item'></div>");
 
         var canvas = $("<canvas style='margin-right: 15px'></canvas>").appendTo(div);
@@ -165,7 +166,6 @@ InteractiveDataDisplay.Area = function (div, master) {
         ctx.stroke();
         ctx.closePath();
 
-        var that = this;
         var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
         var setName = function () {
             nameDiv.text(that.name);
@@ -194,7 +194,7 @@ InteractiveDataDisplay.Area = function (div, master) {
                 ctx.closePath();
             });
 
-        var that = this;
+        //var that = this;
 
         var onLegendRemove = function () {
             that.host.unbind("appearanceChanged");
@@ -208,6 +208,7 @@ InteractiveDataDisplay.Area = function (div, master) {
     // Initialization 
     if (initialData && initialData.x && initialData.y1 && initialData.y2)
         this.draw(initialData);
+
 }
 
 InteractiveDataDisplay.Area.prototype = new InteractiveDataDisplay.CanvasPlot;

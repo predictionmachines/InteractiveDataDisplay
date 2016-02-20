@@ -233,13 +233,13 @@ module ChartViewer {
         private addPlot(p: PlotViewerItem) {
             var factory = PlotRegistry[p.Definition.kind] ? PlotRegistry[p.Definition.kind] : PlotRegistry["fallback"];
             p.Plots = factory.initialize(p.Definition, this.persistentViewState, this.iddChart);
-            try {
+           // try {
                 factory.draw(p.Plots, p.Definition);
-            } catch (ex) {
-                factory = PlotRegistry["fallback"];
-                p.Definition["error"] = ex.message;
-                p.Plots = factory.initialize(p.Definition, this.persistentViewState, this.iddChart);
-            }
+          //  } catch (ex) {
+          //      factory = PlotRegistry["fallback"];
+          //      p.Definition["error"] = ex.message;
+         //       p.Plots = factory.initialize(p.Definition, this.persistentViewState, this.iddChart);
+         //   }
         }
 
         private updateAxes() {

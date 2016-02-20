@@ -794,7 +794,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                     for (var prop in _data) {
                         if (prop != "size" && prop != "color" && prop != "border") {
                             var v = _data[prop];
-                            if (InteractiveDataDisplay.Utils.isArray(v)) drawData[prop] = v[i];
+                            if (InteractiveDataDisplay.Utils.isArray(v)) drawData[prop] = v;//[i];
                             else drawData[prop] = v;
                         }
                     }

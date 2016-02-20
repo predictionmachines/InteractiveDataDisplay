@@ -47,6 +47,7 @@
                     "generated/idd.heatmapworker_embedded.js",
                     "src/idd/idd.figure.js",
                     "src/idd/idd.chart.js",
+                    "src/idd/idd.uncertainMarkerShapes.js",
                     "src/idd/idd.markers.js",
                     "src/idd/idd.area.js",
                     "src/idd/idd.heatmap.js",

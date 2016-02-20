@@ -659,7 +659,7 @@ module ChartViewer {
                 if (!plot.shape) {
                     plot.shape = "box";
                 }
-
+                plots[0].setTitles(plot.titles);
                 var drawArgs = {
                     x: undefined,
                     y: undefined,
@@ -819,7 +819,6 @@ module ChartViewer {
                 else {
                     drawArgs.size = plot.size = 8;
                 }
-
                 plots[0].draw(drawArgs);
 
                 var getRange = function (arr) {

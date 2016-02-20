@@ -1368,7 +1368,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (!plot) {
                 var div = $("<div></div>")
                            .attr("data-idd-name", name)
-                           .attr("data-idd-plot", "polyline")
+                         //  .attr("data-idd-plot", "polyline")
                            .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Polyline(div, this.master);
                 this.addChild(plot);
@@ -1400,9 +1400,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (!plot) {
                 var div = $("<div></div>")
                            .attr("data-idd-name", name)
-                           .attr("data-idd-plot", "area")
+                          // .attr("data-idd-plot", "area")
                            .appendTo(this.host);
-                plot = new InteractiveDataDisplay.Area(div);
+                plot = new InteractiveDataDisplay.Area(div, this.master);
                 this.addChild(plot);
             }
             if (data !== undefined) {
@@ -1417,7 +1417,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (!plot) {
                 var div = $("<div></div>")
                            .attr("data-idd-name", name)
-                           .attr("data-idd-plot", "heatmap")
+                         //  .attr("data-idd-plot", "heatmap")
                            .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Heatmap(div, this.master);
                 this.addChild(plot);
