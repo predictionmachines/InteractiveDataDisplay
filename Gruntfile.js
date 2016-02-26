@@ -59,10 +59,8 @@
             },
             dist2: {
                 src: [
-                    //    "src/viewer/Chart.header.js",
                         "src/viewer/MathUtils.js",
-                        "src/viewer/chartViewer2.js",
-                   //     "src/viewer/Chart.footer.js"
+                        "src/viewer/chartViewer2.js"
                 ],
                 dest: "dist/chartViewer.js",
                 nonull: true

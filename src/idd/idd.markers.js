@@ -731,6 +731,24 @@ InteractiveDataDisplay.Markers = function (div, master) {
                     }
                 }
             }
+            else if (_data.size != undefined && _data.u95 != undefined && _data.l95 != undefined && _data.bullEyeShape == undefined && _data.y_mean == undefined) {//!!
+                size = maxSize;
+                    var szTitleText = that.getTitle("size");
+                    if (sizeIsVisible == 0) {
+                        sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
+                        sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
+                        sizeDivStyle = sizeDiv[0].style;
+                        var paletteDiv = $("<div></div>").appendTo(sizeDiv);
+                        sizeControl = new InteractiveDataDisplay.UncertaintySizePaletteViewer(paletteDiv);
+                        sizeIsVisible = 2;
+                    } else {
+                        sizeTitle.text(szTitleText);
+                    }
+                    if (sizeIsVisible == 1) {
+                        sizeDivStyle.display = "block";
+                        sizeIsVisible = 2;
+                    }
+            }
             else {
                 size = Math.min(_data.size, maxSize);
                 if (sizeIsVisible == 2) {
@@ -801,7 +819,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
 
                     if (itemIsVisible == 0) {
                         item = _shape.getLegendItem(drawData);
-                        itemDiv[0].insertBefore(item[0], name[0]);
+                        itemDiv[0].insertBefore(item[0], nameDiv[0]);
                     }
                     else {
                         var newItem = _shape.getLegendItem(drawData);

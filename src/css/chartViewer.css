@@ -157,6 +157,9 @@ body {
     position: relative;
     background-color: white;
     float: left;
+    overflow: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 .dsv-rightpanel {
     display: inline-block;
@@ -186,8 +189,6 @@ body {
     -ms-user-select: none;
     -webkit-user-select: none;
     user-select: none;
-    overflow-y: auto;
-    overflow-x: hidden;
     position: absolute;
     top: 0px;
     left: 0px;
@@ -323,9 +324,9 @@ body {
     background-position-y: center;
 }
 
-    .dsv-leftpanelhidebutton:hover {
-        background-color: #F1F9FF;
-    }
+.dsv-leftpanelhidebutton:hover {
+    background-color: #F1F9FF;
+}
 
 .dsv-leftpanelshowbutton {
     width: 10px;
@@ -340,9 +341,9 @@ body {
     background-position-y: center;
 }
 
-    .dsv-leftpanelshowbutton:hover {
-        background-color: #F1F9FF;
-    }
+.dsv-leftpanelshowbutton:hover {
+    background-color: #F1F9FF;
+}
 .dsv-leftaxistitle {
     width: 20px;
     max-width: 20px;

@@ -7,556 +7,556 @@ declare var Microsoft: any;
 
 module ChartViewer {
     module Markers {
-        export function drawShape(context, shape, x, y, width, height, scale, fill, stroke?) {
-            var w = width;
-            var h = height;
-            var useStroke = stroke !== "none";
-            context.strokeStyle = stroke !== undefined ? stroke : "black";
-            context.fillStyle = fill !== undefined ? fill : "black";
-
-            var x1 = x;// w / 2;
-            var y1 = y; //h / 2;
-
-            var size = Math.min(w, h) * scale;
-            var halfSize = 0.5 * size;
-            var quarterSize = 0.5 * halfSize;
-
-            context.clearRect(0, 0, w, h);
-            switch (shape) {
-                case "box": // box                
-                    if (useStroke) context.strokeRect(x1 - halfSize, y1 - halfSize, size, size);
-                    context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
-                    break;
-                case "circle": // circle
-                    context.beginPath();
-                    context.arc(x1, y1, halfSize, 0, 2 * Math.PI);
-                    if (useStroke) context.stroke();
-                    context.fill();
-                    break;
-                case "diamond": // diamond
-                    context.beginPath();
-                    context.moveTo(x1 - halfSize, y1);
-                    context.lineTo(x1, y1 - halfSize);
-                    context.lineTo(x1 + halfSize, y1);
-                    context.lineTo(x1, y1 + halfSize);
-                    context.closePath();
-                    if (useStroke) context.stroke();
-                    context.fill();
-                    break;
-                case "cross": // cross
-                    var thirdSize = size / 3;
-                    var halfThirdSize = thirdSize / 2;
-                    context.beginPath();
-                    context.moveTo(x1 - halfSize, y1 - halfThirdSize);
-                    context.lineTo(x1 - halfThirdSize, y1 - halfThirdSize);
-                    context.lineTo(x1 - halfThirdSize, y1 - halfSize);
-                    context.lineTo(x1 + halfThirdSize, y1 - halfSize);
-                    context.lineTo(x1 + halfThirdSize, y1 - halfThirdSize);
-                    context.lineTo(x1 + halfSize, y1 - halfThirdSize);
-                    context.lineTo(x1 + halfSize, y1 + halfThirdSize);
-                    context.lineTo(x1 + halfThirdSize, y1 + halfThirdSize);
-                    context.lineTo(x1 + halfThirdSize, y1 + halfSize);
-                    context.lineTo(x1 - halfThirdSize, y1 + halfSize);
-                    context.lineTo(x1 - halfThirdSize, y1 + halfThirdSize);
-                    context.lineTo(x1 - halfSize, y1 + halfThirdSize);
-                    context.closePath();
-                    if (useStroke) context.stroke();
-                    context.fill();
-                    break;
-                case "triangle": // triangle
-                    var r = Math.sqrt(3) / 6 * size;
-                    context.beginPath();
-                    context.moveTo(x1 - halfSize, y1 + r);
-                    context.lineTo(x1, y1 - r * 2);
-                    context.lineTo(x1 + halfSize, y1 + r);
-                    context.closePath();
-                    if (useStroke) context.stroke();
-                    context.fill();
-                    break;
-                case "boxnowhisker":
-                    context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
-
-                    if (useStroke) context.strokeRect(x1 - halfSize, y1 - halfSize, size, size);
-                    context.beginPath();
-                    context.moveTo(x1 - halfSize, y1);
-                    context.lineTo(x1 + halfSize, y1);
-                    context.closePath();
-                    if (useStroke) context.stroke();
-                    break;
-                case "boxwhisker":
-                    context.fillRect(x1 - halfSize, y1 - quarterSize, size, halfSize);
-
-                    context.beginPath();
-                    context.moveTo(x1 - halfSize, y1 + halfSize);
-                    context.lineTo(x1 + halfSize, y1 + halfSize);
-                    context.moveTo(x1 - halfSize, y1 - halfSize);
-                    context.lineTo(x1 + halfSize, y1 - halfSize);
-                    context.moveTo(x1, y1 + halfSize);
-                    context.lineTo(x1, y1 + quarterSize);
-                    context.moveTo(x1, y1 - halfSize);
-                    context.lineTo(x1, y1 - quarterSize);
-                    context.closePath();
-                    if (useStroke) context.stroke();
-
-                    if (useStroke) context.strokeRect(x1 - halfSize, y1 - quarterSize, size, halfSize);
-
-                    if (useStroke) {
-                        context.beginPath();
-                        context.moveTo(x1 - halfSize, y1);
-                        context.lineTo(x1 + halfSize, y1);
-                        context.stroke();
-                    }
-                    break;
-                case "whisker":
-                    context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
-
-                    if (useStroke) {
-                        context.beginPath();
-                        context.moveTo(x1 - halfSize, y1 + halfSize);
-                        context.lineTo(x1 + halfSize, y1 + halfSize);
-
-                        context.moveTo(x1 - halfSize, y1 - halfSize);
-                        context.lineTo(x1 + halfSize, y1 - halfSize);
-
-                        context.moveTo(x1 - halfSize, y1);
-                        context.lineTo(x1 + halfSize, y1);
-
-                        context.moveTo(x1, y1 + halfSize);
-                        context.lineTo(x1, y1 - halfSize);
+        //export function drawShape(context, shape, x, y, width, height, scale, fill, stroke?) {
+        //    var w = width;
+        //    var h = height;
+        //    var useStroke = stroke !== "none";
+        //    context.strokeStyle = stroke !== undefined ? stroke : "black";
+        //    context.fillStyle = fill !== undefined ? fill : "black";
+
+        //    var x1 = x;// w / 2;
+        //    var y1 = y; //h / 2;
+
+        //    var size = Math.min(w, h) * scale;
+        //    var halfSize = 0.5 * size;
+        //    var quarterSize = 0.5 * halfSize;
+
+        //    context.clearRect(0, 0, w, h);
+        //    switch (shape) {
+        //        case "box": // box                
+        //            if (useStroke) context.strokeRect(x1 - halfSize, y1 - halfSize, size, size);
+        //            context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
+        //            break;
+        //        case "circle": // circle
+        //            context.beginPath();
+        //            context.arc(x1, y1, halfSize, 0, 2 * Math.PI);
+        //            if (useStroke) context.stroke();
+        //            context.fill();
+        //            break;
+        //        case "diamond": // diamond
+        //            context.beginPath();
+        //            context.moveTo(x1 - halfSize, y1);
+        //            context.lineTo(x1, y1 - halfSize);
+        //            context.lineTo(x1 + halfSize, y1);
+        //            context.lineTo(x1, y1 + halfSize);
+        //            context.closePath();
+        //            if (useStroke) context.stroke();
+        //            context.fill();
+        //            break;
+        //        case "cross": // cross
+        //            var thirdSize = size / 3;
+        //            var halfThirdSize = thirdSize / 2;
+        //            context.beginPath();
+        //            context.moveTo(x1 - halfSize, y1 - halfThirdSize);
+        //            context.lineTo(x1 - halfThirdSize, y1 - halfThirdSize);
+        //            context.lineTo(x1 - halfThirdSize, y1 - halfSize);
+        //            context.lineTo(x1 + halfThirdSize, y1 - halfSize);
+        //            context.lineTo(x1 + halfThirdSize, y1 - halfThirdSize);
+        //            context.lineTo(x1 + halfSize, y1 - halfThirdSize);
+        //            context.lineTo(x1 + halfSize, y1 + halfThirdSize);
+        //            context.lineTo(x1 + halfThirdSize, y1 + halfThirdSize);
+        //            context.lineTo(x1 + halfThirdSize, y1 + halfSize);
+        //            context.lineTo(x1 - halfThirdSize, y1 + halfSize);
+        //            context.lineTo(x1 - halfThirdSize, y1 + halfThirdSize);
+        //            context.lineTo(x1 - halfSize, y1 + halfThirdSize);
+        //            context.closePath();
+        //            if (useStroke) context.stroke();
+        //            context.fill();
+        //            break;
+        //        case "triangle": // triangle
+        //            var r = Math.sqrt(3) / 6 * size;
+        //            context.beginPath();
+        //            context.moveTo(x1 - halfSize, y1 + r);
+        //            context.lineTo(x1, y1 - r * 2);
+        //            context.lineTo(x1 + halfSize, y1 + r);
+        //            context.closePath();
+        //            if (useStroke) context.stroke();
+        //            context.fill();
+        //            break;
+        //        case "boxnowhisker":
+        //            context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
+
+        //            if (useStroke) context.strokeRect(x1 - halfSize, y1 - halfSize, size, size);
+        //            context.beginPath();
+        //            context.moveTo(x1 - halfSize, y1);
+        //            context.lineTo(x1 + halfSize, y1);
+        //            context.closePath();
+        //            if (useStroke) context.stroke();
+        //            break;
+        //        case "boxwhisker":
+        //            context.fillRect(x1 - halfSize, y1 - quarterSize, size, halfSize);
+
+        //            context.beginPath();
+        //            context.moveTo(x1 - halfSize, y1 + halfSize);
+        //            context.lineTo(x1 + halfSize, y1 + halfSize);
+        //            context.moveTo(x1 - halfSize, y1 - halfSize);
+        //            context.lineTo(x1 + halfSize, y1 - halfSize);
+        //            context.moveTo(x1, y1 + halfSize);
+        //            context.lineTo(x1, y1 + quarterSize);
+        //            context.moveTo(x1, y1 - halfSize);
+        //            context.lineTo(x1, y1 - quarterSize);
+        //            context.closePath();
+        //            if (useStroke) context.stroke();
+
+        //            if (useStroke) context.strokeRect(x1 - halfSize, y1 - quarterSize, size, halfSize);
+
+        //            if (useStroke) {
+        //                context.beginPath();
+        //                context.moveTo(x1 - halfSize, y1);
+        //                context.lineTo(x1 + halfSize, y1);
+        //                context.stroke();
+        //            }
+        //            break;
+        //        case "whisker":
+        //            context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
+
+        //            if (useStroke) {
+        //                context.beginPath();
+        //                context.moveTo(x1 - halfSize, y1 + halfSize);
+        //                context.lineTo(x1 + halfSize, y1 + halfSize);
+
+        //                context.moveTo(x1 - halfSize, y1 - halfSize);
+        //                context.lineTo(x1 + halfSize, y1 - halfSize);
+
+        //                context.moveTo(x1 - halfSize, y1);
+        //                context.lineTo(x1 + halfSize, y1);
+
+        //                context.moveTo(x1, y1 + halfSize);
+        //                context.lineTo(x1, y1 - halfSize);
 
-                        context.stroke();
-                    }
-                    break;
+        //                context.stroke();
+        //            }
+        //            break;
 
-            }
-        }
-
-        export var BoxWhisker = {
-            draw: function (marker, plotRect, screenSize, transform, context) {
-
-                var msize = marker.size;
-                var shift = msize / 2;
-                var x = transform.dataToScreenX(marker.x);
-                var y = transform.dataToScreenY(marker.y);
-                var u68 = transform.dataToScreenY(marker.u68);
-                var l68 = transform.dataToScreenY(marker.l68);
-                var u95 = transform.dataToScreenY(marker.u95);
-                var l95 = transform.dataToScreenY(marker.l95);
-                var mean = transform.dataToScreenY(marker.y_mean);
-
-                context.beginPath();
-                context.strokeStyle = marker.border === undefined ? "black" : marker.border;
-
-                if (marker.color) context.fillRect(x - shift, l68, msize, u68 - l68);
-                context.strokeRect(x - shift, l68, msize, u68 - l68);
-
-                context.moveTo(x - shift, u95);
-                context.lineTo(x + shift, u95);
-
-                context.moveTo(x, u95);
-                context.lineTo(x, u68);
-
-                context.moveTo(x, l68);
-                context.lineTo(x, l95);
-
-                context.moveTo(x - shift, l95);
-                context.lineTo(x + shift, l95);
-
-                context.moveTo(x - shift, mean);
-                context.lineTo(x + shift, mean);
-
-                context.stroke();
-
-                if (marker.y_min !== undefined) {
-                    context.beginPath();
-                    context.arc(x, transform.dataToScreenY(marker.y_min), shift / 2, 0, 2 * Math.PI);
-                    context.stroke();
-                }
-
-                if (marker.y_max !== undefined) {
-                    context.beginPath();
-                    context.arc(x, transform.dataToScreenY(marker.y_max), shift / 2, 0, 2 * Math.PI);
-                    context.stroke();
-                }
-            },
-
-            hitTest: function (marker, transform, ps, pd) {
-                var xScreen = transform.dataToScreenX(marker.x);
-
-                var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
-                var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
-
-                var isIntersecting =
-                    ps.x > xScreen - marker.size / 2 &&
-                    ps.x < xScreen + marker.size / 2 &&
-                    ps.y > ymin &&
-                    ps.y < ymax;
-
-                return isIntersecting;
-            },
-
-            getPadding: function (data) {
-                var padding = 0;
-                return { left: padding, right: padding, top: padding, bottom: padding };
-            }
-        };
-
-        export var BoxNoWhisker = {
-            draw: function (marker, plotRect, screenSize, transform, context) {
-
-                var msize = marker.size;
-                var shift = msize / 2;
-                var x = transform.dataToScreenX(marker.x);
-                var y = transform.dataToScreenY(marker.y);
-                var u68 = transform.dataToScreenY(marker.u68);
-                var l68 = transform.dataToScreenY(marker.l68);
-                var u95 = transform.dataToScreenY(marker.u95);
-                var l95 = transform.dataToScreenY(marker.l95);
-                var mean = transform.dataToScreenY(marker.y_mean);
-
-                context.beginPath();
-                context.strokeStyle = marker.border === undefined ? "black" : marker.border;
-
-                if (marker.color) context.fillRect(x - shift, l68, msize, u68 - l68);
-                context.strokeRect(x - shift, l68, msize, u68 - l68);
-
-                context.moveTo(x - shift, mean);
-                context.lineTo(x + shift, mean);
-
-                context.stroke();
-
-                if (marker.y_min !== undefined) {
-                    context.beginPath();
-                    context.arc(x, transform.dataToScreenY(marker.y_min), shift / 2, 0, 2 * Math.PI);
-                    context.stroke();
-                }
-
-                if (marker.y_max !== undefined) {
-                    context.beginPath();
-                    context.arc(x, transform.dataToScreenY(marker.y_max), shift / 2, 0, 2 * Math.PI);
-                    context.stroke();
-                }
-            },
-
-            hitTest: function (marker, transform, ps, pd) {
-                var xScreen = transform.dataToScreenX(marker.x);
-
-                var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
-                var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
-
-                var isIntersecting =
-                    ps.x > xScreen - marker.size / 2 &&
-                    ps.x < xScreen + marker.size / 2 &&
-                    ps.y > ymin &&
-                    ps.y < ymax;
-
-                return isIntersecting;
-            },
-
-            getPadding: function (data) {
-                var padding = 0;
-                return { left: padding, right: padding, top: padding, bottom: padding };
-            }
-        };
-
-        export var Whisker = {
-            draw: function (marker, plotRect, screenSize, transform, context) {
-
-                var msize = marker.size;
-                var shift = msize / 2;
-                var x = transform.dataToScreenX(marker.x);
-                var y = transform.dataToScreenY(marker.y);
-                var u68 = transform.dataToScreenY(marker.u68);
-                var l68 = transform.dataToScreenY(marker.l68);
-                var u95 = transform.dataToScreenY(marker.u95);
-                var l95 = transform.dataToScreenY(marker.l95);
-                var mean = transform.dataToScreenY(marker.y_mean);
-
-                context.beginPath();
-                context.strokeStyle = marker.border === undefined ? "black" : marker.border;
-
-                context.moveTo(x - shift, u95);
-                context.lineTo(x + shift, u95);
-
-                context.moveTo(x, u95);
-                context.lineTo(x, l95);
-
-                context.moveTo(x - shift, l95);
-                context.lineTo(x + shift, l95);
-
-                context.moveTo(x - shift, mean);
-                context.lineTo(x + shift, mean);
-
-                context.stroke();
-
-                if (marker.y_min !== undefined) {
-                    context.beginPath();
-                    context.arc(x, transform.dataToScreenY(marker.y_min), shift / 2, 0, 2 * Math.PI);
-                    context.stroke();
-                }
-
-                if (marker.y_max !== undefined) {
-                    context.beginPath();
-                    context.arc(x, transform.dataToScreenY(marker.y_max), shift / 2, 0, 2 * Math.PI);
-                    context.stroke();
-                }
-            },
-
-            getBoundingBox: function (marker, transform) {
-                var sizeX = transform.screenToDataX(marker.size);
-
-                var ymin = marker.y_min === undefined ? marker.l95 : marker.y_min;
-                var ymax = marker.y_max === undefined ? marker.u95 : marker.y_max;
-
-                return { x: marker.x - sizeX / 2, y: ymin, width: sizeX, height: Math.abs(ymax - ymin) };
-            },
-
-            hitTest: function (marker, transform, ps, pd) {
-                var xScreen = transform.dataToScreenX(marker.x);
-
-                var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
-                var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
-
-                var isIntersecting =
-                    ps.x > xScreen - marker.size / 2 &&
-                    ps.x < xScreen + marker.size / 2 &&
-                    ps.y > ymin &&
-                    ps.y < ymax;
-
-                return isIntersecting;
-            },
-
-            getPadding: function (data) {
-                var padding = 0;
-                return { left: padding, right: padding, top: padding, bottom: padding };
-            }
-        };
-
-        export var BullEye = {
-            draw: function (marker, plotRect, screenSize, transform, context) {
-
-                var mean = marker.y_mean;
-                var u95 = marker.u95;
-                var l95 = marker.l95;
-
-                if (marker.uncertainColorPalette) {
-                    u95 = RgbaToString(marker.uncertainColorPalette.getRgba(u95));
-                    l95 = RgbaToString(marker.uncertainColorPalette.getRgba(l95));
-                }
-
-                var msize = marker.size;
-                var shift = msize / 2;
-                var x = transform.dataToScreenX(marker.x);
-                var y = transform.dataToScreenY(marker.y);
-
-                if (x + shift < 0 || x - shift > screenSize.width) return;
-                if (y + shift < 0 || y - shift > screenSize.height) return;
-
-                drawShape(context, marker.bullEyeShape, x, y, msize, msize, 1, u95);
-                drawShape(context, marker.bullEyeShape, x, y, shift, shift, 1, l95);
-            },
-
-            hitTest: function (marker, transform, ps, pd) {
-                var xScreen = transform.dataToScreenX(marker.x);
-                var yScreen = transform.dataToScreenY(marker.y);
-
-                var isIntersecting =
-                    ps.x > xScreen - marker.size / 2 &&
-                    ps.x < xScreen + marker.size / 2 &&
-                    ps.y > yScreen - marker.size / 2 &&
-                    ps.y < yScreen + marker.size / 2;
-
-                return isIntersecting;
-            },
-
-            getPadding: function (data) {
-                var padding = 0;
-                return { left: padding, right: padding, top: padding, bottom: padding };
-            }
-        };
-
-        export var Petal = {
-
-            draw: function (marker, plotRect, screenSize, transform, context) {
-                var x0 = transform.dataToScreenX(marker.x);
-                var y0 = transform.dataToScreenY(marker.y);
-                if (x0 > screenSize.width || x0 < 0) return;
-                if (y0 > screenSize.height || y0 < 0) return;
-
-                var maxSize = marker.size / 2;
-                var minSize = maxSize * (1 - (marker.u95 - marker.l95) / marker.maxDelta);
-                if (marker.maxDelta <= 0) minSize = NaN;
-
-                Petal.drawSample(context, x0, y0, minSize, maxSize, marker.color);
-            },
-
-            drawSample: function (context, x, y, minSize, maxSize, color) {
-                var A, D;
-                var C = Math.random() * Math.PI * 2;
-                if (isNaN(minSize)) {
-                    A = 0;
-                    D = maxSize;
-                    context.fillStyle = "rgba(0, 0, 0, 0.2)";
-                }
-                else {
-                    A = (maxSize - minSize) / 2;
-                    D = (maxSize + minSize) / 2;
-                    context.fillStyle = color;
-                }
-                context.strokeStyle = "black";
-
-                context.beginPath();
-                var n = 1000;
-                var alpha = Math.PI * 2 / n;
-                for (var i = 0; i < n; i++) {
-                    var phi = alpha * i;
-                    var r = A * Math.sin(6 * phi + C) + D;
-                    if (i == 0)
-                        context.moveTo(x + r * Math.cos(phi), y + r * Math.sin(phi));
-                    else
-                        context.lineTo(x + r * Math.cos(phi), y + r * Math.sin(phi));
-                }
-                context.stroke();
-                context.closePath();
-                context.fill();
-
-                context.strokeStyle = "grey";
-                context.beginPath();
-                context.arc(x, y, 1, 0, Math.PI * 2);
-                context.stroke();
-                context.closePath();
-            },
-
-            getBoundingBox: function (marker) {
-                var r = marker.size / 2;
-                var xLeft = marker.x - r;
-                var yBottom = marker.y - r;
-                return { x: marker.x - r, y: marker.y - r, width: 2 * r, height: 2 * r };
-            },
-
-            hitTest: function (marker, transform, ps, pd) {
-                var x = transform.dataToScreenX(marker.x);
-                var y = transform.dataToScreenY(marker.y);
-                var r = marker.size / 2;
-                if (ps.x < x - r || ps.x > x + r) return false;
-                if (ps.y < y - r || ps.y > y + r) return false;
-                return true;
-            }
-        };
+        //    }
+        //}
+
+        //export var BoxWhisker = {
+        //    draw: function (marker, plotRect, screenSize, transform, context) {
+
+        //        var msize = marker.size;
+        //        var shift = msize / 2;
+        //        var x = transform.dataToScreenX(marker.x);
+        //        var y = transform.dataToScreenY(marker.y);
+        //        var u68 = transform.dataToScreenY(marker.u68);
+        //        var l68 = transform.dataToScreenY(marker.l68);
+        //        var u95 = transform.dataToScreenY(marker.u95);
+        //        var l95 = transform.dataToScreenY(marker.l95);
+        //        var mean = transform.dataToScreenY(marker.y_mean);
+
+        //        context.beginPath();
+        //        context.strokeStyle = marker.border === undefined ? "black" : marker.border;
+
+        //        if (marker.color) context.fillRect(x - shift, l68, msize, u68 - l68);
+        //        context.strokeRect(x - shift, l68, msize, u68 - l68);
+
+        //        context.moveTo(x - shift, u95);
+        //        context.lineTo(x + shift, u95);
+
+        //        context.moveTo(x, u95);
+        //        context.lineTo(x, u68);
+
+        //        context.moveTo(x, l68);
+        //        context.lineTo(x, l95);
+
+        //        context.moveTo(x - shift, l95);
+        //        context.lineTo(x + shift, l95);
+
+        //        context.moveTo(x - shift, mean);
+        //        context.lineTo(x + shift, mean);
+
+        //        context.stroke();
+
+        //        if (marker.y_min !== undefined) {
+        //            context.beginPath();
+        //            context.arc(x, transform.dataToScreenY(marker.y_min), shift / 2, 0, 2 * Math.PI);
+        //            context.stroke();
+        //        }
+
+        //        if (marker.y_max !== undefined) {
+        //            context.beginPath();
+        //            context.arc(x, transform.dataToScreenY(marker.y_max), shift / 2, 0, 2 * Math.PI);
+        //            context.stroke();
+        //        }
+        //    },
+
+        //    hitTest: function (marker, transform, ps, pd) {
+        //        var xScreen = transform.dataToScreenX(marker.x);
+
+        //        var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
+        //        var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
+
+        //        var isIntersecting =
+        //            ps.x > xScreen - marker.size / 2 &&
+        //            ps.x < xScreen + marker.size / 2 &&
+        //            ps.y > ymin &&
+        //            ps.y < ymax;
+
+        //        return isIntersecting;
+        //    },
+
+        //    getPadding: function (data) {
+        //        var padding = 0;
+        //        return { left: padding, right: padding, top: padding, bottom: padding };
+        //    }
+        //};
+
+        //export var BoxNoWhisker = {
+        //    draw: function (marker, plotRect, screenSize, transform, context) {
+
+        //        var msize = marker.size;
+        //        var shift = msize / 2;
+        //        var x = transform.dataToScreenX(marker.x);
+        //        var y = transform.dataToScreenY(marker.y);
+        //        var u68 = transform.dataToScreenY(marker.u68);
+        //        var l68 = transform.dataToScreenY(marker.l68);
+        //        var u95 = transform.dataToScreenY(marker.u95);
+        //        var l95 = transform.dataToScreenY(marker.l95);
+        //        var mean = transform.dataToScreenY(marker.y_mean);
+
+        //        context.beginPath();
+        //        context.strokeStyle = marker.border === undefined ? "black" : marker.border;
+
+        //        if (marker.color) context.fillRect(x - shift, l68, msize, u68 - l68);
+        //        context.strokeRect(x - shift, l68, msize, u68 - l68);
+
+        //        context.moveTo(x - shift, mean);
+        //        context.lineTo(x + shift, mean);
+
+        //        context.stroke();
+
+        //        if (marker.y_min !== undefined) {
+        //            context.beginPath();
+        //            context.arc(x, transform.dataToScreenY(marker.y_min), shift / 2, 0, 2 * Math.PI);
+        //            context.stroke();
+        //        }
+
+        //        if (marker.y_max !== undefined) {
+        //            context.beginPath();
+        //            context.arc(x, transform.dataToScreenY(marker.y_max), shift / 2, 0, 2 * Math.PI);
+        //            context.stroke();
+        //        }
+        //    },
+
+        //    hitTest: function (marker, transform, ps, pd) {
+        //        var xScreen = transform.dataToScreenX(marker.x);
+
+        //        var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
+        //        var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
+
+        //        var isIntersecting =
+        //            ps.x > xScreen - marker.size / 2 &&
+        //            ps.x < xScreen + marker.size / 2 &&
+        //            ps.y > ymin &&
+        //            ps.y < ymax;
+
+        //        return isIntersecting;
+        //    },
+
+        //    getPadding: function (data) {
+        //        var padding = 0;
+        //        return { left: padding, right: padding, top: padding, bottom: padding };
+        //    }
+        //};
+
+        //export var Whisker = {
+        //    draw: function (marker, plotRect, screenSize, transform, context) {
+
+        //        var msize = marker.size;
+        //        var shift = msize / 2;
+        //        var x = transform.dataToScreenX(marker.x);
+        //        var y = transform.dataToScreenY(marker.y);
+        //        var u68 = transform.dataToScreenY(marker.u68);
+        //        var l68 = transform.dataToScreenY(marker.l68);
+        //        var u95 = transform.dataToScreenY(marker.u95);
+        //        var l95 = transform.dataToScreenY(marker.l95);
+        //        var mean = transform.dataToScreenY(marker.y_mean);
+
+        //        context.beginPath();
+        //        context.strokeStyle = marker.border === undefined ? "black" : marker.border;
+
+        //        context.moveTo(x - shift, u95);
+        //        context.lineTo(x + shift, u95);
+
+        //        context.moveTo(x, u95);
+        //        context.lineTo(x, l95);
+
+        //        context.moveTo(x - shift, l95);
+        //        context.lineTo(x + shift, l95);
+
+        //        context.moveTo(x - shift, mean);
+        //        context.lineTo(x + shift, mean);
+
+        //        context.stroke();
+
+        //        if (marker.y_min !== undefined) {
+        //            context.beginPath();
+        //            context.arc(x, transform.dataToScreenY(marker.y_min), shift / 2, 0, 2 * Math.PI);
+        //            context.stroke();
+        //        }
+
+        //        if (marker.y_max !== undefined) {
+        //            context.beginPath();
+        //            context.arc(x, transform.dataToScreenY(marker.y_max), shift / 2, 0, 2 * Math.PI);
+        //            context.stroke();
+        //        }
+        //    },
+
+        //    getBoundingBox: function (marker, transform) {
+        //        var sizeX = transform.screenToDataX(marker.size);
+
+        //        var ymin = marker.y_min === undefined ? marker.l95 : marker.y_min;
+        //        var ymax = marker.y_max === undefined ? marker.u95 : marker.y_max;
+
+        //        return { x: marker.x - sizeX / 2, y: ymin, width: sizeX, height: Math.abs(ymax - ymin) };
+        //    },
+
+        //    hitTest: function (marker, transform, ps, pd) {
+        //        var xScreen = transform.dataToScreenX(marker.x);
+
+        //        var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
+        //        var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
+
+        //        var isIntersecting =
+        //            ps.x > xScreen - marker.size / 2 &&
+        //            ps.x < xScreen + marker.size / 2 &&
+        //            ps.y > ymin &&
+        //            ps.y < ymax;
+
+        //        return isIntersecting;
+        //    },
+
+        //    getPadding: function (data) {
+        //        var padding = 0;
+        //        return { left: padding, right: padding, top: padding, bottom: padding };
+        //    }
+        //};
+
+        //export var BullEye = {
+        //    draw: function (marker, plotRect, screenSize, transform, context) {
+
+        //        var mean = marker.y_mean;
+        //        var u95 = marker.u95;
+        //        var l95 = marker.l95;
+
+        //        if (marker.uncertainColorPalette) {
+        //            u95 = RgbaToString(marker.uncertainColorPalette.getRgba(u95));
+        //            l95 = RgbaToString(marker.uncertainColorPalette.getRgba(l95));
+        //        }
+
+        //        var msize = marker.size;
+        //        var shift = msize / 2;
+        //        var x = transform.dataToScreenX(marker.x);
+        //        var y = transform.dataToScreenY(marker.y);
+
+        //        if (x + shift < 0 || x - shift > screenSize.width) return;
+        //        if (y + shift < 0 || y - shift > screenSize.height) return;
+
+        //        drawShape(context, marker.bullEyeShape, x, y, msize, msize, 1, u95);
+        //        drawShape(context, marker.bullEyeShape, x, y, shift, shift, 1, l95);
+        //    },
+
+        //    hitTest: function (marker, transform, ps, pd) {
+        //        var xScreen = transform.dataToScreenX(marker.x);
+        //        var yScreen = transform.dataToScreenY(marker.y);
+
+        //        var isIntersecting =
+        //            ps.x > xScreen - marker.size / 2 &&
+        //            ps.x < xScreen + marker.size / 2 &&
+        //            ps.y > yScreen - marker.size / 2 &&
+        //            ps.y < yScreen + marker.size / 2;
+
+        //        return isIntersecting;
+        //    },
+
+        //    getPadding: function (data) {
+        //        var padding = 0;
+        //        return { left: padding, right: padding, top: padding, bottom: padding };
+        //    }
+        //};
+
+        //export var Petal = {
+
+        //    draw: function (marker, plotRect, screenSize, transform, context) {
+        //        var x0 = transform.dataToScreenX(marker.x);
+        //        var y0 = transform.dataToScreenY(marker.y);
+        //        if (x0 > screenSize.width || x0 < 0) return;
+        //        if (y0 > screenSize.height || y0 < 0) return;
+
+        //        var maxSize = marker.size / 2;
+        //        var minSize = maxSize * (1 - (marker.u95 - marker.l95) / marker.maxDelta);
+        //        if (marker.maxDelta <= 0) minSize = NaN;
+
+        //        Petal.drawSample(context, x0, y0, minSize, maxSize, marker.color);
+        //    },
+
+        //    drawSample: function (context, x, y, minSize, maxSize, color) {
+        //        var A, D;
+        //        var C = Math.random() * Math.PI * 2;
+        //        if (isNaN(minSize)) {
+        //            A = 0;
+        //            D = maxSize;
+        //            context.fillStyle = "rgba(0, 0, 0, 0.2)";
+        //        }
+        //        else {
+        //            A = (maxSize - minSize) / 2;
+        //            D = (maxSize + minSize) / 2;
+        //            context.fillStyle = color;
+        //        }
+        //        context.strokeStyle = "black";
+
+        //        context.beginPath();
+        //        var n = 1000;
+        //        var alpha = Math.PI * 2 / n;
+        //        for (var i = 0; i < n; i++) {
+        //            var phi = alpha * i;
+        //            var r = A * Math.sin(6 * phi + C) + D;
+        //            if (i == 0)
+        //                context.moveTo(x + r * Math.cos(phi), y + r * Math.sin(phi));
+        //            else
+        //                context.lineTo(x + r * Math.cos(phi), y + r * Math.sin(phi));
+        //        }
+        //        context.stroke();
+        //        context.closePath();
+        //        context.fill();
+
+        //        context.strokeStyle = "grey";
+        //        context.beginPath();
+        //        context.arc(x, y, 1, 0, Math.PI * 2);
+        //        context.stroke();
+        //        context.closePath();
+        //    },
+
+        //    getBoundingBox: function (marker) {
+        //        var r = marker.size / 2;
+        //        var xLeft = marker.x - r;
+        //        var yBottom = marker.y - r;
+        //        return { x: marker.x - r, y: marker.y - r, width: 2 * r, height: 2 * r };
+        //    },
+
+        //    hitTest: function (marker, transform, ps, pd) {
+        //        var x = transform.dataToScreenX(marker.x);
+        //        var y = transform.dataToScreenY(marker.y);
+        //        var r = marker.size / 2;
+        //        if (ps.x < x - r || ps.x > x + r) return false;
+        //        if (ps.y < y - r || ps.y > y + r) return false;
+        //        return true;
+        //    }
+        //};
        
-        export function createThumbnail (plotInfo: Plot.MarkersDefinition) {
-            var isSizeDataBound = plotInfo.size && plotInfo.size["median"];
-            var content = $("<div></div>");
+        //export function createThumbnail (plotInfo: Plot.MarkersDefinition) {
+        //    var isSizeDataBound = plotInfo.size && plotInfo.size["median"];
+        //    var content = $("<div></div>");
 
-            // Append canvas marker thumbnail. 
-            // Marker is drawn in color if color is fixed or in black is color is data series.
-            // Size of marker is always 18.
-            var canvas = $("<canvas class='dsv-plotcard-thumbnail'></canvas>").appendTo(content);
-            var size = 18;
-            var halfSize = size / 2;
-            var x1 = halfSize + 0.5;
-            var y1 = halfSize + 0.5;
-            canvas.prop({ width: size + 1, height: size + 1 });
-            var context = (<HTMLCanvasElement>canvas[0]).getContext("2d");
+        //    // Append canvas marker thumbnail. 
+        //    // Marker is drawn in color if color is fixed or in black is color is data series.
+        //    // Size of marker is always 18.
+        //    var canvas = $("<canvas class='dsv-plotcard-thumbnail'></canvas>").appendTo(content);
+        //    var size = 18;
+        //    var halfSize = size / 2;
+        //    var x1 = halfSize + 0.5;
+        //    var y1 = halfSize + 0.5;
+        //    canvas.prop({ width: size + 1, height: size + 1 });
+        //    var context = (<HTMLCanvasElement>canvas[0]).getContext("2d");
 
-            var sampleColor = typeof plotInfo.color == "string" ? plotInfo.color : "gray";
-            var sampleBorderColor = typeof plotInfo.borderColor == "string" ? plotInfo.borderColor : "gray";
+        //    var sampleColor = typeof plotInfo.color == "string" ? plotInfo.color : "gray";
+        //    var sampleBorderColor = typeof plotInfo.borderColor == "string" ? plotInfo.borderColor : "gray";
             
-            if (isSizeDataBound) {
-                Petal.drawSample(context, x1, y1, halfSize / 2, halfSize, sampleColor);
-            }
-            else {
-                var y = <Plot.Quantiles><any>plotInfo.y;
-                var shp = plotInfo.shape;
-                if (y.upper95 && y.lower95 && shp !== "boxwhisker" && shp !== "boxnowhisker" && shp !== "whisker")
-                    shp = "boxwhisker";
-                drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
-            }
-            return content;
-        }
+        //    if (isSizeDataBound) {
+        //        InteractiveDataDisplay.Petal.drawSample(context, x1, y1, halfSize / 2, halfSize, sampleColor);
+        //    }
+        //    else {
+        //        var y = <Plot.Quantiles><any>plotInfo.y;
+        //        var shp = plotInfo.shape;
+        //        if (y.upper95 && y.lower95 && shp !== "boxwhisker" && shp !== "boxnowhisker" && shp !== "whisker")
+        //            shp = "boxwhisker";
+        //        drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+        //    }
+        //    return content;
+        //}
 
-        export function UncertaintySizePaletteViewer(div, options?) {
-            var _host = div;
-            var _width = _host.width();
-            var _height = 65;
+        //export function UncertaintySizePaletteViewer(div, options?) {
+        //    var _host = div;
+        //    var _width = _host.width();
+        //    var _height = 65;
 
-            if (options !== undefined) {
-                if (options.width !== undefined)
-                    _width = options.width;
-                if (options.height !== undefined)
-                    _height = options.height;
-            }
+        //    if (options !== undefined) {
+        //        if (options.width !== undefined)
+        //            _width = options.width;
+        //        if (options.height !== undefined)
+        //            _height = options.height;
+        //    }
 
-            var _maxDelta = undefined;
-            Object.defineProperty(this, "maxDelta", {
-                get: function () { return _maxDelta; },
-                set: function (value) {
-                    if (value) {
-                        _maxDelta = value;
-                        renderPalette();
-                    }
-                }
-            });
+        //    var _maxDelta = undefined;
+        //    Object.defineProperty(this, "maxDelta", {
+        //        get: function () { return _maxDelta; },
+        //        set: function (value) {
+        //            if (value) {
+        //                _maxDelta = value;
+        //                renderPalette();
+        //            }
+        //        }
+        //    });
 
-            var canvas = $("<canvas height='50px'></canvas>");
-            _host[0].appendChild(canvas[0]);
-            var context = (<HTMLCanvasElement>canvas.get(0)).getContext("2d");
-            var markers = [
-                { x: 25, y: 20, min: 16, max: 16 },
-                { x: 75, y: 20, min: 10, max: 16 },
-                { x: 125, y: 20, min: 0, max: 16 }];
+        //    var canvas = $("<canvas height='50px'></canvas>");
+        //    _host[0].appendChild(canvas[0]);
+        //    var context = (<HTMLCanvasElement>canvas.get(0)).getContext("2d");
+        //    var markers = [
+        //        { x: 25, y: 20, min: 16, max: 16 },
+        //        { x: 75, y: 20, min: 10, max: 16 },
+        //        { x: 125, y: 20, min: 0, max: 16 }];
 
-            var renderPalette = function () {
-                //canvas[0].width = canvas[0].width;
-                // draw sample markers
-                for (var i = 0; i < markers.length; i++) {
-                    Petal.drawSample(context, markers[i].x, markers[i].y, markers[i].min, markers[i].max, "#484848");
-                }
-                // draw arrow
-                context.lineWidth = 1;
-                context.beginPath();
-                context.moveTo(20, 45.5);
-                context.lineTo(118, 45.5);
-                context.stroke();
-                context.closePath();
-                context.beginPath();
-                context.moveTo(118, 45.5);
-                context.lineTo(103.5, 40.5);
-                context.lineTo(103.5, 49.5);
-                context.lineTo(118, 45.5);
-                context.stroke();
-                context.closePath();
-                context.fill();
+        //    var renderPalette = function () {
+        //        //canvas[0].width = canvas[0].width;
+        //        // draw sample markers
+        //        for (var i = 0; i < markers.length; i++) {
+        //            InteractiveDataDisplay.Petal.drawSample(context, markers[i].x, markers[i].y, markers[i].min, markers[i].max, "#484848");
+        //        }
+        //        // draw arrow
+        //        context.lineWidth = 1;
+        //        context.beginPath();
+        //        context.moveTo(20, 45.5);
+        //        context.lineTo(118, 45.5);
+        //        context.stroke();
+        //        context.closePath();
+        //        context.beginPath();
+        //        context.moveTo(118, 45.5);
+        //        context.lineTo(103.5, 40.5);
+        //        context.lineTo(103.5, 49.5);
+        //        context.lineTo(118, 45.5);
+        //        context.stroke();
+        //        context.closePath();
+        //        context.fill();
             
-                // if maxData is known - stroke value
-                context.strokeStyle = "black";
-                context.fillStyle = "black";
-                context.lineWidth = 1;
-                if (_maxDelta) {
-                    context.fillText("X", 9, 49);
-                    context.fillText("X", 122, 49);
-                    context.beginPath();
-                    context.moveTo(134, 44.5);
-                    context.lineTo(141, 44.5);
-                    context.stroke();
-                    context.closePath();
-                    context.beginPath();
-                    context.moveTo(134, 48.5);
-                    context.lineTo(141, 48.5);
-                    context.stroke();
-                    context.closePath();
-                    context.beginPath();
-                    context.moveTo(137.5, 41);
-                    context.lineTo(137.5, 48);
-                    context.stroke();
-                    context.closePath();
-                    context.fillText("", round(_maxDelta, { min: 0, max: _maxDelta }, false), 145, 49);
-                }
-            }
-            renderPalette();
-            // add text 'uncertainty'
-            $("<div style='margin-left: 30px; margin-top: -10px'>uncertainty</div>").appendTo(_host);
-        }
+        //        // if maxData is known - stroke value
+        //        context.strokeStyle = "black";
+        //        context.fillStyle = "black";
+        //        context.lineWidth = 1;
+        //        if (_maxDelta) {
+        //            context.fillText("X", 9, 49);
+        //            context.fillText("X", 122, 49);
+        //            context.beginPath();
+        //            context.moveTo(134, 44.5);
+        //            context.lineTo(141, 44.5);
+        //            context.stroke();
+        //            context.closePath();
+        //            context.beginPath();
+        //            context.moveTo(134, 48.5);
+        //            context.lineTo(141, 48.5);
+        //            context.stroke();
+        //            context.closePath();
+        //            context.beginPath();
+        //            context.moveTo(137.5, 41);
+        //            context.lineTo(137.5, 48);
+        //            context.stroke();
+        //            context.closePath();
+        //            context.fillText("", round(_maxDelta, { min: 0, max: _maxDelta }, false), 145, 49);
+        //        }
+        //    }
+        //    renderPalette();
+        //    // add text 'uncertainty'
+        //    $("<div style='margin-left: 30px; margin-top: -10px'>uncertainty</div>").appendTo(_host);
+        //}
 
         var defaultPalette = InteractiveDataDisplay.ColorPalette.parse("black,#e5e5e5");
 
@@ -633,8 +633,8 @@ module ChartViewer {
 
                 if (resultMarkers.length > 0) {
                     var result = $("<div></div>");
-                    var thumbnail = Markers.createThumbnail(<Plot.MarkersDefinition><any>plotDefinition);
-                    thumbnail.css("float", "left").css("margin-right", 3).appendTo(result);
+                    //var thumbnail = Markers.createThumbnail(<Plot.MarkersDefinition><any>plotDefinition);
+                    //thumbnail.css("float", "left").css("margin-right", 3).appendTo(result);
 
                     var toolTip = plotDefinition.displayName != undefined ? plotDefinition.displayName : '(not specified)';
                     var ttHeader = $("<div></div>").addClass("probecard-title").text(toolTip);
@@ -659,7 +659,6 @@ module ChartViewer {
                 if (!plot.shape) {
                     plot.shape = "box";
                 }
-                plots[0].setTitles(plot.titles);
                 var drawArgs = {
                     x: undefined,
                     y: undefined,
@@ -723,16 +722,16 @@ module ChartViewer {
                     //Y is uncertainty, using box&whisker
                     switch (plot.shape) {
                         case "boxnowhisker":
-                            drawArgs.shape = Markers.BoxNoWhisker;
+                            drawArgs.shape = InteractiveDataDisplay.BoxNoWhisker;//Markers.BoxNoWhisker;
                             break;
                         case "boxwhisker":
-                            drawArgs.shape = Markers.BoxWhisker;
+                            drawArgs.shape = InteractiveDataDisplay.BoxWhisker;//Markers.BoxWhisker;
                             break;
                         case "whisker":
-                            drawArgs.shape = Markers.Whisker;
+                            drawArgs.shape = InteractiveDataDisplay.Whisker;//Markers.Whisker;
                             break;
                         default:
-                            drawArgs.shape = Markers.BoxWhisker;
+                            drawArgs.shape = InteractiveDataDisplay.BoxWhisker;//Markers.BoxWhisker;
                             break;
                     }
                     var y = <Plot.Quantiles><any>plot.y;
@@ -768,7 +767,7 @@ module ChartViewer {
                     drawArgs.colorPalette = Markers.BuildPalette(plot);
                 } else {
                     //Color is uncertainty data, using bull eye markers
-                    drawArgs.shape = Markers.BullEye;
+                    drawArgs.shape = InteractiveDataDisplay.BullEye;//Markers.BullEye;
                     drawArgs.bullEyeShape = plot.shape;
 
                     var color = <Plot.Quantiles>plot.color;
@@ -786,7 +785,7 @@ module ChartViewer {
                 if (plot.size && typeof plot.size["median"] !== "undefined") {
                     var size = <Plot.Quantiles>plot.size;
                     //Size is uncertainty data, using petalled markers
-                    drawArgs.shape = Markers.Petal;
+                    drawArgs.shape = InteractiveDataDisplay.Petal;//Markers.Petal;
                     drawArgs.u95 = CutArray(size.upper95, len);
                     drawArgs.l95 = CutArray(size.lower95, len);
 
@@ -819,7 +818,7 @@ module ChartViewer {
                 else {
                     drawArgs.size = plot.size = 8;
                 }
-                plots[0].draw(drawArgs);
+                plots[0].draw(drawArgs, plot.titles);
 
                 var getRange = function (arr) {
                     return { min: GetMin(arr), max: GetMax(arr) }
@@ -847,13 +846,13 @@ module ChartViewer {
         },
 
         createPlotCardContent: function (plotInfo) {
-            var plot = <Plot.MarkersDefinition><any>plotInfo;
-            var content = Markers.createThumbnail(plot);
+            //var plot = <Plot.MarkersDefinition><any>plotInfo;
+            var content;// = Markers.createThumbnail(plot);
 
-            // Append marker coordinates. 
-            var coordsDiv = $("<div></div>").width(150).addClass("dsv-plotcard-title").appendTo(content);
-            coordsDiv.addClass("dsv-plotcard-resolved").text(plotInfo.displayName);
-            $("<br/>").appendTo(content);
+            //// Append marker coordinates. 
+            //var coordsDiv = $("<div></div>").width(150).addClass("dsv-plotcard-title").appendTo(content);
+            //coordsDiv.addClass("dsv-plotcard-resolved").text(plotInfo.displayName);
+            //$("<br/>").appendTo(content);
 
             var result = {
                 content: content,
@@ -866,46 +865,46 @@ module ChartViewer {
 
 
             //// Add color palette
-            if (plot.colorPalette || Array.isArray(plot.color) || typeof (plot.size["median"]) != "undefined") {
-                $("<div></div>").text(getTitle(plotInfo, "color")).addClass("dsv-plotcard-title").width(180).css("margin-top", "5px").appendTo(content);
-                var cpalette = $("<div class='dsv-plotcard-palette'></div>").appendTo(content);
-                var paletteViewer = new InteractiveDataDisplay.ColorPaletteViewer(
-                    cpalette,
-                    null,
-                    {
-                        axisVisible: true,
-                        width: 180,
-                        height: 10
-                    });
-                paletteViewer.palette = Array.isArray(plot.color) ? Markers.BuildPalette(plot) : Markers.BuildPaletteForUncertain(plot);
-                result.colorPaletteViewer = paletteViewer;
-                result.colorPaletteDiv = cpalette;
-            }
+            //if (plot.colorPalette || Array.isArray(plot.color) || typeof (plot.color["median"]) != "undefined") {
+            //    $("<div></div>").text(getTitle(plotInfo, "color")).addClass("dsv-plotcard-title").width(180).css("margin-top", "5px").appendTo(content);
+            //    var cpalette = $("<div class='dsv-plotcard-palette'></div>").appendTo(content);
+            //    var paletteViewer = new InteractiveDataDisplay.ColorPaletteViewer(
+            //        cpalette,
+            //        null,
+            //        {
+            //            axisVisible: true,
+            //            width: 180,
+            //            height: 10
+            //        });
+            //    paletteViewer.palette = Array.isArray(plot.color) ? Markers.BuildPalette(plot) : Markers.BuildPaletteForUncertain(plot);
+            //    result.colorPaletteViewer = paletteViewer;
+            //    result.colorPaletteDiv = cpalette;
+            //}
 
-            //// Add size palette
-            if (plot.sizeRange || Array.isArray(plot.size) || typeof (plot.size["median"]) != "undefined") {
-                $("<div></div>").text(getTitle(plotInfo, "size")).addClass("dsv-plotcard-title").width(180).appendTo(content);
-                if (plot.size && typeof(plot.size["median"]) != "undefined") {
-                    var spalette = $("<div class='dsv-plotcard-regular' style='height:65px'></div>").appendTo(content);
-                    var paletteViewer = new Markers.UncertaintySizePaletteViewer(spalette);
-                    result.uncertaintySizePalette = paletteViewer;
-                    result.sizePaletteDiv = spalette;
-                }
-                else {
-                    var spalette = $("<div class='dsv-plotcard-palette'></div>").appendTo(content);
-                    var paletteViewer = new InteractiveDataDisplay.SizePaletteViewer(
-                        spalette,
-                        null,
-                        {
-                            axisVisible: true,
-                            width: 180,
-                            height: 30
-                        });                    
-                    paletteViewer.palette = Markers.BuildSizePalette(plot);
-                    result.sizePaletteViewer = paletteViewer;
-                    result.sizePaletteDiv = spalette;
-                }
-            }
+            ////// Add size palette
+            //if (plot.sizeRange || Array.isArray(plot.size) || typeof (plot.size["median"]) != "undefined") {
+            //    $("<div></div>").text(getTitle(plotInfo, "size")).addClass("dsv-plotcard-title").width(180).appendTo(content);
+            //    if (plot.size && typeof(plot.size["median"]) != "undefined") {
+            //        var spalette = $("<div class='dsv-plotcard-regular' style='height:65px'></div>").appendTo(content);
+            //        var paletteViewer = new Markers.UncertaintySizePaletteViewer(spalette);
+            //        result.uncertaintySizePalette = paletteViewer;
+            //        result.sizePaletteDiv = spalette;
+            //    }
+            //    else {
+            //        var spalette = $("<div class='dsv-plotcard-palette'></div>").appendTo(content);
+            //        var paletteViewer = new InteractiveDataDisplay.SizePaletteViewer(
+            //            spalette,
+            //            null,
+            //            {
+            //                axisVisible: true,
+            //                width: 180,
+            //                height: 30
+            //            });                    
+            //        paletteViewer.palette = Markers.BuildSizePalette(plot);
+            //        result.sizePaletteViewer = paletteViewer;
+            //        result.sizePaletteDiv = spalette;
+            //    }
+            //}
             return result;
         }
     }
