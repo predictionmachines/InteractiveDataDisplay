@@ -26,8 +26,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
 
     var _data = {};
     var _shape;
-    var _colorPalette, _sizePalette;
-    var _colorRange, _sizeRange;
+    var _colorPalette, _uncertainColorPalette, _sizePalette;
+    var _colorRange,_uncertainColorRange, _sizeRange;
     
     var _dataUpdated = false;
 
@@ -56,9 +56,10 @@ InteractiveDataDisplay.Markers = function (div, master) {
         _data.size = typeof initialData.size != "undefined" ? initialData.size : defaultSize;
         _data.color = typeof initialData.color != "undefined" ? initialData.color : defaultColor;
         _data.border = typeof initialData.border != "undefined" ? initialData.border : defaultBorder;
-        
+
         _shape = typeof initialData.shape != "undefined" ? initialData.shape : defaultShape;
         _colorPalette = typeof initialData.colorPalette != "undefined" ? initialData.colorPalette : undefined;
+        _uncertainColorPalette = typeof initialData.uncertainColorPalette != "undefined" ? initialData.uncertainColorPalette : undefined;
         _sizePalette = typeof initialData.sizePalette != "undefined" ? initialData.sizePalette : undefined;
     }
 
@@ -90,12 +91,19 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 _sizePalette = data[prop];
             else if (prop == "colorPalette" && data[prop] != "undefined")
                 _colorPalette = data[prop];
+            else if (prop == "uncertainColorPalette" && data[prop] != "undefined") {
+                _uncertainColorPalette = data[prop];
+                _data[prop] = data[prop] != "undefined" ? data[prop] : _data[prop];
+            }
             else
                 _data[prop] = data[prop] != "undefined" ? data[prop] : _data[prop];
         }
 
         if (_colorPalette && _colorPalette.isNormalized) {
-            _colorRange = InteractiveDataDisplay.Utils.getMinMax(_data.color);
+                _colorRange = InteractiveDataDisplay.Utils.getMinMax(_data.color);
+        }
+        if (_uncertainColorPalette && _uncertainColorPalette.isNormalized) {
+            _uncertainColorRange = { min: InteractiveDataDisplay.Utils.getMin(_data.l95), max: InteractiveDataDisplay.Utils.getMax(_data.u95) };
         }
         if (_sizePalette && _sizePalette.isNormalized) {
             _sizeRange = InteractiveDataDisplay.Utils.getMinMax(_data.size);
@@ -603,6 +611,22 @@ InteractiveDataDisplay.Markers = function (div, master) {
         configurable: false
     });
 
+    Object.defineProperty(this, "uncertainColorPalette", {
+        get: function () { return _uncertainColorPalette; },
+        set: function (value) {
+            if (value == _uncertainColorPalette) return;
+            _uncertainColorPalette = value;
+            if (value.isNormalized) {
+                _uncertainColorRange = { min: InteractiveDataDisplay.Utils.getMin(_data.l95), max: InteractiveDataDisplay.Utils.getMax(_data.u95) }//!!!
+                //_colorRange = InteractiveDataDisplay.Utils.getMinMax(_data.color);
+            }
+
+            this.fireAppearanceChanged("uncertainColorPalette");
+            this.requestNextFrameOrUpdate();
+        },
+        configurable: false
+    });
+
     Object.defineProperty(this, "size", {
         get: function () { return _data.size; },
         set: function (value) {
@@ -707,6 +731,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
         var sizeTitle;
         var refreshSize = function () {
             sizeIsArray = InteractiveDataDisplay.Utils.isArray(_data.size);
+            sizeIsPetal = (_data.u95 != undefined && _data.l95 != undefined || _data.l68 != undefined && _data.u68 != undefined) && _data.bullEyeShape == undefined && _data.y_mean == undefined;
             if (sizeIsArray) {
                 size = maxSize;
                 if (_sizePalette) {
@@ -731,7 +756,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                     }
                 }
             }
-            else if (_data.size != undefined && _data.u95 != undefined && _data.l95 != undefined && _data.bullEyeShape == undefined && _data.y_mean == undefined) {//!!
+            else if (sizeIsPetal) {
                 size = maxSize;
                     var szTitleText = that.getTitle("size");
                     if (sizeIsVisible == 0) {
@@ -778,6 +803,27 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 colorControl.palette = _colorPalette;
                 if (_colorPalette.isNormalized) {
                     colorControl.dataRange = _colorRange;
+                }
+                if (colorIsVisible == 1) {
+                    colorDivStyle.display = "block";
+                    colorIsVisible = 2;
+                }
+            }
+            else if (_uncertainColorPalette) {
+                var clrTitleText = that.getTitle("color");
+                if (colorIsVisible == 0) {
+                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
+                    colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
+                    colorDivStyle = colorDiv[0].style;
+                    var paletteDiv = $("<div></div>").appendTo(colorDiv);
+                    colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
+                    colorIsVisible = 2;
+                } else {
+                    colorTitle.text(clrTitleText);
+                }
+                colorControl.palette = _uncertainColorPalette;
+                if (_uncertainColorPalette.isNormalized) {
+                    colorControl.dataRange = _uncertainColorRange;
                 }
                 if (colorIsVisible == 1) {
                     colorDivStyle.display = "block";
@@ -920,7 +966,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
             function (event, propertyName) {
                 if (!propertyName || propertyName == "name")
                     setName();
-                if (!propertyName || propertyName == "color" || propertyName == "colorPalette") 
+                if (!propertyName || propertyName == "color" || propertyName == "colorPalette" || propertyName == "uncertainColorPalette") 
                     refreshColor();
                 if (!propertyName || propertyName == "size" || propertyName == "sizePalette")
                     refreshSize();                

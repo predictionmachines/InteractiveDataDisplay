@@ -3,7 +3,7 @@ var main;
     function start() {
         var el = document.getElementById("chart");
         ChartViewer.show(el, {
-            "elem1": Plot.line({
+            "elem1": { kind: "line3",
                 x: [1, 2, 3, 4],
                 y: [1, 4, 6, 9],
                 thickness: 3,
@@ -11,7 +11,7 @@ var main;
                 titles: {
                     x: "w", y: "c"
                 }
-            }),
+            },
             "elem2": Plot.markers({
                 x: [1, 2, 3, 4],
                 y: [1, 4, 6, 9],

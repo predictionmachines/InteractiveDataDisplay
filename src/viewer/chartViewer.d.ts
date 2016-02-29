@@ -75,7 +75,7 @@ declare module Plot {
     type HeatmapTitles = {
         x?: string;
         y?: string;
-        value?: string;
+        values?: string;
     };
     type BandTitles = {
         x?: string;

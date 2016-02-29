@@ -341,7 +341,8 @@ module ChartViewer {
             }
             plots[0].range = get2dRange(drawArgs.f);
             drawArgs.palette = Heatmap.BuildPalette(heatmap, plots[0].range.min, plots[0].range.max);
-            plots[0].draw(drawArgs);
+            plots[0].draw(drawArgs, heatmap.titles);
+
         },
 
         createPlotCardContent: function (plotInfo) {

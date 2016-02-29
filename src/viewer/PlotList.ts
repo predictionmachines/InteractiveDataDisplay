@@ -103,14 +103,14 @@ module ChartViewer {
         //    if (plot.Definition.kind == null) {
         //        var existingplot = getPlotById(plot.Id);
         //        if (PlotRegistry[existingplot.Definition.kind] !== undefined && plot.Definition["error"] == undefined)
-        //           card = PlotRegistry[existingplot.Definition.kind].createPlotCardContent(existingplot.Definition);
+        //           card = PlotRegistry[existingplot.Definition.kind].createPlotCardContent(existingplot.Plots);
         //        else
-        //            card = PlotRegistry["fallback"].createPlotCardContent(plot.Definition);//createDefaultCardContent(existingplot.Definition);
+        //            card = PlotRegistry["fallback"].createPlotCardContent(plot.Plots);//createDefaultCardContent(existingplot.Definition);
         //    } else {
         //        if (PlotRegistry[plot.Definition.kind] !== undefined && plot.Definition["error"] == undefined)
-        //            card = PlotRegistry[plot.Definition.kind].createPlotCardContent(plot.Definition);
+        //            card = PlotRegistry[plot.Definition.kind].createPlotCardContent(plot.Plots);
         //        else
-        //            card = PlotRegistry["fallback"].createPlotCardContent(plot.Definition);//createDefaultCardContent(plot.Definition);
+        //            card = PlotRegistry["fallback"].createPlotCardContent(plot.Plots);//createDefaultCardContent(plot.Definition);
         //    }
         //    _cards[plot.Id] = card;
         //    $("<div></div>").addClass("dsv-plotlist-card-islog").appendTo(card.content);

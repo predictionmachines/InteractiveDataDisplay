@@ -846,22 +846,23 @@ module ChartViewer {
         },
 
         createPlotCardContent: function (plotInfo) {
+            var result;
             //var plot = <Plot.MarkersDefinition><any>plotInfo;
-            var content;// = Markers.createThumbnail(plot);
+            //var content = Markers.createThumbnail(plot);
 
             //// Append marker coordinates. 
             //var coordsDiv = $("<div></div>").width(150).addClass("dsv-plotcard-title").appendTo(content);
             //coordsDiv.addClass("dsv-plotcard-resolved").text(plotInfo.displayName);
             //$("<br/>").appendTo(content);
 
-            var result = {
-                content: content,
-                colorPaletteViewer: undefined,
-                colorPaletteDiv: undefined,
-                sizePaletteViewer: undefined,
-                sizePaletteDiv: undefined,
-                uncertaintySizePalette: undefined
-            };
+            //var result = {
+            //    content: content,
+            //    colorPaletteViewer: undefined,
+            //    colorPaletteDiv: undefined,
+            //    sizePaletteViewer: undefined,
+            //    sizePaletteDiv: undefined,
+            //    uncertaintySizePalette: undefined
+            //};
 
 
             //// Add color palette

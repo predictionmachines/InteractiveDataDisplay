@@ -100,7 +100,7 @@ module ChartViewer {
                 else plotItems[id] = null;
             }
             plotItems = this.plotViewer.draw(plotItems); 
-            //this.plotList.draw(plotItems);
+          //  this.plotList.draw(plotItems);
         }
         
         updateLayout() {

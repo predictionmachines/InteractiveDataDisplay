@@ -5,7 +5,7 @@ module main {
         var el = document.getElementById("chart"); 
 
         ChartViewer.show(el, {
-            "elem1": Plot.line({
+            "elem1": { kind: "line3",//Plot.line({
                 x: [1, 2, 3, 4],
                 y: [1, 4, 6, 9],
                 thickness: 3,
@@ -13,7 +13,7 @@ module main {
                 titles: {
                     x: "w", y: "c"
                 }
-            }),
+            },//),
             "elem2": Plot.markers({
                 x: [1, 2, 3, 4],
                 y: [1, 4, 6, 9],

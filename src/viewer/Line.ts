@@ -114,57 +114,58 @@ module ChartViewer {
         },
 
         createPlotCardContent: function (plotInfo) {
-            var lineDef = <Plot.LineDefinition><any>plotInfo;
-            var titleDiv = $("<div class='dsv-plotcard-title'></div>");
-            var canvas = $("<canvas class='dsv-plotcard-thumbnail'></canvas>").appendTo(titleDiv);
-            $("<div></div>").addClass('dsv-plotcard-resolved').appendTo(titleDiv).text(plotInfo.displayName);
+            if (plotInfo !== undefined) plotInfo.forEach(function (graph) { graph.getLegend(); });
+            //var lineDef = <Plot.LineDefinition><any>plotInfo;
+            //var titleDiv = $("<div class='dsv-plotcard-title'></div>");
+            //var canvas = $("<canvas class='dsv-plotcard-thumbnail'></canvas>").appendTo(titleDiv);
+            //$("<div></div>").addClass('dsv-plotcard-resolved').appendTo(titleDiv).text(plotInfo.displayName);
 
-            canvas.prop({ width: 20, height: 20 });
-            var ctx = (<HTMLCanvasElement>canvas.get(0)).getContext("2d");
-            var isUncertainData = !Array.isArray(lineDef.y);
-            if (isUncertainData) {
-                ctx.globalAlpha = 0.5;
-                ctx.strokeStyle = lineDef.fill68;
-                ctx.fillStyle = lineDef.fill68;
+            //canvas.prop({ width: 20, height: 20 });
+            //var ctx = (<HTMLCanvasElement>canvas.get(0)).getContext("2d");
+            //var isUncertainData = !Array.isArray(lineDef.y);
+            //if (isUncertainData) {
+            //    ctx.globalAlpha = 0.5;
+            //    ctx.strokeStyle = lineDef.fill68;
+            //    ctx.fillStyle = lineDef.fill68;
 
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(0, 10);
-                ctx.lineTo(10, 20);
-                ctx.lineTo(20, 20);
-                ctx.lineTo(20, 10);
-                ctx.lineTo(10, 0);
-                ctx.lineTo(0, 0);
-                ctx.fill();
-                ctx.stroke();
-                ctx.closePath();
+            //    ctx.beginPath();
+            //    ctx.moveTo(0, 0);
+            //    ctx.lineTo(0, 10);
+            //    ctx.lineTo(10, 20);
+            //    ctx.lineTo(20, 20);
+            //    ctx.lineTo(20, 10);
+            //    ctx.lineTo(10, 0);
+            //    ctx.lineTo(0, 0);
+            //    ctx.fill();
+            //    ctx.stroke();
+            //    ctx.closePath();
 
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(0, 5);
-                ctx.lineTo(15, 20);
-                ctx.lineTo(20, 20);
-                ctx.lineTo(20, 15);
-                ctx.lineTo(5, 0);
-                ctx.lineTo(0, 0);
-                ctx.fill();
-                ctx.stroke();
-                ctx.closePath();
-            }
+            //    ctx.beginPath();
+            //    ctx.moveTo(0, 0);
+            //    ctx.lineTo(0, 5);
+            //    ctx.lineTo(15, 20);
+            //    ctx.lineTo(20, 20);
+            //    ctx.lineTo(20, 15);
+            //    ctx.lineTo(5, 0);
+            //    ctx.lineTo(0, 0);
+            //    ctx.fill();
+            //    ctx.stroke();
+            //    ctx.closePath();
+            //}
 
-            ctx.globalAlpha = 1.0;
-            ctx.strokeStyle = lineDef.stroke;
-            ctx.lineWidth = lineDef.thickness;
+            //ctx.globalAlpha = 1.0;
+            //ctx.strokeStyle = lineDef.stroke;
+            //ctx.lineWidth = lineDef.thickness;
 
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(20, 20);
-            ctx.stroke();
-            ctx.closePath();
+            //ctx.beginPath();
+            //ctx.moveTo(0, 0);
+            //ctx.lineTo(20, 20);
+            //ctx.stroke();
+            //ctx.closePath();
 
-            return {
-                content: titleDiv
-            }
+            //return {
+            //    content: titleDiv
+            //}
         }
     }
 }

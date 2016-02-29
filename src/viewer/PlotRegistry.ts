@@ -12,7 +12,7 @@ module ChartViewer {
     export interface IDDPlotFactory {
         initialize(plotDefinition: PlotInfo, viewState, chart: IDDPlot): IDDPlot[];
         draw(plots: IDDPlot[], plotDefinition: PlotInfo): void;
-        createPlotCardContent(plotDefinition: PlotInfo): PlotCardContent;
+        createPlotCardContent(plotDefinition);
     }
     /* A libary of plots supported by the ChartViewer. */
     export var PlotRegistry: PlotRegistry = {}

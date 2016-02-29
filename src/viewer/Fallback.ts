@@ -26,6 +26,7 @@ module ChartViewer {
         },
 
         createPlotCardContent: function (plotInfo) {
+            
             var content = $("<div></div>");
             if (plotInfo.displayName != undefined) {
                 var titleDiv = $("<div class='dsv-plotcard-title'></div>");
@@ -74,10 +75,6 @@ module ChartViewer {
         this.getLegend = function () {
             var div = $("<div class='idd-legend-item'></div>");
 
-            var canvas = $("<canvas style='margin-right: 15px'></canvas>").appendTo(div);
-            canvas.prop({ width: 20, height: 20 });
-            var ctx = (<HTMLCanvasElement>canvas.get(0)).getContext("2d");
-           
             var that = this;
             var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
             var contentDiv = $("<div class='plotcard-error'></div>").appendTo(div);
