@@ -321,7 +321,8 @@ body {
     -webkit-background-size: 10px;
     background-size: 10px;
     background-repeat: no-repeat;
-    background-position-y: center;
+    background-position: center center;
+    /*background-position-y: center;*/
 }
 
 .dsv-leftpanelhidebutton:hover {
@@ -338,7 +339,8 @@ body {
     -webkit-background-size: 10px;
     background-size: 10px;
     background-repeat: no-repeat;
-    background-position-y: center;
+    background-position: center center;
+    /*background-position-y: center;*/
 }
 
 .dsv-leftpanelshowbutton:hover {
