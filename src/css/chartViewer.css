@@ -425,6 +425,10 @@ body {
     color: gray;
     font-style: italic;
 }
+.plotcard-error {
+    color: red;
+    font-style: italic;
+}
 .dsv-plotcard-title {
     margin-left: 4px;
     white-space: nowrap;
