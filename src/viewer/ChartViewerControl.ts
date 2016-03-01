@@ -50,12 +50,11 @@ module ChartViewer {
 
             this.plotViewer = new PlotViewer(controlDiv.find(".dsv-visualization-preview"), navigationDiv, this.persistentViewState, this.transientViewState);
             var plotListDiv = controlDiv.find(".plotlist");
-            //var leg = new InteractiveDataDisplay.Legend(this.plotViewer.iddChart, plotListDiv);
             this.plotList = new PlotList(plotListDiv, this.plotViewer, this.persistentViewState, this.transientViewState);
-            //this.plotList.isEditable = false;
-            //this.plotList.subscribe(function (args) {
-            //    that.plotViewer.draw(args);
-            //});
+            this.plotList.isEditable = false;
+            this.plotList.subscribe(function (args) {
+                that.plotViewer.draw(args);
+            });
             hidebutton.click(function () {
                 if (isLeftpanelShown) {
                     isLeftpanelShown = false;
@@ -100,7 +99,7 @@ module ChartViewer {
                 else plotItems[id] = null;
             }
             plotItems = this.plotViewer.draw(plotItems); 
-          //  this.plotList.draw(plotItems);
+            this.plotList.draw(plotItems);
         }
         
         updateLayout() {

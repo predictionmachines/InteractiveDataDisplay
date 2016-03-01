@@ -740,7 +740,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                         sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
                         sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
                         sizeDivStyle = sizeDiv[0].style;
-                        var paletteDiv = $("<div></div>").appendTo(sizeDiv);
+                        var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(sizeDiv);
                         sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
                         sizeIsVisible = 2;
                     } else {
@@ -763,7 +763,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                         sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
                         sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
                         sizeDivStyle = sizeDiv[0].style;
-                        var paletteDiv = $("<div></div>").appendTo(sizeDiv);
+                        var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(sizeDiv);
                         sizeControl = new InteractiveDataDisplay.UncertaintySizePaletteViewer(paletteDiv);
                         sizeIsVisible = 2;
                     } else {
@@ -794,7 +794,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                     colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
                     colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                     colorDivStyle = colorDiv[0].style;
-                    var paletteDiv = $("<div></div>").appendTo(colorDiv);
+                    var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(colorDiv);
                     colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
                     colorIsVisible = 2;
                 } else {
@@ -815,7 +815,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                     colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
                     colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                     colorDivStyle = colorDiv[0].style;
-                    var paletteDiv = $("<div></div>").appendTo(colorDiv);
+                    var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(colorDiv);
                     colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
                     colorIsVisible = 2;
                 } else {

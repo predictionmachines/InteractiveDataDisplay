@@ -25,22 +25,25 @@ module ChartViewer {
             
         },
 
-        createPlotCardContent: function (plotInfo) {
-            
-            var content = $("<div></div>");
-            if (plotInfo.displayName != undefined) {
-                var titleDiv = $("<div class='dsv-plotcard-title'></div>");
-                $("<div></div>").addClass('dsv-plotcard-resolved').appendTo(titleDiv).text(plotInfo.displayName);
-                titleDiv.appendTo(content);
-            }
-            var message = "";
-            if (plotInfo["error"]) message += plotInfo["error"]; 
-            else message += 'kind "' + plotInfo.kind + '" is unknown';
-            $("<div></div>").addClass('dsv-plotcard-unresolved').appendTo(content).text(message);
-
+        createPlotCardContent: function (plot) {
+            var legend = plot[0].getLegend();
             return {
-                content: content
-            }
+                content: legend.div
+            };
+            //var content = $("<div></div>");
+            //if (plotInfo.displayName != undefined) {
+            //    var titleDiv = $("<div class='dsv-plotcard-title'></div>");
+            //    $("<div></div>").addClass('dsv-plotcard-resolved').appendTo(titleDiv).text(plotInfo.displayName);
+            //    titleDiv.appendTo(content);
+            //}
+            //var message = "";
+            //if (plotInfo["error"]) message += plotInfo["error"]; 
+            //else message += 'kind "' + plotInfo.kind + '" is unknown';
+            //$("<div></div>").addClass('dsv-plotcard-unresolved').appendTo(content).text(message);
+
+            //return {
+            //    content: content
+            //}
         }
     }
 

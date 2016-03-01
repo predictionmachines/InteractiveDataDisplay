@@ -128,11 +128,16 @@ module ChartViewer {
 
     PlotRegistry["heatmap"] = {
         initialize(plotDefinition: PlotInfo, viewState, chart: IDDPlot) {
-            var heatmap = chart.heatmap(plotDefinition.displayName);
             var div = $("<div></div>")
+                .attr("data-idd-name", plotDefinition.displayName)
+                .appendTo(chart.host);
+            var heatmap = new InteractiveDataDisplay.Heatmap(div, chart.master);
+            chart.addChild(heatmap);
+            
+            var div2 = $("<div></div>")
                 .attr("data-idd-name", plotDefinition.displayName + "__nav_")
                 .appendTo(chart.host);
-            var heatmap_nav = new InteractiveDataDisplay.Heatmap(div, chart.master);
+            var heatmap_nav = new InteractiveDataDisplay.Heatmap(div2, chart.master);
             heatmap_nav.getLegend = function () {
                 return undefined;
             };
@@ -345,28 +350,10 @@ module ChartViewer {
 
         },
 
-        createPlotCardContent: function (plotInfo) {
-            var heatmap = <Plot.HeatmapDefinition><any>plotInfo;
-            var content = $("<div></div>");
-            var titleDiv = $("<div></div>").appendTo(content);
-
-            $("<div></div>").text(heatmap.displayName).addClass("dsv-plotlist-resolved").addClass("dsv-plotcard-title").width(180).appendTo(titleDiv);
-
-            var paramStr = "(" + getTitle(plotInfo, "x") + ", " + getTitle(plotInfo, "y") + ")";
-            var axesDiv = $("<div></div>").addClass("dsv-plotcard-regular").addClass("dsv-plotcard-resolved").width(180).text(paramStr).appendTo(content);
-            var palette = Heatmap.BuildPalette(heatmap, 0, 1);
-            var paletteDiv = $("<div class='dsv-plotcard-palette' style='width:220px;height:50px'></div>").addClass("dsv-plotcard-regular").appendTo(content);
-            var paletteViewer = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, null, {
-                axisVisible: true,
-                width: 180,
-                height: 10
-            });
-            paletteViewer.palette = palette;
-
+        createPlotCardContent: function (plot) {
+            var legend = plot[0].getLegend();
             return {
-                content: content,
-                paletteViewer: paletteViewer,
-                paletteDiv: paletteDiv,
+                content: legend.div
             };
         }
     }

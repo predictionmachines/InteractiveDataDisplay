@@ -575,9 +575,11 @@ InteractiveDataDisplay.ColorPalette.HSLtoRGB = function (hslaColor) {
 
 InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     var _host = div;
+    var _palette = palette;
     var _width = _host.width();
     var _height = 20;
     var _axisVisible = true;
+    var _dataRange = undefined;
 
     // Get initial settings from options
     if (options !== undefined) {
@@ -592,6 +594,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     // canvas to render palette
     var _canvas = $("<canvas height='" + _height + "px'" + "width='" + _width + "px' style='display: block'></canvas>");
     _host[0].appendChild(_canvas[0]);
+    var _ctx = _canvas.get(0).getContext("2d");
 
     var _axisDiv = null;
     var _axis = null;
@@ -630,7 +633,6 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
         configurable: false
     });
 
-    var _palette = palette;
     Object.defineProperty(this, "palette", {
         get: function () { return _palette; },
         set: function (value) {
@@ -644,7 +646,6 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
         configurable: false
     });
 
-    var _dataRange = undefined;
     Object.defineProperty(this, "dataRange", {
         get: function () { return _dataRange; },
         set: function (value) {
@@ -658,7 +659,6 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
         configurable: false
     });
 
-    var _ctx = _canvas.get(0).getContext("2d");
 
     var renderPalette = function () {
         var alpha = (_palette.range.max - _palette.range.min) / _width;

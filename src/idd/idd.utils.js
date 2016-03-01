@@ -140,7 +140,29 @@ InteractiveDataDisplay.Utils =
             }
             return { min: min, max: max };
         },
+        getMin: function (array) {
+            var min = undefined;
+            if (array != undefined) {
+                for (var i = 0; i < array.length; i++) {
+                    if (!isNaN(array[i]) && (min === undefined || min > array[i])) {
+                        min = array[i];
+                    }
+                }
+            }
 
+            return min;
+        },
+        getMax: function (array) {
+            var max = undefined;
+            if (array != undefined) {
+                for (var i = 0; i < array.length; i++) {
+                    if (!isNaN(array[i]) && (max === undefined || max < array[i])) {
+                        max = array[i];
+                    }
+                }
+            }
+            return max;
+        },
         getMinMaxForPair: function (arrayx, arrayy) {
             if (!arrayx || arrayx.length === 0) return undefined;
             if (!arrayy || arrayx.length !== arrayy.length) throw 'Arrays should be equal';
