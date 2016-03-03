@@ -56,6 +56,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
         _data.size = typeof initialData.size != "undefined" ? initialData.size : defaultSize;
         _data.color = typeof initialData.color != "undefined" ? initialData.color : defaultColor;
         _data.border = typeof initialData.border != "undefined" ? initialData.border : defaultBorder;
+        _data.formatter = {};
         
         _shape = typeof initialData.shape != "undefined" ? initialData.shape : defaultShape;
         _colorPalette = typeof initialData.colorPalette != "undefined" ? initialData.colorPalette : undefined;
@@ -548,15 +549,17 @@ InteractiveDataDisplay.Markers = function (div, master) {
     this.getTooltip = function (xd, yd, xp, yp) {
         var that = this;
         var resultMarkers = that.findToolTipMarkers(xd, yd, xp, yp);
+        //_data["formatter"] = {};
         var buildTooltip = function (markerInfo) {
             var content = undefined;
             for (var prop in markerInfo) {
                 if (markerInfo.hasOwnProperty(prop)) {
                     var propTitle = that.getTitle(prop);
+                    _data["formatter"][prop] = new InteractiveDataDisplay.AdaptiveFormatter(_data[prop]);
                     if (content)
-                        content += "<br/><b>" + propTitle + "</b>: " + markerInfo[prop];
+                        content += "<br/><b>" + propTitle + "</b>: " + _data["formatter"][prop].toString(markerInfo[prop]);
                     else
-                        content = "<b>" + propTitle + "</b>: " + markerInfo[prop];
+                        content = "<b>" + propTitle + "</b>: " + _data["formatter"][prop].toString(markerInfo[prop]);
                 }
             }
             return "<div>" + content + "</div>";
@@ -949,6 +952,5 @@ InteractiveDataDisplay.AdaptMarkerSize = function (markers, plotRect, screenSize
     else if (adaptiveSize > maxAdaptiveSize) adaptiveSize = maxAdaptiveSize;
     markers.size = adaptiveSize;
 };
-
 
 

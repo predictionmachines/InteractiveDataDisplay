@@ -1188,8 +1188,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                                 xd = my_xd;
                                 yd = my_yd;
 
+                                var formatter1 = new InteractiveDataDisplay.AdaptiveFormatter(_master.visibleRect.x, _master.visibleRect.x + _master.visibleRect.width);
+                                var formatter2 = new InteractiveDataDisplay.AdaptiveFormatter(_master.visibleRect.y, _master.visibleRect.y + _master.visibleRect.height);
                                 if (_tooltipSettings === undefined || _tooltipSettings.showCursorCoordinates !== false)
-                                    tooltips.push("<div class='idd-tooltip-coordinates'>" + xd + ", " + yd + "</div>");
+                                    tooltips.push("<div class='idd-tooltip-coordinates'>" + formatter1.toString(xd) + ", " + formatter2.toString(yd) + "</div>");
                             }
                             tooltips.push(myTooltip);
                         }

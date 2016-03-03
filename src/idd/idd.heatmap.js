@@ -68,6 +68,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var _palette;
     var _dataChanged;
     var _paletteColors;
+    var _formatter;
 
     loadOpacity((initialData && typeof (initialData.opacity) != 'undefined') ? parseFloat(initialData.opacity) : 1.0);
     loadPalette((initialData && typeof (initialData.palette) != 'undefined') ? initialData.palette : InteractiveDataDisplay.palettes.grayscale);
@@ -83,8 +84,8 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             for (var j = 0; j < m; j++) {
                 var v = fi[j];
                 if (v == v) {
-                    if (v > _fmax) _fmax = v;
-                    else if (v < _fmin) _fmin = v;
+                    if (v > _fmax || isNaN(_fmax)) _fmax = v;
+                    else if (v < _fmin || isNaN(_fmin)) _fmin = v;
                 }
             }
         }
@@ -130,6 +131,10 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         _x = x;
         _y = y;
         _f = f;
+
+        findFminmax();
+        _formatter = InteractiveDataDisplay.AdaptiveFormatter(_fmin, _fmax);
+
         if (x.length == n) {
             if (y.length != m) throw "Data series y must have length equal to length of data series f by second dimension";
             _mode = 'gradient';
@@ -468,11 +473,12 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     this.getTooltip = function (xd, yd) {
         if (_f === undefined)
             return;
-
+         
         var value = this.getValue(xd, yd);
         if (value == null) return;
+        var str;
         return "<div>" + (this.name || "heatmap") +
-            ": " + value + "</div>";
+            ": " + _formatter.toString(value) + "</div>";
     };
 
 
