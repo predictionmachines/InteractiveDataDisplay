@@ -467,3 +467,9 @@ body {
     margin-left: 10px;
     margin-top: 3px;
 }
+@media print {    
+    .no-print, .no-print *
+    {
+        display: none !important;
+    }
+}

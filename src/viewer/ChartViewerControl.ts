@@ -41,6 +41,7 @@ module ChartViewer {
             leftPanel.append($("<div class='plotlist'></div>"));
             rightPanel.append($("<div class='dsv-visualization-preview'></div>"));
             var navigationDiv = $("<div class='dsv-navigation-container'></div>").appendTo(visControl);
+            navigationDiv.addClass('no-print');
             // creating hide/show leftpanel button
             var rightpanel = this.rightpanel = controlDiv.find(".dsv-rightpanel");
             var leftpanel = controlDiv.find(".dsv-leftpanel");
