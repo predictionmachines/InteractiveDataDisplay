@@ -196,7 +196,7 @@ InteractiveDataDisplay.Petal = {
         var y1 = halfSize + 0.5;
         var context = canvas[0].getContext("2d");
         var sampleColor = "gray";
-        var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray"; 
+        var sampleBorderColor = "gray"; 
         
         InteractiveDataDisplay.Petal.drawSample(context, x1, y1, halfSize / 2, halfSize, sampleColor);
         
@@ -251,8 +251,8 @@ InteractiveDataDisplay.BullEye = {
           var x1 = halfSize + 0.5;
           var y1 = halfSize + 0.5;
           var context = canvas[0].getContext("2d");
-          var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
-          var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+          var sampleColor = "gray";
+          var sampleBorderColor = "gray";
 
           drawShape(context, drawData.bullEyeShape, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
 
@@ -337,9 +337,7 @@ InteractiveDataDisplay.BoxWhisker = {
         var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
         var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
 
-        var shp = drawData.shape;
-        if (drawData.u95 && drawData.l95 && shp !== "boxwhisker" && shp !== "boxnowhisker" && shp !== "whisker")
-            shp = "boxwhisker";
+        var shp = "boxwhisker";
         drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
 
         return canvas;
@@ -411,9 +409,7 @@ InteractiveDataDisplay.BoxNoWhisker = {
         var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
         var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
 
-        var shp = drawData.shape;
-        if (drawData.u95 && drawData.l95 && shp !== "boxwhisker" && shp !== "boxnowhisker" && shp !== "whisker")
-            shp = "boxwhisker";
+        var shp = "boxnowhisker";
         drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
 
         return canvas;
@@ -496,12 +492,10 @@ InteractiveDataDisplay.Whisker = {
         var x1 = halfSize + 0.5;
         var y1 = halfSize + 0.5;
         var context = canvas[0].getContext("2d");
-        var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
+        var sampleColor = "white";
         var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
 
-        var shp = drawData.shape;
-        if (drawData.u95 && drawData.l95 && shp !== "boxwhisker" && shp !== "boxnowhisker" && shp !== "whisker")
-            shp = "boxwhisker";
+        var shp = "whisker";
         drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
 
         return canvas;

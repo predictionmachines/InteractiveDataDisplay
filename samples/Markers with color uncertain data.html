@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
-    <title>Markers with color uncertain datA</title>
+    <title>Show uncertain values using bull-eyes</title>
     <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
     <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
@@ -25,9 +25,8 @@
             var color_u95 = [];
             var x = [];
             var y = [];
-            var colorPalette = InteractiveDataDisplay.ColorPalette.parse('brown, orange, yellow, lightgreen, blue');
-            var allTextLines = data.split(/\r\n|\n/);
-            var headers = allTextLines[0].split(',');
+            var colorPalette = InteractiveDataDisplay.ColorPalette.parse('brown, orange, yellow, lightgreen, blue').absolute(0.0039, 8.849);
+
             var allTextLines = data.split(/\r\n|\n/);
             var headers = allTextLines[0].split(',');
             for (var i = 1; i < allTextLines.length; i++) {
@@ -44,16 +43,15 @@
                     }
                 }
             }
-            
             markers.draw(
-                { x: x, y: y, color: color_mean, shape: InteractiveDataDisplay.BullEye, bullEyeShape: 'circle', uncertainColorPalette: colorPalette, size: 15, u95: color_u95, l95: color_l95, u68: color_u68, l68: color_l68 },
+                { x: x, y: y, shape: InteractiveDataDisplay.BullEye, bullEyeShape: 'circle', uncertainColorPalette: colorPalette, size: 15, u95: color_u95, l95: color_l95 },
                 { x: "lon", y: "lat", color: "wheat square", size: "wheat" });
         });
     </script>
 </head>
 <body>
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
-        <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Markers with color uncertain data</div>
+        <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Show uncertain values using bull-eyes</div>
         <div data-idd-plot="bingMaps"></div>
         <div data-idd-name="markers" data-idd-plot="markers">
         </div>

@@ -60,6 +60,49 @@ module ChartViewer {
                     return undefined;
 
                 var resultMarkers = markerGraph.findToolTipMarkers(xd, yd, xp, yp);
+                var buildTooltip = function (markerInfo) {
+
+                    var index = markerInfo.index;
+
+                    var content = undefined;
+                    for (var prop in markerGraph.ttData) {
+                        if (content) {
+                            if (markerGraph.ttData[prop] != undefined && markerGraph.ttData[prop] instanceof Array)
+                                if (markerGraph.ttData[prop].Column != undefined)
+                                    content += "<br/>" + markerGraph.ttData[prop].Column + ": " + markerGraph.ttFormatters[prop].toString(markerGraph.ttData[prop][index]);
+                                else
+                                    content += "<br/>" + prop + ": " + markerGraph.ttFormatters[prop].toString(markerGraph.ttData[prop][index]);
+                        } else {
+                            if (markerGraph.ttData[prop] != undefined)
+                                if (markerGraph.ttData[prop].Column != undefined)
+                                    content = markerGraph.ttData[prop].Column + ": " + markerGraph.ttFormatters[prop].toString(markerGraph.ttData[prop][index]);
+                                else
+                                    content = prop + ": " + markerGraph.ttFormatters[prop].toString(markerGraph.ttData[prop][index]);
+                        }
+                    }
+                    content += "<br/>index: " + index;
+                    return "<div style='margin-left: 10px; font-size: 11pt;'>" + content + "</div>";
+                };
+
+                if (resultMarkers.length > 0) {
+                    var result = $("<div></div>");
+                    //var thumbnail = Markers.createThumbnail(<Plot.MarkersDefinition><any>plotDefinition);
+                    //thumbnail.css("float", "left").css("margin-right", 3).appendTo(result);
+
+                    var toolTip = plotDefinition.displayName != undefined ? plotDefinition.displayName : '(not specified)';
+                    var ttHeader = $("<div></div>").addClass("probecard-title").text(toolTip);
+                    toolTip = "";
+                    for (var i = 0; i < resultMarkers.length; i++) {
+                        toolTip += buildTooltip(resultMarkers[i]);
+                        if (i < resultMarkers.length - 1) {
+                            toolTip += "<br/>";
+                        }
+                    }
+                    var ttContent = $("<div>" + toolTip + "</div>");
+                    ttHeader.appendTo(result);
+                    ttContent.appendTo(result);
+                    return result;
+                }
             };
             return [markerGraph];
         },
@@ -132,16 +175,16 @@ module ChartViewer {
                     //Y is uncertainty, using box&whisker
                     switch (plot.shape) {
                         case "boxnowhisker":
-                            drawArgs.shape = InteractiveDataDisplay.BoxNoWhisker;//Markers.BoxNoWhisker;
+                            drawArgs.shape = InteractiveDataDisplay.BoxNoWhisker;
                             break;
                         case "boxwhisker":
-                            drawArgs.shape = InteractiveDataDisplay.BoxWhisker;//Markers.BoxWhisker;
+                            drawArgs.shape = InteractiveDataDisplay.BoxWhisker;
                             break;
                         case "whisker":
-                            drawArgs.shape = InteractiveDataDisplay.Whisker;//Markers.Whisker;
+                            drawArgs.shape = InteractiveDataDisplay.Whisker;
                             break;
                         default:
-                            drawArgs.shape = InteractiveDataDisplay.BoxWhisker;//Markers.BoxWhisker;
+                            drawArgs.shape = InteractiveDataDisplay.BoxWhisker;
                             break;
                     }
                     var y = <Plot.Quantiles><any>plot.y;

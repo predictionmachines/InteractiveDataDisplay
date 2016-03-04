@@ -260,7 +260,6 @@ InteractiveDataDisplay.Markers = function (div, master) {
             var sizeIsArray = markersData.size.isArray;
             var colorPaletteNormalized = _colorPalette && _colorPalette.isNormalized;
             var sizePaletteNormalized = _sizePalette && _sizePalette.isNormalized;
-            
             if (!colorIsArray) {
                 context.strokeStyle = localColor;
                 context.fillStyle = localColor; // for single points surrounded with missing values
