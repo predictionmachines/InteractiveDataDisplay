@@ -139,7 +139,27 @@
     margin-bottom: 1px;
     font-size: smaller;
 }
+.idd-legend-isselected-true {
+    height: 20px;
+    width: 20px;
+    background-image: url('icons/eyeBlue.png');
+    background-size: cover;
+    z-index: 1000;
+    position: absolute;
+    top: 7px;
+    right: 4px;
+}
 
+.idd-legend-isselected-false {
+    height: 20px;
+    width: 20px;
+    background-image: url('icons/eye.png');
+    background-size: cover;
+    z-index: 1000;
+    position: absolute;
+    top: 7px;
+    right: 4px;
+}
 .idd-verticalText
 {
     transform: rotate(-90deg);

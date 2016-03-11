@@ -11,27 +11,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
     <script src="../dist/idd.min.js"></script>
 
-    <script type="text/javascript">
-        var N = 1000;
-        var phase = 0;
+     <script type="text/javascript">
+         var N = 1000;
+         var phase = 0;
 
-        $(document).ready(function () {
-            InteractiveDataDisplay.asPlot("chart");
-            run();
-        });
+         $(document).ready(function () {
+             InteractiveDataDisplay.asPlot("chart");
+             run();
+         });
 
-        function run() {
-            var x = new Array(N);
-            var y = new Array(N);
-            for (var i = 0; i < N; i++) {
-                x[i] = i * Math.PI / 50;
-                y[i] = Math.cos(i * Math.PI / 50 + phase);
-            }
-            phase += 0.1;
-            InteractiveDataDisplay.asPlot("chart").markers("sin", { y: y, x: x, size: 5 });
+         function run() {
+             var x = new Array(N);
+             var y = new Array(N);
+             for (var i = 0; i < N; i++) {
+                 x[i] = i * Math.PI / 50;
+                 y[i] = Math.cos(i * Math.PI / 50 + phase);
+             }
+             phase += 0.1;
+             InteractiveDataDisplay.asPlot("chart").markers("sin", { y: y, x: x, size: 5 });
 
-            setTimeout(run, 1000 / 60);
-        };
+             setTimeout(run, 1000 / 60);
+         };
     </script>
 </head>
 <body>

@@ -1594,7 +1594,138 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             event.stopImmediatePropagation();
         });
     };
+    //Legend with hide/show function
+    InteractiveDataDisplay.LegendProto = function (_plot, _jqdiv) {
 
+        var plotLegends = [];
+        var divStyle = _jqdiv[0].style;
+
+        //Stop event propagation
+        InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
+            _jqdiv[0].addEventListener(eventName, function (e) {
+                e.stopPropagation();
+            }, false);
+        });
+
+        var _isVisible = true;
+        Object.defineProperty(this, "isVisible", {
+            get: function () { return _isVisible; },
+            set: function (value) {
+                _isVisible = value;
+                if (_isVisible) divStyle.display = "block";
+                else divStyle.display = "none";
+            },
+            configurable: false
+        });
+
+        divStyle.display = "none";
+        _jqdiv.addClass("idd-legend");
+        _jqdiv.addClass("unselectable");
+
+        var createLegend = function () {
+            createLegendForPlot(_plot);
+
+            if (_jqdiv[0].hasChildNodes() && _isVisible) {
+                divStyle.display = "block";
+            }
+        };
+
+        var addVisibilityCheckBox = function (div, plot) {
+            var cbx = $("<div></div>").addClass("idd-legend-isselected-false").appendTo(div);
+            if (plot.isVisible) cbx.attr("class", "idd-legend-isselected-false");
+            else cbx.attr("class", "idd-legend-isselected-true");
+            cbx.click(function (e) {
+                e.stopPropagation();
+                if (plot.isVisible) {
+                    cbx.attr("class", "idd-legend-isselected-true");
+                    plot.isVisible = false;
+                } else {
+                    cbx.attr("class", "idd-legend-isselected-false");
+                    plot.isVisible = true;
+                }
+            });
+        };
+        var createLegendForPlot = function (plot) {
+            var legend = plot.getLegend();
+            plot.host.bind("childrenChanged",
+                 function (event, params) {
+                     if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
+                         createLegendForPlot(params.plot);
+                     }
+                     else if (params.type === "remove") {
+                         var removeLegendItem = function (i) {
+                             var legend = plotLegends[i];
+                             plotLegends.splice(i, 1);
+                             legend.plot.host.unbind("childrenChanged");
+                             if (legend.onLegendRemove) legend.onLegendRemove();
+                             _jqdiv[0].removeChild(legend.div[0]);
+                             var childDivs = legend.plot.children;
+                             childDivs.forEach(function (childPlot) {
+                                 for (var j = 0, len = plotLegends.length; j < len; j++)
+                                     if (plotLegends[j].plot === childPlot) {
+                                         removeLegendItem(plotLegends[j]);
+                                     }
+                             });
+                             if (plotLegends.length === 0) divStyle.display = "none";
+                         };
+
+                         for (var i = 0, len = plotLegends.length; i < len; i++)
+                             if (plotLegends[i].plot === params.plot) {
+                                 removeLegendItem(i);
+                                 break;
+                             }
+                     }
+                     else {
+                         _jqdiv[0].innerHTML = "";
+                         divStyle.display = "none";
+                         len = plotLegends.length;
+                         for (i = 0; i < len; i++)
+                             if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
+                         plotLegends = [];
+
+                         plot.host.unbind("childrenChanged");
+
+                         createLegend();
+                     }
+                 });
+            if (legend) {
+                addVisibilityCheckBox(legend.div, plot);
+                (legend.div).appendTo(_jqdiv);
+                legend.plot = plot;
+                plotLegends[plotLegends.length] = legend;
+            }
+            var childDivs = plot.children;
+            childDivs.forEach(function (childPlot) {
+                createLegendForPlot(childPlot);
+            });
+        };
+
+        this.remove = function () {
+            for (var i = 0, len = plotLegends.length; i < len; i++)
+                if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
+            plotLegends = [];
+
+            var removeLegendForPlot = function (plot) {
+                plot.host.unbind("childrenChanged");
+
+                var childDivs = plot.children;
+                childDivs.forEach(function (childPlot) {
+                    removeLegendForPlot(childPlot);
+                });
+            };
+            removeLegendForPlot(_plot);
+
+            _jqdiv[0].innerHTML = "";
+            _jqdiv.removeClass("idd-legend");
+            _jqdiv.removeClass("unselectable");
+        };
+        
+        createLegend();
+
+        _jqdiv.dblclick(function (event) {
+            event.stopImmediatePropagation();
+        });
+    };
     //--------------------------------------------------------------------------------------------
     // Transforms
 

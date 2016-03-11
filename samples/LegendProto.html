@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Custom plot</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="../dist/idd.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var N = 1000;
+
+            var x = new Array(N);
+            var y = new Array(N);
+            for (var i = 0; i < N; i++) {
+                x[i] = i * Math.PI / 50;
+                y[i] = Math.cos(i * Math.PI / 50);
+            }
+            var plot = InteractiveDataDisplay.asPlot("chart");
+            plot.legend.isVisible = false;
+            var markers = plot.markers("sin", { y: y, x: x, size: 5 });
+            var line = plot.polyline("sin1", { y: y, x: x });
+            line.isVisible = false;
+            var legend = new InteractiveDataDisplay.LegendProto(plot, $('#legend'));
+            var legend2 = new InteractiveDataDisplay.LegendProto(markers, $('#legend2'));
+            var legend3 = new InteractiveDataDisplay.LegendProto(line, $('#legend3'));
+            $('#update').click(function () {
+                markers.isVisible = !markers.isVisible;
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Markers Sample</div>
+    </div>
+    <div id="legend" style="width: 120px; height: 100px;"></div>
+    <div id="legend2" style="width: 120px; height: 50px;"></div>
+    <div id="legend3" style="width: 120px; height: 50px;"></div>
+    <button id="update">Update</button>
+</body>
+</html>
