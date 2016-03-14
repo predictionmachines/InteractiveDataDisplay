@@ -219,7 +219,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     InteractiveDataDisplay.Event.childrenChanged = jQuery.Event("childrenChanged");
     InteractiveDataDisplay.Event.isAutoFitChanged = jQuery.Event("isAutoFitEnabledChanged");
     InteractiveDataDisplay.Event.visibleRectChanged = jQuery.Event("visibleRectChanged");
-
+    InteractiveDataDisplay.Event.isVisibleChanged = jQuery.Event("visibleChanged");
 
     InteractiveDataDisplay.Plot = function (div, master, myCentralPart) {
 
@@ -389,6 +389,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (_isVisible === value) return;
                 _isVisible = value;
                 this.onIsVisibleChanged();
+                this.fireVisibleChanged(this);
             },
             configurable: false
         });
@@ -1358,6 +1359,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             this.master.host.trigger(InteractiveDataDisplay.Event.visibleRectChanged, propertyParams);
         };
 
+        this.fireVisibleChanged = function (propertyParams) {
+            this.host.trigger(InteractiveDataDisplay.Event.isVisibleChanged, propertyParams);
+        };
+
         //--------------------------------------------------------------------------------------
         // Plot factories
 
@@ -1594,6 +1599,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             event.stopImmediatePropagation();
         });
     };
+
+    var _plotLegends = [];
     //Legend with hide/show function
     InteractiveDataDisplay.LegendProto = function (_plot, _jqdiv) {
 
@@ -1629,7 +1636,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 divStyle.display = "block";
             }
         };
-
+    
         var addVisibilityCheckBox = function (div, plot) {
             var cbx = $("<div></div>").addClass("idd-legend-isselected-false").appendTo(div);
             if (plot.isVisible) cbx.attr("class", "idd-legend-isselected-false");
@@ -1645,8 +1652,30 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
             });
         };
+
+        var removeLegend = function (legend) {
+            for (var i = 0; i < _plotLegends.length; i++) {
+                if (_plotLegends[i] == legend) {
+                    _plotLegends.splice(i, 1);
+                    break;
+                }
+            }
+        };
         var createLegendForPlot = function (plot) {
             var legend = plot.getLegend();
+            plot.host.bind("visibleChanged",
+                function (event, params) {
+                    var updateLegendItem = function (i, isVisible) {
+                        var legend = _plotLegends[i];
+                        if (isVisible) legend.div[0].lastElementChild.setAttribute("class", "idd-legend-isselected-false");
+                        else legend.div[0].lastElementChild.setAttribute("class", "idd-legend-isselected-true");
+                    };
+
+                    for (var i = 0, len = _plotLegends.length; i < len; i++)
+                        if (_plotLegends[i].plot === params) {
+                            updateLegendItem(i, params.isVisible);
+                        }
+                });
             plot.host.bind("childrenChanged",
                  function (event, params) {
                      if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
@@ -1679,8 +1708,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                          _jqdiv[0].innerHTML = "";
                          divStyle.display = "none";
                          len = plotLegends.length;
-                         for (i = 0; i < len; i++)
+                         for (i = 0; i < len; i++) {
+                             removeLegend(plotLegends[i]);
                              if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
+                         }
                          plotLegends = [];
 
                          plot.host.unbind("childrenChanged");
@@ -1693,6 +1724,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 (legend.div).appendTo(_jqdiv);
                 legend.plot = plot;
                 plotLegends[plotLegends.length] = legend;
+                _plotLegends[_plotLegends.length] = legend;
             }
             var childDivs = plot.children;
             childDivs.forEach(function (childPlot) {
@@ -1701,13 +1733,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
 
         this.remove = function () {
-            for (var i = 0, len = plotLegends.length; i < len; i++)
+            for (var i = 0, len = plotLegends.length; i < len; i++) {
+                removeLegend(plotsLegends[i]);
                 if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
+            }
             plotLegends = [];
-
+            
             var removeLegendForPlot = function (plot) {
                 plot.host.unbind("childrenChanged");
-
+                plot.host.unbind("visibleChanged");
                 var childDivs = plot.children;
                 childDivs.forEach(function (childPlot) {
                     removeLegendForPlot(childPlot);

@@ -14,16 +14,17 @@
     <script type="text/javascript">
         $(document).ready(function () {
             var N = 1000;
-
+            var color = new Array(N);
             var x = new Array(N);
             var y = new Array(N);
             for (var i = 0; i < N; i++) {
                 x[i] = i * Math.PI / 50;
                 y[i] = Math.cos(i * Math.PI / 50);
+                color[i] = i;
             }
             var plot = InteractiveDataDisplay.asPlot("chart");
             plot.legend.isVisible = false;
-            var markers = plot.markers("sin", { y: y, x: x, size: 5 });
+            var markers = plot.markers("sin", { y: y, x: x, size: 5, color: color, colorPalette: InteractiveDataDisplay.ColorPalette.parse("green, blue") });
             var line = plot.polyline("sin1", { y: y, x: x });
             line.isVisible = false;
             var legend = new InteractiveDataDisplay.LegendProto(plot, $('#legend'));
@@ -39,9 +40,9 @@
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
         <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Markers Sample</div>
     </div>
-    <div id="legend" style="width: 120px; height: 100px;"></div>
-    <div id="legend2" style="width: 120px; height: 50px;"></div>
-    <div id="legend3" style="width: 120px; height: 50px;"></div>
+    <div id="legend" style="width: 220px; height: auto;"></div>
+    <div id="legend2" style="width: 220px; height: auto;"></div>
+    <div id="legend3" style="width: 220px; height: auto;"></div>
     <button id="update">Update</button>
 </body>
 </html>

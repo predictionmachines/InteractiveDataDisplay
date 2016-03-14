@@ -145,7 +145,7 @@
     background-image: url('icons/eyeBlue.png');
     background-size: cover;
     z-index: 1000;
-    position: absolute;
+    /*position: absolute;*/
     top: 7px;
     right: 4px;
 }
@@ -156,7 +156,7 @@
     background-image: url('icons/eye.png');
     background-size: cover;
     z-index: 1000;
-    position: absolute;
+    /*position: absolute;*/
     top: 7px;
     right: 4px;
 }
