@@ -188,8 +188,8 @@ InteractiveDataDisplay.Petal = {
         return true;
     },
     getLegendItem: function (drawData) {
-        var canvas = $("<canvas style='margin-right: 10px; display: inline-block'></canvas>");
-        var size = 21;
+        var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>");
+        var size = 38;
         canvas[0].width = canvas[0].height = size + 2;
         var halfSize = size / 2;
         var x1 = halfSize + 0.5;
@@ -244,8 +244,8 @@ InteractiveDataDisplay.BullEye = {
           return { left: padding, right: padding, top: padding, bottom: padding };
       },
       getLegendItem: function (drawData) {
-          var canvas = $("<canvas style='margin-right: 10px; display: inline-block'></canvas>");
-          var size = 21;
+          var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>");
+          var size = 38;
           canvas[0].width = canvas[0].height = size + 2;
           var halfSize = size / 2;
           var x1 = halfSize + 0.5;
@@ -327,8 +327,8 @@ InteractiveDataDisplay.BoxWhisker = {
         return { left: padding, right: padding, top: padding, bottom: padding };
     },
     getLegendItem: function (drawData) {
-        var canvas = $("<canvas style='margin-right: 10px; display: inline-block'></canvas>");
-        var size = 21;
+        var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>");
+        var size = 38;
         canvas[0].width = canvas[0].height = size + 2;
         var halfSize = size / 2;
         var x1 = halfSize + 0.5;
@@ -399,8 +399,8 @@ InteractiveDataDisplay.BoxNoWhisker = {
                 return { left: padding, right: padding, top: padding, bottom: padding };
     },
     getLegendItem: function (drawData) {
-        var canvas = $("<canvas style='margin-right: 10px; display: inline-block'></canvas>");
-        var size = 21;
+        var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>");
+        var size = 38;
         canvas[0].width = canvas[0].height = size + 2;
         var halfSize = size / 2;
         var x1 = halfSize + 0.5;
@@ -485,8 +485,8 @@ InteractiveDataDisplay.Whisker = {
                 return { left: padding, right: padding, top: padding, bottom: padding };
     },
     getLegendItem: function (drawData) {
-        var canvas = $("<canvas style='margin-right: 10px; display: inline-block'></canvas>");
-        var size = 21;
+        var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>");
+        var size = 38;
         canvas[0].width = canvas[0].height = size + 2;
         var halfSize = size / 2;
         var x1 = halfSize + 0.5;

@@ -691,26 +691,27 @@ InteractiveDataDisplay.Markers = function (div, master) {
 
     this.getLegend = function () {
         var that = this;
-        var div = $("<div class='idd-legend-item'></div>");
+        //var div = $("<div class='idd-legend-item'></div>");
 
-        var itemDiv = $("<div></div>").appendTo(div);
+        //var itemDiv = $("<div></div>").appendTo(div);
+        var info = $("<div class='idd-legend-item-info'></div>");
+        var titleDiv = $("<div class='idd-legend-item-title'></div>");
 
-        var fontSize = 14;
-        if (document.defaultView && document.defaultView.getComputedStyle) {
-            fontSize = parseFloat(document.defaultView.getComputedStyle(div[0], null).getPropertyValue("font-size"));
-        }
-        if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
-
-        var canvas = $("<canvas style='margin-right: 10px; display: inline-block'></canvas>").appendTo(itemDiv);
+       // var fontSize = 14;
+       // if (document.defaultView && document.defaultView.getComputedStyle) {
+       //     fontSize = parseFloat(document.defaultView.getComputedStyle(div[0], null).getPropertyValue("font-size"));
+       // }
+       // if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
+        var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>").appendTo(titleDiv);
         var canvasIsVisible = true;
-        var maxSize = fontSize * 1.5;
+        var maxSize = 38;
         var x1 = maxSize / 2 + 1;
         var y1 = x1;
-        canvas[0].width = canvas[0].height = maxSize + 2;
+        canvas[0].width = canvas[0].height = 40;
         var canvasStyle = canvas[0].style;
         var context = canvas.get(0).getContext("2d");
 
-        var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(itemDiv);
+        var nameDiv = $("<span class='idd-legend-item-title-name'></span>").appendTo(titleDiv);
         var setName = function () {
             nameDiv.text(that.name);
         }
@@ -736,7 +737,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 if (_sizePalette) {
                     var szTitleText = that.getTitle("size");
                     if (sizeIsVisible == 0) {
-                        sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
+                        sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(info);//div
                         sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
                         sizeDivStyle = sizeDiv[0].style;
                         var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(sizeDiv);
@@ -759,7 +760,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 size = maxSize;
                     var szTitleText = that.getTitle("size");
                     if (sizeIsVisible == 0) {
-                        sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
+                        sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(info);//div
                         sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
                         sizeDivStyle = sizeDiv[0].style;
                         var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(sizeDiv);
@@ -774,13 +775,13 @@ InteractiveDataDisplay.Markers = function (div, master) {
                     }
             }
             else {
-                size = Math.min(_data.size, maxSize);
+                size = maxSize;//Math.min(_data.size, maxSize);
                 if (sizeIsVisible == 2) {
                     sizeDivStyle.display = "none";
                     sizeIsVisible = 1;
                 }
             }
-            halfSize = size / 2;
+            halfSize = maxSize / 2;
         };
 
         var colorTitle;
@@ -790,7 +791,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
             if (colorIsArray && _colorPalette) {
                 var clrTitleText = that.getTitle("color");
                 if (colorIsVisible == 0) {                    
-                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
+                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(info);//div
                     colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                     colorDivStyle = colorDiv[0].style;
                     var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(colorDiv);
@@ -811,7 +812,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
             else if (_uncertainColorPalette) {
                 var clrTitleText = that.getTitle("color");
                 if (colorIsVisible == 0) {
-                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
+                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(info);//div
                     colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                     colorDivStyle = colorDiv[0].style;
                     var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(colorDiv);
@@ -864,7 +865,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
 
                     if (itemIsVisible == 0) {
                         item = _shape.getLegendItem(drawData);
-                        itemDiv[0].insertBefore(item[0], nameDiv[0]);
+
+                        titleDiv[0].insertBefore(item[0], nameDiv[0]);
                     }
                     else {
                         var newItem = _shape.getLegendItem(drawData);
@@ -975,11 +977,12 @@ InteractiveDataDisplay.Markers = function (div, master) {
         var onLegendRemove = function () {
             that.host.unbind("appearanceChanged");
 
-            div[0].innerHTML = "";
-            div.removeClass("idd-legend-item");
+            //div[0].innerHTML = "";
+            //div.removeClass("idd-legend-item");
         };
 
-        return { div: div, onLegendRemove: onLegendRemove };
+        //return { div: div, onLegendRemove: onLegendRemove };
+        return { title: titleDiv, context: info, onLegendRemove: onLegendRemove };
     };
 
     // Initialization 

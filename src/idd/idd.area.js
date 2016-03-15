@@ -144,11 +144,11 @@ InteractiveDataDisplay.Area = function (div, master) {
 
     this.getLegend = function () {
         var that = this;
-        var div = $("<div class='idd-legend-item'></div>");
-
-        var canvas = $("<canvas style='margin-right: 15px'></canvas>").appendTo(div);
-        canvas[0].width = 20;
-        canvas[0].height = 20;
+        //var div = $("<div class='idd-legend-item'></div>");
+        var titleDiv = $("<div class='idd-legend-item-title'></div>");
+        var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>").appendTo(titleDiv);
+        canvas[0].width = 40;
+        canvas[0].height = 40;
         var ctx = canvas.get(0).getContext("2d");
         ctx.globalAlpha = 0.5;
         ctx.strokeStyle = _fill;
@@ -156,17 +156,17 @@ InteractiveDataDisplay.Area = function (div, master) {
 
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.lineTo(0, 5);
-        ctx.lineTo(15, 20);
-        ctx.lineTo(20, 20);
-        ctx.lineTo(20, 15);
-        ctx.lineTo(5, 0);
+        ctx.lineTo(0, 10);
+        ctx.lineTo(30, 40);
+        ctx.lineTo(40, 40);
+        ctx.lineTo(40, 30);
+        ctx.lineTo(10, 0);
         ctx.lineTo(0, 0);
         ctx.fill();
         ctx.stroke();
         ctx.closePath();
 
-        var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
+        var nameDiv = $("<span class='idd-legend-item-title-name'></span>").appendTo(titleDiv);
         var setName = function () {
             nameDiv.text(that.name);
         }
@@ -183,27 +183,28 @@ InteractiveDataDisplay.Area = function (div, master) {
 
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
-                ctx.lineTo(0, 5);
-                ctx.lineTo(15, 20);
-                ctx.lineTo(20, 20);
-                ctx.lineTo(20, 15);
-                ctx.lineTo(5, 0);
+                ctx.lineTo(0, 10);
+                ctx.lineTo(30, 40);
+                ctx.lineTo(40, 40);
+                ctx.lineTo(40, 30);
+                ctx.lineTo(10, 0);
                 ctx.lineTo(0, 0);
                 ctx.fill();
                 ctx.stroke();
                 ctx.closePath();
             });
 
-        //var that = this;
+        var that = this;
 
         var onLegendRemove = function () {
             that.host.unbind("appearanceChanged");
 
-            div[0].innerHTML = "";
-            div.removeClass("idd-legend-item");
+            //div[0].innerHTML = "";
+            //div.removeClass("idd-legend-item");
         };
 
-        return { div: div, onLegendRemove: onLegendRemove };
+        //return { div: div, onLegendRemove: onLegendRemove };
+        return { title: titleDiv, context: undefined, onLegendRemove: onLegendRemove };
     };
     // Initialization 
     if (initialData && initialData.x && initialData.y1 && initialData.y2)

@@ -514,9 +514,12 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     });
 
     this.getLegend = function () {
-        var div = $("<div class='idd-legend-item'></div>");
+        //var div = $("<div class='idd-legend-item'></div>");
+        var titleDiv = $("<div class='idd-legend-item-title'></div>");
+        var canvas = $("<canvas class='idd-legend-item-title-thumb'></div>").appendTo(titleDiv);;
+        var infoDiv = $("<div class='idd-legend-item-info'></div>");
         var that = this;
-        var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
+        var nameDiv = $("<span class='idd-legend-item-title-name'></span>").appendTo(titleDiv);
         var setName = function () {
             nameDiv.text(that.name);
         }
@@ -527,7 +530,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         var refreshColor = function () {
             clrTitleText = that.getTitle("values");
             if (colorIsVisible == 0) {
-                colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
+                colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(infoDiv);
                 colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                 paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(colorDiv);
 
@@ -557,11 +560,12 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         var onLegendRemove = function () {
             that.host.unbind("appearanceChanged");
 
-            div[0].innerHTML = "";
-            div.removeClass("idd-legend-item");
+            //div[0].innerHTML = "";
+            //div.removeClass("idd-legend-item");
         };
 
-        return { div: div, onLegendRemove: onLegendRemove };
+        //return { div: div, onLegendRemove: onLegendRemove };
+        return { title: titleDiv, context: infoDiv, onLegendRemove: onLegendRemove };
     };
 
     // Initialization 
