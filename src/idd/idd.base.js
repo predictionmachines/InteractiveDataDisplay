@@ -1602,7 +1602,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
     var _plotLegends = [];
     //Legend with hide/show function
-    InteractiveDataDisplay.Legend = function (_plot, _jqdiv) {
+    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact) {
 
         var plotLegends = [];
         var divStyle = _jqdiv[0].style;
@@ -1626,7 +1626,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         });
 
         divStyle.display = "none";
-        _jqdiv.addClass("idd-legend");
+        if (isCompact) _jqdiv.addClass("idd-legend-compact");
+        else _jqdiv.addClass("idd-legend");
         _jqdiv.addClass("unselectable");
 
         var createLegend = function () {
@@ -1721,11 +1722,17 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                      }
                  });
             if (legend) {
-                var div = $("<div class='idd-legend-item'></div>");
-                var title = legend.title;
+                var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<div class='idd-legend-item'></div>");
+                var title = (isCompact) ? $("<div class='idd-legend-item-title-compact'></div>") : $("<div class='idd-legend-item-title'></div>");
+                if (isCompact) legend.thumb.addClass("idd-legend-item-title-thumb-compact").appendTo(title);
+                else legend.thumb.addClass("idd-legend-item-title-thumb").appendTo(title);
+                if (isCompact) legend.name.addClass("idd-legend-item-title-name-compact").appendTo(title);
+                else legend.name.addClass("idd-legend-item-title-name").appendTo(title);
                 addVisibilityCheckBox(title, plot);
                 title.appendTo(div);
-                if (legend.context) legend.context.appendTo(div);
+                if (legend.info)
+                    if (isCompact) legend.info.addClass("idd-legend-item-info-compact").appendTo(div);
+                    else legend.info.addClass("idd-legend-item-info").appendTo(div);
                 div.appendTo(_jqdiv);
                 div.plot = plot;
                 plotLegends[plotLegends.length] = div;//legend;
@@ -2252,9 +2259,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         });
 
         this.getLegend = function () {
-            //var div = $("<div class='idd-legend-item'></div>");
-            var titleDiv = $("<div class='idd-legend-item-title'></div>");
-            var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>").appendTo(titleDiv);//.appendTo(div);
+            var canvas = $("<canvas></canvas>");
             
             canvas[0].width = 40;
             canvas[0].height = 40;
@@ -2266,7 +2271,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             ctx.stroke();
 
             var that = this;
-            var nameDiv = $("<span class='idd-legend-item-title-name'></span>").appendTo(titleDiv);//.appendTo(div);
+            var nameDiv = $("<span></span>");
             var setName = function () {
                 nameDiv.text(that.name);
             }
@@ -2295,7 +2300,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             };
 
             //return { div: div, onLegendRemove: onLegendRemove };
-            return { title: titleDiv, context: undefined, onLegendRemove: onLegendRemove };
+            return { name: nameDiv, thumb: canvas, info: undefined, onLegendRemove: onLegendRemove };
         };
 
         // Initialization 

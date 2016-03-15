@@ -4,7 +4,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Legend Sample Page</title>
-    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
@@ -177,8 +177,9 @@
 
             var line = figure.get("polyline1");
             line.getLegend = function () {
-                var div = $("<div>custom legend for " + this.name + "</div>");
-                return { div: div };
+                var title = $("<div class='idd-legend-item-title'></div>");
+                var div = $("<div class='idd-legend-item-title-name'>custom legend for " + this.name + "</div>").appendTo(title);
+                return { title: title };
             };
             line.fireChildrenChanged(null);
 
@@ -226,7 +227,7 @@
                 var normX = dirY / 3;
                 var normY = -dirX / 3;
 
-                var canvas = $("<canvas style='margin-right: 10px; display: inline-block'></canvas>");
+                var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>");
                 canvas[0].width = xs + dirX;
                 canvas[0].height = ys + dirY;
                 var context = canvas.get(0).getContext("2d");

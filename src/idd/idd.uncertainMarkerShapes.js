@@ -188,7 +188,7 @@ InteractiveDataDisplay.Petal = {
         return true;
     },
     getLegendItem: function (drawData) {
-        var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>");
+        var canvas = $("<canvas></canvas>");
         var size = 38;
         canvas[0].width = canvas[0].height = size + 2;
         var halfSize = size / 2;
@@ -244,7 +244,7 @@ InteractiveDataDisplay.BullEye = {
           return { left: padding, right: padding, top: padding, bottom: padding };
       },
       getLegendItem: function (drawData) {
-          var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>");
+          var canvas = $("<canvas></canvas>");
           var size = 38;
           canvas[0].width = canvas[0].height = size + 2;
           var halfSize = size / 2;
@@ -327,7 +327,7 @@ InteractiveDataDisplay.BoxWhisker = {
         return { left: padding, right: padding, top: padding, bottom: padding };
     },
     getLegendItem: function (drawData) {
-        var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>");
+        var canvas = $("<canvas></canvas>");
         var size = 38;
         canvas[0].width = canvas[0].height = size + 2;
         var halfSize = size / 2;
@@ -399,7 +399,7 @@ InteractiveDataDisplay.BoxNoWhisker = {
                 return { left: padding, right: padding, top: padding, bottom: padding };
     },
     getLegendItem: function (drawData) {
-        var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>");
+        var canvas = $("<canvas></canvas>");
         var size = 38;
         canvas[0].width = canvas[0].height = size + 2;
         var halfSize = size / 2;
@@ -485,7 +485,7 @@ InteractiveDataDisplay.Whisker = {
                 return { left: padding, right: padding, top: padding, bottom: padding };
     },
     getLegendItem: function (drawData) {
-        var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>");
+        var canvas = $("<canvas></canvas>");
         var size = 38;
         canvas[0].width = canvas[0].height = size + 2;
         var halfSize = size / 2;

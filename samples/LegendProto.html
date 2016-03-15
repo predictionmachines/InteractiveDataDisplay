@@ -25,7 +25,7 @@
                 color[i] = i;
             }
             var plot = InteractiveDataDisplay.asPlot("chart");
-            plot.legend.isVisible = false;
+            //plot.legend.isVisible = false;
             var markers = plot.markers("sinfdsfsdfsdfdgfdgdfgdgdffdgfdddddd", { y: y, x: x, size: 5, shape: 'cross', color: color, colorPalette: InteractiveDataDisplay.ColorPalette.parse("green, blue") });
             var line = plot.polyline("sin1", { y: y, x: x });
             var area = plot.area("sin2", { y1: y, y2: y2, x: x, fill: 'green' });
@@ -35,17 +35,13 @@
             });
             line.isVisible = false;
             var legend = new InteractiveDataDisplay.Legend(plot, $('#legend'));
-            $('#update').click(function () {
-                markers.isVisible = !markers.isVisible;
-            });
         });
     </script>
 </head>
 <body>
-    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px; float: left;">
         <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Markers Sample</div>
     </div>
-    <div id="legend" style="width:auto; height:auto;"></div>
-    <button id="update">Update</button>
+    <div id="legend" style="width:250px; height:auto; float:left; margin-left: 50px; margin-top:30px;"></div>
 </body>
 </html>

@@ -514,12 +514,10 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     });
 
     this.getLegend = function () {
-        //var div = $("<div class='idd-legend-item'></div>");
-        var titleDiv = $("<div class='idd-legend-item-title'></div>");
-        var canvas = $("<canvas class='idd-legend-item-title-thumb'></div>").appendTo(titleDiv);;
-        var infoDiv = $("<div class='idd-legend-item-info'></div>");
+        var canvas = $("<canvas></canvas>");
+        var infoDiv = $("<div></div>");
         var that = this;
-        var nameDiv = $("<span class='idd-legend-item-title-name'></span>").appendTo(titleDiv);
+        var nameDiv = $("<span></span>");
         var setName = function () {
             nameDiv.text(that.name);
         }
@@ -530,9 +528,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         var refreshColor = function () {
             clrTitleText = that.getTitle("values");
             if (colorIsVisible == 0) {
-                colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(infoDiv);
+                colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(infoDiv);
                 colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
-                paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(colorDiv);
+                paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(colorDiv);
 
                 paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette);
                 colorIsVisible = 2;
@@ -564,8 +562,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             //div.removeClass("idd-legend-item");
         };
 
-        //return { div: div, onLegendRemove: onLegendRemove };
-        return { title: titleDiv, context: infoDiv, onLegendRemove: onLegendRemove };
+        return { name: nameDiv, thumb: canvas, info: infoDiv, onLegendRemove: onLegendRemove };
     };
 
     // Initialization 

@@ -691,18 +691,9 @@ InteractiveDataDisplay.Markers = function (div, master) {
 
     this.getLegend = function () {
         var that = this;
-        //var div = $("<div class='idd-legend-item'></div>");
+        var info = $("<div></div>");
 
-        //var itemDiv = $("<div></div>").appendTo(div);
-        var info = $("<div class='idd-legend-item-info'></div>");
-        var titleDiv = $("<div class='idd-legend-item-title'></div>");
-
-       // var fontSize = 14;
-       // if (document.defaultView && document.defaultView.getComputedStyle) {
-       //     fontSize = parseFloat(document.defaultView.getComputedStyle(div[0], null).getPropertyValue("font-size"));
-       // }
-       // if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
-        var canvas = $("<canvas class='idd-legend-item-title-thumb'></canvas>").appendTo(titleDiv);
+        var canvas = $("<canvas></canvas>");
         var canvasIsVisible = true;
         var maxSize = 38;
         var x1 = maxSize / 2 + 1;
@@ -711,7 +702,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
         var canvasStyle = canvas[0].style;
         var context = canvas.get(0).getContext("2d");
 
-        var nameDiv = $("<span class='idd-legend-item-title-name'></span>").appendTo(titleDiv);
+        var nameDiv = $("<span></span>");
         var setName = function () {
             nameDiv.text(that.name);
         }
@@ -737,10 +728,10 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 if (_sizePalette) {
                     var szTitleText = that.getTitle("size");
                     if (sizeIsVisible == 0) {
-                        sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(info);//div
+                        sizeDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(info);
                         sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
                         sizeDivStyle = sizeDiv[0].style;
-                        var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(sizeDiv);
+                        var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(sizeDiv);
                         sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
                         sizeIsVisible = 2;
                     } else {
@@ -760,10 +751,10 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 size = maxSize;
                     var szTitleText = that.getTitle("size");
                     if (sizeIsVisible == 0) {
-                        sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(info);//div
+                        sizeDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(info);
                         sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
                         sizeDivStyle = sizeDiv[0].style;
-                        var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(sizeDiv);
+                        var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(sizeDiv);
                         sizeControl = new InteractiveDataDisplay.UncertaintySizePaletteViewer(paletteDiv);
                         sizeIsVisible = 2;
                     } else {
@@ -775,7 +766,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                     }
             }
             else {
-                size = maxSize;//Math.min(_data.size, maxSize);
+                size = maxSize;
                 if (sizeIsVisible == 2) {
                     sizeDivStyle.display = "none";
                     sizeIsVisible = 1;
@@ -791,10 +782,10 @@ InteractiveDataDisplay.Markers = function (div, master) {
             if (colorIsArray && _colorPalette) {
                 var clrTitleText = that.getTitle("color");
                 if (colorIsVisible == 0) {                    
-                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(info);//div
+                    colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(info);
                     colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                     colorDivStyle = colorDiv[0].style;
-                    var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(colorDiv);
+                    var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(colorDiv);
                     colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
                     colorIsVisible = 2;
                 } else {
@@ -812,10 +803,10 @@ InteractiveDataDisplay.Markers = function (div, master) {
             else if (_uncertainColorPalette) {
                 var clrTitleText = that.getTitle("color");
                 if (colorIsVisible == 0) {
-                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(info);//div
+                    colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(info);
                     colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                     colorDivStyle = colorDiv[0].style;
-                    var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(colorDiv);
+                    var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(colorDiv);
                     colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
                     colorIsVisible = 2;
                 } else {
@@ -865,8 +856,9 @@ InteractiveDataDisplay.Markers = function (div, master) {
 
                     if (itemIsVisible == 0) {
                         item = _shape.getLegendItem(drawData);
-
-                        titleDiv[0].insertBefore(item[0], nameDiv[0]);
+                        if (canvas.prop("idd-legend-item-title-thumb")) item.addClass("idd-legend-item-title-thumb");
+                        else item.addClass("idd-legend-item-title-thumb-compact");
+                        canvas.replaceWith(item);
                     }
                     else {
                         var newItem = _shape.getLegendItem(drawData);
@@ -877,7 +869,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                     itemIsVisible = 2;
                 }
                 if (canvasIsVisible) {
-                    canvasStyle.display = "none";
+                   // canvasStyle.display = "none";
                     canvasIsVisible = false;
                 }
             }
@@ -953,7 +945,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 }
                 if (!canvasIsVisible) {
                     canvasStyle.display = "inline-block";
-                    canvasIsVisible = true;
+                    //canvasIsVisible = true;
                 }
             }
         };
@@ -982,7 +974,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
         };
 
         //return { div: div, onLegendRemove: onLegendRemove };
-        return { title: titleDiv, context: info, onLegendRemove: onLegendRemove };
+        return { name: nameDiv, thumb: canvas, info: info, onLegendRemove: onLegendRemove };
+       
     };
 
     // Initialization 
