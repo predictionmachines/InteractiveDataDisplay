@@ -6,10 +6,10 @@
   "bundle": "typings/tsd.d.ts",
   "installed": {
     "jquery/jquery.d.ts": {
-      "commit": "09735fd7773c8c39be452c1ce523305f96377c75"
+      "commit": "2f47c75835b837777a85287611703d683b0aaa83"
     },
     "jqueryui/jqueryui.d.ts": {
-      "commit": "09735fd7773c8c39be452c1ce523305f96377c75"
+      "commit": "2f47c75835b837777a85287611703d683b0aaa83"
     }
   }
 }

@@ -122,11 +122,12 @@
     overflow: scroll;
     overflow-y: auto;
     overflow-x: hidden;
+    list-style-type: none;
 }
 .idd-legend-item
 {
-    position: relative;
-    width: 200px;
+    /*position: relative;*/
+    width: 210px;
     height: auto;
     background-color: white;
     box-shadow: 0 0 2px rgba(0,0,0, 0.2);
@@ -134,6 +135,7 @@
     border-radius: 2px;
     margin-bottom: 6px;   
     cursor: pointer;
+    display: inline-block;
 }
 .idd-legend-item-title
 {    
@@ -144,7 +146,7 @@
 }
 .idd-legend-item-title-name
 {
-    width: 90px;
+    width: 80px;
     height: 24px;
     line-height: 24px;
     vertical-align: top;
@@ -192,7 +194,6 @@
     height: auto;
     background-color: rgba(255,255,255,0.5);
     border-bottom: 1px solid rgba(0,0,0,0.12); 
-    cursor: pointer;
 }
 .idd-legend-item-title-compact
 {    
@@ -203,7 +204,7 @@
 }
 .idd-legend-item-title-name-compact
 {
-    width: 90px;
+    width: 80px;
     height: 18px;
     line-height: 18px;
     vertical-align: top;
@@ -251,6 +252,7 @@
     background-image: url('icons/ic_visibility_off-grey.png');
     background-size: cover;
     z-index: 1000;
+    cursor: pointer;
 }
 .idd-legend-isselected-false {
     vertical-align: top;
@@ -261,6 +263,7 @@
     background-image: url('icons/ic_visibility-grey.png');
     background-size: cover;
     z-index: 1000;
+    cursor: pointer;
 }
 
 .idd-verticalText

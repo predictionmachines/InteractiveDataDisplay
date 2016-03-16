@@ -1608,11 +1608,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var divStyle = _jqdiv[0].style;
 
         //Stop event propagation
-        InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
-            _jqdiv[0].addEventListener(eventName, function (e) {
-                e.stopPropagation();
-            }, false);
-        });
+        //InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
+        //    _jqdiv[0].addEventListener(eventName, function (e) {
+        //        e.stopPropagation();
+        //    }, false);
+        //});
 
         var _isVisible = true;
         Object.defineProperty(this, "isVisible", {
@@ -1628,8 +1628,29 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         divStyle.display = "none";
         if (isCompact) _jqdiv.addClass("idd-legend-compact");
         else _jqdiv.addClass("idd-legend");
-        _jqdiv.addClass("unselectable");
-
+        //_jqdiv.addClass("unselectable");
+        if (!isCompact) {
+            _jqdiv.sortable({ axis: 'y'});
+            _jqdiv.on("sortupdate", function (e, ui) {
+                var id = ui.item.attr('data-plot'); //id of plot what's card was moved
+                var targetIndex;
+                $("li", _jqdiv).each(function (idx, el) {
+                    if (id == $(el).attr('data-plot')) {
+                        targetIndex = idx;
+                        return false;
+                        console.log("123");
+                    }
+                });//found new index of moved element
+                //for (var i = 0; i < _plots.length; ++i) {
+                //    if (_plots[i].Id == id) {
+                //        var targetPlot = _plots.splice(i, 1);//removing plot from its old position
+                //        _plots.splice(targetIndex, 0, targetPlot[0]);//putting plot into its new position
+                //        break;
+                //    }
+                //}
+                console.log("456");
+            });
+        }
         var createLegend = function () {
             createLegendForPlot(_plot);
 
@@ -1722,7 +1743,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                      }
                  });
             if (legend) {
-                var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<div class='idd-legend-item'></div>");
+                var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<li class='idd-legend-item'></li>");
                 var title = (isCompact) ? $("<div class='idd-legend-item-title-compact'></div>") : $("<div class='idd-legend-item-title'></div>");
                 if (isCompact) legend.thumb.addClass("idd-legend-item-title-thumb-compact").appendTo(title);
                 else legend.thumb.addClass("idd-legend-item-title-thumb").appendTo(title);
@@ -1734,9 +1755,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     if (isCompact) legend.info.addClass("idd-legend-item-info-compact").appendTo(div);
                     else legend.info.addClass("idd-legend-item-info").appendTo(div);
                 div.appendTo(_jqdiv);
+                if (!isCompact) _jqdiv.sortable({ axis: 'y'});
                 div.plot = plot;
-                plotLegends[plotLegends.length] = div;//legend;
-                _plotLegends[_plotLegends.length] = div;//legend;
+                plotLegends[plotLegends.length] = div;
+                _plotLegends[_plotLegends.length] = div;
             }
             var childDivs = plot.children;
             childDivs.forEach(function (childPlot) {
@@ -1762,7 +1784,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             removeLegendForPlot(_plot);
 
             _jqdiv[0].innerHTML = "";
-            _jqdiv.removeClass("idd-legend");
+            if (isCompact) _jqdiv.removeClass("idd-legend-compact");
+            else _jqdiv.removeClass("idd-legend");
             _jqdiv.removeClass("unselectable");
         };
         

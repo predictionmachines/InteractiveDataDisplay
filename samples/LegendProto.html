@@ -8,6 +8,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
     <script src="../dist/idd.js"></script>
 
@@ -29,12 +30,13 @@
             var markers = plot.markers("sinfdsfsdfsdfdgfdgdfgdgdffdgfdddddd", { y: y, x: x, size: 5, shape: 'cross', color: color, colorPalette: InteractiveDataDisplay.ColorPalette.parse("green, blue") });
             var line = plot.polyline("sin1", { y: y, x: x });
             var area = plot.area("sin2", { y1: y, y2: y2, x: x, fill: 'green' });
-            var heatmap = plot.heatmap("heatmap", {
-                x: [-1, 0, 1], y: [-1, 0, 1], f: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
-                palette: InteractiveDataDisplay.ColorPalette.parse("red, blue")
-            });
+            //var heatmap = plot.heatmap("heatmap", {
+            //    x: [-1, 0, 1], y: [-1, 0, 1], f: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
+            //    palette: InteractiveDataDisplay.ColorPalette.parse("red, blue")
+            //});
             line.isVisible = false;
-            var legend = new InteractiveDataDisplay.Legend(plot, $('#legend'));
+            var legendDiv = $('#legend');
+            var legend = new InteractiveDataDisplay.Legend(plot, legendDiv);
         });
     </script>
 </head>
@@ -42,6 +44,7 @@
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px; float: left;">
         <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Markers Sample</div>
     </div>
-    <div id="legend" style="width:250px; height:auto; float:left; margin-left: 50px; margin-top:30px;"></div>
+   <ul id="legend" style="width:auto; height:auto; float:left; margin-left: 50px; margin-top:30px;"></ul>
+  
 </body>
 </html>
