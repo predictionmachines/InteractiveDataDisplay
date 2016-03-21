@@ -1628,28 +1628,33 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         divStyle.display = "none";
         if (isCompact) _jqdiv.addClass("idd-legend-compact");
         else _jqdiv.addClass("idd-legend");
-        //_jqdiv.addClass("unselectable");
+        _jqdiv.addClass("unselectable");
         if (!isCompact) {
             _jqdiv.sortable({ axis: 'y'});
             _jqdiv.on("sortupdate", function (e, ui) {
-                var id = ui.item.attr('data-plot'); //id of plot what's card was moved
+                var name = ui.item.attr('data-plot'); //id of plot what's card was moved
                 var targetIndex;
                 $("li", _jqdiv).each(function (idx, el) {
-                    if (id == $(el).attr('data-plot')) {
+                    if (name == $(el).attr('data-plot')) {
                         targetIndex = idx;
                         return false;
-                        console.log("123");
                     }
                 });//found new index of moved element
-                //for (var i = 0; i < _plots.length; ++i) {
-                //    if (_plots[i].Id == id) {
-                //        var targetPlot = _plots.splice(i, 1);//removing plot from its old position
-                //        _plots.splice(targetIndex, 0, targetPlot[0]);//putting plot into its new position
-                //        break;
-                //    }
-                //}
+                for (var i = 0; i < plotLegends.length; ++i) {
+                    if (plotLegends[i].plot.name == name) {
+                        var targetPlot = plotLegends.splice(i, 1);//removing plot from its old position
+                        plotLegends.splice(targetIndex, 0, targetPlot[0]);//putting plot into its new position
+                        break;
+                    }
+                }
                 console.log("456");
+                updateZIndex();
             });
+        }
+        var updateZIndex = function() {
+            for (var i = 0; i < plotLegends.length; i++) {
+                plotLegends[i].plot.host.css('z-index', plotLegends.length - i);
+            }
         }
         var createLegend = function () {
             createLegendForPlot(_plot);
@@ -1736,14 +1741,13 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                              if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
                          }
                          plotLegends = [];
-
                          plot.host.unbind("childrenChanged");
-
                          createLegend();
                      }
                  });
             if (legend) {
                 var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<li class='idd-legend-item'></li>");
+                if (!isCompact) div.attr("data-plot", plot.name);
                 var title = (isCompact) ? $("<div class='idd-legend-item-title-compact'></div>") : $("<div class='idd-legend-item-title'></div>");
                 if (isCompact) legend.thumb.addClass("idd-legend-item-title-thumb-compact").appendTo(title);
                 else legend.thumb.addClass("idd-legend-item-title-thumb").appendTo(title);
@@ -1759,6 +1763,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 div.plot = plot;
                 plotLegends[plotLegends.length] = div;
                 _plotLegends[_plotLegends.length] = div;
+                updateZIndex();
             }
             var childDivs = plot.children;
             childDivs.forEach(function (childPlot) {
@@ -1768,7 +1773,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         this.remove = function () {
             for (var i = 0, len = plotLegends.length; i < len; i++) {
-                removeLegend(plotsLegends[i]);
+                removeLegend(plotLegends[i]);
                 if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
             }
             plotLegends = [];

@@ -26,17 +26,26 @@
                 color[i] = i;
             }
             var plot = InteractiveDataDisplay.asPlot("chart");
+            //plot.flatRendering = true;
             //plot.legend.isVisible = false;
-            var markers = plot.markers("sinfdsfsdfsdfdgfdgdfgdgdffdgfdddddd", { y: y, x: x, size: 5, shape: 'cross', color: color, colorPalette: InteractiveDataDisplay.ColorPalette.parse("green, blue") });
-            var line = plot.polyline("sin1", { y: y, x: x });
-            var area = plot.area("sin2", { y1: y, y2: y2, x: x, fill: 'green' });
-            //var heatmap = plot.heatmap("heatmap", {
-            //    x: [-1, 0, 1], y: [-1, 0, 1], f: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
-            //    palette: InteractiveDataDisplay.ColorPalette.parse("red, blue")
-            //});
-            line.isVisible = false;
+            var markers = plot.markers("sinfdsfsdfsdfdgfdgdfgdgdffdgfdddddd", { y: y, x: x, size: 10, shape: 'circle', color: color, colorPalette: InteractiveDataDisplay.ColorPalette.parse("yellow, red") });
+            //var line = plot.polyline("sin1", { y: y, x: x });
+            var area = plot.area("sin2", { y1: y, y2: y2, x: x, fill: 'blue' });
+            var heatmap = plot.heatmap("heatmap", {
+                x: [-1, 0, 1], y: [-1, 0, 1], f: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
+                palette: InteractiveDataDisplay.ColorPalette.parse("red, blue")
+            });
+            //line.isVisible = false;
             var legendDiv = $('#legend');
             var legend = new InteractiveDataDisplay.Legend(plot, legendDiv);
+            var update = $('#btn');
+            var add = $('#btn1');
+            update.click(function () {
+                legend.remove();
+            });
+            add.click(function () {
+                legend = new InteractiveDataDisplay.Legend(plot, legendDiv);
+            })
         });
     </script>
 </head>
@@ -45,6 +54,7 @@
         <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Markers Sample</div>
     </div>
    <ul id="legend" style="width:auto; height:auto; float:left; margin-left: 50px; margin-top:30px;"></ul>
-  
+  <button id="btn">Update</button>
+    <button id="btn1">Add</button>
 </body>
 </html>
