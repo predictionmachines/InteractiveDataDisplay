@@ -58,8 +58,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
         _data.border = typeof initialData.border != "undefined" ? initialData.border : defaultBorder;
 
         _shape = typeof initialData.shape != "undefined" ? initialData.shape : defaultShape;
-        _colorPalette = typeof initialData.colorPalette != "undefined" ? initialData.colorPalette : undefined;
-        _uncertainColorPalette = typeof initialData.uncertainColorPalette != "undefined" ? initialData.uncertainColorPalette : undefined;
+        _colorPalette = typeof initialData.colorPalette == 'string' ? InteractiveDataDisplay.ColorPalette.parse(initialData.colorPalette): (typeof initialData.colorPalette != "undefined" ? initialData.colorPalette : undefined);
+        _uncertainColorPalette = typeof initialData.uncertainColorPalette == 'string' ? InteractiveDataDisplay.ColorPalette.parse(initialData.uncertainColorPalette) : (typeof initialData.uncertainColorPalette != "undefined" ? initialData.uncertainColorPalette : undefined);
         _sizePalette = typeof initialData.sizePalette != "undefined" ? initialData.sizePalette : undefined;
     }
 
@@ -89,19 +89,22 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 _shape = data[prop];
             else if (prop == "sizePalette" && data[prop] != "undefined")
                 _sizePalette = data[prop];
-            else if (prop == "colorPalette" && data[prop] != "undefined")
-                _colorPalette = data[prop];
+            else if (prop == "colorPalette" && data[prop] != "undefined") {
+                _colorPalette = typeof data[prop] == 'string' ? InteractiveDataDisplay.ColorPalette.parse(data[prop]) : data[prop];
+                //_data[prop] = data[prop] != "undefined" ? data[prop] : _data[prop];
+            }
             else if (prop == "uncertainColorPalette" && data[prop] != "undefined") {
-                _uncertainColorPalette = data[prop];
-                _data[prop] = data[prop] != "undefined" ? data[prop] : _data[prop];
+                _uncertainColorPalette = typeof data[prop] == 'string' ? InteractiveDataDisplay.ColorPalette.parse(data[prop]): data[prop];
+                _data[prop] = typeof data[prop] == 'string' ? InteractiveDataDisplay.ColorPalette.parse(data[prop]) : data[prop];
             }
             else
                 _data[prop] = data[prop] != "undefined" ? data[prop] : _data[prop];
         }
 
         if (_colorPalette && _colorPalette.isNormalized) {
-                _colorRange = InteractiveDataDisplay.Utils.getMinMax(_data.color);
+            _colorRange = InteractiveDataDisplay.Utils.getMinMax(_data.color);
         }
+        
         if (_uncertainColorPalette && _uncertainColorPalette.isNormalized) {
             _uncertainColorRange = { min: InteractiveDataDisplay.Utils.getMin(_data.l95), max: InteractiveDataDisplay.Utils.getMax(_data.u95) };
         }
