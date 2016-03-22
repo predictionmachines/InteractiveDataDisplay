@@ -11,6 +11,7 @@ InteractiveDataDisplay.register = function (key, factory) {
 var _initializeInteractiveDataDisplay = function () { // determines settings depending on browser type
 
     "use strict";
+    var _xAxis, _yAxis;
     var userAgent = navigator.userAgent.toLowerCase();
     if (userAgent.indexOf('firefox') >= 0) {
         InteractiveDataDisplay.CssPrefix = '-moz';
@@ -1188,8 +1189,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                                 xd = my_xd;
                                 yd = my_yd;
 
+                                var formatter1 = new InteractiveDataDisplay.AdaptiveFormatter(_xAxis.ticks[0].position, _xAxis.ticks[_xAxis.ticks.length - 1].position);
+                                var formatter2 = new InteractiveDataDisplay.AdaptiveFormatter(_yAxis.ticks[0].position, _yAxis.ticks[_yAxis.ticks.length - 1].position);
                                 if (_tooltipSettings === undefined || _tooltipSettings.showCursorCoordinates !== false)
-                                    tooltips.push("<div class='idd-tooltip-coordinates'>" + xd + ", " + yd + "</div>");
+                                    tooltips.push("<div class='idd-tooltip-coordinates'>" + formatter1.toString(xd) + ", " + formatter2.toString(yd) + "</div>");
                             }
                             tooltips.push(myTooltip);
                         }
@@ -2452,7 +2455,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.base = InteractiveDataDisplay.CanvasPlot;
         this.base(host, master);
 
-        var _xAxis, _yAxis;
+        //var _xAxis, _yAxis;
         var _thickness = "1px";
         var _stroke = "LightGray";
 
