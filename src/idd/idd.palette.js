@@ -578,6 +578,8 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     var _width = _host.width();
     var _height = 20;
     var _axisVisible = true;
+    var _palette = palette;
+    var _dataRange = undefined;
 
     // Get initial settings from options
     if (options !== undefined) {
@@ -630,7 +632,6 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
         configurable: false
     });
 
-    var _palette = palette;
     Object.defineProperty(this, "palette", {
         get: function () { return _palette; },
         set: function (value) {
@@ -644,7 +645,6 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
         configurable: false
     });
 
-    var _dataRange = undefined;
     Object.defineProperty(this, "dataRange", {
         get: function () { return _dataRange; },
         set: function (value) {
