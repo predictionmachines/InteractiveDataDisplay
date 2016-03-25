@@ -194,6 +194,50 @@ InteractiveDataDisplay.Utils =
             return { minx: minx, maxx: maxx, miny: miny, maxy: maxy };
         },
 
+        enumPlots: function (masterPlot, plots) {
+            plots.push(masterPlot);
+            if (masterPlot.children)
+                masterPlot.children.forEach(function (child) {
+                    InteractiveDataDisplay.Utils.enumPlots(child, plots);
+                });
+            plots.sort(function (a, b) { return b.order - a.order; });
+            return plots;
+        },
+        reorder: function (MP,p, p_before) {
+            var plots = [];
+            plots = InteractiveDataDisplay.Utils.enumPlots(MP, plots);
+            //var f = p_before ? (p.order > p_before.order) : true;
+            p.order = p_before? (p_before.order + 1): 0;
+            var shift = function (MP,p) {
+                if (MP.order >= p.order && MP != p && MP.order != Number.MAX_SAFE_INTEGER) MP.order += 1;
+                if (MP.children)
+                    MP.children.forEach(function (child) {
+                        shift(child, p);
+                    });
+            }
+            shift(MP, p);
+        },
+        //reorder: function (MP,p, p_before) {
+        //    p.order = p_before ? p_before.order + 1 : 0;
+        //    var shift = function (MP,p) {
+        //        if (MP.order >= p.order && MP != p) MP.order += 1;
+        //        MP.Children.forEach(function (child) {
+        //            shift(child, p);
+        //        });
+        //    }
+        //    shift(MP, p);
+        //},
+    
+        getMaxOrder: function (p) {
+            var z = p.order != Number.MAX_SAFE_INTEGER ? p.order : 0;
+            if (p.children)
+                p.children.forEach(function (child) {
+                    var order = InteractiveDataDisplay.Utils.getMaxOrder(child);
+                    if (order != Number.MAX_SAFE_INTEGER) z = Math.max(z, order);
+                });
+            return z;
+        },
+
         getBoundingBoxForArrays: function (_x, _y, dataToPlotX, dataToPlotY) {
             var _bbox = undefined;
             if (_x && _y) {

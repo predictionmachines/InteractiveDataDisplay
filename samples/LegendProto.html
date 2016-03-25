@@ -44,7 +44,8 @@
                 legend.remove();
             });
             add.click(function () {
-                legend = new InteractiveDataDisplay.Legend(plot, legendDiv);
+                var legend = new InteractiveDataDisplay.Legend(plot, legendDiv);
+                //var line = plot.polyline("sin1", { y: y, x: x });
             })
         });
     </script>

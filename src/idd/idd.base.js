@@ -80,6 +80,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         switch (plotType) {
             case "plot":
                 plot = new InteractiveDataDisplay.Plot(jqDiv, master);
+                plot.order = Number.MAX_SAFE_INTEGER;
                 break;
             case "polyline":
                 plot = new InteractiveDataDisplay.Polyline(jqDiv, master);
@@ -249,6 +250,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _isFlatRenderingOn = false;
         var _width, _height;
         var _name = "";
+        var _order = 0;
         // Contains user-readable titles for data series of a plot. They should be used in tooltips and legends.
         var _titles = {};
         // The flag is set in setVisibleRegion when it is called at me as a bound plot to notify that another plot is changed his visible.
@@ -393,6 +395,16 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             },
             configurable: false
         });
+        Object.defineProperty(this, "order", {
+            get: function () { return _order; },
+            set: function (value) {
+                if (_order === value) return;
+                _order = value;
+                //this.onIsVisibleChanged();
+                //this.fireVisibleChanged(this);
+            },
+            configurable: false
+        });
 
         Object.defineProperty(this, "visibleRect", {
             get: function () {
@@ -532,6 +544,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (childPlot.master && (childPlot.master !== childPlot && childPlot.master !== this.master)) throw "Given child plot already added to another plot";
             if (childPlot.master !== this.master)
                 childPlot.onAddedTo(this.master); // changing master 
+            childPlot.order = childPlot.order == Number.MAX_SAFE_INTEGER ? childPlot.order : (InteractiveDataDisplay.Utils.getMaxOrder(this.master) + 1);
             _children.push(childPlot);
 
             if (this.master._sharedCanvas) {
@@ -1390,7 +1403,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var div = $("<div></div>")
                            .attr("data-idd-name", name)
                            .appendTo(this.host);
-                plot = new InteractiveDataDisplay.Markers(div);
+                plot = new InteractiveDataDisplay.Markers(div, this.master);
                 this.addChild(plot);
             }
             if (data !== undefined) {
@@ -1470,6 +1483,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         }, 0);
 
+        this.updateOrder = function (next_elem) {
+            if (this == next_elem) InteractiveDataDisplay.Utils.reorder(_master, this);
+            else InteractiveDataDisplay.Utils.reorder(_master, this, next_elem);
+            if (!_isFlatRenderingOn) {
+                var plots = [];
+                plots = InteractiveDataDisplay.Utils.enumPlots(_master, plots);
+                for (var i = 0; i < plots.length; i++) {
+                    if (plots[i].order != Number.MAX_SAFE_INTEGER) plots[i].host.css('z-index', plots[i].order);
+                }
+            }
+        };
+
         if (div) {
             if (_isMaster) {
                 if (div.attr("data-idd-plot") !== 'figure' && div.attr("data-idd-plot") !== 'chart')
@@ -1481,124 +1506,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         }
     };
-
-    //InteractiveDataDisplay.Legend = function (_plot, _jqdiv) {
-
-    //    var plotLegends = [];
-    //    var divStyle = _jqdiv[0].style;
-
-    //    //Stop event propagation
-    //    InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
-    //        _jqdiv[0].addEventListener(eventName, function (e) {
-    //            e.stopPropagation();
-    //        }, false);
-    //    });
-
-    //    var _isVisible = true;
-    //    Object.defineProperty(this, "isVisible", {
-    //        get: function () { return _isVisible; },
-    //        set: function (value) {
-    //            _isVisible = value;
-    //            if (_isVisible) divStyle.display = "block";
-    //            else divStyle.display = "none";
-    //        },
-    //        configurable: false
-    //    });
-
-    //    divStyle.display = "none";
-    //    _jqdiv.addClass("idd-legend");
-    //    _jqdiv.addClass("unselectable");
-
-    //    var createLegend = function () {
-    //        createLegendForPlot(_plot);
-
-    //        if (_jqdiv[0].hasChildNodes() && _isVisible) {
-    //            divStyle.display = "block";
-    //        }
-    //    };
-
-    //    var createLegendForPlot = function (plot) {
-    //        var legend = plot.getLegend();
-
-    //        plot.host.bind("childrenChanged",
-    //             function (event, params) {
-    //                 if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
-    //                     createLegendForPlot(params.plot);
-    //                 }
-    //                 else if (params.type === "remove") {
-    //                     var removeLegendItem = function (i) {
-    //                         var legend = plotLegends[i];
-    //                         plotLegends.splice(i, 1);
-    //                         legend.plot.host.unbind("childrenChanged");
-    //                         if (legend.onLegendRemove) legend.onLegendRemove();
-    //                         _jqdiv[0].removeChild(legend.div[0]);
-    //                         var childDivs = legend.plot.children;
-    //                         childDivs.forEach(function (childPlot) {
-    //                             for (var j = 0, len = plotLegends.length; j < len; j++)
-    //                                 if (plotLegends[j].plot === childPlot) {
-    //                                     removeLegendItem(plotLegends[j]);
-    //                                 }
-    //                         });
-    //                         if (plotLegends.length === 0) divStyle.display = "none";
-    //                     };
-
-    //                     for (var i = 0, len = plotLegends.length; i < len; i++)
-    //                         if (plotLegends[i].plot === params.plot) {
-    //                             removeLegendItem(i);
-    //                             break;
-    //                         }
-    //                 }
-    //                 else {
-    //                     _jqdiv[0].innerHTML = "";
-    //                     divStyle.display = "none";
-    //                     len = plotLegends.length;
-    //                     for (i = 0; i < len; i++)
-    //                         if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
-    //                     plotLegends = [];
-
-    //                     plot.host.unbind("childrenChanged");
-
-    //                     createLegend();
-    //                 }
-    //             });
-
-    //        if (legend) {
-    //            (legend.div).appendTo(_jqdiv);
-    //            legend.plot = plot;
-    //            plotLegends[plotLegends.length] = legend;
-    //        }
-    //        var childDivs = plot.children;
-    //        childDivs.forEach(function (childPlot) {
-    //            createLegendForPlot(childPlot);
-    //        });
-    //    };
-
-    //    this.remove = function () {
-    //        for (var i = 0, len = plotLegends.length; i < len; i++)
-    //            if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
-    //        plotLegends = [];
-
-    //        var removeLegendForPlot = function (plot) {
-    //            plot.host.unbind("childrenChanged");
-
-    //            var childDivs = plot.children;
-    //            childDivs.forEach(function (childPlot) {
-    //                removeLegendForPlot(childPlot);
-    //            });
-    //        };
-    //        removeLegendForPlot(_plot);
-
-    //        _jqdiv[0].innerHTML = "";
-    //        _jqdiv.removeClass("idd-legend");
-    //        _jqdiv.removeClass("unselectable");
-    //    };
-
-    //    createLegend();
-
-    //    _jqdiv.dblclick(function (event) {
-    //        event.stopImmediatePropagation();
-    //    });
-    //};
 
     var _plotLegends = [];
     //Legend with hide/show function
@@ -1632,32 +1539,35 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         if (!isCompact) {
             _jqdiv.sortable({ axis: 'y'});
             _jqdiv.on("sortupdate", function (e, ui) {
-                var name = ui.item.attr('data-plot'); //id of plot what's card was moved
+                var name = ui.item.attr('data-plot'); //name of plot what's card was moved
                 var targetIndex;
+                var next_elem;
                 $("li", _jqdiv).each(function (idx, el) {
                     if (name == $(el).attr('data-plot')) {
                         targetIndex = idx;
+                        next_elem = ($(el).next()).attr('data-plot');
                         return false;
                     }
                 });//found new index of moved element
                 for (var i = 0; i < plotLegends.length; ++i) {
                     if (plotLegends[i].plot.name == name) {
-                        var targetPlot = plotLegends.splice(i, 1);//removing plot from its old position
-                        plotLegends.splice(targetIndex, 0, targetPlot[0]);//putting plot into its new position
+                        for (var j = 0; j < plotLegends.length; ++j) {
+                            if (plotLegends[j].plot.name == next_elem) {
+                                plotLegends[i].plot.updateOrder(plotLegends[j].plot);
+                                break;
+                            }
+                        }
                         break;
                     }
                 }
-                console.log("456");
-                updateZIndex();
             });
         }
-        var updateZIndex = function() {
-            for (var i = 0; i < plotLegends.length; i++) {
-                plotLegends[i].plot.host.css('z-index', plotLegends.length - i);
-            }
-        }
+        
         var createLegend = function () {
-            createLegendForPlot(_plot);
+            var plots = [];
+            plots = InteractiveDataDisplay.Utils.enumPlots(_plot, plots);
+            for (var i = 0; i < plots.length; i++)
+                createLegendForPlot(plots[i]);
 
             if (_jqdiv[0].hasChildNodes() && _isVisible) {
                 divStyle.display = "block";
@@ -1763,12 +1673,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 div.plot = plot;
                 plotLegends[plotLegends.length] = div;
                 _plotLegends[_plotLegends.length] = div;
-                updateZIndex();
             }
-            var childDivs = plot.children;
-            childDivs.forEach(function (childPlot) {
-                createLegendForPlot(childPlot);
-            });
         };
 
         this.remove = function () {
