@@ -1483,15 +1483,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         }, 0);
 
-        this.updateOrder = function (next_elem) {
-            if (this == next_elem) InteractiveDataDisplay.Utils.reorder(_master, this);
-            else InteractiveDataDisplay.Utils.reorder(_master, this, next_elem);
+        this.updateOrder = function (next_elem, isPrev) {
+            if (next_elem) InteractiveDataDisplay.Utils.reorder(_master, this, next_elem, isPrev);
             if (!_isFlatRenderingOn) {
                 var plots = [];
                 plots = InteractiveDataDisplay.Utils.enumPlots(_master, plots);
                 for (var i = 0; i < plots.length; i++) {
                     if (plots[i].order != Number.MAX_SAFE_INTEGER) plots[i].host.css('z-index', plots[i].order);
                 }
+            }
+            else {
+                var plots = [];
+                plots = InteractiveDataDisplay.Utils.enumPlots(_master, plots);
             }
         };
 
@@ -1515,12 +1518,13 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var divStyle = _jqdiv[0].style;
 
         //Stop event propagation
-        //InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
-        //    _jqdiv[0].addEventListener(eventName, function (e) {
-        //        e.stopPropagation();
-        //    }, false);
-        //});
-
+        if (isCompact) {
+            InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
+                _jqdiv[0].addEventListener(eventName, function (e) {
+                    e.stopPropagation();
+                }, false);
+            });
+        }
         var _isVisible = true;
         Object.defineProperty(this, "isVisible", {
             get: function () { return _isVisible; },
@@ -1541,23 +1545,33 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _jqdiv.on("sortupdate", function (e, ui) {
                 var name = ui.item.attr('data-plot'); //name of plot what's card was moved
                 var targetIndex;
-                var next_elem;
+                var next_elem, prev_elem;
                 $("li", _jqdiv).each(function (idx, el) {
                     if (name == $(el).attr('data-plot')) {
                         targetIndex = idx;
+                        prev_elem = ($(el)).prev().attr('data-plot');
                         next_elem = ($(el).next()).attr('data-plot');
                         return false;
                     }
                 });//found new index of moved element
                 for (var i = 0; i < plotLegends.length; ++i) {
                     if (plotLegends[i].plot.name == name) {
-                        for (var j = 0; j < plotLegends.length; ++j) {
-                            if (plotLegends[j].plot.name == next_elem) {
-                                plotLegends[i].plot.updateOrder(plotLegends[j].plot);
-                                break;
+                        if (next_elem) {
+                            for (var j = 0; j < plotLegends.length; ++j) {
+                                if (plotLegends[j].plot.name == next_elem) {
+                                    plotLegends[i].plot.updateOrder(plotLegends[j].plot);
+                                    break;
+                                }
                             }
                         }
-                        break;
+                        else {
+                            for (var j = 0; j < plotLegends.length; ++j) {
+                                if (plotLegends[j].plot.name == prev_elem) {
+                                    plotLegends[i].plot.updateOrder(plotLegends[j].plot, true);
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -1567,7 +1581,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var plots = [];
             plots = InteractiveDataDisplay.Utils.enumPlots(_plot, plots);
             for (var i = 0; i < plots.length; i++)
-                createLegendForPlot(plots[i]);
+                createLegendForPlot(plots[plots.length - i - 1]);
 
             if (_jqdiv[0].hasChildNodes() && _isVisible) {
                 divStyle.display = "block";
@@ -1598,63 +1612,69 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
             }
         };
+        var childrenChangedHandler = function (event, params) {
+            if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
+                createLegendForPlot(params.plot);
+            }
+            else if (params.type === "remove") {
+                var removeLegendItem = function (i) {
+                    var legend = plotLegends[i];
+                    plotLegends.splice(i, 1);
+                    removeLegend(legend);
+                    legend.plot.host.unbind("childrenChanged", childrenChangedHandler);
+                    if (legend.onLegendRemove) legend.onLegendRemove();
+                    legend[0].innerHTML = "";
+                    if (isCompact) legend.removeClass("idd-legend-item-compact");
+                    else legend.removeClass("idd-legend-item");
+                    _jqdiv[0].removeChild(legend[0]);
+                    var childDivs = legend.plot.children;
+                    childDivs.forEach(function (childPlot) {
+                        for (var j = 0, len = plotLegends.length; j < len; j++)
+                            if (plotLegends[j].plot === childPlot) {
+                                removeLegendItem(plotLegends[j]);
+                            }
+                    });
+                    if (plotLegends.length === 0) divStyle.display = "none";
+                };
+
+                for (var i = 0, len = plotLegends.length; i < len; i++)
+                    if (plotLegends[i].plot === params.plot) {
+                        removeLegendItem(i);
+                        break;
+                    }
+            }
+            else {
+                _jqdiv[0].innerHTML = "";
+                divStyle.display = "none";
+                len = plotLegends.length;
+                for (i = 0; i < len; i++) {
+                    removeLegend(plotLegends[i]);
+                    if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
+                    plotLegends[i][0].innerHTML = "";
+                    if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
+                    else plotLegends[i].removeClass("idd-legend-item");
+                }
+                plotLegends = [];
+                createLegend();
+            }
+        };
+        var visibleChangedHandler = function (event, params) {
+            var updateLegendItem = function (i, isVisible) {
+                var legend = _plotLegends[i];
+                if (isVisible) legend[0].firstElementChild.lastElementChild.setAttribute("class", "idd-legend-isselected-false");
+                else legend[0].firstElementChild.lastElementChild.setAttribute("class", "idd-legend-isselected-true");
+            };
+
+            for (var i = 0, len = _plotLegends.length; i < len; i++)
+                if (_plotLegends[i].plot === params) {
+                    updateLegendItem(i, params.isVisible);
+                }
+        }; 
         var createLegendForPlot = function (plot) {
             var legend = plot.getLegend();
             //change getLegend
-            plot.host.bind("visibleChanged",
-                function (event, params) {
-                    var updateLegendItem = function (i, isVisible) {
-                        var legend = _plotLegends[i];
-                        if (isVisible) legend[0].firstElementChild.lastElementChild.setAttribute("class", "idd-legend-isselected-false");
-                        else legend[0].firstElementChild.lastElementChild.setAttribute("class", "idd-legend-isselected-true");
-                    };
-
-                    for (var i = 0, len = _plotLegends.length; i < len; i++)
-                        if (_plotLegends[i].plot === params) {
-                            updateLegendItem(i, params.isVisible);
-                        }
-                });
-            plot.host.bind("childrenChanged",
-                 function (event, params) {
-                     if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
-                         createLegendForPlot(params.plot);
-                     }
-                     else if (params.type === "remove") {
-                         var removeLegendItem = function (i) {
-                             var legend = plotLegends[i];
-                             plotLegends.splice(i, 1);
-                             legend.plot.host.unbind("childrenChanged");
-                             if (legend.onLegendRemove) legend.onLegendRemove();
-                             _jqdiv[0].removeChild(legend.div[0]);
-                             var childDivs = legend.plot.children;
-                             childDivs.forEach(function (childPlot) {
-                                 for (var j = 0, len = plotLegends.length; j < len; j++)
-                                     if (plotLegends[j].plot === childPlot) {
-                                         removeLegendItem(plotLegends[j]);
-                                     }
-                             });
-                             if (plotLegends.length === 0) divStyle.display = "none";
-                         };
-
-                         for (var i = 0, len = plotLegends.length; i < len; i++)
-                             if (plotLegends[i].plot === params.plot) {
-                                 removeLegendItem(i);
-                                 break;
-                             }
-                     }
-                     else {
-                         _jqdiv[0].innerHTML = "";
-                         divStyle.display = "none";
-                         len = plotLegends.length;
-                         for (i = 0; i < len; i++) {
-                             removeLegend(plotLegends[i]);
-                             if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
-                         }
-                         plotLegends = [];
-                         plot.host.unbind("childrenChanged");
-                         createLegend();
-                     }
-                 });
+            plot.host.bind("visibleChanged", visibleChangedHandler);
+            plot.host.bind("childrenChanged", childrenChangedHandler );
             if (legend) {
                 var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<li class='idd-legend-item'></li>");
                 if (!isCompact) div.attr("data-plot", plot.name);
@@ -1668,11 +1688,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (legend.info)
                     if (isCompact) legend.info.addClass("idd-legend-item-info-compact").appendTo(div);
                     else legend.info.addClass("idd-legend-item-info").appendTo(div);
-                div.appendTo(_jqdiv);
+                div.prependTo(_jqdiv);
                 if (!isCompact) _jqdiv.sortable({ axis: 'y'});
                 div.plot = plot;
                 plotLegends[plotLegends.length] = div;
                 _plotLegends[_plotLegends.length] = div;
+                div.plot.updateOrder();
             }
         };
 
@@ -1680,12 +1701,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             for (var i = 0, len = plotLegends.length; i < len; i++) {
                 removeLegend(plotLegends[i]);
                 if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
+                plotLegends[i][0].innerHTML = "";
+                if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
+                else plotLegends[i].removeClass("idd-legend-item");
             }
             plotLegends = [];
             
             var removeLegendForPlot = function (plot) {
-                plot.host.unbind("childrenChanged");
-                plot.host.unbind("visibleChanged");
+                plot.host.unbind("childrenChanged", childrenChangedHandler);
+                plot.host.unbind("visibleChanged", visibleChangedHandler);
                 var childDivs = plot.children;
                 childDivs.forEach(function (childPlot) {
                     removeLegendForPlot(childPlot);

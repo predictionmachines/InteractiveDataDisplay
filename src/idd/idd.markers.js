@@ -968,7 +968,6 @@ InteractiveDataDisplay.Markers = function (div, master) {
 
         var onLegendRemove = function () {
             that.host.unbind("appearanceChanged");
-
             //div[0].innerHTML = "";
             //div.removeClass("idd-legend-item");
         };

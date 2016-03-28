@@ -203,11 +203,10 @@ InteractiveDataDisplay.Utils =
             plots.sort(function (a, b) { return b.order - a.order; });
             return plots;
         },
-        reorder: function (MP,p, p_before) {
+        reorder: function (MP,p, p_before, isPrev) {
             var plots = [];
             plots = InteractiveDataDisplay.Utils.enumPlots(MP, plots);
-            //var f = p_before ? (p.order > p_before.order) : true;
-            p.order = p_before? (p_before.order + 1): 0;
+            p.order = isPrev ? (p_before.order): (p_before.order + 1);
             var shift = function (MP,p) {
                 if (MP.order >= p.order && MP != p && MP.order != Number.MAX_SAFE_INTEGER) MP.order += 1;
                 if (MP.children)
