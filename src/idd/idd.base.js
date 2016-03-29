@@ -1655,6 +1655,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     else plotLegends[i].removeClass("idd-legend-item");
                 }
                 plotLegends = [];
+                _plot.host.unbind("childrenChanged");
                 createLegend();
             }
         };
