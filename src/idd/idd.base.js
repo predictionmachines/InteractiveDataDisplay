@@ -221,6 +221,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     InteractiveDataDisplay.Event.isAutoFitChanged = jQuery.Event("isAutoFitEnabledChanged");
     InteractiveDataDisplay.Event.visibleRectChanged = jQuery.Event("visibleRectChanged");
     InteractiveDataDisplay.Event.isVisibleChanged = jQuery.Event("visibleChanged");
+    InteractiveDataDisplay.Event.plotRemoved = jQuery.Event("plotRemoved");
+    InteractiveDataDisplay.Event.orderChanged = jQuery.Event("orderChanged");
 
     InteractiveDataDisplay.Plot = function (div, master, myCentralPart) {
 
@@ -400,8 +402,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             set: function (value) {
                 if (_order === value) return;
                 _order = value;
-                //this.onIsVisibleChanged();
-                //this.fireVisibleChanged(this);
             },
             configurable: false
         });
@@ -520,7 +520,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
 
             this.master.removeChild(this);
+            this.firePlotRemoved(this);
             this.host.remove();
+            //this.firePlotRemoved(this);
         };
 
         this.removeMap = function () {
@@ -1375,7 +1377,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.fireVisibleChanged = function (propertyParams) {
             this.host.trigger(InteractiveDataDisplay.Event.isVisibleChanged, propertyParams);
         };
-
+        this.firePlotRemoved = function (propertyParams) {
+            this.host.trigger(InteractiveDataDisplay.Event.plotRemoved, propertyParams);
+        };
+        this.fireOrderChanged = function (propertyParams) {
+            this.host.trigger(InteractiveDataDisplay.Event.orderChanged, propertyParams);
+        };
         //--------------------------------------------------------------------------------------
         // Plot factories
 
@@ -1496,6 +1503,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var plots = [];
                 plots = InteractiveDataDisplay.Utils.enumPlots(_master, plots);
             }
+            //this.fireOrderChanged();
         };
 
         if (div) {
@@ -1525,6 +1533,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }, false);
             });
         }
+        //_plot.host.bind("plotRemoved", plotRemovedHandler);
         var _isVisible = true;
         Object.defineProperty(this, "isVisible", {
             get: function () { return _isVisible; },
@@ -1536,7 +1545,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             configurable: false
         });
 
-        divStyle.display = "none";
         if (isCompact) _jqdiv.addClass("idd-legend-compact");
         else _jqdiv.addClass("idd-legend");
         _jqdiv.addClass("unselectable");
@@ -1578,11 +1586,19 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         }
         
         var createLegend = function () {
+            _jqdiv.empty();
+            for (var i = 0, len = plotLegends.length; i < len; i++) {
+                plotLegends[i].plot.host.unbind("childrenChanged", childrenChangedHandler);
+                plotLegends[i].plot.host.unbind("visibleChanged", visibleChangedHandler);
+                plotLegends[i].plot.host.unbind("orderChanged", orderChangedHandler);
+                removeLegend(plotLegends[i]);
+            }
+            plotLegends = [];
             var plots = [];
             plots = InteractiveDataDisplay.Utils.enumPlots(_plot, plots);
-            for (var i = 0; i < plots.length; i++)
+            for (var i = 0; i < plots.length; i++) {
                 createLegendForPlot(plots[plots.length - i - 1]);
-
+            }
             if (_jqdiv[0].hasChildNodes() && _isVisible) {
                 divStyle.display = "block";
             }
@@ -1612,7 +1628,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
             }
         };
+        var orderChangedHandler = function (event, params) {
+            createLegend();
+        };
+        //var plotRemovedHandler = function (event, params) {
+        //    var lege = _jqdiv;
+        //    this.remove();
+        //};
         var childrenChangedHandler = function (event, params) {
+            
             if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
                 createLegendForPlot(params.plot);
             }
@@ -1622,6 +1646,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     plotLegends.splice(i, 1);
                     removeLegend(legend);
                     legend.plot.host.unbind("childrenChanged", childrenChangedHandler);
+                    legend.plot.host.unbind("visibleChanged", visibleChangedHandler);
+                    legend.plot.host.unbind("orderChanged", orderChangedHandler);
                     if (legend.onLegendRemove) legend.onLegendRemove();
                     legend[0].innerHTML = "";
                     if (isCompact) legend.removeClass("idd-legend-item-compact");
@@ -1634,7 +1660,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                                 removeLegendItem(plotLegends[j]);
                             }
                     });
-                    if (plotLegends.length === 0) divStyle.display = "none";
+                    legend[0].style = "display: none";
+                    if (plotLegends.length == 0) divStyle.display = "none";
                 };
 
                 for (var i = 0, len = plotLegends.length; i < len; i++)
@@ -1655,7 +1682,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     else plotLegends[i].removeClass("idd-legend-item");
                 }
                 plotLegends = [];
-                _plot.host.unbind("childrenChanged");
+                _plot.host.unbind("childrenChanged", childrenChangedHandler);
                 createLegend();
             }
         };
@@ -1675,7 +1702,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var legend = plot.getLegend();
             //change getLegend
             plot.host.bind("visibleChanged", visibleChangedHandler);
-            plot.host.bind("childrenChanged", childrenChangedHandler );
+            plot.host.bind("childrenChanged", childrenChangedHandler);
+            //plot.host.bind("orderChanged", orderChangedHandler);
             if (legend) {
                 var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<li class='idd-legend-item'></li>");
                 if (!isCompact) div.attr("data-plot", plot.name);
@@ -1689,15 +1717,26 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (legend.info)
                     if (isCompact) legend.info.addClass("idd-legend-item-info-compact").appendTo(div);
                     else legend.info.addClass("idd-legend-item-info").appendTo(div);
+
+                //var needAddLegend = true;
+                //for (var k = 0; k < plotLegends.length; k++) {
+                //    if (plotLegends[k].plot == plot) {
+                //        needAddLegend = false;
+                //        break;
+                //    }
+                //}
+                //if (needAddLegend) {
                 div.prependTo(_jqdiv);
                 if (!isCompact) _jqdiv.sortable({ axis: 'y'});
                 div.plot = plot;
-                plotLegends[plotLegends.length] = div;
-                _plotLegends[_plotLegends.length] = div;
-                div.plot.updateOrder();
+             
+                    plotLegends[plotLegends.length] = div;
+                    _plotLegends[_plotLegends.length] = div;
+                    div.plot.updateOrder();
+                    //div.plot.host.bind("orderChanged", orderChangedHandler);
+                //}
             }
         };
-
         this.remove = function () {
             for (var i = 0, len = plotLegends.length; i < len; i++) {
                 removeLegend(plotLegends[i]);
@@ -1707,17 +1746,17 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 else plotLegends[i].removeClass("idd-legend-item");
             }
             plotLegends = [];
-            
             var removeLegendForPlot = function (plot) {
                 plot.host.unbind("childrenChanged", childrenChangedHandler);
                 plot.host.unbind("visibleChanged", visibleChangedHandler);
+                plot.host.unbind("orderChanged", orderChangedHandler);
                 var childDivs = plot.children;
                 childDivs.forEach(function (childPlot) {
                     removeLegendForPlot(childPlot);
                 });
             };
             removeLegendForPlot(_plot);
-
+            //_plot.host.unbind("plotRemoved", plotRemovedHandler);
             _jqdiv[0].innerHTML = "";
             if (isCompact) _jqdiv.removeClass("idd-legend-compact");
             else _jqdiv.removeClass("idd-legend");
