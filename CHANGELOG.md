@@ -1,3 +1,17 @@
+## 1.2.0git  (unpublished) 
+
+ - Marker plot is significantly refactored.
+    - The shape API has changed so that it allows much more flexibility in creating new shapes. 
+    **The previously created shapes may not work with the new marker plot.**
+    - Shapes are completely moved away from the markers plot itself.
+    - The shape lookup & registration algorithm changed. 
+    **Existing code using markers with custom shapes may not work with new marker plot.**
+    - Plot life cycle optimized so that rendering performance has increased.
+    - Documentation added (`docs/markers.md`)
+ - New sample with animated transition between drawn data (`Animated markers update.html`)
+  
+
+## 1.1.4 (February 17, 2016)
 ## 1.1.3 (February 16, 2016)
 
 Bug fix:
