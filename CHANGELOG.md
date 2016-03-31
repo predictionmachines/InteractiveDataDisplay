@@ -1,4 +1,4 @@
-## 1.2.0git  (unpublished) 
+## 1.2.0  (unpublished) 
 
  - Marker plot is significantly refactored.
     - The shape API has changed so that it allows much more flexibility in creating new shapes. 

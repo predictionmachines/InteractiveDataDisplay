@@ -59,7 +59,7 @@ For instance, the following `data` represents a table with columns `x`, `y` and 
 
 ```JavaScript
 var data = {
-    x: [ 0.0, 0.1, 0.2, 0.3 ]
+    x: [ 0.0, 0.1, 0.2 ]
     y: [ 0.0, 0.01, 0.04 ]
     color: "blue"
 }
@@ -70,11 +70,10 @@ If `shape` is not specified, the default shape is `box`.
 The rules are:
 
 - each table row is a single marker to be rendered;
-- total number of rows is the maximum length of the arrays;
-- the shorter arrays are appended with `undefined` to have the maximum length, e.g. the `data.y` will be appended to
-`[0.0, 0.01, 0.04, undefined]`;
-- the scalar values are considered as an array of the maximum length where all elements equal to the given scalar value, 
-e.g. the `data.color` will be transformed to `["blue", "blue", "blue", "blue"]`.
+- all arrays should be of same length;
+- total number of rows is the length of the arrays;
+- the scalar values are considered as an array with length equal to the number of rows, where all elements equal to the given scalar value, 
+e.g. the `data.color` will be transformed to `["blue", "blue", "blue"]`.
 
 Value of the property `data.shape` determines the structure of the `data` and the rendering algorithm.
 There are possible shapes available in the basic IDD packacge, but still it is possible to add custom shapes. 
@@ -181,7 +180,9 @@ After the stage the object must be valid and complete in terms of the shape;
 all following stages use this `data` object.
 If `shape.prepare` is undefined, the stage outputs the original data object.
 This is a place to compute min and max for data series and replace normalized palettes with absolute, as well as
-substitue default values. Also, at this stage the missing values can be filtered out, so only the data that should be
+substitue default values; to check lengths of the given arrays. 
+The color data series can replaced with colors using the palette.
+Also, at this stage the missing values can be filtered out, so only the data that should be
 rendered remains.   
 1. **Plot Rendering.** Rendering is initiated by IDD infrastructure when required
 (but after the "preparing" stage is complete).
@@ -189,6 +190,7 @@ Its goal is to render the plot in the given canvas context. This stage includes 
     1. **Pre-rendering.** At this stage, the `data` object is passed the `shape.preRender` method along with screen
     parameters. This is a place where data rows can be filtered or altered, for example adjusted to the current 
     screen size. The method returns new `data` object; if the method is undefined, the original data is used next.
+    Also here it is possible to set up the canvas context before markers rendering started.
     1. **Marker rendering.** Next, the method `shape.draw` is applied to each of the `data` rows and renders a single
     marker in the given canvas context.
 
