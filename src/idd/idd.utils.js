@@ -5,6 +5,23 @@ InteractiveDataDisplay.Utils =
     {
         //trim: function (s) { return s.replace(/^[\s\n]+|[\s\n]+$/g, ''); },
 
+        applyMask: function(mask, array, newLength) {
+            var n = mask.length;
+            var newArr = new Array(newLength);
+            for(var i = 0, j = 0; i < n; i++){
+                if(mask[i] === 0) newArr[j++] = array[i];
+            }
+            return newArr;
+        },
+        
+        maskNaN: function(mask, numArray){            
+            for(var n = mask.length; --n>=0; ){
+                 var v = numArray[n];
+                 if(v != v) // NaN
+                    mask[n] = 1;
+            }
+        },
+
         //Returns true if value is Array or TypedArray
         isArray: function(arr) {
             return arr instanceof Array || 
@@ -119,6 +136,14 @@ InteractiveDataDisplay.Utils =
             return defaultSource;
         },
 
+        makeNonEqual: function(range) {
+            if(range.min == range.max){
+                if(range.min == 0) return { min : -1, max : 1}
+                else if(range.min > 0)  return { min : range.min * 0.9, max : range.min * 1.1}
+                else return { min : range.min * 1.1, max : range.min * 0.9}
+            }else return range;
+        },
+
         getMinMax: function (array) {
             if (!array || array.length === 0) return undefined;
             var n = array.length;
@@ -126,43 +151,59 @@ InteractiveDataDisplay.Utils =
             var v;
             for (var i = 0; i < n; i++) {
                 v = array[i];
-                if (!isNaN(v)) {
+                if (v == v) {
                     min = max = v;
                     break;
                 }
             }
             for (i++; i < n; i++) {
                 v = array[i];
-                if (!isNaN(v)) {
+                if (v == v) {
                     if (v < min) min = v;
                     else if (v > max) max = v;
                 }
             }
             return { min: min, max: max };
         },
+
         getMin: function (array) {
-            var min = undefined;
-            if (array != undefined) {
-                for (var i = 0; i < array.length; i++) {
-                    if (!isNaN(array[i]) && (min === undefined || min > array[i])) {
-                        min = array[i];
-                    }
+            if (!array || array.length === 0) return undefined;
+            var n = array.length;
+            var min;
+            var v;
+            for (var i = 0; i < n; i++) {
+                v = array[i];
+                if (v == v) {
+                    min = v;
+                    break;
                 }
             }
-
+            for (i++; i < n; i++) {
+                v = array[i];
+                if (v == v && v < min) min = v;
+            }
             return min;
         },
+
         getMax: function (array) {
-            var max = undefined;
-            if (array != undefined) {
-                for (var i = 0; i < array.length; i++) {
-                    if (!isNaN(array[i]) && (max === undefined || max < array[i])) {
-                        max = array[i];
-                    }
+            if (!array || array.length === 0) return undefined;
+            var n = array.length;
+            var max;
+            var v;
+            for (var i = 0; i < n; i++) {
+                v = array[i];
+                if (v == v) {
+                    max = v;
+                    break;
                 }
+            }
+            for (i++; i < n; i++) {
+                v = array[i];
+                if (v == v && v > max) max = v;
             }
             return max;
         },
+        
         getMinMaxForPair: function (arrayx, arrayy) {
             if (!arrayx || arrayx.length === 0) return undefined;
             if (!arrayy || arrayx.length !== arrayy.length) throw 'Arrays should be equal';

@@ -42,7 +42,7 @@ Add following references to your HTML page (don't forget to correct paths):
     <script src="https://code.jquery.com/ui/1.12.0-beta.1/jquery-ui.min.js"></script>
     <script src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
     
-	<script src="dist/idd.js"></script>
+    <script src="dist/idd.js"></script>
     <script src="dist/chartViewer.js"></script>
 
 The variables `ChartViewer` and `Plot` are globally defined.

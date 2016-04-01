@@ -1,4 +1,3 @@
-*.txt
 /ext/**
 /dist/**
 /node_modules/**
@@ -10,13 +9,12 @@
 /.tscache/**
 /typings/**
 # JS Map files
-src/viewer/*.js.map
-
+/src/viewer/*.js.map
 # JS files
-src/viewer/*.js
+/src/viewer/*.js
+/test/manual/main.js
+/test/manual/mainGlobal.js
 !src/viewer/MathUtils.js
 !src/viewer/Chart.header.js
 !src/viewer/Chart.footer.js
-
-test/manual/.baseDir.ts
-test/manual/.baseDir.js
+.baseDir.*

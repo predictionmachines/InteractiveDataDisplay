@@ -140,12 +140,12 @@ module ChartViewer {
                 var toolTipFormatters = {};
                 var colorRange, sizeRange;
                 drawArgs.border = plot.borderColor;
-                if (plot.x == undefined && !Array.isArray(plot.y)) {
+                if (plot.x == undefined && !InteractiveDataDisplay.Utils.isArray(plot.y)) {
                     plot.x = [];
                     for (var i = 0; i < plot.y["median"].length; i++) plot.x.push(i);
                 }
                 drawArgs.x = plot.x;
-                if (drawArgs.y === undefined && Array.isArray(plot.y))
+                if (drawArgs.y === undefined && InteractiveDataDisplay.Utils.isArray(plot.y))
                     drawArgs.y = plot.y;
                 else
                     drawArgs.y = (<Plot.Quantiles><any>plot.y).median;
@@ -171,7 +171,7 @@ module ChartViewer {
                     return result;
                 }
 
-                if (!Array.isArray(plot.y)) {
+                if (!InteractiveDataDisplay.Utils.isArray(plot.y)) {
                     //Y is uncertainty, using box&whisker
                     switch (plot.shape) {
                         case "boxnowhisker":
@@ -206,14 +206,14 @@ module ChartViewer {
 
                 if (typeof plot.color === "undefined") {
                     if (drawArgs.shape === undefined) drawArgs.shape = plot.shape;
-                    if (Array.isArray(plot.y)) drawArgs.color = plot.color = "#1F497D";
+                    if (InteractiveDataDisplay.Utils.isArray(plot.y)) drawArgs.color = plot.color = "#1F497D";
                 }
                 else if (typeof plot.color === "string") {
                     if (drawArgs.shape === undefined) drawArgs.shape = plot.shape;
                     drawArgs.color = <string>plot.color;
 
                 }
-                else if (Array.isArray(plot.color)) {
+                else if (InteractiveDataDisplay.Utils.isArray(plot.color)) {
                     if (drawArgs.shape === undefined) drawArgs.shape = plot.shape;
                     toolTipData[getTitle(plotDefinition, "color")] = plot.color;
                     drawArgs.color = plot.color;
@@ -260,7 +260,7 @@ module ChartViewer {
                     sizeRange = { from: 0, to: maxDelta };
                     drawArgs.size = 15;
                 }
-                else if (Array.isArray(plot.size)) {
+                else if (InteractiveDataDisplay.Utils.isArray(plot.size)) {
                     toolTipData[getTitle(plotDefinition, "size")] = plot.size;
                     drawArgs.sizePalette = Markers.BuildSizePalette(plot);
                     drawArgs.size = <number[]>plot.size;

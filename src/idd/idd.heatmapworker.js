@@ -1,4 +1,3 @@
-
 self.onmessage = function (event) {
     var xscale = event.data.scaleX, xoffset = event.data.offsetX, yscale = event.data.scaleY, yoffset = event.data.offsetY;
     var dataToScreenX, dataToScreenY;
@@ -355,4 +354,3 @@ var renderGradient = function (image, width, height, x, y, f, fmin, fmax, palett
         if (cellRight_s >= w) break;
     }
 };
-

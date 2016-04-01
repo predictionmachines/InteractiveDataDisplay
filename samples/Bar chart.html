@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
-    <script src="../dist/idd.min.js"></script>
+    <script src="../dist/idd.js"></script>
 
     <script type="text/javascript">
         var N = 20;
@@ -41,12 +41,26 @@
                     context.strokeRect(xLeft, yTop, xRight - xLeft, yBottom - yTop);
                 }
             },
-
-            getBoundingBox: function (marker) {
-                var barWidth = marker.barWidth;
-                var xLeft = marker.x - barWidth / 2;
-                var yBottom = Math.min(0, marker.y);
-                return { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
+            
+            prepare: function(data) {
+                if(data.x == undefined)
+                    data.x = InteractiveDataDisplay.Utils.range(0, data.y.length - 1);
+                
+                if(data.colorPalette && data.color){
+                    if(data.colorPalette.isNormalized){
+                        var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
+                        r = InteractiveDataDisplay.Utils.makeNonEqual(r);
+                        data.colorPalette = data.colorPalette.absolute(r.min, r.max);
+                    }
+                    var n = data.color.length;
+                    var colors = new Array(n);
+                    for (var i = 0; i < n; i++){
+                        var color = data.color[i];
+                        var rgba = data.colorPalette.getRgba(color);                        
+                        colors[i] = "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
+                    }
+                    data.color = colors;
+                }
             },
 
             hitTest: function (marker, transform, ps, pd) {

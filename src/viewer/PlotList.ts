@@ -88,7 +88,7 @@ module ChartViewer {
 
             if (plot.Definition.kind == null) {
                 var existingplot = getPlotById(plot.Id);
-                if (PlotRegistry[existingplot.Definition.kind] !== undefined && plot.Definition["error"] == undefined) 
+                if (PlotRegistry[existingplot.Definition.kind] !== undefined && plot.Definition["error"] == undefined)
                     card = PlotRegistry[existingplot.Definition.kind].createPlotCardContent(existingplot.Plots);
                 else
                     card = PlotRegistry["fallback"].createPlotCardContent(plot.Plots);

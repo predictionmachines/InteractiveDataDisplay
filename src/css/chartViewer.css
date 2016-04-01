@@ -422,7 +422,7 @@ body {
 
 .dsv-plotcard-unresolved {
     display: inline-block;
-    color: gray;
+    color: red;
     font-style: italic;
 }
 .plotcard-error {

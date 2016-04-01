@@ -575,10 +575,10 @@ InteractiveDataDisplay.ColorPalette.HSLtoRGB = function (hslaColor) {
 
 InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     var _host = div;
-    var _palette = palette;
     var _width = _host.width();
     var _height = 20;
     var _axisVisible = true;
+    var _palette = palette;
     var _dataRange = undefined;
 
     // Get initial settings from options

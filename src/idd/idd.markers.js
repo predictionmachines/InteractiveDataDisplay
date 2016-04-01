@@ -1,22 +1,6 @@
-﻿// Represents a custom marker to be provided as a shape to a markers plot.
-// draw is a function (marker, plotRect, screenSize, transform, context) 
-//    it is called once for each marker to render it on a canvas
-//    marker is an object with properties representing a slice of data provided in MarkerPlot.draw() method
-//    plotRect     {x,y,width,height}  Rectangle in the plot plane which is visible, (x,y) is left/bottom of the rectangle
-//    screenSize   {width,height}      Size of the output region to render.
-//    transform  { dataToScreenX, dataToScreenY } Transform functions from data to screen coordinates
-//    context (canvas context2d) A context to render.
-InteractiveDataDisplay.CustomMarkerShape = function (draw, getBoundingBox, getLegendItem) {
-    this.draw = draw;
-    this.getBoundingBox = getBoundingBox;
-    this.getLegendItem = getLegendItem;
-};
-
-InteractiveDataDisplay.MaxMarkersPerAnimationFrame = 3000;
+﻿InteractiveDataDisplay.MaxMarkersPerAnimationFrame = 3000;
 
 InteractiveDataDisplay.Markers = function (div, master) {
-
-    // Initialization (#1)
     var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
     var initialData = initializer(div);
 
@@ -24,100 +8,100 @@ InteractiveDataDisplay.Markers = function (div, master) {
     this.base(div, master);
     if (!div) return;
 
+    var _originalData = {};
+    var _shape = undefined;
     var _data = {};
-    var _shape;
-    var _colorPalette, _uncertainColorPalette, _sizePalette;
-    var _colorRange,_uncertainColorRange, _sizeRange;
-    
-    var _dataUpdated = false;
-
+    var _renderData = {};
     var _markerPushpins = undefined;
     var _pushpinsVisible = false;
     
     var that = this;
-    var _preRender;
 
-    var iconDiv = $("<div></div>");
-    iconDiv.width(10);
-    iconDiv.height(10);
-    var iconCv = $("<canvas></canvas>").appendTo(iconDiv);
-    var iconCtx = iconCv[0].getContext("2d");
-    iconCtx.fillStyle = "rgba(100,100,100,0.3)";
-    iconCtx.fillRect(0, 0, 10, 10);
+    var destroyPushpins = function() {
+        if (that.mapControl == undefined || _markerPushpins == undefined) return;
+        _markerPushpins.forEach(function (pp) {
+            var index = that.mapControl.entities.indexOf(pp);
+            if (index >= 0)
+                that.mapControl.entities.removeAt(index);
+        });
+        _markerPushpins = undefined;
+    };
 
-    // default styles:
-    var defaultShape = "box";
-    var defaultColor = "#4169ed";
-    var defaultBorder = "#000000";
-    var defaultSize = 10;
-    if (initialData) {
-        _data.x = initialData.x;
-        _data.y = initialData.y;
-        _data.size = typeof initialData.size != "undefined" ? initialData.size : defaultSize;
-        _data.color = typeof initialData.color != "undefined" ? initialData.color : defaultColor;
-        _data.border = typeof initialData.border != "undefined" ? initialData.border : defaultBorder;
-
-        _shape = typeof initialData.shape != "undefined" ? initialData.shape : defaultShape;
-        _colorPalette = typeof initialData.colorPalette != "undefined" ? initialData.colorPalette : undefined;
-        _uncertainColorPalette = typeof initialData.uncertainColorPalette != "undefined" ? initialData.uncertainColorPalette : undefined;
-        _sizePalette = typeof initialData.sizePalette != "undefined" ? initialData.sizePalette : undefined;
+    var createPushpins = function() {
+        if(typeof _data.x == "undefined" || typeof _data.y == "undefined") return;
+        var x = _data.x;
+        var y = _data.y;
+        if(InteractiveDataDisplay.Utils.isArray(x) && InteractiveDataDisplay.Utils.isArray(y)){
+            var n = Math.min(x.length, y.length);
+            if (n <= InteractiveDataDisplay.MaxMarkersPerAnimationFrame) {
+                _markerPushpins = new Array(n);
+                for (var i = 0; i < n; i++) {
+                    var newPushpin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(y[i], x[i]),
+                        {
+                            visible: false,
+                            htmlContent: '<div style="background-color: white; opacity: 0.5; width: 10px; height: 10px"></div>',
+                            anchor: new Microsoft.Maps.Point(5, 5)
+                        });
+                    _markerPushpins[i] = newPushpin;
+                    that.mapControl.entities.push(newPushpin); 
+                }
+            }   
+        }
+    }
+        
+    var prepareDataRow = function(data) {
+        var arrays = {};
+        var scalars = {};
+        var n = -1;
+        for (var prop in data) {
+            var vals = data[prop];
+            if(InteractiveDataDisplay.Utils.isArray(vals)){
+                if(vals.length < n || n === -1) n = vals.length;
+                arrays[prop] = vals;
+            } else {
+                scalars[prop] = vals;
+    }
+        }
+        return { arrays: arrays, scalars: scalars, length: n === -1 ? 0 : n };
     }
 
     // Draws the data as markers.
-    // { x, y, 
-    //   color, colorPalette,
-    //   size, sizePalette,
-    //   border  
-    // }
-    // x (optional) is an array of numbers. If absent, sequential numbers are taken.
-    // y is an array of numbers, length(y) = length(x).
-    // border (optional) is a color, value "none" means no border.
-    // size is either a number, or an array of numbers (length(size) = length(y)) those are sizes in pixel or values for sizePalette.
-    // sizePalette is InteractiveDataDisplay.SizePalette, if size is an array of numbers it is used to get the pixel size of a marker by size element.
     this.draw = function (data, titles) {
-        var y2 = data.y;
-        if (!y2) throw "Data series y is undefined";
-        var n = y2.length;
+        if(data == undefined || data == null) throw "The argument 'data' is undefined or null";
+        _originalData = data;
 
-        if (!data.x) {
-            data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+        // Determines shape object for the data:        
+        var shape;
+        if(typeof data.shape === "undefined" || data.shape == null) 
+            shape = InteractiveDataDisplay.Markers.shapes["box"];
+        else if(typeof data.shape === "string") {
+            shape = InteractiveDataDisplay.Markers.shapes[data.shape];
+            if(shape == undefined) throw "The given marker shape is unknown";
+        }else if(typeof data.shape === "object" && data.shape != null && typeof data.shape.draw === "function") {
+            shape = data.shape;
         }
-        if (n != data.x.length) throw "Data series x and y have different lengths";
+        else throw "The argument 'data' is incorrect: value of the property 'shape' must be a string, a MarkerShape object, undefined or null";
+        _shape = shape;
                 
-        for (var prop in data) {
-            if (prop == "shape" && data[prop] != "undefined")
-                _shape = data[prop];
-            else if (prop == "sizePalette" && data[prop] != "undefined")
-                _sizePalette = data[prop];
-            else if (prop == "colorPalette" && data[prop] != "undefined")
-                _colorPalette = data[prop];
-            else if (prop == "uncertainColorPalette" && data[prop] != "undefined") {
-                _uncertainColorPalette = data[prop];
-                _data[prop] = data[prop] != "undefined" ? data[prop] : _data[prop];
-            }
-            else
-                _data[prop] = data[prop] != "undefined" ? data[prop] : _data[prop];
+        // Copying data and combining with initial data and styles read from HTML
+        var dataFull = {};
+        for(var prop in data){
+            if(data[prop] != undefined){
+                dataFull[prop] = data[prop];
+            }else if(initialData[prop] != undefined){
+                dataFull[prop] = initialData[prop];
         }
-
-        if (_colorPalette && _colorPalette.isNormalized) {
-                _colorRange = InteractiveDataDisplay.Utils.getMinMax(_data.color);
-        }
-        if (_uncertainColorPalette && _uncertainColorPalette.isNormalized) {
-            _uncertainColorRange = { min: InteractiveDataDisplay.Utils.getMin(_data.l95), max: InteractiveDataDisplay.Utils.getMax(_data.u95) };
-        }
-        if (_sizePalette && _sizePalette.isNormalized) {
-            _sizeRange = InteractiveDataDisplay.Utils.getMinMax(_data.size);
         }
         
-        if (typeof _shape == "string") {
-            if (!isStandartShape(_shape))
-                _shape = eval(_shape);
-        }
+        // Preparing data specifically for the given marker shape
+        if(shape.prepare != undefined)
+            shape.prepare(dataFull);
         
-        _dataUpdated = true;
+        destroyPushpins();
+        _data = dataFull;       
+        _renderData = {};        
 
         this.invalidateLocalBounds();
-
         this.requestNextFrameOrUpdate();
         this.setTitles(titles, true);
         this.fireAppearanceChanged();
@@ -127,101 +111,62 @@ InteractiveDataDisplay.Markers = function (div, master) {
     this.computeLocalBounds = function (step, computedBounds) {
         var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
         var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
+        
+        if (_shape && typeof _shape.getBoundingBox !== "undefined" && _data) {
+            var pattern = prepareDataRow(_data);
+            var n = pattern.length;
+            var arrays = pattern.arrays;
+            var row = pattern.scalars;
+            
+            var found = [];           
+            var total_bb = undefined;
+            for(var i = 0; i < n; i++){
+                for(var prop in arrays) row[prop] = arrays[prop][i];
+                var bb = _shape.getBoundingBox(row);
+                total_bb = InteractiveDataDisplay.Utils.unionRects (total_bb, bb);
+            }
+            if(dataToPlotX){
+                var l = dataToPlotX(total_bb.x);
+                var r = dataToPlotX(total_bb.x + total_bb.width);
+                total_bb.x = l;
+                total_bb.width = r - l;
+            }
+            if(dataToPlotY){
+                var b = dataToPlotX(total_bb.y);
+                var t = dataToPlotX(total_bb.y + total_bb.height);
+                total_bb.y = b;
+                total_bb.height = t - b;
+            }
+            return total_bb;
+        } else if(typeof _data.x != "undefined" && typeof _data.y != "undefined") {
         return InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_data.x, _data.y, dataToPlotX, dataToPlotY);
     }
+        return undefined;
+    };
 
     // Returns 4 margins in the screen coordinate system
     this.getLocalPadding = function () {
-        var padding = 0;
-        if (_shape && typeof _shape.getPadding == 'function') {
+        if (_shape && typeof _shape.getPadding !== "undefined") 
             return _shape.getPadding(_data);
-        }
-        var size = _data.size;
-        if (InteractiveDataDisplay.Utils.isArray(size)) {
-            if (_sizePalette)
-                padding = _sizePalette.sizeRange.max / 2;
-            else {
-                padding = InteractiveDataDisplay.Utils.getMinMax(size).max / 2;
-            }
-        }
-        else {
-            padding = size / 2;
-        }
+        var padding = 0;
         return { left: padding, right: padding, top: padding, bottom: padding };
     };
     
-    var isStandartShape = function (shape) {
-        if (typeof (shape) == "string") {
-            var invShape = shape.toLowerCase();
-            if (invShape == "box") return 1;
-            else if (invShape == "circle") return 2;
-            else if (invShape == "diamond") return 3;
-            else if (invShape == "cross") return 4;
-            else if (invShape == "triangle") return 5;
-            return false;
-        }
-        else
-            return false;
-    }
-
     this.renderCore = function (plotRect, screenSize) {
         InteractiveDataDisplay.Markers.prototype.renderCore.call(this, plotRect, screenSize);
-
-        var _x = _data.x;
-        var _y = _data.y;
-        if (_x === undefined || _y == undefined) return;
-        var n = _y.length;
-        if (n == 0) return;
+        if(_shape == undefined) return;
 
         var dt = this.getTransform();
-        var dataToScreenX = dt.dataToScreenX;
-        var dataToScreenY = dt.dataToScreenY;
-
-        // size of the canvas
-        var w_s = screenSize.width;
-        var h_s = screenSize.height;
-        var xmin = 0, xmax = w_s;
-        var ymin = 0, ymax = h_s;
-        var drawBasic = !that.master.isInAnimation || !(that.master.mapControl !== undefined);
+        var drawBasic = !that.master.isInAnimation || that.master.mapControl === undefined;
 
         if (that.mapControl !== undefined) {
-            if (_dataUpdated || _markerPushpins === undefined) {
-                //removing old pushpins
-                if (_markerPushpins !== undefined) {
-                    _markerPushpins.forEach(function (pp) {
-                        var index = that.mapControl.entities.indexOf(pp);
-                        if (index >= 0)
-                            that.mapControl.entities.removeAt(index);
-                    });
-
-                    _markerPushpins = undefined;
-                }
-
-                //Creating pushpins if necessary
-                if (that.mapControl !== undefined && n <= InteractiveDataDisplay.MaxMarkersPerAnimationFrame) {
-                    _markerPushpins = [];
-                    for (var i = 0; i < n; i++) {
-                        var newPushpin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(_y[i], _x[i]),
-                            {
-                                visible: false,
-                                htmlContent: '<div style="background-color: white; opacity: 0.5; width: 10px; height: 10px"></div>',
-                                anchor: new Microsoft.Maps.Point(5, 5)
-                            });
-                        _markerPushpins.push(newPushpin);
-                        that.mapControl.entities.push(newPushpin); 
-                    }
-                }
-                _dataUpdated = false;
-            }
-
-            if (that.master.isInAnimation === true && _markerPushpins !== undefined) {
-                if (_pushpinsVisible === false) {
+            if (_markerPushpins === undefined) createPushpins();
+            if (_markerPushpins !== undefined){
+                if (that.master.isInAnimation && !_pushpinsVisible) {
                     _markerPushpins.forEach(function (pp) { pp.setOptions({ visible: true }); });
                     _pushpinsVisible = true;
                 }
-            }
-            else {
-                if (_pushpinsVisible === true) {
+                else if (!that.master.isInAnimation && _pushpinsVisible) {
                     _markerPushpins.forEach(function (pp) { pp.setOptions({ visible: false }); });
                     _pushpinsVisible = false;
                 }
@@ -229,326 +174,51 @@ InteractiveDataDisplay.Markers = function (div, master) {
         }
 
         if (drawBasic) {
-
-            // copy array of properties before changings
-            var markersData = {};
-            for (var prop in _data) {
-                markersData[prop] = _data[prop];
-            }
-
-            if (_preRender)
-                _preRender(markersData, plotRect, screenSize, dt, context);
-
-            // adding aditional field to check whether value is array or not
-            for (var prop in markersData) {
-                var v = markersData[prop];
-                markersData[prop] = { value: v, isArray: InteractiveDataDisplay.Utils.isArray(v) };
-            }
-
-            _x = markersData.x.value;
-            _y = markersData.y.value;
-            if (_x === undefined || _y == undefined) return;
-            n = _y.length;
-            if (n == 0) return;
-
             var context = this.getContext(true);
-            var i = 0;
-            var dx, dy;
-            var localSize;
-            var localColor = markersData.color.value;
-            var colorIsArray = markersData.color.isArray;
-            var sizeIsArray = markersData.size.isArray;
-            var colorPaletteNormalized = _colorPalette && _colorPalette.isNormalized;
-            var sizePaletteNormalized = _sizePalette && _sizePalette.isNormalized;
-            if (!colorIsArray) {
-                context.strokeStyle = localColor;
-                context.fillStyle = localColor; // for single points surrounded with missing values
+            _renderData = _data;
+            if (typeof _shape.preRender != "undefined")
+                _renderData = _shape.preRender(_data, plotRect, screenSize, dt, context);
+            var pattern = prepareDataRow(_renderData);
+            var n = pattern.length;
+            var arrays = pattern.arrays;
+            var row = pattern.scalars;
+            for(var i = 0; i < n; i++){
+                for(var prop in arrays) row[prop] = arrays[prop][i];
+                _shape.draw(row, plotRect, screenSize, dt, context, i);
             }
-            var drawBorder = false;
-            if (markersData.border.value && markersData.border.value !== "none") {
-                drawBorder = true;
-                context.strokeStyle = markersData.border.value;
             }
-
-            if (typeof _shape == "object") {
-                var draw = _shape.draw;
-                for (; i < n; i++) {
-                    dx = _x[i];
-                    dy = _y[i];
-                    if ((dx != dx) || (dy != dy)) continue; // missing value
-
-                    var drawData = {}; // construct data (appearance properties) for marker
-                    for (var prop in markersData) {
-                        var v = markersData[prop];
-                        if (v.isArray) drawData[prop] = v.value[i];
-                        else drawData[prop] = v.value;
-                    }
-                    
-                    if (sizeIsArray) {
-                        localSize = drawData.size;
-                        if (localSize != localSize) continue;
-                        if (_sizePalette) {
-                            if (sizePaletteNormalized)
-                                localSize = (localSize - _sizeRange.min) / (_sizeRange.max - _sizeRange.min);
-                            drawData.size = _sizePalette.getSize(localSize);
-                        }
-                    }
-                    if (colorIsArray) {
-                        localColor = drawData.color;
-                        if (localColor != localColor) continue;
-                        if (_colorPalette) {
-                            if (colorPaletteNormalized)
-                                localColor = (localColor - _colorRange.min) / (_colorRange.max - _colorRange.min);
-                            rgba = _colorPalette.getRgba(localColor);
-                            drawData.color = "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
-                        }
-                    }
-                    
-                    draw(drawData, plotRect, screenSize, dt, context);
-                }
-            }
-            else {
-                var invShape = isStandartShape(_shape);
-                var rgba;
-                var x1, x2;
-                for (; i < n; i++) {
-                    dx = _x[i];
-                    dy = _y[i];
-                    if ((dx != dx) || (dy != dy)) continue; // missing value
-
-                    var drawData = {}; // construct data (appearence properties) for marker
-                    for (var prop in markersData) {
-                        var v = markersData[prop];
-                        if (v.isArray) drawData[prop] = v.value[i];
-                        else drawData[prop] = v.value;
-                    }
-
-                    if (sizeIsArray) {
-                        localSize = drawData.size;
-                        if (localSize != localSize) continue;
-                        if (_sizePalette) {
-                            if (sizePaletteNormalized)
-                                localSize = (localSize - _sizeRange.min) / (_sizeRange.max - _sizeRange.min);
-                            drawData.size = _sizePalette.getSize(localSize);
-                        }
-                    }
-
-                    if (colorIsArray) {
-                        localColor = drawData.color;
-                        if (localColor != localColor) continue;
-                        if (_colorPalette) {
-                            if (colorPaletteNormalized)
-                                localColor = (localColor - _colorRange.min) / (_colorRange.max - _colorRange.min);
-                            rgba = _colorPalette.getRgba(localColor);
-                            drawData.color = "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
-                        }
-                        context.fillStyle = drawData.color;
-                    }
-                    
-                    x1 = dataToScreenX(drawData.x);
-                    y1 = dataToScreenY(drawData.y);
-                    localSize = drawData.size;
-                    var halfSize = localSize / 2;
-                    if ((x1 - halfSize) > w_s || (x1 + halfSize) < 0 || (y1 - halfSize) > h_s || (y1 + halfSize) < 0) continue;
-
-                    // Drawing the marker
-                    switch (invShape) {
-                        case 1: // box
-                            context.fillRect(x1 - halfSize, y1 - halfSize, localSize, localSize);
-                            if (drawBorder)
-                                context.strokeRect(x1 - halfSize, y1 - halfSize, localSize, localSize);
-                            break;
-                        case 2: // circle
-                            context.beginPath();
-                            context.arc(x1, y1, halfSize, 0, 2 * Math.PI);
-                            context.fill();
-                            if (drawBorder)
-                                context.stroke();
-                            break;
-                        case 3: // diamond
-                            context.beginPath();
-                            context.moveTo(x1 - halfSize, y1);
-                            context.lineTo(x1, y1 - halfSize);
-                            context.lineTo(x1 + halfSize, y1);
-                            context.lineTo(x1, y1 + halfSize);
-                            context.closePath();
-                            context.fill();
-                            if (drawBorder)
-                                context.stroke();
-                            break;
-                        case 4: // cross
-                            var thirdSize = localSize / 3;
-                            var halfThirdSize = thirdSize / 2;
-                            if (drawBorder) {
-                                context.beginPath();
-                                context.moveTo(x1 - halfSize, y1 - halfThirdSize);
-                                context.lineTo(x1 - halfThirdSize, y1 - halfThirdSize);
-                                context.lineTo(x1 - halfThirdSize, y1 - halfSize);
-                                context.lineTo(x1 + halfThirdSize, y1 - halfSize);
-                                context.lineTo(x1 + halfThirdSize, y1 - halfThirdSize);
-                                context.lineTo(x1 + halfSize, y1 - halfThirdSize);
-                                context.lineTo(x1 + halfSize, y1 + halfThirdSize);
-                                context.lineTo(x1 + halfThirdSize, y1 + halfThirdSize);
-                                context.lineTo(x1 + halfThirdSize, y1 + halfSize);
-                                context.lineTo(x1 - halfThirdSize, y1 + halfSize);
-                                context.lineTo(x1 - halfThirdSize, y1 + halfThirdSize);
-                                context.lineTo(x1 - halfSize, y1 + halfThirdSize);
-                                context.closePath();
-                                context.fill();
-                                context.stroke();
-                            } else {
-                                context.fillRect(x1 - halfThirdSize, y1 - halfSize, thirdSize, localSize);
-                                context.fillRect(x1 - halfSize, y1 - halfThirdSize, localSize, thirdSize);
-                            }
-                            break;
-                        case 5: // triangle
-                            context.beginPath();
-                            context.moveTo(x1 - halfSize, y1 + halfSize);
-                            context.lineTo(x1, y1 - halfSize);
-                            context.lineTo(x1 + halfSize, y1 + halfSize);
-                            context.closePath();
-                            context.fill();
-                            if (drawBorder)
-                                context.stroke();
-                            break;
-                    }
-                }
-            }
-        }
     };
 
     this.findToolTipMarkers = function (xd, yd, xp, yp) {
-        var result = [];
-
-        var _x = _data.x;
-        var _y = _data.y;
-        if (_x == undefined || _y == undefined)
-            return result;
-        var n = _x.length;
-        var m = _y.length;
-        if (n == 0 || m == 0) return result;
-
-        var x1, x2
-        var i = 0;
-        var localSize = _data.size;
-        var sizeIsArray = InteractiveDataDisplay.Utils.isArray(localSize);
-        var colorIsArray = InteractiveDataDisplay.Utils.isArray(_data.color);
-        var sizePaletteNormalized = _sizePalette && _sizePalette.isNormalized;
-
+        if(_shape == undefined || typeof _shape.hitTest == "undefined" || _renderData == undefined) return [];
         var t = this.getTransform();
-        var xs = t.dataToScreenX(xd);
-        var ys = t.dataToScreenY(yd);
-
-        var that = this;
-
-        if (typeof (_shape) == "object") {
-            if (typeof (_shape.hitTest) == "function") {
-                var ps = { x: xs, y: ys };
+        var ps = { x: t.dataToScreenX(xd), y: t.dataToScreenY(yd) };
                 var pd = { x: xd, y: yd };
-                for (var i = 0; i < n; i++) {
-                    var drawData = {};
-                    for (var prop in _data) {
-                        var v = _data[prop];
-                        if (InteractiveDataDisplay.Utils.isArray(v)) drawData[prop] = v[i];
-                        else drawData[prop] = v;
-                    }
-                    if (sizeIsArray) {
-                        localSize = drawData.size;
-                        if (_sizePalette) {
-                            if (sizePaletteNormalized)
-                                localSize = (localSize - _sizeRange.min) / (_sizeRange.max - _sizeRange.min);
-                            drawData.size = _sizePalette.getSize(localSize);
-                        }
-                    }
-                    if (_shape.hitTest(drawData, t, ps, pd)) {
-                        var drawData = {};
-                        for (var prop in _data) {
-                            var v = _data[prop];
-                            if (InteractiveDataDisplay.Utils.isArray(v)) drawData[prop] = v[i];
-                        }
-                        drawData.index = i;
-                        result.push(drawData);
-                    }
-                }
-            }
-        }
-        else {
-            var isInside = function (p, points) {
-                var classify = function (p, p0, p1) {
-                    var a = { x: p1.x - p0.x, y: p1.y - p0.y };
-                    var b = { x: p.x - p0.x, y: p.y - p0.y };
-                    var s = a.x * b.y - a.y * b.x;
-                    if (s > 0) return 1; // left
-                    if (s < 0) return 2; // right
-                    return 0;
-                }
-                var n = points.length;
-                for (var i = 0; i < n; i++) {
-                    if (classify(p, points[i], points[(i + 1) % n]) != 1) return false;
-                }
-                return true;
-            };
 
-            var invShape = isStandartShape(_shape);
-            for (; i < n; i++) {
-                var dx = _x[i];
-                var dy = _y[i];
-                if ((dx != dx) || (dy != dy)) continue; // missing value
-
-                if (sizeIsArray) {
-                    localSize = _data.size[i];
-                    if (_sizePalette) {
-                        if (sizePaletteNormalized)
-                            localSize = (localSize - _sizeRange.min) / (_sizeRange.max - _sizeRange.min);
-                        localSize = _sizePalette.getSize(localSize);
-                    }
-                }
-
-                x1 = t.dataToScreenX(dx);
-                y1 = t.dataToScreenY(dy);
-                var halfSize = localSize / 2; // Checks bounding box hit:
-                if (xs >= x1 - halfSize && xs <= x1 + halfSize && ys >= y1 - halfSize && ys <= y1 + halfSize) {
-                    var drawData = {};
-                    for (var prop in _data) {
-                        var v = _data[prop];
-                        if (InteractiveDataDisplay.Utils.isArray(v)) drawData[prop] = v[i];
-                    }
-                    drawData.index = i;
+        var pattern = prepareDataRow(_renderData);
+        var n = pattern.length;
+        var arrays = pattern.arrays;
+        var row = pattern.scalars;
                                         
-                    // Drawing the marker
-                    switch (invShape) {
-                        case 1: // box
-                            result.push(drawData);
-                            break;
-                        case 2: // circle
-                            if ((x1 - xs) * (x1 - xs) + (y1 - ys) * (y1 - ys) <= halfSize * halfSize)
-                                result.push(drawData);
-                            break;
-                        case 3: // diamond
-                            if (isInside({ x: xs, y: ys }, [{ x: x1 - halfSize, y: y1 }, { x: x1, y: y1 - halfSize },
-                                                            { x: x1 + halfSize, y: y1 }, { x: x1, y: y1 + halfSize }, ]))
-                                result.push(drawData);
-                            break;
-                        case 4: // cross
-                            var thirdSize = localSize / 3;
-                            var halfThirdSize = thirdSize / 2;
-                            if (isInside({ x: xs, y: ys }, [{ x: x1 - halfThirdSize, y: y1 + halfSize }, { x: x1 - halfThirdSize, y: y1 - halfSize },
-                                                            { x: x1 + halfThirdSize, y: y1 - halfSize }, { x: x1 + halfThirdSize, y: y1 + halfSize }]) ||
-                                isInside({ x: xs, y: ys }, [{ x: x1 - halfSize, y: y1 + halfThirdSize }, { x: x1 - halfSize, y: y1 - halfThirdSize },
-                                                            { x: x1 + halfSize, y: y1 - halfThirdSize }, { x: x1 + halfSize, y: y1 + halfThirdSize }]))
-                                result.push(drawData);
-                            break;
-                        case 5: // triangle
-                            if (isInside({ x: xs, y: ys }, [{ x: x1 - halfSize, y: y1 + halfSize }, { x: x1, y: y1 - halfSize },
-                                                            { x: x1 + halfSize, y: y1 + halfSize }]))
-                                result.push(drawData);
-                            break;
-                    }
+        var found = [];           
+        for(var i = 0; i < n; i++){
+            for(var prop in arrays) row[prop] = arrays[prop][i];
+            if(_shape.hitTest(row, t, ps, pd) && typeof row.indices == "number"){
+                // todo: this is a shape-dependent code; needs factorization or a rule of using `indices` property
+                var j = row.indices;
+                var dataRow = {};
+                // makes slice of the original data row
+                for (var prop in _originalData) {
+                    var vals = _originalData[prop];
+                    if(InteractiveDataDisplay.Utils.isArray(vals) && j < vals.length){
+                        dataRow[prop] = vals[j];
+                    } // scalars do not go to the tooltip since they are identical for all markers
                 }
+                dataRow["index"] = j;
+                found.push(dataRow);
             }
         }
-
-        return result;
+        return found;
     };
 
     // Builds a tooltip <div> for a point
@@ -577,404 +247,34 @@ InteractiveDataDisplay.Markers = function (div, master) {
         }
     };
 
+    this.getLegend = function () {
+        var div = $("<div class='idd-legend-item'></div>");
+        var buildLegend = function() {
+            div.empty();
+            var nameDiv = $("<div></div>").appendTo(div);    
+            if(_shape && typeof _shape.getLegend != "undefined") {                
+                var legend = _shape.getLegend(_data, that.getTitle);
+                if(legend){ 
+                    legend.thumbnail.appendTo(nameDiv).css("display", "inline-block");
+                    legend.content.appendTo(div);                
+                }
+                }
+            $("<span class='idd-legend-item-title'></span>").appendTo(nameDiv).text(that.name);
+            }
+        this.host.bind("appearanceChanged", buildLegend);  
+        buildLegend();
+        var onLegendRemove = function () {
+            that.host.unbind("appearanceChanged", buildLegend);
+            div.empty();
+            div.removeClass("idd-legend-item");
+        };
+        return { div: div, onLegendRemove: onLegendRemove };        
+    };
+
     // Others
     this.onDataTransformChanged = function (arg) {
         this.invalidateLocalBounds();
         InteractiveDataDisplay.Markers.prototype.onDataTransformChanged.call(this, arg);
-    };
-
-    Object.defineProperty(this, "color", {
-        get: function () { return _data.color; },
-        set: function (value) {
-            if (value == _data.color) return;
-            _data.color = value;
-
-            this.fireAppearanceChanged("color");
-            this.requestNextFrameOrUpdate();
-        },
-        configurable: false
-    });
-
-    Object.defineProperty(this, "colorPalette", {
-        get: function () { return _colorPalette; },
-        set: function (value) {
-            if (value == _colorPalette) return;
-            _colorPalette = value;
-            if (value.isNormalized) {
-                _colorRange = InteractiveDataDisplay.Utils.getMinMax(_data.color);
-            }
-
-            this.fireAppearanceChanged("colorPalette");
-            this.requestNextFrameOrUpdate();
-        },
-        configurable: false
-    });
-
-    Object.defineProperty(this, "uncertainColorPalette", {
-        get: function () { return _uncertainColorPalette; },
-        set: function (value) {
-            if (value == _uncertainColorPalette) return;
-            _uncertainColorPalette = value;
-            if (value.isNormalized) {
-                _uncertainColorRange = { min: InteractiveDataDisplay.Utils.getMin(_data.l95), max: InteractiveDataDisplay.Utils.getMax(_data.u95) }//!!!
-                //_colorRange = InteractiveDataDisplay.Utils.getMinMax(_data.color);
-            }
-
-            this.fireAppearanceChanged("uncertainColorPalette");
-            this.requestNextFrameOrUpdate();
-        },
-        configurable: false
-    });
-
-    Object.defineProperty(this, "size", {
-        get: function () { return _data.size; },
-        set: function (value) {
-            if (value == _data.size) return;
-            _data.size = value;
-
-            this.fireAppearanceChanged("size");
-            this.requestNextFrameOrUpdate();
-        },
-        configurable: false
-    });
-
-    Object.defineProperty(this, "sizePalette", {
-        get: function () { return _sizePalette; },
-        set: function (value) {
-            if (value == _sizePalette) return;
-            _sizePalette = value;
-            if (value.isNormalized) {
-                _sizeRange = InteractiveDataDisplay.Utils.getMinMax(_data.size);
-            }
-
-            this.fireAppearanceChanged("sizePalette");
-            this.requestNextFrameOrUpdate();
-        },
-        configurable: false
-    });
-
-    Object.defineProperty(this, "shape", {
-        get: function () { return _shape; },
-        set: function (value) {
-            if (value == _shape) return;
-            _shape = value;
-
-            this.fireAppearanceChanged("shape");
-            this.requestNextFrameOrUpdate();
-        },
-        configurable: false
-    });
-
-    Object.defineProperty(this, "border", {
-        get: function () { return _data.border; },
-        set: function (value) {
-            if (value == _data.border) return;
-            _data.border = value;
-
-            this.fireAppearanceChanged("border");
-            this.requestNextFrameOrUpdate();
-        },
-        configurable: false
-    });
-
-    Object.defineProperty(this, "preRender", {
-        get: function () { return _preRender; },
-        set: function (value) {
-            if (value == _preRender) return;
-            _preRender = value;
-
-            this.fireAppearanceChanged("preRender");
-            this.requestNextFrameOrUpdate();
-        },
-        configurable: false
-    });
-
-    this.getLegend = function () {
-        var that = this;
-        var info = $("<div></div>");
-
-        var canvas = $("<canvas></canvas>");
-        var canvasIsVisible = true;
-        var maxSize = 38;
-        var x1 = maxSize / 2 + 1;
-        var y1 = x1;
-        canvas[0].width = canvas[0].height = 40;
-        var canvasStyle = canvas[0].style;
-        var context = canvas.get(0).getContext("2d");
-
-        var nameDiv = $("<span></span>");
-        var setName = function () {
-            nameDiv.text(that.name);
-        }
-        setName();
-
-        var item, itemDivStyle;
-        var itemIsVisible = 0;
-
-        var colorIsArray, color, border, drawBorder;
-        var colorDiv, colorDivStyle, colorControl;
-        var colorIsVisible = 0;
-
-        var sizeIsArray, size, halfSize;
-        var sizeDiv, sizeDivStyle, sizeControl;
-        var sizeIsVisible = 0;
-
-        var sizeTitle;
-        var refreshSize = function () {
-            sizeIsArray = InteractiveDataDisplay.Utils.isArray(_data.size);
-            sizeIsPetal = (_data.u95 != undefined && _data.l95 != undefined || _data.l68 != undefined && _data.u68 != undefined) && _data.bullEyeShape == undefined && _data.y_mean == undefined;
-            if (sizeIsArray) {
-                size = maxSize;
-                if (_sizePalette) {
-                    var szTitleText = that.getTitle("size");
-                    if (sizeIsVisible == 0) {
-                        sizeDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(info);
-                        sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
-                        sizeDivStyle = sizeDiv[0].style;
-                        var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(sizeDiv);
-                        sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
-                        sizeIsVisible = 2;
-                    } else {
-                        sizeTitle.text(szTitleText);
-                    }
-                    sizeControl.palette = _sizePalette;
-                    if (_sizePalette.isNormalized) {
-                        sizeControl.dataRange = _sizeRange;
-                    }
-                    if (sizeIsVisible == 1) {
-                        sizeDivStyle.display = "block";
-                        sizeIsVisible = 2;
-                    }
-                }
-            }
-            else if (sizeIsPetal) {
-                size = maxSize;
-                    var szTitleText = that.getTitle("size");
-                    if (sizeIsVisible == 0) {
-                        sizeDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(info);
-                        sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
-                        sizeDivStyle = sizeDiv[0].style;
-                        var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(sizeDiv);
-                        sizeControl = new InteractiveDataDisplay.UncertaintySizePaletteViewer(paletteDiv);
-                        sizeIsVisible = 2;
-                    } else {
-                        sizeTitle.text(szTitleText);
-                    }
-                    if (sizeIsVisible == 1) {
-                        sizeDivStyle.display = "block";
-                        sizeIsVisible = 2;
-                    }
-            }
-            else {
-                size = maxSize;
-                if (sizeIsVisible == 2) {
-                    sizeDivStyle.display = "none";
-                    sizeIsVisible = 1;
-                }
-            }
-            halfSize = maxSize / 2;
-        };
-
-        var colorTitle;
-        var refreshColor = function () {
-            colorIsArray = InteractiveDataDisplay.Utils.isArray(_data.color);
-            drawBorder = false;
-            if (colorIsArray && _colorPalette) {
-                var clrTitleText = that.getTitle("color");
-                if (colorIsVisible == 0) {                    
-                    colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(info);
-                    colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
-                    colorDivStyle = colorDiv[0].style;
-                    var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(colorDiv);
-                    colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
-                    colorIsVisible = 2;
-                } else {
-                    colorTitle.text(clrTitleText);
-                }
-                colorControl.palette = _colorPalette;
-                if (_colorPalette.isNormalized) {
-                    colorControl.dataRange = _colorRange;
-                }
-                if (colorIsVisible == 1) {
-                    colorDivStyle.display = "block";
-                    colorIsVisible = 2;
-                }
-            }
-            else if (_uncertainColorPalette) {
-                var clrTitleText = that.getTitle("color");
-                if (colorIsVisible == 0) {
-                    colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(info);
-                    colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
-                    colorDivStyle = colorDiv[0].style;
-                    var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(colorDiv);
-                    colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
-                    colorIsVisible = 2;
-                } else {
-                    colorTitle.text(clrTitleText);
-                }
-                colorControl.palette = _uncertainColorPalette;
-                if (_uncertainColorPalette.isNormalized) {
-                    colorControl.dataRange = _uncertainColorRange;
-                }
-                if (colorIsVisible == 1) {
-                    colorDivStyle.display = "block";
-                    colorIsVisible = 2;
-                }
-            }
-            else {
-                if (colorIsVisible == 2) {
-                    colorDivStyle.display = "none";
-                    colorIsVisible = 1;
-                }
-            }
-            if (colorIsArray) {
-                border = "#000000";
-                color = "#ffffff";
-                drawBorder = true;
-            }
-            else {
-                color = _data.color;
-                border = color;
-                if (_data.border) {
-                    drawBorder = true;
-                    border = _data.border;
-                }
-            }
-        };
-
-        var renderShape = function () {
-            if (typeof (_shape) == "object") {
-                if (_shape.getLegendItem) {
-                    var drawData = { size: size, color: color, border: border };
-                    for (var prop in _data) {
-                        if (prop != "size" && prop != "color" && prop != "border") {
-                            var v = _data[prop];
-                            if (InteractiveDataDisplay.Utils.isArray(v)) drawData[prop] = v;//[i];
-                            else drawData[prop] = v;
-                        }
-                    }
-
-                    if (itemIsVisible == 0) {
-                        item = _shape.getLegendItem(drawData);
-                        if (canvas.prop("idd-legend-item-title-thumb")) item.addClass("idd-legend-item-title-thumb");
-                        else item.addClass("idd-legend-item-title-thumb-compact");
-                        canvas.replaceWith(item);
-                    }
-                    else {
-                        var newItem = _shape.getLegendItem(drawData);
-                        item.replaceWith(newItem);
-                        item = newItem;
-                    }
-                    itemDivStyle = item[0].style;
-                    itemIsVisible = 2;
-                }
-                if (canvasIsVisible) {
-                   // canvasStyle.display = "none";
-                    canvasIsVisible = false;
-                }
-            }
-            else {
-                if (itemIsVisible == 2) {
-                    itemDivStyle.display = "none";
-                    itemIsVisible = 1;
-                }
-                context.clearRect(0, 0, maxSize + 2, maxSize + 2);
-                context.strokeStyle = border;
-                context.fillStyle = color;
-
-                var invShape = isStandartShape(_shape);
-                switch (invShape) {
-                    case 1: // box
-                        context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
-                        if (drawBorder)
-                            context.strokeRect(x1 - halfSize, y1 - halfSize, size, size);
-                        break;
-                    case 2: // circle
-                        context.beginPath();
-                        context.arc(x1, y1, halfSize, 0, 2 * Math.PI);
-                        context.fill();
-                        if (drawBorder)
-                            context.stroke();
-                        break;
-                    case 3: // diamond
-                        context.beginPath();
-                        context.moveTo(x1 - halfSize, y1);
-                        context.lineTo(x1, y1 - halfSize);
-                        context.lineTo(x1 + halfSize, y1);
-                        context.lineTo(x1, y1 + halfSize);
-                        context.closePath();
-                        context.fill();
-                        if (drawBorder)
-                            context.stroke();
-                        break;
-                    case 4: // cross
-                        var thirdSize = size / 3;
-                        var halfThirdSize = thirdSize / 2;
-                        if (drawBorder) {
-                            context.beginPath();
-                            context.moveTo(x1 - halfSize, y1 - halfThirdSize);
-                            context.lineTo(x1 - halfThirdSize, y1 - halfThirdSize);
-                            context.lineTo(x1 - halfThirdSize, y1 - halfSize);
-                            context.lineTo(x1 + halfThirdSize, y1 - halfSize);
-                            context.lineTo(x1 + halfThirdSize, y1 - halfThirdSize);
-                            context.lineTo(x1 + halfSize, y1 - halfThirdSize);
-                            context.lineTo(x1 + halfSize, y1 + halfThirdSize);
-                            context.lineTo(x1 + halfThirdSize, y1 + halfThirdSize);
-                            context.lineTo(x1 + halfThirdSize, y1 + halfSize);
-                            context.lineTo(x1 - halfThirdSize, y1 + halfSize);
-                            context.lineTo(x1 - halfThirdSize, y1 + halfThirdSize);
-                            context.lineTo(x1 - halfSize, y1 + halfThirdSize);
-                            context.closePath();
-                            context.fill();
-                            context.stroke();
-                        } else {
-                            context.fillRect(x1 - halfThirdSize, y1 - halfSize, thirdSize, size);
-                            context.fillRect(x1 - halfSize, y1 - halfThirdSize, size, thirdSize);
-                        }
-                        break;
-                    case 5: // triangle
-                        context.beginPath();
-                        context.moveTo(x1 - halfSize, y1 + halfSize);
-                        context.lineTo(x1, y1 - halfSize);
-                        context.lineTo(x1 + halfSize, y1 + halfSize);
-                        context.closePath();
-                        context.fill();
-                        if (drawBorder)
-                            context.stroke();
-                        break;
-                }
-                if (!canvasIsVisible) {
-                    canvasStyle.display = "inline-block";
-                    //canvasIsVisible = true;
-                }
-            }
-        };
-
-        refreshColor();
-        refreshSize();
-        renderShape();
-        var that = this;
-
-        this.host.bind("appearanceChanged",
-            function (event, propertyName) {
-                if (!propertyName || propertyName == "name")
-                    setName();
-                if (!propertyName || propertyName == "color" || propertyName == "colorPalette" || propertyName == "uncertainColorPalette") 
-                    refreshColor();
-                if (!propertyName || propertyName == "size" || propertyName == "sizePalette")
-                    refreshSize();                
-                renderShape();
-            });
-
-        var onLegendRemove = function () {
-            that.host.unbind("appearanceChanged");
-            //div[0].innerHTML = "";
-            //div.removeClass("idd-legend-item");
-        };
-
-        //return { div: div, onLegendRemove: onLegendRemove };
-        return { name: nameDiv, thumb: canvas, info: info, onLegendRemove: onLegendRemove };
-       
     };
 
     // Initialization 
@@ -984,29 +284,11 @@ InteractiveDataDisplay.Markers = function (div, master) {
 
 InteractiveDataDisplay.Markers.prototype = new InteractiveDataDisplay.CanvasPlot;
 
-InteractiveDataDisplay.AdaptMarkerSize = function (markers, plotRect, screenSize, transform, context) {
-    var visibleMarkers = 0;
-    var x = markers.x;
-    var y = markers.y;
-    var xi, yi;
-    for (var i = 0, n = x.length; i < n; i++) {
-        xi = x[i];
-        yi = y[i];
-        if (xi >= plotRect.x && xi <= plotRect.x + plotRect.width && yi >= plotRect.y && yi <= plotRect.y + plotRect.height)
-            visibleMarkers++;
+InteractiveDataDisplay.Markers.defaults = {
+    color : "#4169ed",
+    colorPalette : InteractiveDataDisplay.palettes.grayscale,
+    border : "#000000",
+    size : 10
     }
-    // constants
-    var areaConst = 0.2;
-    var minAdaptiveSize = 15;
-    var maxAdaptiveSize = 100;
-    // adaptive size in plot coordinates
-    var adaptiveSize = Math.sqrt(areaConst * plotRect.width * plotRect.height / visibleMarkers);
-    // transform to screen coordinates and check limits
-    adaptiveSize = transform.dataToScreenX(adaptiveSize) - transform.dataToScreenX(0);
-    if (adaptiveSize < minAdaptiveSize) adaptiveSize = minAdaptiveSize;
-    else if (adaptiveSize > maxAdaptiveSize) adaptiveSize = maxAdaptiveSize;
-    markers.size = adaptiveSize;
-};
 
-
-
+InteractiveDataDisplay.Markers.shapes = InteractiveDataDisplay.Markers.shapes || {};

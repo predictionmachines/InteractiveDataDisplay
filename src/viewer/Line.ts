@@ -39,7 +39,7 @@ module ChartViewer {
             drawArgs.x = lineDef.x;
 
             var doSort = (!lineDef.treatAs || lineDef.treatAs == "function") && !IsOrderedArray(drawArgs.x);
-            if (Array.isArray(lineDef.y)) { // certain values
+            if (InteractiveDataDisplay.Utils.isArray(lineDef.y)) { // certain values
                 drawArgs.y_mean = <number[]>lineDef.y;
                 if (doSort) {
                     var len = Math.min(drawArgs.x.length, plot.y.length);
