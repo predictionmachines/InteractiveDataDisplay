@@ -62,6 +62,13 @@
                     data.color = colors;
                 }
             },
+            
+            getBoundingBox: function (marker) {  
+                var barWidth = marker.barWidth;  
+                var xLeft = marker.x - barWidth / 2;  
+                var yBottom = Math.min(0, marker.y);  
+                return { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
+            },
 
             hitTest: function (marker, transform, ps, pd) {
                 var barWidth = marker.barWidth;
