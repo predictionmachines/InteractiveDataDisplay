@@ -93,7 +93,7 @@ ChartViewer.show(chartDiv, {
     "y(x)": Plot.markers({ x: [0,1,2], y: [3,4,2], size: 15, color: "blue", shape: "circle" })
 });
 ```
-See [ChartViewer](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/ChartViewer.md) for more details.
+See [ChartViewer](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/ChartViewer.md#markers) for more details.
 
 ## Shapes
 
