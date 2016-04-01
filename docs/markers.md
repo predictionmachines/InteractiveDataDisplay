@@ -97,22 +97,22 @@ See [ChartViewer](https://github.com/predictionmachines/InteractiveDataDisplay/b
 
 ## Shapes
 
-Shape of a marker is provided as a value of property `data.shape`. It must be either a string name
+When drawing a markers plot, a user provides shape of a marker as a value of property `data.shape`. It must be either a string name
 of one of the shapes contained in the `InteractiveDataDisplay.Markers.shapes` or an object implementing
-the `MarkerShape` interface. If `shape` is undefined, the default shape is `"box"`. 
+the `MarkerShape` interface. If `data.shape` is undefined, the default shape is `"box"`. 
 
-By default, the `InteractiveDataDisplay.Markers.shapes` contains the shapes described in the Basic Shapes section.
+In the basic configuration of the InteractiveDataDisplay release, the `InteractiveDataDisplay.Markers.shapes` contains the shapes described in the Basic Shapes section.
 
 ### Basic Shapes
 
-There are basic shapes `box`, `circle`, `cross`, `diamond`, `triangle` which display corresponding glyph
-at points determined by `data.x` and `data.y` arrays. The mandatory and optional properties of the `data` are listed below.
+The shapes `"box"`, `"circle"`, `"cross"`, `"diamond"`, `"triangle"` make the markers to be rendered as the corresponding glyph
+at points determined by `data.x` and `data.y` numeric arrays. The mandatory and optional properties of the `data` are listed below.
 
 Mandatory properties:
 - `y` is an array of numbers. May contain `NaN` indicating the missing value. Determines markers positions on the vertical axis.
 
 Optional properties:
-- `shape` is either `box`, `circle`, `cross`, `diamond`, `triangle`; default value is `box`. 
+- `shape` is either `"box"`, `"circle"`, `"cross"`, `"diamond"`, `"triangle"`; default value is `"box"`. 
 - `x` is an array of numbers. May contain `NaN` indicating the missing value. Determines markers positions on the horizontal axis.
 Default values are point indices 0, 1, 2, ....
 - `border` is a string color parsed as CSS color [value](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value). Determines
