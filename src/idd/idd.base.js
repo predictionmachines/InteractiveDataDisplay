@@ -519,10 +519,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 this.master.removeMap();
             }
 
-            this.master.removeChild(this);
+            if(!this.isMaster)
+                this.master.removeChild(this);
             this.firePlotRemoved(this);
             this.host.remove();
-            //this.firePlotRemoved(this);
         };
 
         this.removeMap = function () {
@@ -1159,6 +1159,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // Implementation of this method for a particular plot should build and return
         // a tooltip element for the point (xd,yd) in data coordinates, and (xp, yp) in plot coordinates.
         // Method returns <div> element or undefined
+        var foreachDependentPlot = function (plot, f) {
+                var myChildren = plot.children;
+                var n = myChildren.length;
+                for (var i = 0; i < n; i++) {
+                    var child = myChildren[i];
+                    foreachDependentPlot(child, f);
+                }
+                f(plot);
+        };
         this.getTooltip = function (xd, yd, xp, yp) {
             return undefined;
         };
@@ -1168,15 +1177,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var _tooltip; // <div> element which displays the tooltip
             var _updateTooltip;
 
-            var foreachDependentPlot = function (plot, f) {
-                var myChildren = plot.children;
-                var n = myChildren.length;
-                for (var i = 0; i < n; i++) {
-                    var child = myChildren[i];
-                    foreachDependentPlot(child, f);
-                }
-                f(plot);
-            };
+            //var foreachDependentPlot = function (plot, f) {
+            //    var myChildren = plot.children;
+            //    var n = myChildren.length;
+            //    for (var i = 0; i < n; i++) {
+            //        var child = myChildren[i];
+            //        foreachDependentPlot(child, f);
+            //    }
+            //    f(plot);
+            //};
 
             this.enumAll = function (plot, f) {
                 foreachDependentPlot(plot, f);
@@ -1379,24 +1388,27 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
         this.firePlotRemoved = function (propertyParams) {
             this.host.trigger(InteractiveDataDisplay.Event.plotRemoved, propertyParams);
+            foreachDependentPlot(propertyParams, function (child) {
+                child.host.trigger(InteractiveDataDisplay.Event.plotRemoved, child);
+            });
         };
         this.fireOrderChanged = function (propertyParams) {
             this.host.trigger(InteractiveDataDisplay.Event.orderChanged, propertyParams);
         };
-        //--------------------------------------------------------------------------------------
-        // Plot factories
+            //--------------------------------------------------------------------------------------
+            // Plot factories
 
-        // If this plot has no child plot with given name, it is created from the data;
-        // otherwise, existing plot is updated.
-        this.polyline = function (name, data) {
-            var plot = this.get(name);
-            if (!plot) {
-                var div = $("<div></div>")
-                           .attr("data-idd-name", name)
-                         //  .attr("data-idd-plot", "polyline")
-                           .appendTo(this.host);
-                plot = new InteractiveDataDisplay.Polyline(div, this.master);
-                this.addChild(plot);
+            // If this plot has no child plot with given name, it is created from the data;
+            // otherwise, existing plot is updated.
+            this.polyline = function (name, data) {
+                var plot = this.get(name);
+                if (!plot) {
+                    var div = $("<div></div>")
+                               .attr("data-idd-name", name)
+                             //  .attr("data-idd-plot", "polyline")
+                               .appendTo(this.host);
+                    plot = new InteractiveDataDisplay.Polyline(div, this.master);
+                    this.addChild(plot);
             }
             if (data !== undefined) {
                 plot.draw(data);
@@ -1453,54 +1465,56 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return plot;
         };
 
-        //------------------------------------------------------------------------------
-        //Navigation
-        if (_isMaster) {
-            //Initializing navigation
-            var _navigation = new InteractiveDataDisplay.Navigation(this, setVisibleRegion);
+            //------------------------------------------------------------------------------
+            //Navigation
+            if (_isMaster) {
+                //Initializing navigation
+                var _navigation = new InteractiveDataDisplay.Navigation(this, setVisibleRegion);
         }
 
-        Object.defineProperty(this, "navigation", { get: function () { if (_isMaster) return _navigation; else return _master.navigation; }, configurable: false });
+        Object.defineProperty(this, "navigation", { get: function () { if (_isMaster) return _navigation; else return _master.navigation; }, configurable: false
+        });
 
 
-        //-------------------------------------------------------------------
-        // Initialization of children
+            //-------------------------------------------------------------------
+            // Initialization of children
 
-        // Looking for children of this master plot (builds collection _children)
-        if (_host) {
-            _host.children("div")
-                .each(function () {
-                    var jqElem = $(this); // refers the child DIV
-                    if (!jqElem.hasClass("idd-plot-master") && !jqElem.hasClass("idd-plot-dependant") && jqElem.attr("data-idd-plot") !== undefined && jqElem.attr("data-idd-plot") !== "figure" && jqElem.attr("data-idd-plot") !== "chart") { // it shouldn't be initialized and it shouldn't be a master plot (e.g. a figure)
+            // Looking for children of this master plot (builds collection _children)
+            if (_host) {
+                _host.children("div")
+                    .each(function () {
+                        var jqElem = $(this); // refers the child DIV
+                    if(!jqElem.hasClass("idd-plot-master") && !jqElem.hasClass("idd-plot-dependant") && jqElem.attr("data-idd-plot") !== undefined && jqElem.attr("data-idd-plot") !== "figure" && jqElem.attr("data-idd-plot") !== "chart") { // it shouldn't be initialized and it shouldn't be a master plot (e.g. a figure)
                         that.addChild(initializePlot(jqElem, _master)); // here children of the new child will be initialized recursively
                     }
-                });
+        });
         }
 
-        //------------------------------------------------------------------------
+            //------------------------------------------------------------------------
         // Legend
         this.getLegend = function () {
             return undefined;
         };
         setTimeout(function () {
             if (_host && _host.attr("data-idd-legend")) {
-                var legendDiv = $("#" + _host.attr("data-idd-legend"));
+                var legendDiv = $("#" +_host.attr("data-idd-legend"));
                 var _legend = new InteractiveDataDisplay.Legend(that, legendDiv);
-                Object.defineProperty(that, "legend", { get: function () { return _legend; }, configurable: false });
-            }
+                Object.defineProperty(that, "legend", { get: function () { return _legend; }, configurable: false
+        });
+        }
         }, 0);
 
         this.updateOrder = function (next_elem, isPrev) {
             if (next_elem) InteractiveDataDisplay.Utils.reorder(_master, this, next_elem, isPrev);
             if (!_isFlatRenderingOn) {
-                var plots = [];
+                var plots =[];
                 plots = InteractiveDataDisplay.Utils.enumPlots(_master, plots);
                 for (var i = 0; i < plots.length; i++) {
                     if (plots[i].order != Number.MAX_SAFE_INTEGER) plots[i].host.css('z-index', plots[i].order);
-                }
+            }
             }
             else {
-                var plots = [];
+                var plots =[];
                 plots = InteractiveDataDisplay.Utils.enumPlots(_master, plots);
             }
             if (next_elem) this.fireOrderChanged();
@@ -1511,9 +1525,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (div.attr("data-idd-plot") !== 'figure' && div.attr("data-idd-plot") !== 'chart')
                     this.updateLayout();
                 div.addClass("idd-plot-master");
-            }
-            else {
-                div.addClass("idd-plot-dependant");
+        }
+        else {
+            div.addClass("idd-plot-dependant");
             }
         }
     };
@@ -1587,7 +1601,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var createLegend = function () {
             _jqdiv.empty();
             for (var i = 0, len = plotLegends.length; i < len; i++) {
-                plotLegends[i].plot.host.unbind("childrenChanged", childrenChangedHandler);
+                plotLegends[i].plot.host.unbind("childrenChanged");
                 plotLegends[i].plot.host.unbind("visibleChanged", visibleChangedHandler);
                 removeLegend(plotLegends[i]);
             }
@@ -1632,56 +1646,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var plotRemovedHandler = function (event, params) {
             if (_plot == params) _jqdiv.remove();
         };
-        var childrenChangedHandler = function (event, params) {
-            
-            if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
-                createLegendForPlot(params.plot);
-            }
-            else if (params.type === "remove") {
-                var removeLegendItem = function (i) {
-                    var legend = plotLegends[i];
-                    plotLegends.splice(i, 1);
-                    removeLegend(legend);
-                    legend.plot.host.unbind("childrenChanged", childrenChangedHandler);
-                    legend.plot.host.unbind("visibleChanged", visibleChangedHandler);
-                    if (legend.onLegendRemove) legend.onLegendRemove();
-                    legend[0].innerHTML = "";
-                    if (isCompact) legend.removeClass("idd-legend-item-compact");
-                    else legend.removeClass("idd-legend-item");
-                    _jqdiv[0].removeChild(legend[0]);
-                    var childDivs = legend.plot.children;
-                    childDivs.forEach(function (childPlot) {
-                        for (var j = 0, len = plotLegends.length; j < len; j++)
-                            if (plotLegends[j].plot === childPlot) {
-                                removeLegendItem(plotLegends[j]);
-                            }
-                    });
-                    legend[0].style = "display: none";
-                    if (plotLegends.length == 0) divStyle.display = "none";
-                };
-
-                for (var i = 0, len = plotLegends.length; i < len; i++)
-                    if (plotLegends[i].plot === params.plot) {
-                        removeLegendItem(i);
-                        break;
-                    }
-            }
-            else {
-                _jqdiv[0].innerHTML = "";
-                divStyle.display = "none";
-                len = plotLegends.length;
-                for (i = 0; i < len; i++) {
-                    removeLegend(plotLegends[i]);
-                    if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
-                    plotLegends[i][0].innerHTML = "";
-                    if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
-                    else plotLegends[i].removeClass("idd-legend-item");
-                }
-                plotLegends = [];
-                _plot.host.unbind("childrenChanged");
-                createLegend();
-            }
-        };
         var visibleChangedHandler = function (event, params) {
             var updateLegendItem = function (i, isVisible) {
                 var legend = _plotLegends[i];
@@ -1698,7 +1662,57 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var legend = plot.getLegend();
             //change getLegend
             plot.host.bind("visibleChanged", visibleChangedHandler);
-            plot.host.bind("childrenChanged", childrenChangedHandler);
+            plot.host.bind("childrenChanged", function (event, params) {
+            
+                if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
+                    createLegendForPlot(params.plot);
+                }
+                else if (params.type === "remove") {
+                    var removeLegendItem = function (i) {
+                        var legend = plotLegends[i];
+                        plotLegends.splice(i, 1);
+                        removeLegend(legend);
+                        legend.plot.host.unbind("childrenChanged");
+                        legend.plot.host.unbind("visibleChanged", visibleChangedHandler);
+                        if (legend.onLegendRemove) legend.onLegendRemove();
+                        legend[0].innerHTML = "";
+                        if (isCompact) legend.removeClass("idd-legend-item-compact");
+                        else legend.removeClass("idd-legend-item");
+                        _jqdiv[0].removeChild(legend[0]);
+                        var childDivs = legend.plot.children;
+                        childDivs.forEach(function (childPlot) {
+                            for (var j = 0, len = plotLegends.length; j < len; j++)
+                                if (plotLegends[j].plot === childPlot) {
+                                    removeLegendItem(plotLegends[j]);
+                                }
+                        });
+                        legend[0].style = "display: none";
+                        if (plotLegends.length == 0) divStyle.display = "none";
+                    };
+
+                    for (var i = 0, len = plotLegends.length; i < len; i++)
+                        if (plotLegends[i].plot === params.plot) {
+                            removeLegendItem(i);
+                            break;
+                        }
+                }
+                else {
+                    _jqdiv[0].innerHTML = "";
+                    divStyle.display = "none";
+                    len = plotLegends.length;
+                    for (i = 0; i < len; i++) {
+                        removeLegend(plotLegends[i]);
+                        if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
+                        plotLegends[i][0].innerHTML = "";
+                        if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
+                        else plotLegends[i].removeClass("idd-legend-item");
+                    }
+                    plotLegends = [];
+
+                    plot.host.unbind("childrenChanged");
+                    createLegend();
+                }
+            });
             if (legend) {
                 var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<li class='idd-legend-item'></li>");
                 if (!isCompact) div.attr("data-plot", plot.name);
@@ -1732,7 +1746,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
             plotLegends = [];
             var removeLegendForPlot = function (plot) {
-                plot.host.unbind("childrenChanged", childrenChangedHandler);
+                plot.host.unbind("childrenChanged");
                 plot.host.unbind("visibleChanged", visibleChangedHandler);
                 var childDivs = plot.children;
                 childDivs.forEach(function (childPlot) {

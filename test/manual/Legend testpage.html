@@ -17,7 +17,8 @@
             var plot = InteractiveDataDisplay.asPlot("chart");
             //plot.flatRendering = true;
             //plot.legend.isVisible = false;
-            var markers = plot.markers("sinfdsfsdfsdfdgfdgdfgdgdffdgfdddddd", { y: [1, -0.2, 0, -0.3, -0.5], x: [-0.5, 0.5, 0.6, 0.7, 0.9], size: 10, shape: 'circle', color: [1,2,3,4,5], colorPalette: InteractiveDataDisplay.ColorPalette.parse("yellow, red") });
+
+            var markers = plot.markers("sinfdsfsdfsdfdgfdgdfgdgdffdgfdddddd", { y: [1, -0.2, 0, -0.3, -0.5], x: [-0.5, 0.5, 0.6, 0.7, 0.9], size: 10, shape: 'circle', color: [1, 2, 3, 4, 5], colorPalette: InteractiveDataDisplay.ColorPalette.parse("yellow, red") });
             var area = plot.area("area", { y1: [0 ,1, 3, 2, 1, 0, -1], y2: [0, -1, -3, -2, -1, 0, 1], x: [-1.5,-1, 0, 1, 2, 3, 4], fill: 'orange' });
             var legendDiv = $('#legend');
             var legend = new InteractiveDataDisplay.Legend(plot, legendDiv);
