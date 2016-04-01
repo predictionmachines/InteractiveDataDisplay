@@ -5,6 +5,11 @@ determining the position on the horizontal axis and the value of the other data 
 determining the position on the vertical axis. Also data series can be bound to marker size and color, and other
 appearance settings.
 
+Markers plot has default collection of supported shapes such as box, circle, cross, triangle etc, but still it allows 
+creating new shapes.
+
+See a [sample](http://predictionmachines.github.io/InteractiveDataDisplay/sample-bubbles.html) of the marker plot.
+
 ## API 
 
 ### HTML
@@ -18,11 +23,11 @@ In HTML, a marker plot is indicated by the attribute ``data-idd-plot="markers"``
 </script>
 
 <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">    
-  <div id="markers" data-idd-plot="markers" data-idd-style="shape:cross;">
-  y   x
-  NaN 355
-  161 360
-  159 390
+  <div id="markers" data-idd-plot="markers" data-idd-style="shape:circle; size:15; color:blue;">
+  y x
+  3 0
+  4 1
+  2 2
   </div>
 </div>
 ```
@@ -31,56 +36,76 @@ In HTML, a marker plot is indicated by the attribute ``data-idd-plot="markers"``
 In JavaScript, use `InteractiveDataDisplay.Plot.markers(name, data, titles)` or
 `InteractiveDataDisplay.Markers.draw(data, titles)`.
 
+The `Plot.markers` function returns an instance of `Markers` which allows to update values using `Markers.draw` function.
+Still it is possible to call `Plot.markers` many times with same `name`, so that the first call creates the markers plot and
+subsequent calls update the existing plot. The `name` allows to identify the plot in code and also it is displayed in a tooltip
+and a legend.
+
+The following example adds `"markers"` plot to the `chart`; `x` and `y` are numeric arrays determining positions of markers.
+Each marker is a circle with diameter 15 pixels and filled with blue.
+
 ```JavaScript
-chart.markers("markers", { x: x, y: y, size: 15, color: "blue" });
+chart.markers("markers", { x: [0,1,2], y: [3,4,2], size: 15, color: "blue", shape: "circle" });
 ```
 
-The methods copy data so it can be re-used by the caller. In contrast, values of the data object are not 
-copied because it can degrade the performance. Thus content of `data` must not be changed to avoid
+The methods make a shallow copy of the given `data` so it can be re-used by the caller. 
+Note that values of the `data` properties are not 
+copied because it would degrade the performance. Thus content of `data` must not be changed to avoid
 side effects on the drawn plot.
 
-Basically, markers plot renders pairs of x and y values as markers of different shape, size and color. 
-It is also possible to provide a custom rendering function for a marker.
-
-If the `data.shape` is undefined, the default shape `"box"` is used; otherwise, shape must be a string name
-of one of the shapes in the `InteractiveDataDisplay.Markers.shapes` or an object implementing
-the `MarkerShape` interface. See section `Shape` for details about available shapes and creating
+If the `data.shape` is undefined, the default shape is `"box"`; otherwise, `shape` must be either a string name
+of one of the shapes contained in the `InteractiveDataDisplay.Markers.shapes` or an object implementing
+the `MarkerShape` interface. See section `Shape` for details about available shapes and developing
 a new shape.
-
-### ChartViewer
-When building ChartViewer, use `Plot.markers(plotInfo)`.
-
-## Shapes
 
 The argument `data` considered as a table whose columns correspond to properties of the object,
 while rows are the values of the properties.
 
-For instance, the following `data` represents a table with columns `x`, `y` and `color`:
+For instance, the following `data` represents a table with columns `x`, `y`, `size` and `color`:
 
 ```JavaScript
 var data = {
-    x: [ 0.0, 0.1, 0.2 ]
-    y: [ 0.0, 0.01, 0.04 ]
-    color: "blue"
+    x: [ 0, 1, 2 ],
+    y: [ 3, 4, 2 ],
+    size: 15
+    color: "blue",
+    shape: circle
 }
 ``` 
 
-If `shape` is not specified, the default shape is `box`. 
-
-The rules are:
-
-- each table row is a single marker to be rendered;
+While value of the property `data.shape` determines the expected structure of the `data` and the rendering algorithm,
+the common rules for `data` comprehension are:
+- each of the table rows represents a single marker to be rendered;
 - all arrays should be of same length;
 - total number of rows is the length of the arrays;
 - the scalar values are considered as an array with length equal to the number of rows, where all elements equal to the given scalar value, 
-e.g. the `data.color` will be transformed to `["blue", "blue", "blue"]`.
+e.g. the `data.color` will be read as `["blue", "blue", "blue"]`.
 
-Value of the property `data.shape` determines the structure of the `data` and the rendering algorithm.
-There are possible shapes available in the basic IDD packacge, but still it is possible to add custom shapes. 
+For example, the shown `data` specifies 3 markers; first is located at point `(0, 3)`, displayed as a circle with diameter 15 pixels.
 
-### Primitive Shapes
+See description of a shape for specific requirements on `data` structure.
 
-There are primitive shapes `box`, `circle`, `cross`, `diamond`, `triangle` which display corresponding glyph
+### ChartViewer
+When building ChartViewer, use `Plot.markers(plotInfo)`:
+
+```Javascript
+ChartViewer.show(chartDiv, {
+    "y(x)": Plot.markers({ x: [0,1,2], y: [3,4,2], size: 15, color: "blue", shape: "circle" })
+});
+```
+See [ChartViewer](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/ChartViewer.md) for more details.
+
+## Shapes
+
+Shape of a marker is provided as a value of property `data.shape`. It must be either a string name
+of one of the shapes contained in the `InteractiveDataDisplay.Markers.shapes` or an object implementing
+the `MarkerShape` interface. If `shape` is undefined, the default shape is `"box"`. 
+
+By default, the `InteractiveDataDisplay.Markers.shapes` contains the shapes described in the Basic Shapes section.
+
+### Basic Shapes
+
+There are basic shapes `box`, `circle`, `cross`, `diamond`, `triangle` which display corresponding glyph
 at points determined by `data.x` and `data.y` arrays. The mandatory and optional properties of the `data` are listed below.
 
 Mandatory properties:
