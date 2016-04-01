@@ -248,27 +248,31 @@ InteractiveDataDisplay.Markers = function (div, master) {
     };
 
     this.getLegend = function () {
-        var div = $("<div class='idd-legend-item'></div>");
-        var buildLegend = function() {
-            div.empty();
-            var nameDiv = $("<div></div>").appendTo(div);    
+        //var div = $("<div class='idd-legend-item'></div>");
+        var nameDiv = $("<span></span>");
+        var legend;
+        var buildLegend = function () {
+            nameDiv.empty();
+            //nameDiv = $("<span></span>").appendTo(div);  
             if(_shape && typeof _shape.getLegend != "undefined") {                
-                var legend = _shape.getLegend(_data, that.getTitle);
+                legend = _shape.getLegend(_data, that.getTitle);
                 if(legend){ 
-                    legend.thumbnail.appendTo(nameDiv).css("display", "inline-block");
-                    legend.content.appendTo(div);                
+                    legend.thumbnail.css("display", "inline-block");
+                //    legend.content.appendTo(div);                
                 }
-                }
-            $("<span class='idd-legend-item-title'></span>").appendTo(nameDiv).text(that.name);
             }
+            //$("<span class='idd-legend-item-title'></span>").appendTo(nameDiv).text(that.name);
+                nameDiv.text(that.name);
+        }
         this.host.bind("appearanceChanged", buildLegend);  
         buildLegend();
         var onLegendRemove = function () {
             that.host.unbind("appearanceChanged", buildLegend);
-            div.empty();
-            div.removeClass("idd-legend-item");
+            nameDiv.empty();
+            //div.empty();
+            //div.removeClass("idd-legend-item");
         };
-        return { div: div, onLegendRemove: onLegendRemove };        
+        return { name: nameDiv, legend: legend, onLegendRemove: onLegendRemove };  
     };
 
     // Others

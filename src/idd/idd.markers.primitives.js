@@ -263,8 +263,8 @@
             }
             if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
 
-            var thumbDiv = $("<div></div>");
-            var canvas = $("<canvas style='margin-right: 10px; display: inline-block'></canvas>").appendTo(thumbDiv);
+            //var thumbDiv = $("<div></div>");
+            var canvas = $("<canvas></canvas>");//.appendTo(thumbDiv);
             var canvasIsVisible = true;
             var maxSize = fontSize * 1.5;
             var x1 = maxSize / 2 + 1;
@@ -423,7 +423,7 @@
             refreshColor();
             refreshSize();
             renderShape();
-            return { thumbnail : thumbDiv, content : itemDiv };
+            return { thumbnail : canvas, content : itemDiv };
         }
     }
     InteractiveDataDisplay.Markers.shapes["box"] = primitiveShape;

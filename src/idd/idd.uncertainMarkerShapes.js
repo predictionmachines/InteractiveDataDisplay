@@ -187,24 +187,125 @@ InteractiveDataDisplay.Petal = {
         if (ps.y < y - r || ps.y > y + r) return false;
         return true;
     },
-    getLegendItem: function (drawData) {
+    //getLegendItem: function (drawData) {
+    //    var canvas = $("<canvas></canvas>");
+    //    var size = 38;
+    //    canvas[0].width = canvas[0].height = size + 2;
+    //    var halfSize = size / 2;
+    //    var x1 = halfSize + 0.5;
+    //    var y1 = halfSize + 0.5;
+    //    var context = canvas[0].getContext("2d");
+    //    var sampleColor = "gray";
+    //    var sampleBorderColor = "gray"; 
+        
+    //    InteractiveDataDisplay.Petal.drawSample(context, x1, y1, halfSize / 2, halfSize, sampleColor);
+        
+    //    return canvas;
+    //},
+    getLegend: function (data, getTitle) { // todo: should be refactored            
+        var itemDiv = $("<div></div>");
+        var fontSize = 14;
+        if (document.defaultView && document.defaultView.getComputedStyle) {
+            fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
+        }
+        if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
+
         var canvas = $("<canvas></canvas>");
-        var size = 38;
-        canvas[0].width = canvas[0].height = size + 2;
-        var halfSize = size / 2;
-        var x1 = halfSize + 0.5;
-        var y1 = halfSize + 0.5;
-        var context = canvas[0].getContext("2d");
-        var sampleColor = "gray";
-        var sampleBorderColor = "gray"; 
-        
-        InteractiveDataDisplay.Petal.drawSample(context, x1, y1, halfSize / 2, halfSize, sampleColor);
-        
-        return canvas;
+        var canvasIsVisible = true;
+        var maxSize = fontSize * 1.5;
+        var x1 = maxSize / 2 + 1;
+        var y1 = maxSize / 2 + 1;
+        canvas[0].width = canvas[0].height = maxSize + 2;
+        var canvasStyle = canvas[0].style;
+        var context = canvas.get(0).getContext("2d");
+        var item, itemDivStyle;
+        var itemIsVisible = 0;
+
+        var colorIsArray, color, border, drawBorder;
+        var colorDiv, colorDivStyle, colorControl;
+        var colorIsVisible = 0;
+
+        var sizeIsArray, size, halfSize;
+        var sizeDiv, sizeDivStyle, sizeControl;
+        var sizeIsVisible = 0;
+
+        var sizeTitle;
+        var refreshSize = function () {
+            size = maxSize;
+            if (data.sizePalette) {
+                var szTitleText = getTitle("size");
+                if (sizeIsVisible == 0) {
+                    sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                    sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
+                    sizeDivStyle = sizeDiv[0].style;
+                    var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(sizeDiv);
+                    sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
+                    sizeIsVisible = 2;
+                } else {
+                    sizeTitle.text(szTitleText);
+                }
+                sizeControl.palette = data.sizePalette;
+            }
+            halfSize = size / 2;
+        };
+
+        var colorTitle;
+        var refreshColor = function () {
+            drawBorder = false;
+            if (data.individualColors && data.colorPalette) {
+                var clrTitleText = getTitle("color");
+                if (colorIsVisible == 0) {
+                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                    colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
+                    colorDivStyle = colorDiv[0].style;
+                    var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(colorDiv);
+                    colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
+                    colorIsVisible = 2;
+                } else {
+                    colorTitle.text(clrTitleText);
+                }
+                colorControl.palette = data.colorPalette;
+                if (colorIsVisible == 1) {
+                    colorDivStyle.display = "block";
+                    colorIsVisible = 2;
+                }
+            }
+            else {
+                if (colorIsVisible == 2) {
+                    colorDivStyle.display = "none";
+                    colorIsVisible = 1;
+                }
+            }
+            if (data.individualColors) {
+                border = "#000000";
+                color = "#ffffff";
+                drawBorder = true;
+            }
+            else {
+                color = data.color;
+                border = color;
+                if (data.border != null) {
+                    drawBorder = true;
+                    border = data.border;
+                }
+            }
+        };
+
+        var renderShape = function () {
+            var sampleColor = "gray";
+            var sampleBorderColor = "gray";
+
+            InteractiveDataDisplay.Petal.drawSample(context, x1, y1, halfSize / 2, halfSize, sampleColor);
+        };
+
+        refreshColor();
+        refreshSize();
+        renderShape();
+        return { thumbnail: canvas, content: itemDiv };
     }
     
 };
-
+//InteractiveDataDisplay.Markers.shapes["petal"] = InteractiveDataDisplay.Petal;
 InteractiveDataDisplay.BullEye = {
       draw: function (marker, plotRect, screenSize, transform, context) {
 
@@ -243,24 +344,133 @@ InteractiveDataDisplay.BullEye = {
           var padding = 0;
           return { left: padding, right: padding, top: padding, bottom: padding };
       },
-      getLegendItem: function (drawData) {
+      //getLegendItem: function (drawData) {
+      //    var canvas = $("<canvas></canvas>");
+      //    var size = 38;
+      //    canvas[0].width = canvas[0].height = size + 2;
+      //    var halfSize = size / 2;
+      //    var x1 = halfSize + 0.5;
+      //    var y1 = halfSize + 0.5;
+      //    var context = canvas[0].getContext("2d");
+      //    var sampleColor = "gray";
+      //    var sampleBorderColor = "gray";
+
+      //    drawShape(context, drawData.bullEyeShape, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+
+      //    return canvas;
+      //},
+      getLegend: function (data, getTitle) { // todo: should be refactored            
+          var itemDiv = $("<div></div>");
+          var fontSize = 14;
+          if (document.defaultView && document.defaultView.getComputedStyle) {
+              fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
+          }
+          if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
+
           var canvas = $("<canvas></canvas>");
-          var size = 38;
-          canvas[0].width = canvas[0].height = size + 2;
-          var halfSize = size / 2;
-          var x1 = halfSize + 0.5;
-          var y1 = halfSize + 0.5;
-          var context = canvas[0].getContext("2d");
-          var sampleColor = "gray";
-          var sampleBorderColor = "gray";
+          var canvasIsVisible = true;
+          var maxSize = fontSize * 1.5;
+          var x1 = maxSize / 2 + 1;
+          var y1 = maxSize / 2 + 1;
+          canvas[0].width = canvas[0].height = maxSize + 2;
+          var canvasStyle = canvas[0].style;
+          var context = canvas.get(0).getContext("2d");
+          var item, itemDivStyle;
+          var itemIsVisible = 0;
 
-          drawShape(context, drawData.bullEyeShape, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+          var colorIsArray, color, border, drawBorder;
+          var colorDiv, colorDivStyle, colorControl;
+          var colorIsVisible = 0;
 
-          return canvas;
+          var sizeIsArray, size, halfSize;
+          var sizeDiv, sizeDivStyle, sizeControl;
+          var sizeIsVisible = 0;
+
+          var sizeTitle;
+          var refreshSize = function () {
+              size = maxSize;
+              if (data.sizePalette) {
+                  var szTitleText = getTitle("size");
+                  if (sizeIsVisible == 0) {
+                      sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                      sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
+                      sizeDivStyle = sizeDiv[0].style;
+                      var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(sizeDiv);
+                      sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
+                      sizeIsVisible = 2;
+                  } else {
+                      sizeTitle.text(szTitleText);
+                  }
+                  sizeControl.palette = data.sizePalette;
+              }
+              halfSize = size / 2;
+          };
+
+          var colorTitle;
+          var refreshColor = function () {
+              drawBorder = false;
+              if (data.individualColors && data.colorPalette) {
+                  var clrTitleText = getTitle("color");
+                  if (colorIsVisible == 0) {
+                      colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                      colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
+                      colorDivStyle = colorDiv[0].style;
+                      var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(colorDiv);
+                      colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
+                      colorIsVisible = 2;
+                  } else {
+                      colorTitle.text(clrTitleText);
+                  }
+                  colorControl.palette = data.colorPalette;
+                  if (colorIsVisible == 1) {
+                      colorDivStyle.display = "block";
+                      colorIsVisible = 2;
+                  }
+              }
+              else {
+                  if (colorIsVisible == 2) {
+                      colorDivStyle.display = "none";
+                      colorIsVisible = 1;
+                  }
+              }
+              if (data.individualColors) {
+                  border = "#000000";
+                  color = "#ffffff";
+                  drawBorder = true;
+              }
+              else {
+                  color = data.color;
+                  border = color;
+                  if (data.border != null) {
+                      drawBorder = true;
+                      border = data.border;
+                  }
+              }
+          };
+
+          var renderShape = function () {
+              var sampleColor = "gray";
+              var sampleBorderColor = "gray";
+
+              drawShape(context, drawData.bullEyeShape, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+          };
+
+          refreshColor();
+          refreshSize();
+          renderShape();
+          return { thumbnail: canvas, content: itemDiv };
       }
+      
 };
+//InteractiveDataDisplay.Markers.shapes["bulleye"] = InteractiveDataDisplay.BullEye;
 
 InteractiveDataDisplay.BoxWhisker = {
+    //prepare: function () {
+
+    //},
+    //preRender: function () {
+
+    //},
     draw: function (marker, plotRect, screenSize, transform, context) {
 
         var msize = marker.size;
@@ -326,23 +536,126 @@ InteractiveDataDisplay.BoxWhisker = {
         var padding = 0;
         return { left: padding, right: padding, top: padding, bottom: padding };
     },
-    getLegendItem: function (drawData) {
+    //getLegendItem: function (drawData) {
+    //    var canvas = $("<canvas></canvas>");
+    //    var size = 38;
+    //    canvas[0].width = canvas[0].height = size + 2;
+    //    var halfSize = size / 2;
+    //    var x1 = halfSize + 0.5;
+    //    var y1 = halfSize + 0.5;
+    //    var context = canvas[0].getContext("2d");
+    //    var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
+    //    var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+
+    //    var shp = "boxwhisker";
+    //    drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+
+    //    return canvas;
+    //},
+    getLegend: function (data, getTitle) { // todo: should be refactored            
+        var itemDiv = $("<div></div>");
+        var fontSize = 14;
+        if (document.defaultView && document.defaultView.getComputedStyle) {
+            fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
+        }
+        if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
+
         var canvas = $("<canvas></canvas>");
-        var size = 38;
-        canvas[0].width = canvas[0].height = size + 2;
-        var halfSize = size / 2;
-        var x1 = halfSize + 0.5;
-        var y1 = halfSize + 0.5;
-        var context = canvas[0].getContext("2d");
-        var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
-        var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+        var canvasIsVisible = true;
+        var maxSize = fontSize * 1.5;
+        var x1 = maxSize / 2 + 1;
+        var y1 = maxSize / 2 + 1;
+        canvas[0].width = canvas[0].height = maxSize + 2;
+        var canvasStyle = canvas[0].style;
+        var context = canvas.get(0).getContext("2d");
+        var item, itemDivStyle;
+        var itemIsVisible = 0;
 
-        var shp = "boxwhisker";
-        drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+        var colorIsArray, color, border, drawBorder;
+        var colorDiv, colorDivStyle, colorControl;
+        var colorIsVisible = 0;
 
-        return canvas;
+        var sizeIsArray, size, halfSize;
+        var sizeDiv, sizeDivStyle, sizeControl;
+        var sizeIsVisible = 0;
+
+        var sizeTitle;
+        var refreshSize = function () {
+            size = maxSize;
+            if (data.sizePalette) {
+                var szTitleText = getTitle("size");
+                if (sizeIsVisible == 0) {
+                    sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                    sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
+                    sizeDivStyle = sizeDiv[0].style;
+                    var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(sizeDiv);
+                    sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
+                    sizeIsVisible = 2;
+                } else {
+                    sizeTitle.text(szTitleText);
+                }
+                sizeControl.palette = data.sizePalette;
+            }
+            halfSize = size / 2;
+        };
+
+        var colorTitle;
+        var refreshColor = function () {
+            drawBorder = false;
+            if (data.individualColors && data.colorPalette) {
+                var clrTitleText = getTitle("color");
+                if (colorIsVisible == 0) {
+                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                    colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
+                    colorDivStyle = colorDiv[0].style;
+                    var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(colorDiv);
+                    colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
+                    colorIsVisible = 2;
+                } else {
+                    colorTitle.text(clrTitleText);
+                }
+                colorControl.palette = data.colorPalette;
+                if (colorIsVisible == 1) {
+                    colorDivStyle.display = "block";
+                    colorIsVisible = 2;
+                }
+            }
+            else {
+                if (colorIsVisible == 2) {
+                    colorDivStyle.display = "none";
+                    colorIsVisible = 1;
+                }
+            }
+            if (data.individualColors) {
+                border = "#000000";
+                color = "#ffffff";
+                drawBorder = true;
+            }
+            else {
+                color = data.color;
+                border = color;
+                if (data.border != null) {
+                    drawBorder = true;
+                    border = data.border;
+                }
+            }
+        };
+
+        var renderShape = function () {
+            var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
+            var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+
+            var shp = "boxwhisker";
+            drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+        };
+
+        refreshColor();
+        refreshSize();
+        renderShape();
+        return { thumbnail: canvas, content: itemDiv };
     }
 };
+//InteractiveDataDisplay.Markers.shapes["boxwhisker"] = InteractiveDataDisplay.BoxWhisker;
 
 InteractiveDataDisplay.BoxNoWhisker = {
     draw: function (marker, plotRect, screenSize, transform, context) {
@@ -398,24 +711,126 @@ InteractiveDataDisplay.BoxNoWhisker = {
                 var padding = 0;
                 return { left: padding, right: padding, top: padding, bottom: padding };
     },
-    getLegendItem: function (drawData) {
+    //getLegendItem: function (drawData) {
+    //    var canvas = $("<canvas></canvas>");
+    //    var size = 38;
+    //    canvas[0].width = canvas[0].height = size + 2;
+    //    var halfSize = size / 2;
+    //    var x1 = halfSize + 0.5;
+    //    var y1 = halfSize + 0.5;
+    //    var context = canvas[0].getContext("2d");
+    //    var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
+    //    var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+
+    //    var shp = "boxnowhisker";
+    //    drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+
+    //    return canvas;
+    //},
+    getLegend: function (data, getTitle) { // todo: should be refactored            
+        var itemDiv = $("<div></div>");
+        var fontSize = 14;
+        if (document.defaultView && document.defaultView.getComputedStyle) {
+            fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
+        }
+        if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
+
         var canvas = $("<canvas></canvas>");
-        var size = 38;
-        canvas[0].width = canvas[0].height = size + 2;
-        var halfSize = size / 2;
-        var x1 = halfSize + 0.5;
-        var y1 = halfSize + 0.5;
-        var context = canvas[0].getContext("2d");
-        var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
-        var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+        var canvasIsVisible = true;
+        var maxSize = fontSize * 1.5;
+        var x1 = maxSize / 2 + 1;
+        var y1 = maxSize / 2 + 1;
+        canvas[0].width = canvas[0].height = maxSize + 2;
+        var canvasStyle = canvas[0].style;
+        var context = canvas.get(0).getContext("2d");
+        var item, itemDivStyle;
+        var itemIsVisible = 0;
 
-        var shp = "boxnowhisker";
-        drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+        var colorIsArray, color, border, drawBorder;
+        var colorDiv, colorDivStyle, colorControl;
+        var colorIsVisible = 0;
 
-        return canvas;
+        var sizeIsArray, size, halfSize;
+        var sizeDiv, sizeDivStyle, sizeControl;
+        var sizeIsVisible = 0;
+
+        var sizeTitle;
+        var refreshSize = function () {
+            size = maxSize;
+            if (data.sizePalette) {
+                var szTitleText = getTitle("size");
+                if (sizeIsVisible == 0) {
+                    sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                    sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
+                    sizeDivStyle = sizeDiv[0].style;
+                    var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(sizeDiv);
+                    sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
+                    sizeIsVisible = 2;
+                } else {
+                    sizeTitle.text(szTitleText);
+                }
+                sizeControl.palette = data.sizePalette;
+            }
+            halfSize = size / 2;
+        };
+
+        var colorTitle;
+        var refreshColor = function () {
+            drawBorder = false;
+            if (data.individualColors && data.colorPalette) {
+                var clrTitleText = getTitle("color");
+                if (colorIsVisible == 0) {
+                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                    colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
+                    colorDivStyle = colorDiv[0].style;
+                    var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(colorDiv);
+                    colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
+                    colorIsVisible = 2;
+                } else {
+                    colorTitle.text(clrTitleText);
+                }
+                colorControl.palette = data.colorPalette;
+                if (colorIsVisible == 1) {
+                    colorDivStyle.display = "block";
+                    colorIsVisible = 2;
+                }
+            }
+            else {
+                if (colorIsVisible == 2) {
+                    colorDivStyle.display = "none";
+                    colorIsVisible = 1;
+                }
+            }
+            if (data.individualColors) {
+                border = "#000000";
+                color = "#ffffff";
+                drawBorder = true;
+            }
+            else {
+                color = data.color;
+                border = color;
+                if (data.border != null) {
+                    drawBorder = true;
+                    border = data.border;
+                }
+            }
+        };
+
+        var renderShape = function () {
+            var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
+            var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+
+            var shp = "boxnowhisker";
+            drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+        };
+
+        refreshColor();
+        refreshSize();
+        renderShape();
+        return { thumbnail: canvas, content: itemDiv };
     }
 };
-
+//InteractiveDataDisplay.Markers.shapes["boxnowhisker"] = InteractiveDataDisplay.BoxNoWhisker;
 InteractiveDataDisplay.Whisker = {
     draw: function (marker, plotRect, screenSize, transform, context) {
 
@@ -484,20 +899,124 @@ InteractiveDataDisplay.Whisker = {
                 var padding = 0;
                 return { left: padding, right: padding, top: padding, bottom: padding };
     },
-    getLegendItem: function (drawData) {
+    //getLegendItem: function (drawData) {
+    //    var canvas = $("<canvas></canvas>");
+    //    var size = 38;
+    //    canvas[0].width = canvas[0].height = size + 2;
+    //    var halfSize = size / 2;
+    //    var x1 = halfSize + 0.5;
+    //    var y1 = halfSize + 0.5;
+    //    var context = canvas[0].getContext("2d");
+    //    var sampleColor = "white";
+    //    var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+
+    //    var shp = "whisker";
+    //    drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+
+    //    return canvas;
+    //},
+    getLegend: function (data, getTitle) { // todo: should be refactored            
+        var itemDiv = $("<div></div>");
+        var fontSize = 14;
+        if (document.defaultView && document.defaultView.getComputedStyle) {
+            fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
+        }
+        if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
+
         var canvas = $("<canvas></canvas>");
-        var size = 38;
-        canvas[0].width = canvas[0].height = size + 2;
-        var halfSize = size / 2;
-        var x1 = halfSize + 0.5;
-        var y1 = halfSize + 0.5;
-        var context = canvas[0].getContext("2d");
-        var sampleColor = "white";
-        var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+        var canvasIsVisible = true;
+        var maxSize = fontSize * 1.5;
+        var x1 = maxSize / 2 + 1;
+        var y1 = maxSize / 2 + 1;
+        canvas[0].width = canvas[0].height = maxSize + 2;
+        var canvasStyle = canvas[0].style;
+        var context = canvas.get(0).getContext("2d");
+        var item, itemDivStyle;
+        var itemIsVisible = 0;
 
-        var shp = "whisker";
-        drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+        var colorIsArray, color, border, drawBorder;
+        var colorDiv, colorDivStyle, colorControl;
+        var colorIsVisible = 0;
 
-        return canvas;
+        var sizeIsArray, size, halfSize;
+        var sizeDiv, sizeDivStyle, sizeControl;
+        var sizeIsVisible = 0;
+
+        var sizeTitle;
+        var refreshSize = function () {
+            size = maxSize;
+            if (data.sizePalette) {
+                var szTitleText = getTitle("size");
+                if (sizeIsVisible == 0) {
+                    sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                    sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
+                    sizeDivStyle = sizeDiv[0].style;
+                    var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(sizeDiv);
+                    sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
+                    sizeIsVisible = 2;
+                } else {
+                    sizeTitle.text(szTitleText);
+                }
+                sizeControl.palette = data.sizePalette;
+            }
+            halfSize = size / 2;
+        };
+
+        var colorTitle;
+        var refreshColor = function () {
+            drawBorder = false;
+            if (data.individualColors && data.colorPalette) {
+                var clrTitleText = getTitle("color");
+                if (colorIsVisible == 0) {
+                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                    colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
+                    colorDivStyle = colorDiv[0].style;
+                    var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(colorDiv);
+                    colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
+                    colorIsVisible = 2;
+                } else {
+                    colorTitle.text(clrTitleText);
+                }
+                colorControl.palette = data.colorPalette;
+                if (colorIsVisible == 1) {
+                    colorDivStyle.display = "block";
+                    colorIsVisible = 2;
+                }
+            }
+            else {
+                if (colorIsVisible == 2) {
+                    colorDivStyle.display = "none";
+                    colorIsVisible = 1;
+                }
+            }
+            if (data.individualColors) {
+                border = "#000000";
+                color = "#ffffff";
+                drawBorder = true;
+            }
+            else {
+                color = data.color;
+                border = color;
+                if (data.border != null) {
+                    drawBorder = true;
+                    border = data.border;
+                }
+            }
+        };
+
+        var renderShape = function () {
+            var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
+            var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+
+            var shp = "whisker";
+            drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+        };
+
+        refreshColor();
+        refreshSize();
+        renderShape();
+        return { thumbnail: canvas, content: itemDiv };
     }
+
 };
+//InteractiveDataDisplay.Markers.shapes["whisker"] = InteractiveDataDisplay.Whisker;

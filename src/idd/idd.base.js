@@ -1717,15 +1717,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<li class='idd-legend-item'></li>");
                 if (!isCompact) div.attr("data-plot", plot.name);
                 var title = (isCompact) ? $("<div class='idd-legend-item-title-compact'></div>") : $("<div class='idd-legend-item-title'></div>");
-                if (isCompact) legend.thumb.addClass("idd-legend-item-title-thumb-compact").appendTo(title);
-                else legend.thumb.addClass("idd-legend-item-title-thumb").appendTo(title);
+                if (isCompact) legend.legend.thumbnail.addClass("idd-legend-item-title-thumb-compact").appendTo(title);
+                else legend.legend.thumbnail.addClass("idd-legend-item-title-thumb").appendTo(title);
                 if (isCompact) legend.name.addClass("idd-legend-item-title-name-compact").appendTo(title);
                 else legend.name.addClass("idd-legend-item-title-name").appendTo(title);
                 addVisibilityCheckBox(title, plot);
                 title.appendTo(div);
-                if (legend.info)
-                    if (isCompact) legend.info.addClass("idd-legend-item-info-compact").appendTo(div);
-                    else legend.info.addClass("idd-legend-item-info").appendTo(div);
+                if (legend.legend.content)
+                    if (isCompact) legend.legend.content.addClass("idd-legend-item-info-compact").appendTo(div);
+                    else legend.legend.content.addClass("idd-legend-item-info").appendTo(div);
 
                 div.prependTo(_jqdiv);
                 if (!isCompact) _jqdiv.sortable({ axis: 'y'});
@@ -2298,7 +2298,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             };
 
             //return { div: div, onLegendRemove: onLegendRemove };
-            return { name: nameDiv, thumb: canvas, info: undefined, onLegendRemove: onLegendRemove };
+            return { name: nameDiv, legend: { thumbnail: canvas, content: undefined }, onLegendRemove: onLegendRemove };
         };
 
         // Initialization 

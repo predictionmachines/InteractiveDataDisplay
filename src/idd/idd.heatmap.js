@@ -562,7 +562,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             //div.removeClass("idd-legend-item");
         };
 
-        return { name: nameDiv, thumb: canvas, info: infoDiv, onLegendRemove: onLegendRemove };
+        return { name: nameDiv, legend: {thumbnail: canvas, content: infoDiv}, onLegendRemove: onLegendRemove };
     };
 
     // Initialization 

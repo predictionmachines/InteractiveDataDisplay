@@ -202,7 +202,7 @@ InteractiveDataDisplay.Area = function (div, master) {
         };
 
         //return { div: div, onLegendRemove: onLegendRemove };
-        return { name: nameDiv, thumb: canvas, info: undefined, onLegendRemove: onLegendRemove };
+        return { name: nameDiv, legend: { thumbnail: canvas, content: undefined }, onLegendRemove: onLegendRemove };
     };
     // Initialization 
     if (initialData && initialData.x && initialData.y1 && initialData.y2)
