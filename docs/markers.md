@@ -193,8 +193,7 @@ The shape instance should be stateless and side effect-free. The marker plot lif
 
 1. **Construction.** A user defines a marker plot in any of available ways and an instance of the markers plot is created.
 1. **Drawing.** A user (implicitly or explicitly) calls method `draw` and provides `data` object.
-Initial data taken from the HTML attribute `data-idd-style` and the DOM element content is copied to the 
-given `data` (but doesn't override the existing values).
+A shallow copy of the given `data` is created and used in the following stages.
 This stage can repeat several times for a single plot instance and shape of the marker can change. Each time user needs to 
 change data or appearance settings, the "drawing" stage occurs. 
 1. **Preparing.** This stage immediately follows the previous stage. The `shape.prepare` method is called 
