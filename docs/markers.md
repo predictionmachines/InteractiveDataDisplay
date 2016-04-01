@@ -116,7 +116,7 @@ Optional properties:
 - `x` is an array of numbers. May contain `NaN` indicating the missing value. Determines markers positions on the horizontal axis.
 Default values are point indices 0, 1, 2, ....
 - `border` is a string color parsed as CSS color [value](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value). Determines
-a color of the border drawn around the marker with corresponding shape. If is undefined or `"none"`, no border is drawn; this usually
+a color of the border drawn around the marker with corresponding shape. If it is undefined or `"none"`, no border is drawn; this usually
 significantly increases performance. Default is `undefined`. 
 - `color` is either a string color, an array of string colors, or an array of numbers. Default value is a predefined string color.
     - A string color parsed as CSS color [value](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value). 
