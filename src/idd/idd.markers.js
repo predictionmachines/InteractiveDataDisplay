@@ -1,9 +1,6 @@
 ﻿InteractiveDataDisplay.MaxMarkersPerAnimationFrame = 3000;
 
-InteractiveDataDisplay.Markers = function (div, master) {
-    var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
-    var initialData = initializer(div);
-
+InteractiveDataDisplay.Markers = function (div, master) {    
     this.base = InteractiveDataDisplay.CanvasPlot;
     this.base(div, master);
     if (!div) return;
@@ -83,15 +80,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
         else throw "The argument 'data' is incorrect: value of the property 'shape' must be a string, a MarkerShape object, undefined or null";
         _shape = shape;
         
-        // Copying data and combining with initial data and styles read from HTML
-        var dataFull = {};
-        for(var prop in data){
-            if(data[prop] != undefined){
-                dataFull[prop] = data[prop];
-            }else if(initialData[prop] != undefined){
-                dataFull[prop] = initialData[prop];
-            }
-        }
+        // Copying data
+        var dataFull = $.extend({}, data);
                 
         // Preparing data specifically for the given marker shape
         if(shape.prepare != undefined)
@@ -278,6 +268,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
     };
 
     // Initialization 
+    var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
+    var initialData = initializer(div);
     if (initialData && typeof initialData.y != 'undefined')
         this.draw(initialData);
 };
