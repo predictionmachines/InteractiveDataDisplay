@@ -291,14 +291,12 @@ InteractiveDataDisplay.Petal = {
         var canvasStyle = canvas[0].style;
         var context = canvas.get(0).getContext("2d");
         context.clearRect(0, 0, canvas[0].width, canvas[0].height);
-        var item, itemDivStyle;
-        var itemIsVisible = 0;
 
-        var colorIsArray, color, border, drawBorder;
+        var color, border, drawBorder;
         var colorDiv, colorDivStyle, colorControl;
         var colorIsVisible = 0;
 
-        var sizeIsArray, size, halfSize;
+        var size, halfSize;
         var sizeDiv, sizeDivStyle, sizeControl;
         var sizeIsVisible = 0;
 
@@ -519,14 +517,12 @@ InteractiveDataDisplay.BullEye = {
           var canvasStyle = canvas[0].style;
           var context = canvas.get(0).getContext("2d");
           context.clearRect(0, 0, canvas[0].width, canvas[0].height);
-          var item, itemDivStyle;
-          var itemIsVisible = 0;
 
-          var colorIsArray, color, border, drawBorder;
+          var color, border, drawBorder;
           var colorDiv, colorDivStyle, colorControl;
           var colorIsVisible = 0;
 
-          var sizeIsArray, size, halfSize;
+          var size, halfSize;
           var sizeDiv, sizeDivStyle, sizeControl;
           var sizeIsVisible = 0;
 
@@ -747,14 +743,13 @@ InteractiveDataDisplay.BoxWhisker = {
         canvas[0].width = canvas[0].height = maxSize + 2;
         var canvasStyle = canvas[0].style;
         var context = canvas.get(0).getContext("2d");
-        var item, itemDivStyle;
         var itemIsVisible = 0;
 
-        var colorIsArray, color, border, drawBorder;
+        var color, border, drawBorder;
         var colorDiv, colorDivStyle, colorControl;
         var colorIsVisible = 0;
 
-        var sizeIsArray, size, halfSize;
+        var size, halfSize;
         var sizeDiv, sizeDivStyle, sizeControl;
         var sizeIsVisible = 0;
 
@@ -964,14 +959,12 @@ InteractiveDataDisplay.BoxNoWhisker = {
         var canvasStyle = canvas[0].style;
         var context = canvas.get(0).getContext("2d");
         context.clearRect(0, 0, canvas[0].width, canvas[0].height);
-        var item, itemDivStyle;
-        var itemIsVisible = 0;
 
-        var colorIsArray, color, border, drawBorder;
+        var color, border, drawBorder;
         var colorDiv, colorDivStyle, colorControl;
         var colorIsVisible = 0;
 
-        var sizeIsArray, size, halfSize;
+        var size, halfSize;
         var sizeDiv, sizeDivStyle, sizeControl;
         var sizeIsVisible = 0;
 
@@ -1187,14 +1180,12 @@ InteractiveDataDisplay.Whisker = {
         var canvasStyle = canvas[0].style;
         var context = canvas.get(0).getContext("2d");
         context.clearRect(0, 0, canvas[0].width, canvas[0].height);
-        var item, itemDivStyle;
-        var itemIsVisible = 0;
 
-        var colorIsArray, color, border, drawBorder;
+        var color, border, drawBorder;
         var colorDiv, colorDivStyle, colorControl;
         var colorIsVisible = 0;
 
-        var sizeIsArray, size, halfSize;
+        var size, halfSize;
         var sizeDiv, sizeDivStyle, sizeControl;
         var sizeIsVisible = 0;
 

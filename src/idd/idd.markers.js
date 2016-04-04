@@ -61,7 +61,10 @@ InteractiveDataDisplay.Markers = function (div, master) {
         }
         return { arrays: arrays, scalars: scalars, length: n === -1 ? 0 : n };
     }
-    
+    //return copy of data
+    this.getDataCopy = function () {
+        return _originalData;
+    }
     // Draws the data as markers.
     this.draw = function (data, titles) {
         if(data == undefined || data == null) throw "The argument 'data' is undefined or null";
