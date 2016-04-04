@@ -1,9 +1,6 @@
 ﻿InteractiveDataDisplay.MaxMarkersPerAnimationFrame = 3000;
 
 InteractiveDataDisplay.Markers = function (div, master) {
-    var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
-    var initialData = initializer(div);
-
     this.base = InteractiveDataDisplay.CanvasPlot;
     this.base(div, master);
     if (!div) return;
@@ -16,7 +13,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
     var _pushpinsVisible = false;
     
     var that = this;
-
+    
     var destroyPushpins = function() {
         if (that.mapControl == undefined || _markerPushpins == undefined) return;
         _markerPushpins.forEach(function (pp) {
@@ -26,7 +23,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
         });
         _markerPushpins = undefined;
     };
-
+    
     var createPushpins = function() {
         if(typeof _data.x == "undefined" || typeof _data.y == "undefined") return;
         var x = _data.x;
@@ -48,7 +45,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
             }   
         }
     }
-        
+    
     var prepareDataRow = function(data) {
         var arrays = {};
         var scalars = {};
@@ -60,16 +57,16 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 arrays[prop] = vals;
             } else {
                 scalars[prop] = vals;
-    }
+            }
         }
         return { arrays: arrays, scalars: scalars, length: n === -1 ? 0 : n };
     }
-
+    
     // Draws the data as markers.
     this.draw = function (data, titles) {
         if(data == undefined || data == null) throw "The argument 'data' is undefined or null";
         _originalData = data;
-
+        
         // Determines shape object for the data:        
         var shape;
         if(typeof data.shape === "undefined" || data.shape == null) 
@@ -82,17 +79,10 @@ InteractiveDataDisplay.Markers = function (div, master) {
         }
         else throw "The argument 'data' is incorrect: value of the property 'shape' must be a string, a MarkerShape object, undefined or null";
         _shape = shape;
-                
-        // Copying data and combining with initial data and styles read from HTML
-        var dataFull = {};
-        for(var prop in data){
-            if(data[prop] != undefined){
-                dataFull[prop] = data[prop];
-            }else if(initialData[prop] != undefined){
-                dataFull[prop] = initialData[prop];
-        }
-        }
         
+        // Copying data
+        var dataFull = $.extend({}, data);
+                
         // Preparing data specifically for the given marker shape
         if(shape.prepare != undefined)
             shape.prepare(dataFull);
@@ -100,7 +90,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
         destroyPushpins();
         _data = dataFull;       
         _renderData = {};        
-
+        
         this.invalidateLocalBounds();
         this.requestNextFrameOrUpdate();
         this.setTitles(titles, true);
@@ -139,8 +129,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
             }
             return total_bb;
         } else if(typeof _data.x != "undefined" && typeof _data.y != "undefined") {
-        return InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_data.x, _data.y, dataToPlotX, dataToPlotY);
-    }
+            return InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_data.x, _data.y, dataToPlotX, dataToPlotY);
+        } 
         return undefined;
     };
 
@@ -151,14 +141,14 @@ InteractiveDataDisplay.Markers = function (div, master) {
         var padding = 0;
         return { left: padding, right: padding, top: padding, bottom: padding };
     };
-    
+
     this.renderCore = function (plotRect, screenSize) {
         InteractiveDataDisplay.Markers.prototype.renderCore.call(this, plotRect, screenSize);
         if(_shape == undefined) return;
-
+        
         var dt = this.getTransform();
         var drawBasic = !that.master.isInAnimation || that.master.mapControl === undefined;
-
+        
         if (that.mapControl !== undefined) {
             if (_markerPushpins === undefined) createPushpins();
             if (_markerPushpins !== undefined){
@@ -172,7 +162,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 }
             }
         }
-
+        
         if (drawBasic) {
             var context = this.getContext(true);
             _renderData = _data;
@@ -185,21 +175,21 @@ InteractiveDataDisplay.Markers = function (div, master) {
             for(var i = 0; i < n; i++){
                 for(var prop in arrays) row[prop] = arrays[prop][i];
                 _shape.draw(row, plotRect, screenSize, dt, context, i);
-            }
-            }
+            }  
+        }
     };
 
     this.findToolTipMarkers = function (xd, yd, xp, yp) {
         if(_shape == undefined || typeof _shape.hitTest == "undefined" || _renderData == undefined) return [];
         var t = this.getTransform();
         var ps = { x: t.dataToScreenX(xd), y: t.dataToScreenY(yd) };
-                var pd = { x: xd, y: yd };
-
+        var pd = { x: xd, y: yd };
+        
         var pattern = prepareDataRow(_renderData);
         var n = pattern.length;
         var arrays = pattern.arrays;
         var row = pattern.scalars;
-                                        
+         
         var found = [];           
         for(var i = 0; i < n; i++){
             for(var prop in arrays) row[prop] = arrays[prop][i];
@@ -246,8 +236,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
             return "<div>" + toolTip + "</div>";
         }
     };
-
-    this.getLegend = function () {
+    
+    this.getLegend = function () {        
         //var div = $("<div class='idd-legend-item'></div>");
         var nameDiv = $("<span></span>");
         var legendDiv = { thumbnail: $("<canvas></canvas>"), content: $("<div></div>") };
@@ -278,6 +268,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
     };
 
     // Initialization 
+    var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
+    var initialData = initializer(div);
     if (initialData && typeof initialData.y != 'undefined')
         this.draw(initialData);
 };
@@ -289,6 +281,6 @@ InteractiveDataDisplay.Markers.defaults = {
     colorPalette : InteractiveDataDisplay.palettes.grayscale,
     border : "#000000",
     size : 10
-    }
+}
 
 InteractiveDataDisplay.Markers.shapes = InteractiveDataDisplay.Markers.shapes || {};
