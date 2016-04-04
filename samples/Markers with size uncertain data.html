@@ -46,16 +46,9 @@
                 }
             }
             x.pop();
-            var i = 0;
-            while (isNaN(size_u95[i]) || isNaN(size_l95[i])) i++;
-            var maxDelta = size_u95[i] - size_l95[i];
-            i++;
-            for (; i < size_u95.length; i++)
-                if (!isNaN(size_u95[i]) && !isNaN(size_l95[i]))
-                    maxDelta = Math.max(maxDelta, size_u95[i] - size_l95[i]);
-
+            
             markers.draw(
-                { x: x, y: y, color: color, shape: InteractiveDataDisplay.Petal, colorPalette: colorPalette, size: 15,  u95: size_u95, l95: size_l95, u68: size_u68, l68: size_l68, maxDelta: maxDelta },  
+                { x: x, y: y, color: color, shape: InteractiveDataDisplay.Petal, colorPalette: colorPalette, size: 15,  u95: size_u95, l95: size_l95, u68: size_u68, l68: size_l68},  
                 { x: "lon", y: "lat", color: "wheat square", size: "wheat" });
         });
     </script>

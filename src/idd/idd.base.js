@@ -1498,7 +1498,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         setTimeout(function () {
             if (_host && _host.attr("data-idd-legend")) {
                 var legendDiv = $("#" +_host.attr("data-idd-legend"));
-                var _legend = new InteractiveDataDisplay.Legend(that, legendDiv);
+                var _legend = new InteractiveDataDisplay.Legend(that, legendDiv, true);
                 Object.defineProperty(that, "legend", { get: function () { return _legend; }, configurable: false
         });
         }
@@ -1717,23 +1717,31 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<li class='idd-legend-item'></li>");
                 if (!isCompact) div.attr("data-plot", plot.name);
                 var title = (isCompact) ? $("<div class='idd-legend-item-title-compact'></div>") : $("<div class='idd-legend-item-title'></div>");
-                if (isCompact) legend.legend.thumbnail.addClass("idd-legend-item-title-thumb-compact").appendTo(title);
-                else legend.legend.thumbnail.addClass("idd-legend-item-title-thumb").appendTo(title);
+                if (legend.legend && legend.legend.thumbnail)
+                    if (isCompact) legend.legend.thumbnail.addClass("idd-legend-item-title-thumb-compact").appendTo(title);
+                    else legend.legend.thumbnail.addClass("idd-legend-item-title-thumb").appendTo(title);
                 if (isCompact) legend.name.addClass("idd-legend-item-title-name-compact").appendTo(title);
                 else legend.name.addClass("idd-legend-item-title-name").appendTo(title);
                 addVisibilityCheckBox(title, plot);
                 title.appendTo(div);
-                if (legend.legend.content)
+                if (legend.legend && legend.legend.content)
                     if (isCompact) legend.legend.content.addClass("idd-legend-item-info-compact").appendTo(div);
                     else legend.legend.content.addClass("idd-legend-item-info").appendTo(div);
+                var isExisted = false;
+                for (var n = 0; n < plotLegends.length; n++)
+                    if (plot == plotLegends[n].plot) {
+                        isExisted = true;
+                        break;
+                    }
+                if (!isExisted) {
+                    div.prependTo(_jqdiv);
+                    if (!isCompact) _jqdiv.sortable({ axis: 'y' });
+                    div.plot = plot;
 
-                div.prependTo(_jqdiv);
-                if (!isCompact) _jqdiv.sortable({ axis: 'y'});
-                div.plot = plot;
-             
                     plotLegends[plotLegends.length] = div;
                     _plotLegends[_plotLegends.length] = div;
                     div.plot.updateOrder();
+                }
             }
         };
         this.remove = function () {
@@ -2290,14 +2298,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             var that = this;
 
-            var onLegendRemove = function () {//??
+            var onLegendRemove = function () {
                 that.host.unbind("appearanceChanged");
 
-               // div[0].innerHTML = "";
-               // div.removeClass("idd-legend-item");
             };
 
-            //return { div: div, onLegendRemove: onLegendRemove };
             return { name: nameDiv, legend: { thumbnail: canvas, content: undefined }, onLegendRemove: onLegendRemove };
         };
 

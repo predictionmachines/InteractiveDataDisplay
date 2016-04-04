@@ -125,6 +125,99 @@ var RgbaToString = function (rgba) {
     return "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
 };
 InteractiveDataDisplay.Petal = {
+    prepare: function (data) {
+        if (!data.maxDelta) {
+            var i = 0;
+            while (isNaN(data.u95[i]) || isNaN(data.l95[i])) i++;
+            var maxDelta = data.u95[i] - data.l95[i];
+            i++;
+            for (; i < data.u95.length; i++)
+                if (!isNaN(data.u95[i]) && !isNaN(data.l95[i]))
+                    maxDelta = Math.max(maxDelta, data.u95[i] - data.l95[i]);
+            data.maxDelta = maxDelta;
+        }
+        // y
+        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
+        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
+        var n = data.y.length;
+
+        var mask = new Int8Array(n);
+        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+
+        // x
+        if (data.x == undefined)
+            data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+        else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+        else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from lenght of 'y'"
+        else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+
+        // border
+        if (data.border == undefined || data.border == "none")
+            data.border = null; // no border
+
+        // colors        
+        if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
+        if (InteractiveDataDisplay.Utils.isArray(data.color)) {
+            if (data.color.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
+            if (n > 0 && typeof (data.color[0]) === "number") { // color is a data series                 
+                var palette = data.colorPalette;
+                if (palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
+                if (palette != undefined && palette.isNormalized) {
+                    var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
+                    r = InteractiveDataDisplay.Utils.makeNonEqual(r);
+                    data.colorPalette = palette = palette.absolute(r.min, r.max);
+                }
+                var colors = new Array(n);
+                for (var i = 0; i < n; i++) {
+                    var color = data.color[i];
+                    if (color != color) // NaN
+                        mask[i] = 1;
+                    else {
+                        var rgba = palette.getRgba(color);                        
+                        colors[i] = "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
+                    }
+                }
+                data.color = colors;
+            }
+            data.individualColors = true;
+        } else {
+            data.individualColors = false;
+        }
+
+        // sizes    
+        var sizes = new Array(n);
+        if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
+        if (InteractiveDataDisplay.Utils.isArray(data.l95) && InteractiveDataDisplay.Utils.isArray(data.u95)) {
+            if (data.l95.length != n && data.u95.length != n) throw "Length of the array 'size' is different than length of the array 'y'";
+        }
+        for (var i = 0; i < n; i++) sizes[i] = data.size;
+            data.sizeMax = data.size;
+        data.size = sizes;
+
+        // Filtering out missing values
+        var m = 0;
+        for (var i = 0; i < n; i++) if (mask[i] === 1) m++;
+        if (m > 0) { // there are missing values
+            m = n - m;
+            data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
+            data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
+            data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
+            if (data.individualColors)
+                data.color = InteractiveDataDisplay.Utils.applyMask(mask, data.color, m);
+            var indices = Array(m);
+            for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
+            data.indices = indices;
+        } else {
+            data.indices = InteractiveDataDisplay.Utils.range(0, n - 1);
+        }
+    },
+    preRender: function (data, plotRect, screenSize, dt, context) {
+        if (!data.individualColors)
+            context.fillStyle = data.color;
+        if (data.border != null)
+            context.strokeStyle = data.border;
+        return data;
+    },
     draw: function (marker, plotRect, screenSize, transform, context) {
         var x0 = transform.dataToScreenX(marker.x);
         var y0 = transform.dataToScreenY(marker.y);
@@ -167,17 +260,11 @@ InteractiveDataDisplay.Petal = {
         context.closePath();
         context.fill();
 
-        context.strokeStyle = "grey";
+        context.strokeStyle = "gray";
         context.beginPath();
         context.arc(x, y, 1, 0, Math.PI * 2);
         context.stroke();
         context.closePath();
-    },
-    getBoundingBox: function (marker) {
-        var r = marker.size / 2;
-        var xLeft = marker.x - r;
-        var yBottom = marker.y - r;
-        return { x: marker.x - r, y: marker.y - r, width: 2 * r, height: 2 * r };
     },
     hitTest: function (marker, transform, ps, pd) {
         var x = transform.dataToScreenX(marker.x);
@@ -187,30 +274,15 @@ InteractiveDataDisplay.Petal = {
         if (ps.y < y - r || ps.y > y + r) return false;
         return true;
     },
-    //getLegendItem: function (drawData) {
-    //    var canvas = $("<canvas></canvas>");
-    //    var size = 38;
-    //    canvas[0].width = canvas[0].height = size + 2;
-    //    var halfSize = size / 2;
-    //    var x1 = halfSize + 0.5;
-    //    var y1 = halfSize + 0.5;
-    //    var context = canvas[0].getContext("2d");
-    //    var sampleColor = "gray";
-    //    var sampleBorderColor = "gray"; 
-        
-    //    InteractiveDataDisplay.Petal.drawSample(context, x1, y1, halfSize / 2, halfSize, sampleColor);
-        
-    //    return canvas;
-    //},
-    getLegend: function (data, getTitle) { // todo: should be refactored            
-        var itemDiv = $("<div></div>");
+    getLegend: function (data, getTitle, legendDiv) { // todo: should be refactored            
+        var itemDiv = legendDiv.content;
         var fontSize = 14;
         if (document.defaultView && document.defaultView.getComputedStyle) {
             fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
         }
         if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
 
-        var canvas = $("<canvas></canvas>");
+        var canvas = legendDiv.thumbnail;
         var canvasIsVisible = true;
         var maxSize = fontSize * 1.5;
         var x1 = maxSize / 2 + 1;
@@ -218,6 +290,7 @@ InteractiveDataDisplay.Petal = {
         canvas[0].width = canvas[0].height = maxSize + 2;
         var canvasStyle = canvas[0].style;
         var context = canvas.get(0).getContext("2d");
+        context.clearRect(0, 0, canvas[0].width, canvas[0].height);
         var item, itemDivStyle;
         var itemIsVisible = 0;
 
@@ -232,19 +305,16 @@ InteractiveDataDisplay.Petal = {
         var sizeTitle;
         var refreshSize = function () {
             size = maxSize;
-            if (data.sizePalette) {
-                var szTitleText = getTitle("size");
-                if (sizeIsVisible == 0) {
-                    sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
-                    sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
-                    sizeDivStyle = sizeDiv[0].style;
-                    var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(sizeDiv);
-                    sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
-                    sizeIsVisible = 2;
-                } else {
-                    sizeTitle.text(szTitleText);
-                }
-                sizeControl.palette = data.sizePalette;
+            var szTitleText = getTitle("size");
+            if (sizeIsVisible == 0) {
+                sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
+                sizeDivStyle = sizeDiv[0].style;
+                var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(sizeDiv);
+                sizeControl = new InteractiveDataDisplay.UncertaintySizePaletteViewer(paletteDiv);
+                sizeIsVisible = 2;
+            } else {
+                sizeTitle.text(szTitleText);
             }
             halfSize = size / 2;
         };
@@ -301,20 +371,108 @@ InteractiveDataDisplay.Petal = {
         refreshColor();
         refreshSize();
         renderShape();
-        return { thumbnail: canvas, content: itemDiv };
     }
-    
 };
-//InteractiveDataDisplay.Markers.shapes["petal"] = InteractiveDataDisplay.Petal;
 InteractiveDataDisplay.BullEye = {
-      draw: function (marker, plotRect, screenSize, transform, context) {
+    prepare: function (data) {
+        data.bullEyeShape = data.bullEyeShape ? data.bullEyeShape.toLowerCase() : "circle";
+        // y
+        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
+        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
+        var n = data.y.length;
+
+        var mask = new Int8Array(n);
+        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+
+        // x
+        if (data.x == undefined)
+            data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+        else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+        else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from lenght of 'y'"
+        else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+
+        // border
+        if (data.border == undefined || data.border == "none")
+            data.border = null; // no border
+
+        // colors        
+        if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
+        if (InteractiveDataDisplay.Utils.isArray(data.l95) && InteractiveDataDisplay.Utils.isArray(data.u95)) {
+            if (data.l95.length != n && data.u95.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
+            if (n > 0 && typeof (data.l95[0]) === "number" && typeof (data.u95[0]) === "number") { // color is a data series                 
+                var palette = data.colorPalette;
+                if (palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
+                if (palette != undefined && palette.isNormalized) {
+                    var r = { min: InteractiveDataDisplay.Utils.getMin(data.l95), max: InteractiveDataDisplay.Utils.getMax(data.u95) };
+                    r = InteractiveDataDisplay.Utils.makeNonEqual(r);
+                    data.colorPalette = palette = palette.absolute(r.min, r.max);
+                }
+            }
+            data.individualColors = true;
+        } else {
+            data.individualColors = false;
+        }
+
+        // sizes    
+        var sizes = new Array(n);
+        if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
+        if (InteractiveDataDisplay.Utils.isArray(data.size)) {
+            if (data.size.length != n) throw "Length of the array 'size' is different than length of the array 'y'"
+            if (data.sizePalette != undefined) { // 'size' is a data series 
+                var palette = data.sizePalette;
+                if (palette.isNormalized) {
+                    var r = InteractiveDataDisplay.Utils.getMinMax(data.size);
+                    r = InteractiveDataDisplay.Utils.makeNonEqual(r);
+                    data.sizePalette = palette = new InteractiveDataDisplay.SizePalette(false, palette.sizeRange, r);
+                }
+                for (var i = 0; i < n; i++) {
+                    var size = data.size[i];
+                    if (size != size) // NaN
+                        mask[i] = 1;
+                    else
+                        sizes[i] = palette.getSize(size)
+                }
+            } else { // 'size' contains values in pixels
+                data.sizeMax = InteractiveDataDisplay.Utils.getMax(data.size);
+            }
+        } else { // sizes is a constant
+            for (var i = 0; i < n; i++) sizes[i] = data.size;
+            data.sizeMax = data.size;
+        }
+        data.size = sizes;
+
+        // Filtering out missing values
+        var m = 0;
+        for (var i = 0; i < n; i++) if (mask[i] === 1) m++;
+        if (m > 0) { // there are missing values
+            m = n - m;
+            data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
+            data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
+            data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
+            //if (data.individualColors)
+            //    data.color = InteractiveDataDisplay.Utils.applyMask(mask, data.color, m);
+            var indices = Array(m);
+            for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
+            data.indices = indices;
+        } else {
+            data.indices = InteractiveDataDisplay.Utils.range(0, n - 1);
+        }
+    },
+    preRender: function (data, plotRect, screenSize, dt, context) {
+        if(!data.individualColors)
+            context.fillStyle = data.color;
+        if(data.border != null)
+            context.strokeStyle = data.border;
+        return data;
+    },
+    draw: function (marker, plotRect, screenSize, transform, context) {
 
           var mean = marker.y_mean;
           var u95 = marker.u95;
           var l95 = marker.l95;
-          if (marker.uncertainColorPalette) {
-              u95 = RgbaToString(marker.uncertainColorPalette.getRgba(u95));
-              l95 = RgbaToString(marker.uncertainColorPalette.getRgba(l95));
+          if (marker.colorPalette) {
+              u95 = RgbaToString(marker.colorPalette.getRgba(u95));
+              l95 = RgbaToString(marker.colorPalette.getRgba(l95));
           }
 
           var msize = marker.size;
@@ -328,7 +486,7 @@ InteractiveDataDisplay.BullEye = {
           drawShape(context, marker.bullEyeShape, x, y, msize, msize, 1, u95);
           drawShape(context, marker.bullEyeShape, x, y, shift, shift, 1, l95);
       },
-      hitTest: function (marker, transform, ps, pd) {
+    hitTest: function (marker, transform, ps, pd) {
           var xScreen = transform.dataToScreenX(marker.x);
           var yScreen = transform.dataToScreenY(marker.y);
 
@@ -340,34 +498,19 @@ InteractiveDataDisplay.BullEye = {
 
           return isIntersecting;
       },
-      getPadding: function (data) {
+    getPadding: function (data) {
           var padding = 0;
           return { left: padding, right: padding, top: padding, bottom: padding };
       },
-      //getLegendItem: function (drawData) {
-      //    var canvas = $("<canvas></canvas>");
-      //    var size = 38;
-      //    canvas[0].width = canvas[0].height = size + 2;
-      //    var halfSize = size / 2;
-      //    var x1 = halfSize + 0.5;
-      //    var y1 = halfSize + 0.5;
-      //    var context = canvas[0].getContext("2d");
-      //    var sampleColor = "gray";
-      //    var sampleBorderColor = "gray";
-
-      //    drawShape(context, drawData.bullEyeShape, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
-
-      //    return canvas;
-      //},
-      getLegend: function (data, getTitle) { // todo: should be refactored            
-          var itemDiv = $("<div></div>");
+    getLegend: function (data, getTitle, legendDiv) { // todo: should be refactored            
+          var itemDiv = legendDiv.content;
           var fontSize = 14;
           if (document.defaultView && document.defaultView.getComputedStyle) {
               fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
           }
           if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
 
-          var canvas = $("<canvas></canvas>");
+          var canvas = legendDiv.thumbnail;
           var canvasIsVisible = true;
           var maxSize = fontSize * 1.5;
           var x1 = maxSize / 2 + 1;
@@ -375,6 +518,7 @@ InteractiveDataDisplay.BullEye = {
           canvas[0].width = canvas[0].height = maxSize + 2;
           var canvasStyle = canvas[0].style;
           var context = canvas.get(0).getContext("2d");
+          context.clearRect(0, 0, canvas[0].width, canvas[0].height);
           var item, itemDivStyle;
           var itemIsVisible = 0;
 
@@ -452,25 +596,76 @@ InteractiveDataDisplay.BullEye = {
               var sampleColor = "gray";
               var sampleBorderColor = "gray";
 
-              drawShape(context, drawData.bullEyeShape, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+              drawShape(context, data.bullEyeShape, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
           };
 
           refreshColor();
           refreshSize();
           renderShape();
-          return { thumbnail: canvas, content: itemDiv };
       }
       
 };
-//InteractiveDataDisplay.Markers.shapes["bulleye"] = InteractiveDataDisplay.BullEye;
 
 InteractiveDataDisplay.BoxWhisker = {
-    //prepare: function () {
+    prepare: function (data) {
+        // y
+        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
+        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
+        var n = data.y.length;
 
-    //},
-    //preRender: function () {
+        var mask = new Int8Array(n);
+        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+        data.y_mean = data.y;
 
-    //},
+        // x
+        if (data.x == undefined)
+            data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+        else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+        else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from lenght of 'y'"
+        else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+
+        // border
+        if (data.border == undefined || data.border == "none")
+            data.border = null; // no border
+
+        // colors        
+        if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
+        data.individualColors = false;
+
+        // sizes    
+        var sizes = new Array(n);
+        if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
+        if (InteractiveDataDisplay.Utils.isArray(data.l95) && InteractiveDataDisplay.Utils.isArray(data.u95)) {
+            if (data.l95.length != n && data.u95.length != n) throw "Length of the array 'size' is different than length of the array 'y'";
+        }
+        for (var i = 0; i < n; i++) sizes[i] = data.size;
+        data.sizeMax = data.size;
+        data.size = sizes;
+
+        // Filtering out missing values
+        var m = 0;
+        for (var i = 0; i < n; i++) if (mask[i] === 1) m++;
+        if (m > 0) { // there are missing values
+            m = n - m;
+            data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
+            data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
+            data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
+            if (data.individualColors)
+                data.color = InteractiveDataDisplay.Utils.applyMask(mask, data.color, m);
+            var indices = Array(m);
+            for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
+            data.indices = indices;
+        } else {
+            data.indices = InteractiveDataDisplay.Utils.range(0, n - 1);
+        }
+    },
+    preRender: function (data, plotRect, screenSize, dt, context) {
+        if (!data.individualColors)
+            context.fillStyle = data.color;
+        if (data.border != null)
+            context.strokeStyle = data.border;
+        return data;
+    },
     draw: function (marker, plotRect, screenSize, transform, context) {
 
         var msize = marker.size;
@@ -536,31 +731,15 @@ InteractiveDataDisplay.BoxWhisker = {
         var padding = 0;
         return { left: padding, right: padding, top: padding, bottom: padding };
     },
-    //getLegendItem: function (drawData) {
-    //    var canvas = $("<canvas></canvas>");
-    //    var size = 38;
-    //    canvas[0].width = canvas[0].height = size + 2;
-    //    var halfSize = size / 2;
-    //    var x1 = halfSize + 0.5;
-    //    var y1 = halfSize + 0.5;
-    //    var context = canvas[0].getContext("2d");
-    //    var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
-    //    var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
-
-    //    var shp = "boxwhisker";
-    //    drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
-
-    //    return canvas;
-    //},
-    getLegend: function (data, getTitle) { // todo: should be refactored            
-        var itemDiv = $("<div></div>");
+    getLegend: function (data, getTitle, legendDiv) { // todo: should be refactored            
+        var itemDiv = legendDiv.content;
         var fontSize = 14;
         if (document.defaultView && document.defaultView.getComputedStyle) {
             fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
         }
         if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
 
-        var canvas = $("<canvas></canvas>");
+        var canvas = legendDiv.thumbnail;
         var canvasIsVisible = true;
         var maxSize = fontSize * 1.5;
         var x1 = maxSize / 2 + 1;
@@ -642,8 +821,8 @@ InteractiveDataDisplay.BoxWhisker = {
         };
 
         var renderShape = function () {
-            var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
-            var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+            var sampleColor = typeof data.color == "string" ? data.color : "gray";
+            var sampleBorderColor = typeof data.border == "string" ? data.border : "gray";
 
             var shp = "boxwhisker";
             drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
@@ -652,12 +831,69 @@ InteractiveDataDisplay.BoxWhisker = {
         refreshColor();
         refreshSize();
         renderShape();
-        return { thumbnail: canvas, content: itemDiv };
     }
 };
-//InteractiveDataDisplay.Markers.shapes["boxwhisker"] = InteractiveDataDisplay.BoxWhisker;
 
 InteractiveDataDisplay.BoxNoWhisker = {
+    prepare: function (data) {
+        // y
+        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
+        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
+        var n = data.y.length;
+
+        var mask = new Int8Array(n);
+        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+        data.y_mean = data.y;
+
+        // x
+        if (data.x == undefined)
+            data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+        else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+        else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from lenght of 'y'"
+        else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+
+        // border
+        if (data.border == undefined || data.border == "none")
+            data.border = null; // no border
+
+        // colors        
+        if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
+        data.individualColors = false;
+
+        // sizes    
+        var sizes = new Array(n);
+        if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
+        if (InteractiveDataDisplay.Utils.isArray(data.l95) && InteractiveDataDisplay.Utils.isArray(data.u95)) {
+            if (data.l95.length != n && data.u95.length != n) throw "Length of the array 'size' is different than length of the array 'y'";
+        }
+        for (var i = 0; i < n; i++) sizes[i] = data.size;
+        data.sizeMax = data.size;
+        data.size = sizes;
+
+        // Filtering out missing values
+        var m = 0;
+        for (var i = 0; i < n; i++) if (mask[i] === 1) m++;
+        if (m > 0) { // there are missing values
+            m = n - m;
+            data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
+            data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
+            data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
+            if (data.individualColors)
+                data.color = InteractiveDataDisplay.Utils.applyMask(mask, data.color, m);
+            var indices = Array(m);
+            for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
+            data.indices = indices;
+        } else {
+            data.indices = InteractiveDataDisplay.Utils.range(0, n - 1);
+        }
+    },
+    preRender: function (data, plotRect, screenSize, dt, context) {
+        if (!data.individualColors)
+            context.fillStyle = data.color;
+        if (data.border != null)
+            context.strokeStyle = data.border;
+        return data;
+    },
     draw: function (marker, plotRect, screenSize, transform, context) {
 
                 var msize = marker.size;
@@ -711,31 +947,15 @@ InteractiveDataDisplay.BoxNoWhisker = {
                 var padding = 0;
                 return { left: padding, right: padding, top: padding, bottom: padding };
     },
-    //getLegendItem: function (drawData) {
-    //    var canvas = $("<canvas></canvas>");
-    //    var size = 38;
-    //    canvas[0].width = canvas[0].height = size + 2;
-    //    var halfSize = size / 2;
-    //    var x1 = halfSize + 0.5;
-    //    var y1 = halfSize + 0.5;
-    //    var context = canvas[0].getContext("2d");
-    //    var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
-    //    var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
-
-    //    var shp = "boxnowhisker";
-    //    drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
-
-    //    return canvas;
-    //},
-    getLegend: function (data, getTitle) { // todo: should be refactored            
-        var itemDiv = $("<div></div>");
+    getLegend: function (data, getTitle, legendDiv) { // todo: should be refactored            
+        var itemDiv = legendDiv.content;
         var fontSize = 14;
         if (document.defaultView && document.defaultView.getComputedStyle) {
             fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
         }
         if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
 
-        var canvas = $("<canvas></canvas>");
+        var canvas = legendDiv.thumbnail;
         var canvasIsVisible = true;
         var maxSize = fontSize * 1.5;
         var x1 = maxSize / 2 + 1;
@@ -743,6 +963,7 @@ InteractiveDataDisplay.BoxNoWhisker = {
         canvas[0].width = canvas[0].height = maxSize + 2;
         var canvasStyle = canvas[0].style;
         var context = canvas.get(0).getContext("2d");
+        context.clearRect(0, 0, canvas[0].width, canvas[0].height);
         var item, itemDivStyle;
         var itemIsVisible = 0;
 
@@ -817,8 +1038,8 @@ InteractiveDataDisplay.BoxNoWhisker = {
         };
 
         var renderShape = function () {
-            var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
-            var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+            var sampleColor = typeof data.color == "string" ? data.color : "gray";
+            var sampleBorderColor = typeof data.border == "string" ? data.border : "gray";
 
             var shp = "boxnowhisker";
             drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
@@ -827,11 +1048,69 @@ InteractiveDataDisplay.BoxNoWhisker = {
         refreshColor();
         refreshSize();
         renderShape();
-        return { thumbnail: canvas, content: itemDiv };
     }
 };
-//InteractiveDataDisplay.Markers.shapes["boxnowhisker"] = InteractiveDataDisplay.BoxNoWhisker;
+
 InteractiveDataDisplay.Whisker = {
+    prepare: function (data) {
+        // y
+        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
+        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
+        var n = data.y.length;
+
+        var mask = new Int8Array(n);
+        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+        data.y_mean = data.y;
+
+        // x
+        if (data.x == undefined)
+            data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+        else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+        else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from lenght of 'y'"
+        else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+
+        // border
+        if (data.border == undefined || data.border == "none")
+            data.border = null; // no border
+
+        // colors        
+        if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
+        data.individualColors = false;
+
+        // sizes    
+        var sizes = new Array(n);
+        if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
+        if (InteractiveDataDisplay.Utils.isArray(data.l95) && InteractiveDataDisplay.Utils.isArray(data.u95)) {
+            if (data.l95.length != n && data.u95.length != n) throw "Length of the array 'size' is different than length of the array 'y'";
+        }
+        for (var i = 0; i < n; i++) sizes[i] = data.size;
+        data.sizeMax = data.size;
+        data.size = sizes;
+
+        // Filtering out missing values
+        var m = 0;
+        for (var i = 0; i < n; i++) if (mask[i] === 1) m++;
+        if (m > 0) { // there are missing values
+            m = n - m;
+            data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
+            data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
+            data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
+            if (data.individualColors)
+                data.color = InteractiveDataDisplay.Utils.applyMask(mask, data.color, m);
+            var indices = Array(m);
+            for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
+            data.indices = indices;
+        } else {
+            data.indices = InteractiveDataDisplay.Utils.range(0, n - 1);
+        }
+    },
+    preRender: function (data, plotRect, screenSize, dt, context) {
+        if (!data.individualColors)
+            context.fillStyle = data.color;
+        if (data.border != null)
+            context.strokeStyle = data.border;
+        return data;
+    },
     draw: function (marker, plotRect, screenSize, transform, context) {
 
                 var msize = marker.size;
@@ -873,14 +1152,6 @@ InteractiveDataDisplay.Whisker = {
                     context.stroke();
                 }
             },
-    getBoundingBox: function (marker, transform) {
-                var sizeX = transform.screenToDataX(marker.size);
-
-                var ymin = marker.y_min === undefined ? marker.l95 : marker.y_min;
-                var ymax = marker.y_max === undefined ? marker.u95 : marker.y_max;
-
-                return { x: marker.x - sizeX / 2, y: ymin, width: sizeX, height: Math.abs(ymax - ymin) };
-            },
     hitTest: function (marker, transform, ps, pd) {
                 var xScreen = transform.dataToScreenX(marker.x);
 
@@ -899,31 +1170,15 @@ InteractiveDataDisplay.Whisker = {
                 var padding = 0;
                 return { left: padding, right: padding, top: padding, bottom: padding };
     },
-    //getLegendItem: function (drawData) {
-    //    var canvas = $("<canvas></canvas>");
-    //    var size = 38;
-    //    canvas[0].width = canvas[0].height = size + 2;
-    //    var halfSize = size / 2;
-    //    var x1 = halfSize + 0.5;
-    //    var y1 = halfSize + 0.5;
-    //    var context = canvas[0].getContext("2d");
-    //    var sampleColor = "white";
-    //    var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
-
-    //    var shp = "whisker";
-    //    drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
-
-    //    return canvas;
-    //},
-    getLegend: function (data, getTitle) { // todo: should be refactored            
-        var itemDiv = $("<div></div>");
+    getLegend: function (data, getTitle, legendDiv) { // todo: should be refactored            
+        var itemDiv = legendDiv.content;
         var fontSize = 14;
         if (document.defaultView && document.defaultView.getComputedStyle) {
             fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
         }
         if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
 
-        var canvas = $("<canvas></canvas>");
+        var canvas = legendDiv.thumbnail;
         var canvasIsVisible = true;
         var maxSize = fontSize * 1.5;
         var x1 = maxSize / 2 + 1;
@@ -931,6 +1186,7 @@ InteractiveDataDisplay.Whisker = {
         canvas[0].width = canvas[0].height = maxSize + 2;
         var canvasStyle = canvas[0].style;
         var context = canvas.get(0).getContext("2d");
+        context.clearRect(0, 0, canvas[0].width, canvas[0].height);
         var item, itemDivStyle;
         var itemIsVisible = 0;
 
@@ -1005,8 +1261,8 @@ InteractiveDataDisplay.Whisker = {
         };
 
         var renderShape = function () {
-            var sampleColor = typeof drawData.color == "string" ? drawData.color : "gray";
-            var sampleBorderColor = typeof drawData.border == "string" ? drawData.border : "gray";
+            var sampleColor = typeof data.color == "string" ? data.color : "gray";
+            var sampleBorderColor = typeof data.border == "string" ? data.border : "gray";
 
             var shp = "whisker";
             drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
@@ -1017,6 +1273,4 @@ InteractiveDataDisplay.Whisker = {
         renderShape();
         return { thumbnail: canvas, content: itemDiv };
     }
-
 };
-//InteractiveDataDisplay.Markers.shapes["whisker"] = InteractiveDataDisplay.Whisker;

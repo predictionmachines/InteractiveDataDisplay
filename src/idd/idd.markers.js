@@ -132,8 +132,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 total_bb.width = r - l;
             }
             if(dataToPlotY){
-                var b = dataToPlotX(total_bb.y);
-                var t = dataToPlotX(total_bb.y + total_bb.height);
+                var b = dataToPlotY(total_bb.y);
+                var t = dataToPlotY(total_bb.y + total_bb.height);
                 total_bb.y = b;
                 total_bb.height = t - b;
             }
@@ -250,18 +250,14 @@ InteractiveDataDisplay.Markers = function (div, master) {
     this.getLegend = function () {
         //var div = $("<div class='idd-legend-item'></div>");
         var nameDiv = $("<span></span>");
-        var legend;
+        var legendDiv = { thumbnail: $("<canvas></canvas>"), content: $("<div></div>") };
         var buildLegend = function () {
             nameDiv.empty();
             //nameDiv = $("<span></span>").appendTo(div);  
-            if(_shape && typeof _shape.getLegend != "undefined") {                
-                legend = _shape.getLegend(_data, that.getTitle);
-                if(legend){ 
-                    legend.thumbnail.css("display", "inline-block");
-                //    legend.content.appendTo(div);                
-                }
+            if (_shape && typeof _shape.getLegend != "undefined") {
+                legendDiv.content.empty();
+                _shape.getLegend(_data, that.getTitle, legendDiv);
             }
-            //$("<span class='idd-legend-item-title'></span>").appendTo(nameDiv).text(that.name);
                 nameDiv.text(that.name);
         }
         this.host.bind("appearanceChanged", buildLegend);  
@@ -272,7 +268,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
             //div.empty();
             //div.removeClass("idd-legend-item");
         };
-        return { name: nameDiv, legend: legend, onLegendRemove: onLegendRemove };  
+        return { name: nameDiv, legend: legendDiv, onLegendRemove: onLegendRemove };  
     };
 
     // Others
