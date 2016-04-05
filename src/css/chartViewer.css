@@ -10,56 +10,119 @@ body {
     font-family: "Segoe UI Light", "HelveticaNeueLight", "HelveticaNeue-Light", "Helvetica Neue Light", "HelveticaNeue", "Helvetica Neue", "TeXGyreHerosRegular", "Helvetica", "Tahoma", "Geneva", "Arial", "sans-serif";
 }
 /*Probes*/
+.probes 
+{
+    margin-top: 50px;
+}
+.probes-list
+{
+    background-color: #f5f5f5;
+    position: relative;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0,0,0,0.12);
+    padding: 5px;
+    /*max-height: 400px;*/
+    max-width: 250px;
+    cursor: default;
+    overflow: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
+    list-style-type: none;
+}
 .probe {
     width: 18px;
     height: 55px;
 }
 .dragPoint {
-    width: 18px;
+    width: 24px;
     height: 55px;
     position: absolute;
     cursor: pointer;
+    z-index: 1000;
 }
 .probeCard {
-    border: 1px solid black;
-    cursor: pointer;
-    margin-left: 20px;
-    margin-right: 20px;
-    margin-bottom: 10px;
-    padding: 4px;
     position: relative;
+    width: 240px;
+    height: auto;
+    background-color: white;
+    box-shadow: 0 0 2px rgba(0,0,0, 0.2);
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 2px;
+    margin-bottom: 6px;   
+    cursor: pointer;
+    display: inline-block;
+    padding-right: 4px;
+    padding-left:4px;
 }
 .probeCard-selected {
     /*background-color: #F1F9FF;*/
 }
+.probeHeader {
+    width: 140px;
+    height: 35px;
+    line-height: 24px;
+    vertical-align: top;
+    font-size: 19px;
+    font-family: Segoe UI;
+    display:inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    word-wrap: normal; /* для IE */
+    text-overflow: ellipsis;
+    padding-top: 16px;
+    padding-left: 16px;
+}
+.probeHeader-name {
+    width: 110px;
+    height: 24px;
+    line-height: 24px;
+    vertical-align: top;
+    font-size: 16px;
+    font-family: Segoe UI;
+    margin-left: 16px;
+    margin-right: 16px;
+    display:inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    word-wrap: normal; /* для IE */
+    text-overflow: ellipsis;
+}
+.probeActionPanel {
+    width: 22px;
+    height: 60px;
+    float:right;
+    padding-bottom: 16px;
+    padding-right:7px;
+    padding-top: 16px;
+}
 .probeCard-remove {
     width: 20px;
     height: 20px;
-    background-image: url('icons/remove.png');
+    background-image: url('icons/ic_delete_gray.png');
     -moz-background-size: cover;
     -o-background-size: cover;
     -webkit-background-size: cover;
     background-size: cover;
     margin: 5px;
-    float: left;
+    float: right;
     cursor: pointer;
-    position: absolute;
+    /*position: absolute;*/
     top: 0px;
     right: 0px;
 }
 .probeCard-fit {
     width: 20px;
     height: 20px;
-    background-image: url('icons/cs.png');
+    background-image: url('icons/ic_my_location_gray.png');
     -moz-background-size: cover;
     -o-background-size: cover;
     -webkit-background-size: cover;
     background-size: cover;
     margin: 5px;
-    margin-right: 50px;
-    float: left;
+    margin-bottom: 15px;
+    float: right;
     cursor: pointer;
-    position: absolute;
+    /*position: absolute;*/
     top: 0px;
     right: 0px;
 }
@@ -67,6 +130,7 @@ body {
 .probecard-record {
     margin-top: 5px;
     margin-bottom: 5px;
+    padding: 16px;
 }
 
 .probecard-highlighted {

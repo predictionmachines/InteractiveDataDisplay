@@ -111,13 +111,6 @@ module ChartViewer {
             }
             plot.draw(drawArgs);
             //return { x: { from: GetMin(plot.x), to: GetMax(plot.x), y: { from: GetMin(drawArgs.y_mean), to: GetMax(drawArgs.y_mean) } } };
-        },
-
-        createPlotCardContent: function (plot) {
-            var legend = plot[0].getLegend();
-            return {
-                content: legend.div
-            }
         }
     }
 }

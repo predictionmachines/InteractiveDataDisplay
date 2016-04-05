@@ -116,8 +116,8 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(0,0,0,0.12);
     padding: 5px;
-    max-height: 400px;
-    max-width: 210px;
+    /*max-height: 400px;*/
+    max-width: 250px;
     cursor: default;
     overflow: scroll;
     overflow-y: auto;
@@ -127,7 +127,7 @@
 .idd-legend-item
 {
     /*position: relative;*/
-    width: 210px;
+    width: 240px;
     height: auto;
     background-color: white;
     box-shadow: 0 0 2px rgba(0,0,0, 0.2);
@@ -136,17 +136,22 @@
     margin-bottom: 6px;   
     cursor: pointer;
     display: inline-block;
+    padding-right: 4px;
+    padding-left:4px;
 }
 .idd-legend-item-title
 {    
-    width: 170px;
+    width: 215px;
     vertical-align: top;
-    padding: 16px;
+    padding-bottom: 16px;
+    padding-left: 16px;
+    padding-top: 16px;
+    padding-right: 8px;
     height: 24px;
 }
 .idd-legend-item-title-name
 {
-    width: 80px;
+    width: 120px;
     height: 24px;
     line-height: 24px;
     vertical-align: top;

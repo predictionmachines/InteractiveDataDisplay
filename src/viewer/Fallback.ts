@@ -23,27 +23,6 @@ module ChartViewer {
             }
             plots[0].draw(drawArgs);
             
-        },
-
-        createPlotCardContent: function (plot) {
-            var legend = plot[0].getLegend();
-            return {
-                content: legend.div
-            };
-            //var content = $("<div></div>");
-            //if (plotInfo.displayName != undefined) {
-            //    var titleDiv = $("<div class='dsv-plotcard-title'></div>");
-            //    $("<div></div>").addClass('dsv-plotcard-resolved').appendTo(titleDiv).text(plotInfo.displayName);
-            //    titleDiv.appendTo(content);
-            //}
-            //var message = "";
-            //if (plotInfo["error"]) message += plotInfo["error"]; 
-            //else message += 'kind "' + plotInfo.kind + '" is unknown';
-            //$("<div></div>").addClass('dsv-plotcard-unresolved').appendTo(content).text(message);
-
-            //return {
-            //    content: content
-            //}
         }
     }
 
@@ -76,11 +55,9 @@ module ChartViewer {
         };
 
         this.getLegend = function () {
-            var div = $("<div class='idd-legend-item'></div>");
-
             var that = this;
-            var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
-            var contentDiv = $("<div class='plotcard-error'></div>").appendTo(div);
+            var nameDiv = $("<span></span>");
+            var contentDiv = $("<div class='plotcard-error'></div>");
             var setName = function () {
                 nameDiv.text(that.name);
             }
@@ -112,7 +89,7 @@ module ChartViewer {
                 div.removeClass("idd-legend-item");
             };
 
-            return { div: div, onLegendRemove: onLegendRemove };
+            return { name: nameDiv, legend: { thumbnail: undefined, content: contentDiv }, onLegendRemove: onLegendRemove };
         };
     }
     FallbackPlot.prototype = new InteractiveDataDisplay.CanvasPlot;

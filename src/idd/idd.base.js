@@ -1510,7 +1510,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var plots =[];
                 plots = InteractiveDataDisplay.Utils.enumPlots(_master, plots);
                 for (var i = 0; i < plots.length; i++) {
-                    if (plots[i].order != Number.MAX_SAFE_INTEGER) plots[i].host.css('z-index', plots[i].order);
+                    if (plots[i].order < Number.MAX_SAFE_INTEGER) plots[i].host.css('z-index', plots[i].order);
             }
             }
             else {

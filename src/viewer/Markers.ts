@@ -123,10 +123,10 @@ module ChartViewer {
                     y_mean: undefined,
                     color: undefined,
                     colorPalette: undefined,
-                    uncertainColorPalette: undefined,
+                    //uncertainColorPalette: undefined,
                     size: undefined,
                     sizePalette: undefined,
-                    maxDelta: undefined,
+                    //maxDelta: undefined,
                     bullEyeShape: undefined,
                     border: undefined
                 };
@@ -227,7 +227,7 @@ module ChartViewer {
 
                     drawArgs.u95 = color.upper95;
                     drawArgs.l95 = color.lower95;
-                    drawArgs.uncertainColorPalette = Markers.BuildPaletteForUncertain(plot);
+                    drawArgs.colorPalette = Markers.BuildPaletteForUncertain(plot);
 
                     if (plot.titles != undefined && plot.titles.color != undefined)
                         toolTipData[getTitle(plotDefinition, "color") + " median"] = color.median;
@@ -248,16 +248,16 @@ module ChartViewer {
                     toolTipData["upper 95%"] = size.upper95;
                     toolTipData["lower 95%"] = size.lower95;
 
-                    var i = 0;
-                    while (isNaN(size.upper95[i]) || isNaN(size.lower95[i])) i++;
-                    var maxDelta = size.upper95[i] - size.lower95[i];
-                    i++;
-                    for (; i < size.upper95.length; i++)
-                        if (!isNaN(size.upper95[i]) && !isNaN(size.lower95[i]))
-                            maxDelta = Math.max(maxDelta, size.upper95[i] - size.lower95[i]);
-                    drawArgs.maxDelta = maxDelta;
+                    //var i = 0;
+                    //while (isNaN(size.upper95[i]) || isNaN(size.lower95[i])) i++;
+                    //var maxDelta = size.upper95[i] - size.lower95[i];
+                    //i++;
+                    //for (; i < size.upper95.length; i++)
+                    //    if (!isNaN(size.upper95[i]) && !isNaN(size.lower95[i]))
+                    //        maxDelta = Math.max(maxDelta, size.upper95[i] - size.lower95[i]);
+                    //drawArgs.maxDelta = maxDelta;
 
-                    sizeRange = { from: 0, to: maxDelta };
+                    //sizeRange = { from: 0, to: maxDelta };
                     drawArgs.size = 15;
                 }
                 else if (InteractiveDataDisplay.Utils.isArray(plot.size)) {
@@ -296,13 +296,6 @@ module ChartViewer {
                     res.size = sizeRange;
                 return res;
             
-        },
-
-        createPlotCardContent: function (plot) {
-            var legend = plot[0].getLegend();
-            return {
-                content: legend.div
-            };
         }
     }
 }

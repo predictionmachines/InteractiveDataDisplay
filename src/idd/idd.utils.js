@@ -249,7 +249,7 @@ InteractiveDataDisplay.Utils =
             plots = InteractiveDataDisplay.Utils.enumPlots(MP, plots);
             p.order = isPrev ? (p_before.order): (p_before.order + 1);
             var shift = function (MP,p) {
-                if (MP.order >= p.order && MP != p && MP.order != Number.MAX_SAFE_INTEGER) MP.order += 1;
+                if (MP.order >= p.order && MP != p && MP.order < Number.MAX_SAFE_INTEGER) MP.order += 1;
                 if (MP.children)
                     MP.children.forEach(function (child) {
                         shift(child, p);
@@ -257,16 +257,6 @@ InteractiveDataDisplay.Utils =
             }
             shift(MP, p);
         },
-        //reorder: function (MP,p, p_before) {
-        //    p.order = p_before ? p_before.order + 1 : 0;
-        //    var shift = function (MP,p) {
-        //        if (MP.order >= p.order && MP != p) MP.order += 1;
-        //        MP.Children.forEach(function (child) {
-        //            shift(child, p);
-        //        });
-        //    }
-        //    shift(MP, p);
-        //},
     
         getMaxOrder: function (p) {
             var z = p.order != Number.MAX_SAFE_INTEGER ? p.order : 0;

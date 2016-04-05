@@ -53,9 +53,7 @@ module ChartViewer {
             var plotListDiv = controlDiv.find(".plotlist");
             this.plotList = new PlotList(plotListDiv, this.plotViewer, this.persistentViewState, this.transientViewState);
             this.plotList.isEditable = false;
-            this.plotList.subscribe(function (args) {
-                that.plotViewer.draw(args);
-            });
+           
             hidebutton.click(function () {
                 if (isLeftpanelShown) {
                     isLeftpanelShown = false;
@@ -100,7 +98,6 @@ module ChartViewer {
                 else plotItems[id] = null;
             }
             plotItems = this.plotViewer.draw(plotItems); 
-            this.plotList.draw(plotItems);
         }
         
         updateLayout() {
@@ -116,7 +113,6 @@ module ChartViewer {
         }        
 
         dispose() {
-            this.plotList.unsubscribe(this);
             this.controlDiv.children().remove();
         }
     }

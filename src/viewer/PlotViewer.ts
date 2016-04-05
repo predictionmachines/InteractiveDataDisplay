@@ -60,6 +60,7 @@ module ChartViewer {
                 .attr("data-idd-name", "draggableMarkers")
                 .appendTo(iddChart.host);
             var probesPlot = new DraggableDOMPlot(probesPlot_div, iddChart);
+            probesPlot.order = 9007199254740991;
             iddChart.addChild(probesPlot);
 
             this.persistentViewState = persistentViewState;
@@ -404,19 +405,6 @@ module ChartViewer {
                 for (var j = 0; j < p.Plots.length; ++j)
                     p.Plots[j].host.css("z-index", p.ZIndex);//p.ZIndex
             }
-
-            //var z = 0;
-            //var currentPlotslength = 0;
-            //for (var id in this.currentPlots)++currentPlotslength;
-            //for (var id in this.currentPlots) {
-            //    var p = this.currentPlots[id];
-            //    p.ZIndex = currentPlotslength - z;//Math.max(p.ZIndex, z);
-            //    ++z;
-            //    if (!p.Plots) continue;
-            //    for (var j = 0; j < p.Plots.length; ++j)
-            //        p.Plots[j].host.css("z-index", p.ZIndex);//p.ZIndex
-            
-            //}
 
             if (this.persistentViewState.selectedPlots)
                 this.setupPlotsVisibility();

@@ -348,13 +348,6 @@ module ChartViewer {
             drawArgs.palette = Heatmap.BuildPalette(heatmap, plots[0].range.min, plots[0].range.max);
             plots[0].draw(drawArgs, heatmap.titles);
 
-        },
-
-        createPlotCardContent: function (plot) {
-            var legend = plot[0].getLegend();
-            return {
-                content: legend.div
-            };
         }
     }
 }
