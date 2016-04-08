@@ -316,7 +316,6 @@ module ChartViewer {
 
         private createMap() {
             var div = $("<div></div>")
-                .attr("data-idd-mapKey", "AkMb1-diiPK0DTvtIWpcxsjP9sIV6VqUB6yuTUXZ8atCXCW4WSkqQnMdbOmPqsk2")
                 .attr("data-idd-name", "bingMaps")
                 .css("z-index", 0)
                 .prependTo(this.iddChart.host);
@@ -386,20 +385,6 @@ module ChartViewer {
             this.updateAxes();
             this.persistentViewState.probesViewModel.refresh();
             this.updateMap();            
-            
-            // Sets the correct z-order of plots depending on values of ZIndex property.
-            var z = 0;
-            for (var id in this.currentPlots) {
-                var p = this.currentPlots[id];
-                if (p.ZIndex) z = Math.max(p.ZIndex, z);
-            }
-            for (var id in this.currentPlots) {
-                var p = this.currentPlots[id];
-                if (!p.ZIndex) p.ZIndex = ++z;
-                if (!p.Plots) continue;
-                for (var j = 0; j < p.Plots.length; ++j)
-                    p.Plots[j].host.css("z-index", p.ZIndex);//p.ZIndex
-            }
 
             if (this.persistentViewState.selectedPlots)
                 this.setupPlotsVisibility();
