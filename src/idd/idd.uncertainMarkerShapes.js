@@ -1,5 +1,4 @@
-﻿
-var drawShape = function (context, shape, x, y, width, height, scale, fill, stroke) {
+﻿var drawShape = function (context, shape, x, y, width, height, scale, fill, stroke) {
     var w = width;
     var h = height;
     var useStroke = stroke !== "none";
@@ -162,6 +161,7 @@ InteractiveDataDisplay.Petal = {
             if (n > 0 && typeof (data.color[0]) === "number") { // color is a data series                 
                 var palette = data.colorPalette;
                 if (palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
+                if (typeof palette == 'string') palette = new InteractiveDataDisplay.ColorPalette.parse(palette);
                 if (palette != undefined && palette.isNormalized) {
                     var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
                     r = InteractiveDataDisplay.Utils.makeNonEqual(r);
@@ -400,6 +400,7 @@ InteractiveDataDisplay.BullEye = {
             if (n > 0 && typeof (data.l95[0]) === "number" && typeof (data.u95[0]) === "number") { // color is a data series                 
                 var palette = data.colorPalette;
                 if (palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
+                if (typeof palette == 'string') palette = new InteractiveDataDisplay.ColorPalette.parse(palette);
                 if (palette != undefined && palette.isNormalized) {
                     var r = { min: InteractiveDataDisplay.Utils.getMin(data.l95), max: InteractiveDataDisplay.Utils.getMax(data.u95) };
                     r = InteractiveDataDisplay.Utils.makeNonEqual(r);
@@ -828,7 +829,6 @@ InteractiveDataDisplay.BoxWhisker = {
         renderShape();
     }
 };
-
 InteractiveDataDisplay.BoxNoWhisker = {
     prepare: function (data) {
         // y

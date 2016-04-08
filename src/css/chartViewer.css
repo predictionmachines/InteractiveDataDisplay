@@ -12,7 +12,7 @@ body {
 /*Probes*/
 .probes 
 {
-    margin-top: 50px;
+    margin-top: 20px;
 }
 .probes-list
 {
@@ -38,7 +38,7 @@ body {
     height: 55px;
     position: absolute;
     cursor: pointer;
-    z-index: 1000;
+    z-index: 2500;
 }
 .probeCard {
     position: relative;

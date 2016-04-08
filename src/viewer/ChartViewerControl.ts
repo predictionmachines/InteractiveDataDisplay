@@ -113,6 +113,7 @@ module ChartViewer {
         }        
 
         dispose() {
+            this.plotList.remove();
             this.controlDiv.children().remove();
         }
     }

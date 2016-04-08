@@ -40,11 +40,6 @@ module ChartViewer {
             iddDiv.width(div.width());
             iddDiv.height(div.height());
 
-            var propagateNavigationDiv = this.propagateNavigationDiv = $("<div></div>").addClass("dsv-propagate").appendTo(div);
-            propagateNavigationDiv.width(div.width());
-            propagateNavigationDiv.height(div.height());
-            propagateNavigationDiv.hide();
-
             var iddChart = this.iddChart = InteractiveDataDisplay.asPlot(iddDiv);
             iddChart.legend.isVisible = false;
             iddChart.isToolTipEnabled = false;
@@ -53,7 +48,7 @@ module ChartViewer {
             //adding onscreen navigation
             var onscreenNavigationContainer = $("<div></div>").addClass("dsv-onscreennavigationcontainer").attr("data-idd-placement", "center").appendTo(navigationDiv);
             var onscreenNavigationDiv = $("<div></div>").addClass("dsv-onscreennavigation").appendTo(onscreenNavigationContainer);
-            var onscreenNavigation = new OnScreenNavigation(onscreenNavigationDiv, iddChart, persistentViewState, propagateNavigationDiv);
+            var onscreenNavigation = new OnScreenNavigation(onscreenNavigationDiv, iddChart, persistentViewState);
 
             /* adds probes plot */
             var probesPlot_div = $("<div></div>")
@@ -414,8 +409,6 @@ module ChartViewer {
         updateLayout() {
             this.iddDiv.width(this.div.width());
             this.iddDiv.height(this.div.height());
-            this.propagateNavigationDiv.width(this.div.width());
-            this.propagateNavigationDiv.height(this.div.height());
             this.iddChart.updateLayout();
 
             if (this.bingMapsPlot !== undefined) {

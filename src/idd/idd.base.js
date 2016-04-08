@@ -1561,7 +1561,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         else _jqdiv.addClass("idd-legend");
         _jqdiv.addClass("unselectable");
         if (!isCompact) {
-            _jqdiv.sortable({ axis: 'y'});
+            _jqdiv.sortable({ axis: 'y' });
             _jqdiv.on("sortupdate", function (e, ui) {
                 var name = ui.item.attr('data-plot'); //name of plot what's card was moved
                 var targetIndex;
@@ -1601,11 +1601,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var createLegend = function () {
             _jqdiv.empty();
             for (var i = 0, len = plotLegends.length; i < len; i++) {
-                //plotLegends[i].plot.host.unbind("childrenChanged", childrenChangedHandler);
-                //plotLegends[i].plot.host.unbind("visibleChanged", visibleChangedHandler);
                 removeLegend(plotLegends[i]);
             }
-            _plot.host.unbind('childrenChanged');
+            _plot.host.unbind('childrenChanged', childrenChangedHandler);
             plotLegends = [];
             var plots = [];
             plots = InteractiveDataDisplay.Utils.enumPlots(_plot, plots);
@@ -1681,7 +1679,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 len = plotLegends.length;
                 for (i = 0; i < len; i++) {
                     removeLegend(plotLegends[i]);
-                    plotLegends[i].host.unbind("childrenChanged", childrenChangedHandler);
+                    plotLegends[i].plot.host.unbind("childrenChanged", childrenChangedHandler);
                     if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
                     plotLegends[i][0].innerHTML = "";
                     if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
@@ -1731,7 +1729,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     else legend.legend.content.addClass("idd-legend-item-info").appendTo(div);
                 
                 div.prependTo(_jqdiv);
-                if (!isCompact) _jqdiv.sortable({ axis: 'y' });
                 div.plot = plot;
 
                 plotLegends[plotLegends.length] = div;

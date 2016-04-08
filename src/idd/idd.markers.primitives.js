@@ -56,7 +56,7 @@
                 if(n > 0 && typeof(data.color[0]) === "number"){ // color is a data series                 
                     var palette = data.colorPalette;
                     if(palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
-                    if(palette != undefined && palette.isNormalized){
+                    if (palette != undefined && palette.isNormalized) {
                         var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
                         r = InteractiveDataDisplay.Utils.makeNonEqual(r);
                         data.colorPalette = palette = palette.absolute(r.min, r.max);
@@ -429,5 +429,10 @@
     InteractiveDataDisplay.Markers.shapes["circle"] = primitiveShape;
     InteractiveDataDisplay.Markers.shapes["diamond"] = primitiveShape;
     InteractiveDataDisplay.Markers.shapes["cross"] = primitiveShape;
-    InteractiveDataDisplay.Markers.shapes["triangle"] = primitiveShape; 
+    InteractiveDataDisplay.Markers.shapes["triangle"] = primitiveShape;
+    InteractiveDataDisplay.Markers.shapes["boxwhisker"] = InteractiveDataDisplay.BoxWhisker;
+    InteractiveDataDisplay.Markers.shapes["boxnowhisker"] = InteractiveDataDisplay.BoxNoWhisker;
+    InteractiveDataDisplay.Markers.shapes["whisker"] = InteractiveDataDisplay.Whisker;
+    InteractiveDataDisplay.Markers.shapes["petals"] = InteractiveDataDisplay.Petal;
+    InteractiveDataDisplay.Markers.shapes["bulleye"] = InteractiveDataDisplay.BullEye;
 })();
