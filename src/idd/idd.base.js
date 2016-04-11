@@ -1492,18 +1492,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         }, 0);
 
-        this.updateOrder = function (next_elem, isPrev) {
-            if (next_elem) InteractiveDataDisplay.Utils.reorder(this, next_elem, isPrev);
+        this.updateOrder = function (elem, isPrev) {
+            if (elem) InteractiveDataDisplay.Utils.reorder(this, elem, isPrev);
             if (!_isFlatRenderingOn) {
                 var plots = InteractiveDataDisplay.Utils.enumPlots(_master);
                 for (var i = 0; i < plots.length; i++) {
                     if (plots[i].order < Number.MAX_SAFE_INTEGER) plots[i].host.css('z-index', plots[i].order);
+                }
             }
-            }
-            else {
-                var plots = InteractiveDataDisplay.Utils.enumPlots(_master);
-            }
-            if (next_elem) this.fireOrderChanged();
+            if (elem) this.fireOrderChanged();
         };
 
         if (div) {

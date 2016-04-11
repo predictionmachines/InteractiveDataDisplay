@@ -269,7 +269,6 @@ InteractiveDataDisplay.BullEye = {
             data.border = null; // no border
 
         // colors        
-        if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
         if (InteractiveDataDisplay.Utils.isArray(data.l95) && InteractiveDataDisplay.Utils.isArray(data.u95)) {
             if (data.l95.length != n && data.u95.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
             if (n > 0 && typeof (data.l95[0]) === "number" && typeof (data.u95[0]) === "number") { // color is a data series                 
@@ -281,6 +280,22 @@ InteractiveDataDisplay.BullEye = {
                     r = InteractiveDataDisplay.Utils.makeNonEqual(r);
                     data.colorPalette = palette = palette.absolute(r.min, r.max);
                 }
+                var colors_u95 = [];
+                var colors_l95 = [];
+                for (var i = 0; i < n; i++){
+                    var color_u95 = data.u95[i];
+                    var color_l95 = data.l95[i];
+                    if (color_u95 != color_u95 || color_l95 != color_l95)
+                        mask[i] = 1;
+                    else {
+                        var u95rgba = palette.getRgba(color_u95);
+                        var l95rgba = palette.getRgba(color_l95);
+                        colors_u95[i] = "rgba(" + u95rgba.r + "," + u95rgba.g + "," + u95rgba.b + "," + u95rgba.a + ")";
+                        colors_l95[i] = "rgba(" + l95rgba.r + "," + l95rgba.g + "," + l95rgba.b + "," + l95rgba.a + ")";
+                    }
+                }
+                data.u95 = colors_u95;
+                data.l95 = colors_l95;
             }
             data.individualColors = true;
         } else {
@@ -323,8 +338,10 @@ InteractiveDataDisplay.BullEye = {
             data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
             data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
             data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
-            //if (data.individualColors)
-            //    data.color = InteractiveDataDisplay.Utils.applyMask(mask, data.color, m);
+            if (data.individualColors) {
+                data.u95 = InteractiveDataDisplay.Utils.applyMask(mask, data.u95, m);
+                data.l95 = InteractiveDataDisplay.Utils.applyMask(mask, data.l95, m);
+            }
             var indices = Array(m);
             for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
             data.indices = indices;
@@ -333,8 +350,6 @@ InteractiveDataDisplay.BullEye = {
         }
     },
     preRender: function (data, plotRect, screenSize, dt, context) {
-        if(!data.individualColors)
-            context.fillStyle = data.color;
         if(data.border != null)
             context.strokeStyle = data.border;
         return data;
@@ -344,12 +359,6 @@ InteractiveDataDisplay.BullEye = {
           var mean = marker.y_mean;
           var u95 = marker.u95;
           var l95 = marker.l95;
-          if (marker.colorPalette) {
-              var u95rgba = marker.colorPalette.getRgba(u95);
-              u95 = "rgba(" + u95rgba.r + "," + u95rgba.g + "," + u95rgba.b + "," + u95rgba.a + ")";
-              var l95rgba = marker.colorPalette.getRgba(l95)
-              l95 = "rgba(" + l95rgba.r + "," + l95rgba.g + "," + l95rgba.b + "," + l95rgba.a + ")";
-          }
 
           var msize = marker.size;
           var shift = msize / 2;
@@ -571,7 +580,6 @@ InteractiveDataDisplay.BoxWhisker = {
 
         // colors        
         if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
-        data.individualColors = false;
 
         // sizes    
         var sizes = new Array(n);
@@ -591,8 +599,6 @@ InteractiveDataDisplay.BoxWhisker = {
             data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
             data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
             data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
-            if (data.individualColors)
-                data.color = InteractiveDataDisplay.Utils.applyMask(mask, data.color, m);
             var indices = Array(m);
             for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
             data.indices = indices;
@@ -601,8 +607,7 @@ InteractiveDataDisplay.BoxWhisker = {
         }
     },
     preRender: function (data, plotRect, screenSize, dt, context) {
-        if (!data.individualColors)
-            context.fillStyle = data.color;
+        context.fillStyle = data.color;
         if (data.border != null)
             context.strokeStyle = data.border;
         return data;
@@ -823,7 +828,6 @@ InteractiveDataDisplay.BoxNoWhisker = {
 
         // colors        
         if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
-        data.individualColors = false;
 
         // sizes    
         var sizes = new Array(n);
@@ -843,8 +847,6 @@ InteractiveDataDisplay.BoxNoWhisker = {
             data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
             data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
             data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
-            if (data.individualColors)
-                data.color = InteractiveDataDisplay.Utils.applyMask(mask, data.color, m);
             var indices = Array(m);
             for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
             data.indices = indices;
@@ -853,8 +855,7 @@ InteractiveDataDisplay.BoxNoWhisker = {
         }
     },
     preRender: function (data, plotRect, screenSize, dt, context) {
-        if (!data.individualColors)
-            context.fillStyle = data.color;
+        context.fillStyle = data.color;
         if (data.border != null)
             context.strokeStyle = data.border;
         return data;
@@ -1052,7 +1053,6 @@ InteractiveDataDisplay.Whisker = {
 
         // colors        
         if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
-        data.individualColors = false;
 
         // sizes    
         var sizes = new Array(n);
@@ -1072,8 +1072,6 @@ InteractiveDataDisplay.Whisker = {
             data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
             data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
             data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
-            if (data.individualColors)
-                data.color = InteractiveDataDisplay.Utils.applyMask(mask, data.color, m);
             var indices = Array(m);
             for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
             data.indices = indices;
@@ -1082,8 +1080,7 @@ InteractiveDataDisplay.Whisker = {
         }
     },
     preRender: function (data, plotRect, screenSize, dt, context) {
-        if (!data.individualColors)
-            context.fillStyle = data.color;
+        context.fillStyle = data.color;
         if (data.border != null)
             context.strokeStyle = data.border;
         return data;
