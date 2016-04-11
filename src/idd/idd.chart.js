@@ -21,7 +21,7 @@
     leftAxis.axis = grid.yAxis = this.get(leftAxis[0]);
 
     var legendDiv = $("<div></div>").prependTo(this.centralPart); 
-    var _legend = new InteractiveDataDisplay.Legend(this, legendDiv);
+    var _legend = new InteractiveDataDisplay.Legend(this, legendDiv, true);
     legendDiv.css("float", "right");
     Object.defineProperty(this, "legend", { get: function () { return _legend; }, configurable: false }); 
 

@@ -1,6 +1,6 @@
 ﻿InteractiveDataDisplay.MaxMarkersPerAnimationFrame = 3000;
 
-InteractiveDataDisplay.Markers = function (div, master) {    
+InteractiveDataDisplay.Markers = function (div, master) {
     this.base = InteractiveDataDisplay.CanvasPlot;
     this.base(div, master);
     if (!div) return;
@@ -61,7 +61,10 @@ InteractiveDataDisplay.Markers = function (div, master) {
         }
         return { arrays: arrays, scalars: scalars, length: n === -1 ? 0 : n };
     }
-    
+    //return copy of data
+    this.getDataCopy = function () {
+        return _originalData;
+    }
     // Draws the data as markers.
     this.draw = function (data, titles) {
         if(data == undefined || data == null) throw "The argument 'data' is undefined or null";
@@ -122,8 +125,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 total_bb.width = r - l;
             }
             if(dataToPlotY){
-                var b = dataToPlotX(total_bb.y);
-                var t = dataToPlotX(total_bb.y + total_bb.height);
+                var b = dataToPlotY(total_bb.y);
+                var t = dataToPlotY(total_bb.y + total_bb.height);
                 total_bb.y = b;
                 total_bb.height = t - b;
             }
@@ -238,27 +241,27 @@ InteractiveDataDisplay.Markers = function (div, master) {
     };
     
     this.getLegend = function () {        
-        var div = $("<div class='idd-legend-item'></div>");
-        var buildLegend = function() {
-            div.empty();
-            var nameDiv = $("<div></div>").appendTo(div);    
-            if(_shape && typeof _shape.getLegend != "undefined") {                
-                var legend = _shape.getLegend(_data, that.getTitle);
-                if(legend){ 
-                    legend.thumbnail.appendTo(nameDiv).css("display", "inline-block");
-                    legend.content.appendTo(div);                
-                }
+        //var div = $("<div class='idd-legend-item'></div>");
+        var nameDiv = $("<span></span>");
+        var legendDiv = { thumbnail: $("<canvas></canvas>"), content: $("<div></div>") };
+        var buildLegend = function () {
+            nameDiv.empty();
+            //nameDiv = $("<span></span>").appendTo(div);  
+            if (_shape && typeof _shape.getLegend != "undefined") {
+                legendDiv.content.empty();
+                _shape.getLegend(_data, that.getTitle, legendDiv);
             }
-            $("<span class='idd-legend-item-title'></span>").appendTo(nameDiv).text(that.name);
+            nameDiv.text(that.name);
         }
         this.host.bind("appearanceChanged", buildLegend);  
         buildLegend();
         var onLegendRemove = function () {
             that.host.unbind("appearanceChanged", buildLegend);
-            div.empty();
-            div.removeClass("idd-legend-item");
+            nameDiv.empty();
+            //div.empty();
+            //div.removeClass("idd-legend-item");
         };
-        return { div: div, onLegendRemove: onLegendRemove };        
+        return { name: nameDiv, legend: legendDiv, onLegendRemove: onLegendRemove };  
     };
 
     // Others

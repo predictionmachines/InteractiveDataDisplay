@@ -594,6 +594,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     // canvas to render palette
     var _canvas = $("<canvas height='" + _height + "px'" + "width='" + _width + "px' style='display: block'></canvas>");
     _host[0].appendChild(_canvas[0]);
+    var _ctx = _canvas.get(0).getContext("2d");
 
     var _axisDiv = null;
     var _axis = null;
@@ -658,7 +659,6 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
         configurable: false
     });
 
-    var _ctx = _canvas.get(0).getContext("2d");
 
     var renderPalette = function () {
         var alpha = (_palette.range.max - _palette.range.min) / _width;
@@ -840,7 +840,88 @@ InteractiveDataDisplay.SizePaletteViewer = function (div, palette, options) {
     renderPalette();
 };
 
+InteractiveDataDisplay.UncertaintySizePaletteViewer = function (div, options) {
+    var _host = div;
+    var _width = _host.width();
+    var _height = 65;
 
+    if (options !== undefined) {
+        if (options.width !== undefined)
+            _width = options.width;
+        if (options.height !== undefined)
+            _height = options.height;
+    }
+
+    var _maxDelta = undefined;
+    Object.defineProperty(this, "maxDelta", {
+        get: function () { return _maxDelta; },
+        set: function (value) {
+            if (value) {
+                _maxDelta = value;
+                renderPalette();
+            }
+        }
+    });
+
+    var canvas = $("<canvas height='50px'></canvas>");
+    _host[0].appendChild(canvas[0]);
+    var context = canvas[0].getContext("2d");
+    var markers = [
+        { x: 25, y: 20, min: 16, max: 16 },
+        { x: 75, y: 20, min: 10, max: 16 },
+        { x: 125, y: 20, min: 0, max: 16 }];
+
+    var renderPalette = function () {
+        //canvas[0].width = canvas[0].width;
+        // draw sample markers
+        for (var i = 0; i < markers.length; i++) {
+            InteractiveDataDisplay.Petal.drawSample(context, markers[i].x, markers[i].y, markers[i].min, markers[i].max, "#484848");
+        }
+        // draw arrow
+        context.lineWidth = 1;
+        context.beginPath();
+        context.moveTo(20, 45.5);
+        context.lineTo(118, 45.5);
+        context.stroke();
+        context.closePath();
+        context.beginPath();
+        context.moveTo(118, 45.5);
+        context.lineTo(103.5, 40.5);
+        context.lineTo(103.5, 49.5);
+        context.lineTo(118, 45.5);
+        context.stroke();
+        context.closePath();
+        context.fill();
+            
+        // if maxData is known - stroke value
+        context.strokeStyle = "black";
+        context.fillStyle = "black";
+        context.lineWidth = 1;
+        if (_maxDelta) {
+            context.fillText("X", 9, 49);
+            context.fillText("X", 122, 49);
+            context.beginPath();
+            context.moveTo(134, 44.5);
+            context.lineTo(141, 44.5);
+            context.stroke();
+            context.closePath();
+            context.beginPath();
+            context.moveTo(134, 48.5);
+            context.lineTo(141, 48.5);
+            context.stroke();
+            context.closePath();
+            context.beginPath();
+            context.moveTo(137.5, 41);
+            context.lineTo(137.5, 48);
+            context.stroke();
+            context.closePath();
+            context.fillText("", round(_maxDelta, { min: 0, max: _maxDelta }, false), 145, 49);
+        }
+    }
+    renderPalette();
+     // add text 'uncertainty'
+    $("<div style='margin-left: 30px; margin-top: -10px'>uncertainty</div>").appendTo(_host);
+};
 
 InteractiveDataDisplay.palettes = {
     grayscale: new InteractiveDataDisplay.ColorPalette(true, { min: 0, max: 1 }, [{ x: 0.0, rightColor: { h: 0, s: 0, l: 0, a: 1 }, leftColor: { h: 0, s: 0, l: 0, a: 1 } },

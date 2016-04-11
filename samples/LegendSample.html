@@ -4,13 +4,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Legend Sample Page</title>
-    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
-    <script src="../dist/idd.min.js"></script>
+    <script src="../dist/idd.js"></script>
 
     <script type="text/javascript">
         var chart, figure, markersChart;
@@ -28,7 +29,6 @@
             chart = InteractiveDataDisplay.asPlot($("#chart"));
             figure = InteractiveDataDisplay.asPlot($("#figure"));
             markersChart = InteractiveDataDisplay.asPlot($("#markersChart"));
-
             polyline1 = chart.get("line1");
             polyline1.draw({
                 x: xData,
@@ -69,16 +69,15 @@
                     shape: "cross"
                 });
             markers2 = figure.get('markers');
-            markers3 = markersChart.markers("markers",
-                {
-                    x: dataX,
-                    y: dataY,
-                    color: "orange",
-                    shape: $("#shapeList").val(),
-                    size: 10,
-                    border: "black",
-                    direction: dataD
-                });
+            markers3 = markersChart.markers("markers", {
+                x: dataX,
+                y: dataY,
+                color: "orange",
+                shape: $("#shapeList").val(),
+                size: 10,
+                border: "black",
+                direction: dataD
+            });
 
             $("#newLine").click(function () {
                 if (remove) {
@@ -104,81 +103,96 @@
             });
 
             $("#update").click(function () {
+                var data2 = markers2.getDataCopy();
                 if (state == 0) {
                     polyline1.stroke = "blue";
-                    markers2.color = "orange";
+                    data2.color = "orange";
                     polyline2.thickness = 1;
                     state = 1;
                 }
                 else {
                     polyline1.stroke = "green";
-                    markers2.color = "red";
+                    data2.color = "red";
                     polyline2.thickness = 4;
                     state = 0;
                 }
+                markers2.draw(data2);
             });
 
-            $("#markerSizeInput").attr("value", markers3.size)
-             .change(function () {
-                 var size = $("#markerSizeInput").attr("value");
-                 if (size == "") markers3.size = 0;
-                 else markers3.size = size;
+            $("#markerSizeInput").change(function () {
+                 var size = $("#markerSizeInput").val();
+                 var data3 = markers3.getDataCopy();
+                 if (size == "") data3.size = 0;
+                 else data3.size = size;
                  if (sizePalette.checked) {
                      sizePalette.checked = false;
                  }
+                 markers3.draw(data3);
              });
             $("#sizePalette").change(function () {
                 var val = sizePalette.checked;
+                var data3 = markers3.getDataCopy();
                 if (val) {
-                    markers3.size = dataS;
-                    markers3.sizePalette = new InteractiveDataDisplay.SizePalette(true, { min: 10, max: 50 }, { min: 0, max: 1 });
+                    data3.size = dataS;
+                    data3.sizePalette = new InteractiveDataDisplay.SizePalette(true, { min: 10, max: 50 }, { min: 0, max: 1 });
                 }
                 else {
+                    data3.sizePalette = undefined;
                     markerSizeInput.value = 10;
-                    markers3.size = 10;
+                    data3.size = 10;
                 }
+                markers3.draw(data3);
             });
 
-            $("#markerColorInput").attr("value", markers3.color)
-             .change(function () {
-                 var color = $("#markerColorInput").attr("value");
+            $("#markerColorInput").change(function () {
+                 var color = $("#markerColorInput").val();
+                 var data3 = markers3.getDataCopy();
                  if (colorPalette.checked) {
-                     markers3.colorPalette = InteractiveDataDisplay.ColorPalette.parse(color);
+                     data3.colorPalette = InteractiveDataDisplay.ColorPalette.parse(color);
                  }
                  else {
-                     if (color == "") markers3.color = "white";
-                     else markers3.color = color;
+                     if (color == "") data3.color = "white";
+                     else data3.color = color;
                  }
+                 markers3.draw(data3);
              });
             $("#colorPalette").change(function () {
                 var val = colorPalette.checked;
+                var data3 = markers3.getDataCopy();
                 if (val) {
-                    markers3.color = dataC;
-                    markers3.colorPalette = InteractiveDataDisplay.ColorPalette.parse($("#markerColorInput").attr("value"));
+                    data3.color = dataC;
+                    data3.colorPalette = InteractiveDataDisplay.ColorPalette.parse($("#markerColorInput").val());
                 }
                 else {
+                    data3.colorPalette = undefined;
                     markerColorInput.value = "orange";
-                    markers3.color = "orange";
+                    data3.color = "orange";
                 }
+                markers3.draw(data3);
             });
             $("#border").change(function () {
                 var val = border.checked;
-                if (val) markers3.border = "black";
-                else markers3.border = undefined;
+                var data3 = markers3.getDataCopy();
+                if (val) data3.border = "black";
+                else data3.border = undefined;
+                markers3.draw(data3);
             });
 
             $("#shapeList").change(function () {
                 var val = $("#shapeList").val();
+                var data3 = markers3.getDataCopy();
                 if (val == "custom") {
-                    markers3.shape = { draw: markerShapeFunc, getLegendItem: markerLegendShapeFunc };
+                    data3.shape = { draw: markerShapeFunc, getLegend: markerLegendShapeFunc };
                 }
-                else markers3.shape = val;
+                else data3.shape = val;
+                markers3.draw(data3);
             });
 
             var line = figure.get("polyline1");
             line.getLegend = function () {
-                var div = $("<div>custom legend for " + this.name + "</div>");
-                return { div: div };
+                var title = $("<span></span>");
+                title.text("custom legend for " + this.name);
+                return { name: title, legend: { thumbnail: undefined, content: undefined } };
             };
             line.fireChildrenChanged(null);
 
@@ -211,7 +225,7 @@
                 }
             };
 
-            var markerLegendShapeFunc = function (marker) {
+            var markerLegendShapeFunc = function (marker, titles, legendDiv) {
                 var size = marker.size;
                 var dirX = 1;
                 var dirY = 1;
@@ -226,7 +240,7 @@
                 var normX = dirY / 3;
                 var normY = -dirX / 3;
 
-                var canvas = $("<canvas style='margin-right: 10px; display: inline-block'></canvas>");
+                var canvas = legendDiv.thumbnail;
                 canvas[0].width = xs + dirX;
                 canvas[0].height = ys + dirY;
                 var context = canvas.get(0).getContext("2d");
@@ -243,8 +257,6 @@
                     context.strokeStyle = marker.border;
                     context.stroke();
                 }
-
-                return canvas;
             };
         });
 

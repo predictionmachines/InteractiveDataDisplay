@@ -4,7 +4,7 @@
 InteractiveDataDisplay.Utils =
     {
         //trim: function (s) { return s.replace(/^[\s\n]+|[\s\n]+$/g, ''); },
-        
+
         applyMask: function(mask, array, newLength) {
             var n = mask.length;
             var newArr = new Array(newLength);
@@ -135,7 +135,7 @@ InteractiveDataDisplay.Utils =
                 return eval(source);
             return defaultSource;
         },
-        
+
         makeNonEqual: function(range) {
             if(range.min == range.max){
                 if(range.min == 0) return { min : -1, max : 1}
@@ -165,7 +165,7 @@ InteractiveDataDisplay.Utils =
             }
             return { min: min, max: max };
         },
-        
+
         getMin: function (array) {
             if (!array || array.length === 0) return undefined;
             var n = array.length;
@@ -233,6 +233,42 @@ InteractiveDataDisplay.Utils =
                 else if (vy > maxy) maxy = vy;
             }
             return { minx: minx, maxx: maxx, miny: miny, maxy: maxy };
+        },
+
+        enumPlots: function (plot) {
+            var plotsArray = [];
+            var enumRec = function (p, plotsArray) {
+                plotsArray.push(p);
+                if (p.children)
+                    p.children.forEach(function (child) {
+                        enumRec(child, plotsArray);
+                    });
+            };
+            enumRec(plot, plotsArray);
+            plotsArray.sort(function (a, b) { return b.order - a.order; });
+            return plotsArray;
+        },
+        reorder: function (p, p_before, isPrev) {
+            var plots = p.master ? InteractiveDataDisplay.Utils.enumPlots(p.master) : InteractiveDataDisplay.Utils.enumPlots(p);
+            p.order = isPrev ? (p_before.order): (p_before.order + 1);
+            var shift = function (masterPlot,p) {
+                if (masterPlot.order >= p.order && masterPlot != p && masterPlot.order < Number.MAX_SAFE_INTEGER) masterPlot.order += 1;
+                if (masterPlot.children)
+                    masterPlot.children.forEach(function (child) {
+                        shift(child, p);
+                    });
+            }
+            shift(p.master, p);
+        },
+    
+        getMaxOrder: function (p) {
+            var z = p.order != Number.MAX_SAFE_INTEGER ? p.order : 0;
+            if (p.children)
+                p.children.forEach(function (child) {
+                    var order = InteractiveDataDisplay.Utils.getMaxOrder(child);
+                    if (order != Number.MAX_SAFE_INTEGER) z = Math.max(z, order);
+                });
+            return z;
         },
 
         getBoundingBoxForArrays: function (_x, _y, dataToPlotX, dataToPlotY) {

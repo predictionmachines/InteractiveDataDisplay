@@ -151,7 +151,7 @@ module ChartViewer {
         }
     };
 
-    export function OnScreenNavigation(div, d3Chart, persistentViewState, propagateNavigationDiv) {
+    export function OnScreenNavigation(div, d3Chart, persistentViewState) {
         var that = this;
 
         var leftKeyCode = 37;
@@ -240,15 +240,12 @@ module ChartViewer {
 
         var defaultGestureSource = d3Chart.navigation.gestureSource;
         d3Chart.navigation.gestureSource = undefined;
-        propagateNavigationDiv.show();
         lockNavigation.click(function () {
             if (d3Chart.navigation.gestureSource !== undefined) {
                 d3Chart.navigation.gestureSource = undefined;
-                propagateNavigationDiv.show();
                 lockNavigation.removeClass("dsv-onscreennavigation-navigationlock").addClass("dsv-onscreennavigation-navigationlockpressed");
             } else {
                 d3Chart.navigation.gestureSource = defaultGestureSource;
-                propagateNavigationDiv.hide();
                 lockNavigation.removeClass("dsv-onscreennavigation-navigationlockpressed").addClass("dsv-onscreennavigation-navigationlock");
             }
         });

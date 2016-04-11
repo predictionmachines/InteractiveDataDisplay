@@ -49,6 +49,7 @@
                     "src/idd/idd.chart.js",
                     "src/idd/idd.markers.js",
                     "src/idd/idd.markers.primitives.js",
+                    "src/idd/idd.markers.uncertain.js",
                     "src/idd/idd.area.js",
                     "src/idd/idd.heatmap.js",
                     "src/idd/idd.bingmapsplot.js",
@@ -59,10 +60,8 @@
             },
             dist2: {
                 src: [
-                    //    "src/viewer/Chart.header.js",
                         "src/viewer/MathUtils.js",
-                        "src/viewer/chartViewer2.js",
-                   //     "src/viewer/Chart.footer.js"
+                        "src/viewer/chartViewer2.js"
                 ],
                 dest: "dist/chartViewer.js",
                 nonull: true

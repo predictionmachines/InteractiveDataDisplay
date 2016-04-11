@@ -128,10 +128,22 @@ module ChartViewer {
 
     PlotRegistry["heatmap"] = {
         initialize(plotDefinition: PlotInfo, viewState, chart: IDDPlot) {
-            var heatmap = chart.heatmap(plotDefinition.displayName);
-            var heatmap_nav = chart.heatmap(plotDefinition.displayName + "__nav_");
+            var div = $("<div></div>")
+                .attr("data-idd-name", plotDefinition.displayName)
+                .appendTo(chart.host);
+            var heatmap = new InteractiveDataDisplay.Heatmap(div, chart.master);
+            chart.addChild(heatmap);
+            
+            var div2 = $("<div></div>")
+                .attr("data-idd-name", plotDefinition.displayName + "__nav_")
+                .appendTo(chart.host);
+            var heatmap_nav = new InteractiveDataDisplay.Heatmap(div2, chart.master);
+            heatmap_nav.getLegend = function () {
+                return undefined;
+            };
+            chart.addChild(heatmap_nav);
             var plots = [heatmap, heatmap_nav];
-
+           
             heatmap_nav.opacity = 0.5;
             heatmap_nav.palette = InteractiveDataDisplay.ColorPalette.parse("0=#00000000=#00000080=1");
             heatmap_nav.getTooltip = function (xd, yd, xp, yp) {
@@ -255,7 +267,7 @@ module ChartViewer {
 
             if (!heatmap.x || !heatmap.y || !heatmap.values) return;
             var isOneDimensional = heatmap.values["median"] !== undefined && !InteractiveDataDisplay.Utils.isArray(heatmap.values["median"][0])
-                                   || !InteractiveDataDisplay.Utils.isArray(heatmap.values[0]);
+                || !InteractiveDataDisplay.Utils.isArray(heatmap.values[0]);
 
             var min = 0, max = 1;
             if (heatmap.values["median"]) {
@@ -298,8 +310,6 @@ module ChartViewer {
 
                 plots[1].f_ub = r.ub68;
                 plots[1].f_ub_formatter = getFormatter(r.ub68, get2dRange);
-
-
             }
             else {
                 var values = <any>heatmap.values;
@@ -307,7 +317,7 @@ module ChartViewer {
                 if (isOneDimensional) {
                     r = Heatmap.makeHeatmapData(heatmap.x, heatmap.y, {
                         v: values
-                    }, heatmap.treatAs === Plot.HeatmapRenderType.Discrete);                    
+                    }, heatmap.treatAs === Plot.HeatmapRenderType.Discrete);
                 } else {
                     r = {
                         f: values,
@@ -334,35 +344,10 @@ module ChartViewer {
                 plots[1].x = undefined;
                 plots[1].y = undefined;
             }
-
             plots[0].range = get2dRange(drawArgs.f);
             drawArgs.palette = Heatmap.BuildPalette(heatmap, plots[0].range.min, plots[0].range.max);
-            plots[0].draw(drawArgs);
-        },
+            plots[0].draw(drawArgs, heatmap.titles);
 
-        createPlotCardContent: function (plotInfo) {
-            var heatmap = <Plot.HeatmapDefinition><any>plotInfo;
-            var content = $("<div></div>");
-            var titleDiv = $("<div></div>").appendTo(content);
-
-            $("<div></div>").text(heatmap.displayName).addClass("dsv-plotlist-resolved").addClass("dsv-plotcard-title").width(180).appendTo(titleDiv);
-
-            var paramStr = "(" + getTitle(plotInfo, "x") + ", " + getTitle(plotInfo, "y") + ")";
-            var axesDiv = $("<div></div>").addClass("dsv-plotcard-regular").addClass("dsv-plotcard-resolved").width(180).text(paramStr).appendTo(content);
-            var palette = Heatmap.BuildPalette(heatmap, 0, 1);
-            var paletteDiv = $("<div class='dsv-plotcard-palette' style='width:220px;height:50px'></div>").addClass("dsv-plotcard-regular").appendTo(content);
-            var paletteViewer = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, null, {
-                axisVisible: true,
-                width: 180,
-                height: 10
-            });
-            paletteViewer.palette = palette;
-
-            return {
-                content: content,
-                paletteViewer: paletteViewer,
-                paletteDiv: paletteDiv,
-            };
         }
     }
 }

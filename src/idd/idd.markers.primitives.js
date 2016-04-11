@@ -1,5 +1,5 @@
 (function() {
-    var primitiveShape =    
+    var primitiveShape =
     {
         // Checks validity of the data and modifies it by replacing missing values with defaults
         // and applying palettes, if required. Filters out missing values, original indices are in `indices`.
@@ -44,7 +44,7 @@
             else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";  
             else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from lenght of 'y'"
             else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);        
-            
+        
             // border
             if(data.border == undefined || data.border == "none")
                 data.border = null; // no border
@@ -56,7 +56,7 @@
                 if(n > 0 && typeof(data.color[0]) === "number"){ // color is a data series                 
                     var palette = data.colorPalette;
                     if(palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
-                    if(palette != undefined && palette.isNormalized){
+                    if (palette != undefined && palette.isNormalized) {
                         var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
                         r = InteractiveDataDisplay.Utils.makeNonEqual(r);
                         data.colorPalette = palette = palette.absolute(r.min, r.max);
@@ -77,30 +77,29 @@
             }else{
                 data.individualColors = false;
             }
-            
-            // sizes    
+            //sizes
             var sizes = new Array(n);
-            if(data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
-            if(InteractiveDataDisplay.Utils.isArray(data.size)) {
-                if(data.size.length != n) throw "Length of the array 'size' is different than length of the array 'y'"            
-                if(data.sizePalette != undefined){ // 'size' is a data series 
+            if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
+            if (InteractiveDataDisplay.Utils.isArray(data.size)) {
+                if (data.size.length != n) throw "Length of the array 'size' is different than length of the array 'y'"
+                if (data.sizePalette != undefined) { // 'size' is a data series 
                     var palette = data.sizePalette;
-                    if(palette.isNormalized){
+                    if (palette.isNormalized) {
                         var r = InteractiveDataDisplay.Utils.getMinMax(data.size);
                         r = InteractiveDataDisplay.Utils.makeNonEqual(r);
                         data.sizePalette = palette = new InteractiveDataDisplay.SizePalette(false, palette.sizeRange, r);
                     }
-                    for (var i = 0; i < n; i++){
+                    for (var i = 0; i < n; i++) {
                         var size = data.size[i];
-                        if(size != size) // NaN
+                        if (size != size) // NaN
                             mask[i] = 1;
-                        else 
+                        else
                             sizes[i] = palette.getSize(size)
-                    }         
+                    }
                 } else { // 'size' contains values in pixels
                     data.sizeMax = InteractiveDataDisplay.Utils.getMax(data.size);
-                } 
-            }else{ // sizes is a constant
+                }
+            } else { // sizes is a constant
                 for (var i = 0; i < n; i++) sizes[i] = data.size;
                 data.sizeMax = data.size;
             }
@@ -255,16 +254,16 @@
             }
         },
         
-        getLegend: function(data, getTitle) { // todo: should be refactored            
-            var itemDiv = $("<div></div>");
+        getLegend: function(data, getTitle, legendDiv) { // todo: should be refactored            
+            var itemDiv = legendDiv.content;
             var fontSize = 14;
             if (document.defaultView && document.defaultView.getComputedStyle) {
                 fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
             }
             if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
 
-            var thumbDiv = $("<div></div>");
-            var canvas = $("<canvas style='margin-right: 10px; display: inline-block'></canvas>").appendTo(thumbDiv);
+            //var thumbDiv = $("<div></div>");
+            var canvas = legendDiv.thumbnail;
             var canvasIsVisible = true;
             var maxSize = fontSize * 1.5;
             var x1 = maxSize / 2 + 1;
@@ -272,6 +271,7 @@
             canvas[0].width = canvas[0].height = maxSize + 2;
             var canvasStyle = canvas[0].style;
             var context = canvas.get(0).getContext("2d");
+            context.clearRect(0, 0, canvas[0].width, canvas[0].height);
             var item, itemDivStyle;
             var itemIsVisible = 0;
 
@@ -423,12 +423,11 @@
             refreshColor();
             refreshSize();
             renderShape();
-            return { thumbnail : thumbDiv, content : itemDiv };
         }
     }
     InteractiveDataDisplay.Markers.shapes["box"] = primitiveShape;
     InteractiveDataDisplay.Markers.shapes["circle"] = primitiveShape;
     InteractiveDataDisplay.Markers.shapes["diamond"] = primitiveShape;
     InteractiveDataDisplay.Markers.shapes["cross"] = primitiveShape;
-    InteractiveDataDisplay.Markers.shapes["triangle"] = primitiveShape; 
+    InteractiveDataDisplay.Markers.shapes["triangle"] = primitiveShape;
 })();

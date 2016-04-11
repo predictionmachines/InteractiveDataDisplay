@@ -107,7 +107,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         that.requestNextFrame();
     };
 
-    this.draw = function (data) {
+    this.draw = function (data, titles) {
         var f = data.f;
         if (!f) throw "Data series f is undefined";
         var n = f.length;
@@ -157,6 +157,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             this.requestNextFrame();
         else
             this.requestNextFrameOrUpdate();
+        this.setTitles(titles, true);
         this.fireAppearanceChanged();
     };
 
@@ -513,24 +514,40 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     });
 
     this.getLegend = function () {
-        var div = $("<div class='idd-legend-item'></div>");
+        var canvas = $("<canvas></canvas>");
+        var infoDiv = $("<div></div>");
         var that = this;
-        var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
+        var nameDiv = $("<span></span>");
         var setName = function () {
             nameDiv.text(that.name);
         }
         setName();
+        var colorIsVisible = 0;
+        var paletteControl, colorDiv, paletteDiv;
+        var clrTitleText, colorTitle;
+        var refreshColor = function () {
+            clrTitleText = that.getTitle("values");
+            if (colorIsVisible == 0) {
+                colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(infoDiv);
+                colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
+                paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(colorDiv);
 
-        var paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(div);
-        var paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette);
-        if (_palette && _palette.isNormalized) {
-            paletteControl.dataRange = { min: _fmin, max: _fmax };
+                paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette);
+                colorIsVisible = 2;
+            } else colorTitle.text(clrTitleText);
+
+            if (_palette && _palette.isNormalized) {
+                paletteControl.dataRange = { min: _fmin, max: _fmax };
+            }
         }
+        refreshColor();
 
         this.host.bind("appearanceChanged",
             function (event, propertyName) {
                 if (!propertyName || propertyName == "name")
                     setName();
+                if (!propertyName || propertyName == "values" || propertyName == "colorPalette")
+                    refreshColor();
                 if (!propertyName || propertyName == "palette") paletteControl.palette = _palette;
                 var oldRange = paletteControl.dataRange;
                 if (_palette && _palette.isNormalized && (oldRange == undefined || oldRange.min != _fmin || oldRange.max != _fmax)) {
@@ -541,11 +558,11 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         var onLegendRemove = function () {
             that.host.unbind("appearanceChanged");
 
-            div[0].innerHTML = "";
-            div.removeClass("idd-legend-item");
+            //div[0].innerHTML = "";
+            //div.removeClass("idd-legend-item");
         };
 
-        return { div: div, onLegendRemove: onLegendRemove };
+        return { name: nameDiv, legend: {thumbnail: canvas, content: infoDiv}, onLegendRemove: onLegendRemove };
     };
 
     // Initialization 

@@ -40,11 +40,6 @@ module ChartViewer {
             iddDiv.width(div.width());
             iddDiv.height(div.height());
 
-            var propagateNavigationDiv = this.propagateNavigationDiv = $("<div></div>").addClass("dsv-propagate").appendTo(div);
-            propagateNavigationDiv.width(div.width());
-            propagateNavigationDiv.height(div.height());
-            propagateNavigationDiv.hide();
-
             var iddChart = this.iddChart = InteractiveDataDisplay.asPlot(iddDiv);
             iddChart.legend.isVisible = false;
             iddChart.isToolTipEnabled = false;
@@ -53,13 +48,14 @@ module ChartViewer {
             //adding onscreen navigation
             var onscreenNavigationContainer = $("<div></div>").addClass("dsv-onscreennavigationcontainer").attr("data-idd-placement", "center").appendTo(navigationDiv);
             var onscreenNavigationDiv = $("<div></div>").addClass("dsv-onscreennavigation").appendTo(onscreenNavigationContainer);
-            var onscreenNavigation = new OnScreenNavigation(onscreenNavigationDiv, iddChart, persistentViewState, propagateNavigationDiv);
+            var onscreenNavigation = new OnScreenNavigation(onscreenNavigationDiv, iddChart, persistentViewState);
 
             /* adds probes plot */
             var probesPlot_div = $("<div></div>")
                 .attr("data-idd-name", "draggableMarkers")
                 .appendTo(iddChart.host);
             var probesPlot = new DraggableDOMPlot(probesPlot_div, iddChart);
+            probesPlot.order = 9007199254740991;
             iddChart.addChild(probesPlot);
 
             this.persistentViewState = persistentViewState;
@@ -235,10 +231,12 @@ module ChartViewer {
             p.Plots = factory.initialize(p.Definition, this.persistentViewState, this.iddChart);
             try {
                 factory.draw(p.Plots, p.Definition);
-            } catch (ex) {
+            } catch (ex) {  
+                if (p.Plots !== undefined) p.Plots.forEach(function (graph) { graph.remove(); });                 
                 factory = PlotRegistry["fallback"];
                 p.Definition["error"] = ex.message;
                 p.Plots = factory.initialize(p.Definition, this.persistentViewState, this.iddChart);
+                factory.draw(p.Plots, p.Definition);
             }
         }
 
@@ -318,7 +316,6 @@ module ChartViewer {
 
         private createMap() {
             var div = $("<div></div>")
-                .attr("data-idd-mapKey", "AkMb1-diiPK0DTvtIWpcxsjP9sIV6VqUB6yuTUXZ8atCXCW4WSkqQnMdbOmPqsk2")
                 .attr("data-idd-name", "bingMaps")
                 .css("z-index", 0)
                 .prependTo(this.iddChart.host);
@@ -388,32 +385,15 @@ module ChartViewer {
             this.updateAxes();
             this.persistentViewState.probesViewModel.refresh();
             this.updateMap();            
-            
-            // Sets the correct z-order of plots depending on values of ZIndex property.
-            var z = 0;
-            var currentPlotslength = 0;
-            for (var id in this.currentPlots)++currentPlotslength;
-            for (var id in this.currentPlots) {
-                var p = this.currentPlots[id];
-                p.ZIndex = currentPlotslength - z;//Math.max(p.ZIndex, z);
-                ++z;
-                if (!p.Plots) continue;
-                for (var j = 0; j < p.Plots.length; ++j)
-                    p.Plots[j].host.css("z-index", p.ZIndex);//p.ZIndex
-            
-            }
 
             if (this.persistentViewState.selectedPlots)
                 this.setupPlotsVisibility();
-
             return this.currentPlots;
         }
 
         updateLayout() {
             this.iddDiv.width(this.div.width());
             this.iddDiv.height(this.div.height());
-            this.propagateNavigationDiv.width(this.div.width());
-            this.propagateNavigationDiv.height(this.div.height());
             this.iddChart.updateLayout();
 
             if (this.bingMapsPlot !== undefined) {

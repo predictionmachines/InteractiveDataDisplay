@@ -2,10 +2,10 @@
 
 module main {
     export function start() {
-        var el = document.getElementById("chart");
+        var el = document.getElementById("chart"); 
 
         ChartViewer.show(el, {
-            "elem1": Plot.line({
+            "elem1": { kind: "line3",//Plot.line({
                 x: [1, 2, 3, 4],
                 y: [1, 4, 6, 9],
                 thickness: 3,
@@ -13,14 +13,15 @@ module main {
                 titles: {
                     x: "w", y: "c"
                 }
-            }),
+            },//),
             "elem2": Plot.markers({
                 x: [1, 2, 3, 4],
                 y: [1, 4, 6, 9],
                 shape: Plot.MarkerShape.Cross,
-                size: 8,
-                color: "red",
-                displayName: "mark"
+                size: [1,2,3,4],
+                color: [1, 2, 3, 4],
+                colorPalette: 'green, blue',
+                displayName: "mark",
             }),
             "elem3": Plot.heatmap({
                 x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],

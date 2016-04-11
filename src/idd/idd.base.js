@@ -80,6 +80,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         switch (plotType) {
             case "plot":
                 plot = new InteractiveDataDisplay.Plot(jqDiv, master);
+                plot.order = Number.MAX_SAFE_INTEGER;
                 break;
             case "polyline":
                 plot = new InteractiveDataDisplay.Polyline(jqDiv, master);
@@ -219,7 +220,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     InteractiveDataDisplay.Event.childrenChanged = jQuery.Event("childrenChanged");
     InteractiveDataDisplay.Event.isAutoFitChanged = jQuery.Event("isAutoFitEnabledChanged");
     InteractiveDataDisplay.Event.visibleRectChanged = jQuery.Event("visibleRectChanged");
-
+    InteractiveDataDisplay.Event.isVisibleChanged = jQuery.Event("visibleChanged");
+    InteractiveDataDisplay.Event.plotRemoved = jQuery.Event("plotRemoved");
+    InteractiveDataDisplay.Event.orderChanged = jQuery.Event("orderChanged");
 
     InteractiveDataDisplay.Plot = function (div, master, myCentralPart) {
 
@@ -249,6 +252,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _isFlatRenderingOn = false;
         var _width, _height;
         var _name = "";
+        var _order = 0;
         // Contains user-readable titles for data series of a plot. They should be used in tooltips and legends.
         var _titles = {};
         // The flag is set in setVisibleRegion when it is called at me as a bound plot to notify that another plot is changed his visible.
@@ -389,6 +393,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (_isVisible === value) return;
                 _isVisible = value;
                 this.onIsVisibleChanged();
+                this.fireVisibleChanged(this);
+            },
+            configurable: false
+        });
+        Object.defineProperty(this, "order", {
+            get: function () { return _order; },
+            set: function (value) {
+                if (_order === value) return;
+                _order = value;
             },
             configurable: false
         });
@@ -506,7 +519,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 this.master.removeMap();
             }
 
-            this.master.removeChild(this);
+            if(!this.isMaster)
+                this.master.removeChild(this);
+            this.firePlotRemoved(this);
             this.host.remove();
         };
 
@@ -531,6 +546,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (childPlot.master && (childPlot.master !== childPlot && childPlot.master !== this.master)) throw "Given child plot already added to another plot";
             if (childPlot.master !== this.master)
                 childPlot.onAddedTo(this.master); // changing master 
+            childPlot.order = childPlot.order == Number.MAX_SAFE_INTEGER ? childPlot.order : (InteractiveDataDisplay.Utils.getMaxOrder(this.master) + 1);
             _children.push(childPlot);
 
             if (this.master._sharedCanvas) {
@@ -1143,6 +1159,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // Implementation of this method for a particular plot should build and return
         // a tooltip element for the point (xd,yd) in data coordinates, and (xp, yp) in plot coordinates.
         // Method returns <div> element or undefined
+        var foreachDependentPlot = function (plot, f) {
+                var myChildren = plot.children;
+                var n = myChildren.length;
+                for (var i = 0; i < n; i++) {
+                    var child = myChildren[i];
+                    foreachDependentPlot(child, f);
+                }
+                f(plot);
+        };
         this.getTooltip = function (xd, yd, xp, yp) {
             return undefined;
         };
@@ -1151,16 +1176,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var _tooltipTimer; // descriptor of the set timer to show the tooltip
             var _tooltip; // <div> element which displays the tooltip
             var _updateTooltip;
-
-            var foreachDependentPlot = function (plot, f) {
-                var myChildren = plot.children;
-                var n = myChildren.length;
-                for (var i = 0; i < n; i++) {
-                    var child = myChildren[i];
-                    foreachDependentPlot(child, f);
-                }
-                f(plot);
-            };
 
             this.enumAll = function (plot, f) {
                 foreachDependentPlot(plot, f);
@@ -1358,20 +1373,32 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             this.master.host.trigger(InteractiveDataDisplay.Event.visibleRectChanged, propertyParams);
         };
 
+        this.fireVisibleChanged = function (propertyParams) {
+            this.host.trigger(InteractiveDataDisplay.Event.isVisibleChanged, propertyParams);
+        };
+        this.firePlotRemoved = function (propertyParams) {
+            this.host.trigger(InteractiveDataDisplay.Event.plotRemoved, propertyParams);
+            foreachDependentPlot(propertyParams, function (child) {
+                child.host.trigger(InteractiveDataDisplay.Event.plotRemoved, child);
+            });
+        };
+        this.fireOrderChanged = function (propertyParams) {
+            this.host.trigger(InteractiveDataDisplay.Event.orderChanged, propertyParams);
+        };
         //--------------------------------------------------------------------------------------
         // Plot factories
 
         // If this plot has no child plot with given name, it is created from the data;
         // otherwise, existing plot is updated.
         this.polyline = function (name, data) {
-            var plot = this.get(name);
-            if (!plot) {
-                var div = $("<div></div>")
-                           .attr("data-idd-name", name)
-                           .attr("data-idd-plot", "polyline")
-                           .appendTo(this.host);
-                plot = new InteractiveDataDisplay.Polyline(div, this.master);
-                this.addChild(plot);
+                var plot = this.get(name);
+                if (!plot) {
+                    var div = $("<div></div>")
+                               .attr("data-idd-name", name)
+                             //  .attr("data-idd-plot", "polyline")
+                               .appendTo(this.host);
+                    plot = new InteractiveDataDisplay.Polyline(div, this.master);
+                    this.addChild(plot);
             }
             if (data !== undefined) {
                 plot.draw(data);
@@ -1385,7 +1412,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var div = $("<div></div>")
                            .attr("data-idd-name", name)
                            .appendTo(this.host);
-                plot = new InteractiveDataDisplay.Markers(div);
+                plot = new InteractiveDataDisplay.Markers(div, this.master);
                 this.addChild(plot);
             }
             if (data !== undefined) {
@@ -1400,9 +1427,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (!plot) {
                 var div = $("<div></div>")
                            .attr("data-idd-name", name)
-                           .attr("data-idd-plot", "area")
+                          // .attr("data-idd-plot", "area")
                            .appendTo(this.host);
-                plot = new InteractiveDataDisplay.Area(div);
+                plot = new InteractiveDataDisplay.Area(div, this.master);
                 this.addChild(plot);
             }
             if (data !== undefined) {
@@ -1417,7 +1444,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (!plot) {
                 var div = $("<div></div>")
                            .attr("data-idd-name", name)
-                           .attr("data-idd-plot", "heatmap")
+                         //  .attr("data-idd-plot", "heatmap")
                            .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Heatmap(div, this.master);
                 this.addChild(plot);
@@ -1446,10 +1473,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _host.children("div")
                 .each(function () {
                     var jqElem = $(this); // refers the child DIV
-                    if (!jqElem.hasClass("idd-plot-master") && !jqElem.hasClass("idd-plot-dependant") && jqElem.attr("data-idd-plot") !== undefined && jqElem.attr("data-idd-plot") !== "figure" && jqElem.attr("data-idd-plot") !== "chart") { // it shouldn't be initialized and it shouldn't be a master plot (e.g. a figure)
+                    if(!jqElem.hasClass("idd-plot-master") && !jqElem.hasClass("idd-plot-dependant") && jqElem.attr("data-idd-plot") !== undefined && jqElem.attr("data-idd-plot") !== "figure" && jqElem.attr("data-idd-plot") !== "chart") { // it shouldn't be initialized and it shouldn't be a master plot (e.g. a figure)
                         that.addChild(initializePlot(jqElem, _master)); // here children of the new child will be initialized recursively
                     }
-                });
+            });
         }
 
         //------------------------------------------------------------------------
@@ -1459,36 +1486,49 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
         setTimeout(function () {
             if (_host && _host.attr("data-idd-legend")) {
-                var legendDiv = $("#" + _host.attr("data-idd-legend"));
-                var _legend = new InteractiveDataDisplay.Legend(that, legendDiv);
+                var legendDiv = $("#" +_host.attr("data-idd-legend"));
+                var _legend = new InteractiveDataDisplay.Legend(that, legendDiv, true);
                 Object.defineProperty(that, "legend", { get: function () { return _legend; }, configurable: false });
             }
         }, 0);
+
+        this.updateOrder = function (elem, isPrev) {
+            if (elem) InteractiveDataDisplay.Utils.reorder(this, elem, isPrev);
+            if (!_isFlatRenderingOn) {
+                var plots = InteractiveDataDisplay.Utils.enumPlots(_master);
+                for (var i = 0; i < plots.length; i++) {
+                    if (plots[i].order < Number.MAX_SAFE_INTEGER) plots[i].host.css('z-index', plots[i].order);
+                }
+            }
+            if (elem) this.fireOrderChanged();
+        };
 
         if (div) {
             if (_isMaster) {
                 if (div.attr("data-idd-plot") !== 'figure' && div.attr("data-idd-plot") !== 'chart')
                     this.updateLayout();
                 div.addClass("idd-plot-master");
-            }
-            else {
-                div.addClass("idd-plot-dependant");
+        }
+        else {
+            div.addClass("idd-plot-dependant");
             }
         }
     };
 
-    InteractiveDataDisplay.Legend = function (_plot, _jqdiv) {
+    var _plotLegends = [];
+    //Legend with hide/show function
+    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact) {
 
         var plotLegends = [];
         var divStyle = _jqdiv[0].style;
-
         //Stop event propagation
-        InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
-            _jqdiv[0].addEventListener(eventName, function (e) {
-                e.stopPropagation();
-            }, false);
-        });
-
+        if (isCompact) {
+            InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
+                _jqdiv[0].addEventListener(eventName, function (e) {
+                    e.stopPropagation();
+                }, false);
+            });
+        }
         var _isVisible = true;
         Object.defineProperty(this, "isVisible", {
             get: function () { return _isVisible; },
@@ -1500,101 +1540,217 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             configurable: false
         });
 
-        divStyle.display = "none";
-        _jqdiv.addClass("idd-legend");
+        if (isCompact) _jqdiv.addClass("idd-legend-compact");
+        else _jqdiv.addClass("idd-legend");
         _jqdiv.addClass("unselectable");
-
+        if (!isCompact) {
+            _jqdiv.sortable({ axis: 'y' });
+            _jqdiv.on("sortupdate", function (e, ui) {
+                var name = ui.item.attr('data-plot'); //name of plot what's card was moved
+                var targetIndex;
+                var next_elem, prev_elem;
+                $("li", _jqdiv).each(function (idx, el) {
+                    if (name == $(el).attr('data-plot')) {
+                        targetIndex = idx;
+                        prev_elem = ($(el)).prev().attr('data-plot');
+                        next_elem = ($(el).next()).attr('data-plot');
+                        return false;
+                    }
+                });//found new index of moved element
+                for (var i = 0; i < plotLegends.length; ++i) {
+                    if (plotLegends[i].plot.name == name) {
+                        if (next_elem) {
+                            for (var j = 0; j < plotLegends.length; ++j) {
+                                if (plotLegends[j].plot.name == next_elem) {
+                                    plotLegends[i].plot.updateOrder(plotLegends[j].plot);
+                                    break;
+                                }
+                            }
+                        }
+                        else {
+                            for (var j = 0; j < plotLegends.length; ++j) {
+                                if (plotLegends[j].plot.name == prev_elem) {
+                                    plotLegends[i].plot.updateOrder(plotLegends[j].plot, true);
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            });
+        }
+        
         var createLegend = function () {
-            createLegendForPlot(_plot);
-
+            _jqdiv.empty();
+            for (var i = 0, len = plotLegends.length; i < len; i++) {
+                removeLegend(plotLegends[i]);
+            }
+            _plot.host.unbind('childrenChanged', childrenChangedHandler);
+            plotLegends = [];
+            var plots = InteractiveDataDisplay.Utils.enumPlots(_plot);
+            for (var i = 0; i < plots.length; i++) {
+                createLegendForPlot(plots[plots.length - i - 1]);
+            }
             if (_jqdiv[0].hasChildNodes() && _isVisible) {
                 divStyle.display = "block";
             }
         };
-
-        var createLegendForPlot = function (plot) {
-            var legend = plot.getLegend();
-
-            plot.host.bind("childrenChanged",
-                 function (event, params) {
-                     if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
-                         createLegendForPlot(params.plot);
-                     }
-                     else if (params.type === "remove") {
-                         var removeLegendItem = function (i) {
-                             var legend = plotLegends[i];
-                             plotLegends.splice(i, 1);
-                             legend.plot.host.unbind("childrenChanged");
-                             if (legend.onLegendRemove) legend.onLegendRemove();
-                             _jqdiv[0].removeChild(legend.div[0]);
-                             var childDivs = legend.plot.children;
-                             childDivs.forEach(function (childPlot) {
-                                 for (var j = 0, len = plotLegends.length; j < len; j++)
-                                     if (plotLegends[j].plot === childPlot) {
-                                         removeLegendItem(plotLegends[j]);
-                                     }
-                             });
-                             if (plotLegends.length === 0) divStyle.display = "none";
-                         };
-
-                         for (var i = 0, len = plotLegends.length; i < len; i++)
-                             if (plotLegends[i].plot === params.plot) {
-                                 removeLegendItem(i);
-                                 break;
-                             }
-                     }
-                     else {
-                         _jqdiv[0].innerHTML = "";
-                         divStyle.display = "none";
-                         len = plotLegends.length;
-                         for (i = 0; i < len; i++)
-                             if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
-                         plotLegends = [];
-
-                         plot.host.unbind("childrenChanged");
-
-                         createLegend();
-                     }
-                 });
-
-            if (legend) {
-                (legend.div).appendTo(_jqdiv);
-                legend.plot = plot;
-                plotLegends[plotLegends.length] = legend;
-            }
-            var childDivs = plot.children;
-            childDivs.forEach(function (childPlot) {
-                createLegendForPlot(childPlot);
+    
+        var addVisibilityCheckBox = function (div, plot) {
+            var cbx = $("<div></div>").addClass("idd-legend-isselected-false").appendTo(div);
+            if (plot.isVisible) cbx.attr("class", "idd-legend-isselected-false");
+            else cbx.attr("class", "idd-legend-isselected-true");
+            cbx.click(function (e) {
+                e.stopPropagation();
+                if (plot.isVisible) {
+                    cbx.attr("class", "idd-legend-isselected-true");
+                    plot.isVisible = false;
+                } else {
+                    cbx.attr("class", "idd-legend-isselected-false");
+                    plot.isVisible = true;
+                }
             });
         };
 
+        var removeLegend = function (legend) {
+            for (var i = 0; i < _plotLegends.length; i++) {
+                if (_plotLegends[i] == legend) {
+                    _plotLegends.splice(i, 1);
+                    break;
+                }
+            }
+        };
+        var childrenChangedHandler = function (event, params) {
+
+            if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
+                createLegendForPlot(params.plot);
+            }
+            else if (params.type === "remove") {
+                var removeLegendItem = function (i) {
+                    var legend = plotLegends[i];
+                    plotLegends.splice(i, 1);
+                    removeLegend(legend);
+                    legend.plot.host.unbind("childrenChanged", childrenChangedHandler);
+                    legend.plot.host.unbind("visibleChanged", visibleChangedHandler);
+                    if (legend.onLegendRemove) legend.onLegendRemove();
+                    legend[0].innerHTML = "";
+                    if (isCompact) legend.removeClass("idd-legend-item-compact");
+                    else legend.removeClass("idd-legend-item");
+                    _jqdiv[0].removeChild(legend[0]);
+                    var childDivs = legend.plot.children;
+                    childDivs.forEach(function (childPlot) {
+                        for (var j = 0, len = plotLegends.length; j < len; j++)
+                            if (plotLegends[j].plot === childPlot) {
+                                removeLegendItem(plotLegends[j]);
+                            }
+                    });
+                    legend[0].style = "display: none";
+                    if (plotLegends.length == 0) divStyle.display = "none";
+                };
+
+                for (var i = 0, len = plotLegends.length; i < len; i++)
+                    if (plotLegends[i].plot === params.plot) {
+                        removeLegendItem(i);
+                        break;
+                    }
+            }
+            else {
+                _jqdiv[0].innerHTML = "";
+                divStyle.display = "none";
+                len = plotLegends.length;
+                for (i = 0; i < len; i++) {
+                    removeLegend(plotLegends[i]);
+                    plotLegends[i].plot.host.unbind("childrenChanged", childrenChangedHandler);
+                    if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
+                    plotLegends[i][0].innerHTML = "";
+                    if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
+                    else plotLegends[i].removeClass("idd-legend-item");
+                }
+                plotLegends = [];
+              
+                createLegend();
+            }
+        };
+        var orderChangedHandler = function (event, params) {
+            createLegend();
+        };
+        var plotRemovedHandler = function (event, params) {
+            if (_plot == params) _jqdiv.remove();
+        };
+        var visibleChangedHandler = function (event, params) {
+            var updateLegendItem = function (i, isVisible) {
+                var legend = _plotLegends[i];
+                if (isVisible) legend[0].firstElementChild.lastElementChild.setAttribute("class", "idd-legend-isselected-false");
+                else legend[0].firstElementChild.lastElementChild.setAttribute("class", "idd-legend-isselected-true");
+            };
+
+            for (var i = 0, len = _plotLegends.length; i < len; i++)
+                if (_plotLegends[i].plot === params) {
+                    updateLegendItem(i, params.isVisible);
+                }
+        }; 
+        var createLegendForPlot = function (plot) {
+            var legend = plot.getLegend();
+            //change getLegend
+            plot.host.bind("visibleChanged", visibleChangedHandler);
+            plot.host.bind("childrenChanged", childrenChangedHandler);
+            if (legend) {
+                var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<li class='idd-legend-item'></li>");
+                if (!isCompact) div.attr("data-plot", plot.name);
+                var title = (isCompact) ? $("<div class='idd-legend-item-title-compact'></div>") : $("<div class='idd-legend-item-title'></div>");
+                if (legend.legend && legend.legend.thumbnail)
+                    if (isCompact) legend.legend.thumbnail.addClass("idd-legend-item-title-thumb-compact").appendTo(title);
+                    else legend.legend.thumbnail.addClass("idd-legend-item-title-thumb").appendTo(title);
+                if (isCompact) legend.name.addClass("idd-legend-item-title-name-compact").appendTo(title);
+                else legend.name.addClass("idd-legend-item-title-name").appendTo(title);
+                addVisibilityCheckBox(title, plot);
+                title.appendTo(div);
+                if (legend.legend && legend.legend.content)
+                    if (isCompact) legend.legend.content.addClass("idd-legend-item-info-compact").appendTo(div);
+                    else legend.legend.content.addClass("idd-legend-item-info").appendTo(div);
+                
+                div.prependTo(_jqdiv);
+                div.plot = plot;
+
+                plotLegends[plotLegends.length] = div;
+                _plotLegends[_plotLegends.length] = div;
+                div.plot.updateOrder();
+            }
+        };
         this.remove = function () {
-            for (var i = 0, len = plotLegends.length; i < len; i++)
+            for (var i = 0, len = plotLegends.length; i < len; i++) {
+                removeLegend(plotLegends[i]);
                 if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
+                plotLegends[i][0].innerHTML = "";
+                if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
+                else plotLegends[i].removeClass("idd-legend-item");
+            }
             plotLegends = [];
-
             var removeLegendForPlot = function (plot) {
-                plot.host.unbind("childrenChanged");
-
+                plot.host.unbind("visibleChanged", visibleChangedHandler);
                 var childDivs = plot.children;
                 childDivs.forEach(function (childPlot) {
                     removeLegendForPlot(childPlot);
                 });
             };
             removeLegendForPlot(_plot);
-
             _jqdiv[0].innerHTML = "";
-            _jqdiv.removeClass("idd-legend");
+            if (isCompact) _jqdiv.removeClass("idd-legend-compact");
+            else _jqdiv.removeClass("idd-legend");
             _jqdiv.removeClass("unselectable");
+            _plot.host.unbind("plotRemoved", plotRemovedHandler);
+            _plot.host.unbind("orderChanged", orderChangedHandler);
+            _plot.host.unbind("childrenChanged", childrenChangedHandler);
         };
-
+        _plot.host.bind("plotRemoved", plotRemovedHandler);
+        _plot.host.bind("orderChanged", orderChangedHandler);
+        _plot.host.bind("childrenChanged", childrenChangedHandler);
         createLegend();
-
         _jqdiv.dblclick(function (event) {
             event.stopImmediatePropagation();
         });
     };
-
     //--------------------------------------------------------------------------------------------
     // Transforms
 
@@ -2082,20 +2238,19 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         });
 
         this.getLegend = function () {
-            var div = $("<div class='idd-legend-item'></div>");
-
-            var canvas = $("<canvas style='margin-right: 15px'></canvas>").appendTo(div);
-            canvas[0].width = 20;
-            canvas[0].height = 20;
+            var canvas = $("<canvas></canvas>");
+            
+            canvas[0].width = 40;
+            canvas[0].height = 40;
             var ctx = canvas.get(0).getContext("2d");
             ctx.strokeStyle = _stroke;
             ctx.lineWidth = _thickness;
             ctx.moveTo(0, 0);
-            ctx.lineTo(20, 20);
+            ctx.lineTo(40, 40);
             ctx.stroke();
 
             var that = this;
-            var nameDiv = $("<span class='idd-legend-item-title'></span>").appendTo(div);
+            var nameDiv = $("<span></span>");
             var setName = function () {
                 nameDiv.text(that.name);
             }
@@ -2110,7 +2265,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     ctx.strokeStyle = _stroke;
                     ctx.lineWidth = _thickness;
                     ctx.moveTo(0, 0);
-                    ctx.lineTo(20, 20);
+                    ctx.lineTo(40, 40);
                     ctx.stroke();
                 });
 
@@ -2119,11 +2274,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var onLegendRemove = function () {
                 that.host.unbind("appearanceChanged");
 
-                div[0].innerHTML = "";
-                div.removeClass("idd-legend-item");
             };
 
-            return { div: div, onLegendRemove: onLegendRemove };
+            return { name: nameDiv, legend: { thumbnail: canvas, content: undefined }, onLegendRemove: onLegendRemove };
         };
 
         // Initialization 

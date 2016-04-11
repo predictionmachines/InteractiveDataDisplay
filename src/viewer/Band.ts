@@ -8,7 +8,11 @@ declare var Microsoft: any;
 module ChartViewer {
     PlotRegistry["band"] = {
         initialize(plotDefinition: PlotInfo, viewState: ViewState, chart: IDDPlot) {
-            var bandgraph = chart.area(plotDefinition.displayName);
+            var div = $("<div></div>")
+                .attr("data-idd-name", plotDefinition.displayName)
+                .appendTo(chart.host);
+            var bandgraph = new InteractiveDataDisplay.Area(div, chart.master);
+            chart.addChild(bandgraph);
             return [bandgraph];
         },
 
@@ -37,36 +41,6 @@ module ChartViewer {
             drawArgs.fill = bandDef.fill;
    
             plot.draw(drawArgs);
-        },
-
-        createPlotCardContent: function (plotInfo) {
-            var bandDef = <Plot.BandDefinition><any>plotInfo;
-            var titleDiv = $("<div class='dsv-plotcard-title'></div>");
-            var canvas = $("<canvas class='dsv-plotcard-thumbnail'></canvas>").appendTo(titleDiv);
-            $("<div></div>").addClass('dsv-plotcard-resolved').appendTo(titleDiv).text(plotInfo.displayName);
-
-            canvas.prop({ width: 20, height: 20 });
-            var ctx = (<HTMLCanvasElement>canvas.get(0)).getContext("2d");
-
-            ctx.globalAlpha = 0.5;
-            ctx.strokeStyle = bandDef.fill;
-            ctx.fillStyle = bandDef.fill;
-
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, 5);
-            ctx.lineTo(15, 20);
-            ctx.lineTo(20, 20);
-            ctx.lineTo(20, 15);
-            ctx.lineTo(5, 0);
-            ctx.lineTo(0, 0);
-            ctx.fill();
-            ctx.stroke();
-            ctx.closePath();
-
-            return {
-                content: titleDiv
-            }
         }
     }
 }
