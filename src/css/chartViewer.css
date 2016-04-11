@@ -1,15 +1,4 @@
-﻿html {
-    width:100%;
-    height:100%;
-}
-body {
-    width:100%;
-    height:100%;
-    display: block;
-    margin: 0px;
-    font-family: "Segoe UI Light", "HelveticaNeueLight", "HelveticaNeue-Light", "Helvetica Neue Light", "HelveticaNeue", "Helvetica Neue", "TeXGyreHerosRegular", "Helvetica", "Tahoma", "Geneva", "Arial", "sans-serif";
-}
-/*Probes*/
+﻿/*Probes*/
 .probes 
 {
     margin-top: 20px;

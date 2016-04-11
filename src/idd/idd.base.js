@@ -1177,16 +1177,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var _tooltip; // <div> element which displays the tooltip
             var _updateTooltip;
 
-            //var foreachDependentPlot = function (plot, f) {
-            //    var myChildren = plot.children;
-            //    var n = myChildren.length;
-            //    for (var i = 0; i < n; i++) {
-            //        var child = myChildren[i];
-            //        foreachDependentPlot(child, f);
-            //    }
-            //    f(plot);
-            //};
-
             this.enumAll = function (plot, f) {
                 foreachDependentPlot(plot, f);
             };
@@ -1395,12 +1385,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.fireOrderChanged = function (propertyParams) {
             this.host.trigger(InteractiveDataDisplay.Event.orderChanged, propertyParams);
         };
-            //--------------------------------------------------------------------------------------
-            // Plot factories
+        //--------------------------------------------------------------------------------------
+        // Plot factories
 
-            // If this plot has no child plot with given name, it is created from the data;
-            // otherwise, existing plot is updated.
-            this.polyline = function (name, data) {
+        // If this plot has no child plot with given name, it is created from the data;
+        // otherwise, existing plot is updated.
+        this.polyline = function (name, data) {
                 var plot = this.get(name);
                 if (!plot) {
                     var div = $("<div></div>")
@@ -1465,32 +1455,31 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return plot;
         };
 
-            //------------------------------------------------------------------------------
-            //Navigation
-            if (_isMaster) {
-                //Initializing navigation
-                var _navigation = new InteractiveDataDisplay.Navigation(this, setVisibleRegion);
+        //------------------------------------------------------------------------------
+        //Navigation
+        if (_isMaster) {
+            //Initializing navigation
+            var _navigation = new InteractiveDataDisplay.Navigation(this, setVisibleRegion);
         }
 
-        Object.defineProperty(this, "navigation", { get: function () { if (_isMaster) return _navigation; else return _master.navigation; }, configurable: false
-        });
+        Object.defineProperty(this, "navigation", { get: function () { if (_isMaster) return _navigation; else return _master.navigation; }, configurable: false });
 
 
-            //-------------------------------------------------------------------
-            // Initialization of children
+        //-------------------------------------------------------------------
+        // Initialization of children
 
-            // Looking for children of this master plot (builds collection _children)
-            if (_host) {
-                _host.children("div")
-                    .each(function () {
-                        var jqElem = $(this); // refers the child DIV
+        // Looking for children of this master plot (builds collection _children)
+        if (_host) {
+            _host.children("div")
+                .each(function () {
+                    var jqElem = $(this); // refers the child DIV
                     if(!jqElem.hasClass("idd-plot-master") && !jqElem.hasClass("idd-plot-dependant") && jqElem.attr("data-idd-plot") !== undefined && jqElem.attr("data-idd-plot") !== "figure" && jqElem.attr("data-idd-plot") !== "chart") { // it shouldn't be initialized and it shouldn't be a master plot (e.g. a figure)
                         that.addChild(initializePlot(jqElem, _master)); // here children of the new child will be initialized recursively
                     }
-        });
+            });
         }
 
-            //------------------------------------------------------------------------
+        //------------------------------------------------------------------------
         // Legend
         this.getLegend = function () {
             return undefined;
@@ -1499,23 +1488,20 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (_host && _host.attr("data-idd-legend")) {
                 var legendDiv = $("#" +_host.attr("data-idd-legend"));
                 var _legend = new InteractiveDataDisplay.Legend(that, legendDiv, true);
-                Object.defineProperty(that, "legend", { get: function () { return _legend; }, configurable: false
-        });
-        }
+                Object.defineProperty(that, "legend", { get: function () { return _legend; }, configurable: false });
+            }
         }, 0);
 
         this.updateOrder = function (next_elem, isPrev) {
-            if (next_elem) InteractiveDataDisplay.Utils.reorder(_master, this, next_elem, isPrev);
+            if (next_elem) InteractiveDataDisplay.Utils.reorder(this, next_elem, isPrev);
             if (!_isFlatRenderingOn) {
-                var plots =[];
-                plots = InteractiveDataDisplay.Utils.enumPlots(_master, plots);
+                var plots = InteractiveDataDisplay.Utils.enumPlots(_master);
                 for (var i = 0; i < plots.length; i++) {
                     if (plots[i].order < Number.MAX_SAFE_INTEGER) plots[i].host.css('z-index', plots[i].order);
             }
             }
             else {
-                var plots =[];
-                plots = InteractiveDataDisplay.Utils.enumPlots(_master, plots);
+                var plots = InteractiveDataDisplay.Utils.enumPlots(_master);
             }
             if (next_elem) this.fireOrderChanged();
         };
@@ -1605,8 +1591,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
             _plot.host.unbind('childrenChanged', childrenChangedHandler);
             plotLegends = [];
-            var plots = [];
-            plots = InteractiveDataDisplay.Utils.enumPlots(_plot, plots);
+            var plots = InteractiveDataDisplay.Utils.enumPlots(_plot);
             for (var i = 0; i < plots.length; i++) {
                 createLegendForPlot(plots[plots.length - i - 1]);
             }

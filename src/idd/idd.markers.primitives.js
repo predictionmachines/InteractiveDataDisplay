@@ -1,5 +1,5 @@
 (function() {
-    var primitiveShape =    
+    var primitiveShape =
     {
         // Checks validity of the data and modifies it by replacing missing values with defaults
         // and applying palettes, if required. Filters out missing values, original indices are in `indices`.
@@ -430,9 +430,4 @@
     InteractiveDataDisplay.Markers.shapes["diamond"] = primitiveShape;
     InteractiveDataDisplay.Markers.shapes["cross"] = primitiveShape;
     InteractiveDataDisplay.Markers.shapes["triangle"] = primitiveShape;
-    InteractiveDataDisplay.Markers.shapes["boxwhisker"] = InteractiveDataDisplay.BoxWhisker;
-    InteractiveDataDisplay.Markers.shapes["boxnowhisker"] = InteractiveDataDisplay.BoxNoWhisker;
-    InteractiveDataDisplay.Markers.shapes["whisker"] = InteractiveDataDisplay.Whisker;
-    InteractiveDataDisplay.Markers.shapes["petals"] = InteractiveDataDisplay.Petal;
-    InteractiveDataDisplay.Markers.shapes["bulleye"] = InteractiveDataDisplay.BullEye;
 })();

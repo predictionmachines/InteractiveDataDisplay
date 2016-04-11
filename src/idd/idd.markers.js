@@ -251,7 +251,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 legendDiv.content.empty();
                 _shape.getLegend(_data, that.getTitle, legendDiv);
             }
-                nameDiv.text(that.name);
+            nameDiv.text(that.name);
         }
         this.host.bind("appearanceChanged", buildLegend);  
         buildLegend();

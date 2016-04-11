@@ -235,27 +235,31 @@ InteractiveDataDisplay.Utils =
             return { minx: minx, maxx: maxx, miny: miny, maxy: maxy };
         },
 
-        enumPlots: function (masterPlot, plots) {
-            plots.push(masterPlot);
+        enumPlots: function (masterPlot) {
+            var plotsArray = [];
+            var enumRec = function (p, plotsArray) {
+                plotsArray.push(p);
+            };
+            plotsArray.push(masterPlot);
             if (masterPlot.children)
                 masterPlot.children.forEach(function (child) {
-                    InteractiveDataDisplay.Utils.enumPlots(child, plots);
+                    enumRec(child, plotsArray);
                 });
-            plots.sort(function (a, b) { return b.order - a.order; });
-            return plots;
+            plotsArray.sort(function (a, b) { return b.order - a.order; });
+            return plotsArray;
         },
-        reorder: function (MP,p, p_before, isPrev) {
+        reorder: function (p, p_before, isPrev) {
             var plots = [];
-            plots = InteractiveDataDisplay.Utils.enumPlots(MP, plots);
+            plots = InteractiveDataDisplay.Utils.enumPlots(p.master, plots);
             p.order = isPrev ? (p_before.order): (p_before.order + 1);
-            var shift = function (MP,p) {
-                if (MP.order >= p.order && MP != p && MP.order < Number.MAX_SAFE_INTEGER) MP.order += 1;
-                if (MP.children)
-                    MP.children.forEach(function (child) {
+            var shift = function (masterPlot,p) {
+                if (masterPlot.order >= p.order && masterPlot != p && masterPlot.order < Number.MAX_SAFE_INTEGER) masterPlot.order += 1;
+                if (masterPlot.children)
+                    masterPlot.children.forEach(function (child) {
                         shift(child, p);
                     });
             }
-            shift(MP, p);
+            shift(p.master, p);
         },
     
         getMaxOrder: function (p) {

@@ -1,129 +1,4 @@
-﻿var drawShape = function (context, shape, x, y, width, height, scale, fill, stroke) {
-    var w = width;
-    var h = height;
-    var useStroke = stroke !== "none";
-    context.strokeStyle = stroke !== undefined ? stroke : "black";
-    context.fillStyle = fill !== undefined ? fill : "black";
-
-    var x1 = x;
-    var y1 = y;
-
-    var size = Math.min(w, h) * scale;
-    var halfSize = 0.5 * size;
-    var quarterSize = 0.5 * halfSize;
-
-    context.clearRect(0, 0, w, h);
-    switch (shape) {
-        case "box": // box                
-            if (useStroke) context.strokeRect(x1 - halfSize, y1 - halfSize, size, size);
-            context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
-            break;
-        case "circle": // circle
-            context.beginPath();
-            context.arc(x1, y1, halfSize, 0, 2 * Math.PI);
-            if (useStroke) context.stroke();
-            context.fill();
-            break;
-        case "diamond": // diamond
-            context.beginPath();
-            context.moveTo(x1 - halfSize, y1);
-            context.lineTo(x1, y1 - halfSize);
-            context.lineTo(x1 + halfSize, y1);
-            context.lineTo(x1, y1 + halfSize);
-            context.closePath();
-            if (useStroke) context.stroke();
-            context.fill();
-            break;
-        case "cross": // cross
-            var thirdSize = size / 3;
-            var halfThirdSize = thirdSize / 2;
-            context.beginPath();
-            context.moveTo(x1 - halfSize, y1 - halfThirdSize);
-            context.lineTo(x1 - halfThirdSize, y1 - halfThirdSize);
-            context.lineTo(x1 - halfThirdSize, y1 - halfSize);
-            context.lineTo(x1 + halfThirdSize, y1 - halfSize);
-            context.lineTo(x1 + halfThirdSize, y1 - halfThirdSize);
-            context.lineTo(x1 + halfSize, y1 - halfThirdSize);
-            context.lineTo(x1 + halfSize, y1 + halfThirdSize);
-            context.lineTo(x1 + halfThirdSize, y1 + halfThirdSize);
-            context.lineTo(x1 + halfThirdSize, y1 + halfSize);
-            context.lineTo(x1 - halfThirdSize, y1 + halfSize);
-            context.lineTo(x1 - halfThirdSize, y1 + halfThirdSize);
-            context.lineTo(x1 - halfSize, y1 + halfThirdSize);
-            context.closePath();
-            if (useStroke) context.stroke();
-            context.fill();
-            break;
-        case "triangle": // triangle
-            var r = Math.sqrt(3) / 6 * size;
-            context.beginPath();
-            context.moveTo(x1 - halfSize, y1 + r);
-            context.lineTo(x1, y1 - r * 2);
-            context.lineTo(x1 + halfSize, y1 + r);
-            context.closePath();
-            if (useStroke) context.stroke();
-            context.fill();
-            break;
-        case "boxnowhisker":
-            context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
-
-            if (useStroke) context.strokeRect(x1 - halfSize, y1 - halfSize, size, size);
-            context.beginPath();
-            context.moveTo(x1 - halfSize, y1);
-            context.lineTo(x1 + halfSize, y1);
-            context.closePath();
-            if (useStroke) context.stroke();
-            break;
-        case "boxwhisker":
-            context.fillRect(x1 - halfSize, y1 - quarterSize, size, halfSize);
-
-            context.beginPath();
-            context.moveTo(x1 - halfSize, y1 + halfSize);
-            context.lineTo(x1 + halfSize, y1 + halfSize);
-            context.moveTo(x1 - halfSize, y1 - halfSize);
-            context.lineTo(x1 + halfSize, y1 - halfSize);
-            context.moveTo(x1, y1 + halfSize);
-            context.lineTo(x1, y1 + quarterSize);
-            context.moveTo(x1, y1 - halfSize);
-            context.lineTo(x1, y1 - quarterSize);
-            context.closePath();
-            if (useStroke) context.stroke();
-
-            if (useStroke) context.strokeRect(x1 - halfSize, y1 - quarterSize, size, halfSize);
-
-            if (useStroke) {
-                context.beginPath();
-                context.moveTo(x1 - halfSize, y1);
-                context.lineTo(x1 + halfSize, y1);
-                context.stroke();
-            }
-            break;
-        case "whisker":
-            context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
-
-            if (useStroke) {
-                context.beginPath();
-                context.moveTo(x1 - halfSize, y1 + halfSize);
-                context.lineTo(x1 + halfSize, y1 + halfSize);
-
-                context.moveTo(x1 - halfSize, y1 - halfSize);
-                context.lineTo(x1 + halfSize, y1 - halfSize);
-
-                context.moveTo(x1 - halfSize, y1);
-                context.lineTo(x1 + halfSize, y1);
-
-                context.moveTo(x1, y1 + halfSize);
-                context.lineTo(x1, y1 - halfSize);
-
-                context.stroke();
-            }
-            break;
-    }
-};
-var RgbaToString = function (rgba) {
-    return "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
-};
-InteractiveDataDisplay.Petal = {
+﻿InteractiveDataDisplay.Petal = {
     prepare: function (data) {
         if (!data.maxDelta) {
             var i = 0;
@@ -470,8 +345,10 @@ InteractiveDataDisplay.BullEye = {
           var u95 = marker.u95;
           var l95 = marker.l95;
           if (marker.colorPalette) {
-              u95 = RgbaToString(marker.colorPalette.getRgba(u95));
-              l95 = RgbaToString(marker.colorPalette.getRgba(l95));
+              var u95rgba = marker.colorPalette.getRgba(u95);
+              u95 = "rgba(" + u95rgba.r + "," + u95rgba.g + "," + u95rgba.b + "," + u95rgba.a + ")";
+              var l95rgba = marker.colorPalette.getRgba(l95)
+              l95 = "rgba(" + l95rgba.r + "," + l95rgba.g + "," + l95rgba.b + "," + l95rgba.a + ")";
           }
 
           var msize = marker.size;
@@ -481,10 +358,77 @@ InteractiveDataDisplay.BullEye = {
 
           if (x + shift < 0 || x - shift > screenSize.width) return;
           if (y + shift < 0 || y - shift > screenSize.height) return;
+          InteractiveDataDisplay.BullEye.drawBullEye(context, marker.bullEyeShape, x, y, msize, msize, u95);
+          InteractiveDataDisplay.BullEye.drawBullEye(context, marker.bullEyeShape, x, y, shift, shift, l95);
+    },
+    drawBullEye: function(context, shape, x, y, width, height, fill, stroke) {
+        var w = width;
+        var h = height;
+        var useStroke = stroke !== "none";
+        context.strokeStyle = stroke !== undefined ? stroke : "black";
+        context.fillStyle = fill !== undefined ? fill : "black";
 
-          drawShape(context, marker.bullEyeShape, x, y, msize, msize, 1, u95);
-          drawShape(context, marker.bullEyeShape, x, y, shift, shift, 1, l95);
-      },
+        var x1 = x;
+        var y1 = y;
+
+        var size = Math.min(w, h);
+        var halfSize = 0.5 * size;
+        var quarterSize = 0.5 * halfSize;
+
+        context.clearRect(0, 0, w, h);
+        switch (shape) {
+            case "box": // box                
+                if (useStroke) context.strokeRect(x1 - halfSize, y1 - halfSize, size, size);
+                context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
+                break;
+            case "circle": // circle
+                context.beginPath();
+                context.arc(x1, y1, halfSize, 0, 2 * Math.PI);
+                if (useStroke) context.stroke();
+                context.fill();
+                break;
+            case "diamond": // diamond
+                context.beginPath();
+                context.moveTo(x1 - halfSize, y1);
+                context.lineTo(x1, y1 - halfSize);
+                context.lineTo(x1 + halfSize, y1);
+                context.lineTo(x1, y1 + halfSize);
+                context.closePath();
+                if (useStroke) context.stroke();
+                context.fill();
+                break;
+            case "cross": // cross
+                var thirdSize = size / 3;
+                var halfThirdSize = thirdSize / 2;
+                context.beginPath();
+                context.moveTo(x1 - halfSize, y1 - halfThirdSize);
+                context.lineTo(x1 - halfThirdSize, y1 - halfThirdSize);
+                context.lineTo(x1 - halfThirdSize, y1 - halfSize);
+                context.lineTo(x1 + halfThirdSize, y1 - halfSize);
+                context.lineTo(x1 + halfThirdSize, y1 - halfThirdSize);
+                context.lineTo(x1 + halfSize, y1 - halfThirdSize);
+                context.lineTo(x1 + halfSize, y1 + halfThirdSize);
+                context.lineTo(x1 + halfThirdSize, y1 + halfThirdSize);
+                context.lineTo(x1 + halfThirdSize, y1 + halfSize);
+                context.lineTo(x1 - halfThirdSize, y1 + halfSize);
+                context.lineTo(x1 - halfThirdSize, y1 + halfThirdSize);
+                context.lineTo(x1 - halfSize, y1 + halfThirdSize);
+                context.closePath();
+                if (useStroke) context.stroke();
+                context.fill();
+                break;
+            case "triangle": // triangle
+                var r = Math.sqrt(3) / 6 * size;
+                context.beginPath();
+                context.moveTo(x1 - halfSize, y1 + r);
+                context.lineTo(x1, y1 - r * 2);
+                context.lineTo(x1 + halfSize, y1 + r);
+                context.closePath();
+                if (useStroke) context.stroke();
+                context.fill();
+                break;
+        }
+    },
     hitTest: function (marker, transform, ps, pd) {
           var xScreen = transform.dataToScreenX(marker.x);
           var yScreen = transform.dataToScreenY(marker.y);
@@ -593,7 +537,7 @@ InteractiveDataDisplay.BullEye = {
               var sampleColor = "gray";
               var sampleBorderColor = "gray";
 
-              drawShape(context, data.bullEyeShape, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+              InteractiveDataDisplay.BullEye.drawBullEye(context, data.bullEyeShape, x1, y1, size, size, sampleColor, sampleBorderColor);
           };
 
           refreshColor();
@@ -819,9 +763,35 @@ InteractiveDataDisplay.BoxWhisker = {
         var renderShape = function () {
             var sampleColor = typeof data.color == "string" ? data.color : "gray";
             var sampleBorderColor = typeof data.border == "string" ? data.border : "gray";
+            var useStroke = sampleBorderColor !== "none";
+            context.strokeStyle = sampleBorderColor !== undefined ? sampleBorderColor : "black";
+            context.fillStyle = sampleColor !== undefined ? sampleColor : "black";
 
-            var shp = "boxwhisker";
-            drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+            var halfSize = 0.5 * size;
+            var quarterSize = 0.5 * halfSize;
+
+            context.clearRect(0, 0, size, size);
+            context.fillRect(x1 - halfSize, y1 - quarterSize, size, halfSize);
+
+            context.beginPath();
+            context.moveTo(x1 - halfSize, y1 + halfSize);
+            context.lineTo(x1 + halfSize, y1 + halfSize);
+            context.moveTo(x1 - halfSize, y1 - halfSize);
+            context.lineTo(x1 + halfSize, y1 - halfSize);
+            context.moveTo(x1, y1 + halfSize);
+            context.lineTo(x1, y1 + quarterSize);
+            context.moveTo(x1, y1 - halfSize);
+            context.lineTo(x1, y1 - quarterSize);
+            context.closePath();
+            if (useStroke) context.stroke();
+            if (useStroke) context.strokeRect(x1 - halfSize, y1 - quarterSize, size, halfSize);
+
+            if (useStroke) {
+                context.beginPath();
+                context.moveTo(x1 - halfSize, y1);
+                context.lineTo(x1 + halfSize, y1);
+                context.stroke();
+            }
         };
 
         refreshColor();
@@ -1034,8 +1004,22 @@ InteractiveDataDisplay.BoxNoWhisker = {
             var sampleColor = typeof data.color == "string" ? data.color : "gray";
             var sampleBorderColor = typeof data.border == "string" ? data.border : "gray";
 
-            var shp = "boxnowhisker";
-            drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+            var useStroke = sampleBorderColor !== "none";
+            context.strokeStyle = sampleBorderColor !== undefined ? sampleBorderColor : "black";
+            context.fillStyle = sampleColor !== undefined ? sampleColor : "black";
+
+            var halfSize = 0.5 * size;
+            var quarterSize = 0.5 * halfSize;
+
+            context.clearRect(0, 0, size, size);
+            context.fillRect(x1 - halfSize, y1 - halfSize, size, size);
+
+            if (useStroke) context.strokeRect(x1 - halfSize, y1 - halfSize, size, size);
+            context.beginPath();
+            context.moveTo(x1 - halfSize, y1);
+            context.lineTo(x1 + halfSize, y1);
+            context.closePath();
+            if (useStroke) context.stroke();
         };
 
         refreshColor();
@@ -1255,8 +1239,31 @@ InteractiveDataDisplay.Whisker = {
             var sampleColor = typeof data.color == "string" ? data.color : "gray";
             var sampleBorderColor = typeof data.border == "string" ? data.border : "gray";
 
-            var shp = "whisker";
-            drawShape(context, shp, x1, y1, size, size, 1.0, sampleColor, sampleBorderColor);
+            var useStroke = sampleBorderColor !== "none";
+            context.strokeStyle = sampleBorderColor !== undefined ? sampleBorderColor : "black";
+            context.fillStyle = sampleColor !== undefined ? sampleColor : "black";
+
+            var halfSize = 0.5 * size;
+            var quarterSize = 0.5 * halfSize;
+
+            context.clearRect(0, 0, size, size);
+
+            if (useStroke) {
+                context.beginPath();
+                context.moveTo(x1 - halfSize, y1 + halfSize);
+                context.lineTo(x1 + halfSize, y1 + halfSize);
+
+                context.moveTo(x1 - halfSize, y1 - halfSize);
+                context.lineTo(x1 + halfSize, y1 - halfSize);
+
+                context.moveTo(x1 - halfSize, y1);
+                context.lineTo(x1 + halfSize, y1);
+
+                context.moveTo(x1, y1 + halfSize);
+                context.lineTo(x1, y1 - halfSize);
+
+                context.stroke();
+            }
         };
 
         refreshColor();
@@ -1265,3 +1272,8 @@ InteractiveDataDisplay.Whisker = {
         return { thumbnail: canvas, content: itemDiv };
     }
 };
+InteractiveDataDisplay.Markers.shapes["boxwhisker"] = InteractiveDataDisplay.BoxWhisker;
+InteractiveDataDisplay.Markers.shapes["boxnowhisker"] = InteractiveDataDisplay.BoxNoWhisker;
+InteractiveDataDisplay.Markers.shapes["whisker"] = InteractiveDataDisplay.Whisker;
+InteractiveDataDisplay.Markers.shapes["petals"] = InteractiveDataDisplay.Petal;
+InteractiveDataDisplay.Markers.shapes["bulleye"] = InteractiveDataDisplay.BullEye;
