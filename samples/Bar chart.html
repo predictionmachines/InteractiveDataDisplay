@@ -62,7 +62,6 @@
                     data.color = colors;
                 }
             },
-            
             getBoundingBox: function (marker) {  
                 var barWidth = marker.barWidth;  
                 var xLeft = marker.x - barWidth / 2;  
@@ -92,14 +91,14 @@
                 y[i] = Math.random() * N - N / 2;
                 color[i] = y[i];
             }
-            bars.draw({ y: y, color: color, colorPalette: colorPalette, barWidth: 0.9, shadow: 'grey', shape: barMarker }, 
+            bars.draw({ y: y, color: color, colorPalette: colorPalette, border:'grey', barWidth: 0.9, shadow: 'grey', shape: barMarker }, 
                 { color: "rate" });
         });
     </script>
 </head>
 <body>
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
-        <div data-idd-name="bars" data-idd-plot="markers" data-idd-style="border:grey;">
+        <div data-idd-name="bars" data-idd-plot="markers">
         </div>
     </div>
 </body>
