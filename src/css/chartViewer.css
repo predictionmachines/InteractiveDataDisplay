@@ -19,12 +19,12 @@
     list-style-type: none;
 }
 .probe {
-    width: 18px;
-    height: 55px;
+    width: 40px;
+    height: 40px;
 }
 .dragPoint {
-    width: 24px;
-    height: 55px;
+    width: 40px;
+    height: 40px;
     position: absolute;
     cursor: pointer;
     z-index: 2500;
@@ -48,7 +48,7 @@
 }
 .probeHeader {
     width: 140px;
-    height: 35px;
+    height: 40px;
     line-height: 24px;
     vertical-align: top;
     font-size: 19px;
@@ -253,83 +253,11 @@
     top: 0;
     width: 65px;
 }
-.dsv-onscreennavigation-panner {
-    width: 40px;
-    height: 40px;
-    display: block;
-    background-image: url('icons/pan.png');
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    -webkit-background-size: cover;
-    background-size: cover;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.dsv-onscreennavigation-zoomin {
-    width: 40px;
-    height: 40px;
-    display: block;
-    background-image: url('icons/plus.png');
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    -webkit-background-size: cover;
-    background-size: cover;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 5px;
-}
-.dsv-onscreennavigation-zoomout {
-    width: 40px;
-    height: 40px;
-    display: block;
-    background-image: url('icons/minus.png');
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    -webkit-background-size: cover;
-    background-size: cover;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 5px;
-}
-.dsv-onscreennavigation-logscale {
-    width: 40px;
-    height: 40px;
-    display: block;
-    background-image: url('icons/logscale.png');
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    -webkit-background-size: cover;
-    background-size: cover;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 5px;
-}
-
-.dsv-onscreennavigation-fit {
-    width: 40px;
-    height: 40px;
-    display: block;
-    background-image: url('icons/fit.png');
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    -webkit-background-size: cover;
-    background-size: cover;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 5px;
-}
 .dsv-onscreennavigation-probepull {
     width: 40px;
     height: 40px;
     display: block;
-    position: relative;
-}
-.dsv-onscreennavigation-fit-pressed {
-    width: 40px;
-    height: 40px;
-    display: block;
-    background-image: url('icons/fitPressed.png');
+    background-image: url('icons/ic_place.png');
     -moz-background-size: cover;
     -o-background-size: cover;
     -webkit-background-size: cover;
@@ -337,32 +265,10 @@
     margin-left: auto;
     margin-right: auto;
     margin-top: 5px;
+    cursor: pointer;
 }
-.dsv-onscreennavigation-navigationlock {
-    width: 40px;
-    height: 40px;
-    display: block;
-    background-image: url('icons/lock.png');
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    -webkit-background-size: cover;
-    background-size: cover;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 5px;
-}
-.dsv-onscreennavigation-navigationlockpressed {
-    width: 40px;
-    height: 40px;
-    display: block;
-    background-image: url('icons/lockpressed.png');
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    -webkit-background-size: cover;
-    background-size: cover;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 5px;
+.idd-onscreennavigation-probepull:hover {
+    background-image: url('icons/ic_place_black.png');
 }
 .dsv-leftpanelhidebutton {
     width: 10px;
@@ -377,11 +283,9 @@
     background-position: center center;
     /*background-position-y: center;*/
 }
-
 .dsv-leftpanelhidebutton:hover {
     background-color: #F1F9FF;
 }
-
 .dsv-leftpanelshowbutton {
     width: 10px;
     height: 100%;
@@ -395,7 +299,6 @@
     background-position: center center;
     /*background-position-y: center;*/
 }
-
 .dsv-leftpanelshowbutton:hover {
     background-color: #F1F9FF;
 }
@@ -412,113 +315,10 @@
     display: table-cell;
     vertical-align: middle;
 }
-.dsv-plotlist-card-islog {
-    height: 20px;
-    width: 20px;
-    background-image: url('icons/excl.png');
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    -webkit-background-size: cover;
-    background-size: cover;
-    z-index: 1000;
-    position: absolute;
-    top: 7px;
-    right: 28px;
-    visibility: collapse;
-}
-.dsv-plotlist-card {
-    background-color: white;
-    border: 1px solid black;
-    margin-top: 10px;
-    margin-right: 2px;
-    padding: 5px;
-    cursor: pointer;
-    position: relative;
-}
-.dsv-plotcard-isselected-true {
-    height: 20px;
-    width: 20px;
-    background-image: url('icons/eyeBlue.png');
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    -webkit-background-size: cover;
-    background-size: cover;
-    z-index: 1000;
-    position: absolute;
-    top: 7px;
-    right: 4px;
-}
 
-.dsv-plotcard-isselected-false {
-    height: 20px;
-    width: 20px;
-    background-image: url('icons/eye.png');
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    -webkit-background-size: cover;
-    background-size: cover;
-    z-index: 1000;
-    position: absolute;
-    top: 7px;
-    right: 4px;
-}
-.dsv-plotcard-thumbnail {
-    display: inline;
-    vertical-align: middle;
-    margin-right: 4px;
-    margin-left: 4px;
-}
-.dsv-plotcard-resolved {
-    display: inline-block;
-    color: black;
-}
-
-.dsv-plotcard-unresolved {
-    display: inline-block;
-    color: red;
-    font-style: italic;
-}
 .plotcard-error {
     color: red;
     font-style: italic;
-}
-.dsv-plotcard-title {
-    margin-left: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: clip;
-    font-size: 18px;
-    vertical-align: middle;
-}
-
-.dsv-plotcard-regular {
-    margin-left: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 14px;
-    vertical-align: middle;
-}
-.dsv-plotlist-ul {
-    margin: 0px;
-    padding-left: 10px;
-    list-style-type: none;
-}
-.dsv-plotlist-addplotbutton {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    margin-left: 20px;
-    height: 20px;
-    display: table;
-    text-align: center;
-    float: left;
-    max-width: 100px;
-    cursor: pointer;
-}
-.dsv-plotcard-palette {
-    font-size: 10px;
-    margin-left: 10px;
-    margin-top: 3px;
 }
 @media print {    
     .no-print, .no-print *

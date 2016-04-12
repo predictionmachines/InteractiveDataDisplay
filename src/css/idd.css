@@ -283,3 +283,165 @@
     -webkit-transform: rotate(-90deg);
     -webkit-transform-origin: center;
 }
+/*Navigation panel*/
+.idd-navigation-container {
+    height: auto;
+    position: relative;
+    width: 65px;
+    display:inline-block;
+}
+.idd-navigation-container:focus {
+    outline: none;
+    border: transparent;
+    border-color: inherit;
+}
+.idd-onscreennavigation-panner {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_pan.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+    margin-top: 5px;
+}
+.idd-onscreennavigation-panner-moved {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_pan_black.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+    margin-top: 5px;
+}
+.idd-onscreennavigation-panner:hover {
+    background-image: url('icons/ic_pan_black.png');
+}
+.idd-onscreennavigation-zoomin {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_zoom_in.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-zoomin:hover {
+    background-image: url('icons/ic_zoom_in_black.png');
+}
+.idd-onscreennavigation-zoomout {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_zoom_out.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-zoomout:hover {
+    background-image: url('icons/ic_zoom_out_black.png');
+}
+.idd-onscreennavigation-logscale {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_straighten.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-logscale:hover {
+    background-image: url('icons/ic_straighten_black.png');
+}
+.idd-onscreennavigation-fit {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_center_focus_weak.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-fit:hover {
+    background-image: url('icons/ic_center_focus_weak_black.png');
+}
+.idd-onscreennavigation-fit-pressed {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_center_focus_strong.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-fit-pressed:hover {
+    background-image: url('icons/ic_center_focus_strong_black.png');
+}
+.idd-onscreennavigation-navigationlock {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_lock_open.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-navigationlock:hover {
+    background-image: url('icons/ic_lock_open_black.png');
+}
+.idd-onscreennavigation-navigationlockpressed {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_lock.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-navigationlockpressed:hover {
+    background-image: url('icons/ic_lock_black.png');
+}
