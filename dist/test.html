@@ -1,0 +1,44 @@
+<html>
+<head>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+	<script src="idd.js"></script>
+<link rel="stylesheet" href="idd.css"></link>
+
+<script type="text/javascript">
+        $(document).ready(function () {
+           var timeSeriesChart = InteractiveDataDisplay.asPlot("chart");
+
+var timeSeriesData = JSON.parse('{\
+    "times":["2016-03-28 16:00","2016-03-28 17:00","2016-03-28 18:00"],\
+    "time_locations":[0.6,1.2,1.8],\
+    "values":[3.0, 4.0, 5.0]}');
+
+timeSeriesChart.polyline("Time series", 
+{
+    y: timeSeriesData.values,
+    x: false,
+    stroke: "rgb(89,150,255)",
+    thickness: 3
+});
+	var numAxis = timeSeriesChart.getAxes("bottom");
+	numAxis[0].remove();	
+	
+	var timeAxis = timeSeriesChart.addAxis("bottom", "labels", {
+    labels: timeSeriesData.times,
+    ticks: timeSeriesData.time_locations
+	});    
+		
+	var gridLines = $('#chart > div[data-idd-plot="grid"]');
+	var grid = timeSeriesChart.get(gridLines[0]);
+	grid.xAxis = timeAxis.axis;
+	
+	});
+    </script>
+
+</head>
+<body>
+<div id="chart"  data-idd-plot="chart" style="width: 800px; height: 600px;"/>
+</body>
+</html>
