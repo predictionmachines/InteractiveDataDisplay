@@ -3,54 +3,33 @@
 declare var Rx: any;
 declare var InteractiveDataDisplay: any;
 module ChartViewer {
-    export function createSmallProbe (jqDiv, isTransparent, num?, fill?, scale?) {
+    export function createSmallProbe (jqDiv, num?, fill?, scale?) {
         jqDiv.empty();
 
         var canvasScale = scale !== undefined ? scale : 1;
 
-        var canvas = $("<canvas width='" + (40 * canvasScale + 1) + "' height='" + 40 * canvasScale + "'></canvas>").appendTo(jqDiv);
+        var canvas = $("<canvas width='" + (40 * canvasScale) + "' height='" + 40 * canvasScale + "'></canvas>").appendTo(jqDiv);
         var ctx = (<HTMLCanvasElement>canvas.get(0)).getContext("2d");
-        if (isTransparent) ctx.globalAlpha = 0.7;
         
         var img = new Image();   // Create new img element
-        img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuOWwzfk4AAAJvSURBVGhD1dg7r0xRGMbxg1AR30JCQ+PSCCpxLcQXEFEr+A4IhWiJKKYXH4C4VW4NlUuBApW4JoTwf5M5yeTs/9p7rTVril38kpNn9l7vc/bZe2adWZpMJqOm4ZhoOCYajomGlVZhHy7hIT7h99RHPMBF7EEca2sU07DQGpzCG/zL9AonsRq2ZjYNC2zGU1jJHI+xCbZ2Fg0zHcR3WLES37AfNmOQhhmifNzbVqhGrFX1S2g4IG6bFld+pfhLFN9OGvaIB/YZrEALj1D0YGvYI95tbHBLJ2CzlYYJ8d5d8lZZ6yWyPyc0TNgLG2i+ZGYpu2EdOjRMiE9YG7YIF2AdOjRMiO2BDZuVc5VzjrkP69ChYULsbWzYInyAdejQMKHlB9eQX7AOHRom/IQNW4QfsA4dGia8hw1bhLewDh0aJtyBDZvV6iG+DevQoWHCediwRTgH69ChYULsFm2Ysaucc+WXZe9MNUxYh5IStT5jLaxDh4Y9bsCGtnQdNltp2GMXbGhLO2GzlYYDnsAGtxBr28wkDQcchw1v4RhsZpKGA2Kv/gJWYB7PUfx9kYYZjsJKzOMIbFYvDTPdgxWpcRc2Y5CGmbbhD6xQiVhjK2zGIA0LXIGVKnEZtnYWDQtswDtYsRyx64w1bO0sGhY6ACuXI861NbNpWOEarGCfq7C1imhYYT1KvjN6jTjH1iqiYaUdyPm/OY7ZDlujmIZzOAsrPesM7NwqGs4htgK3YMXDTdh51TSc00bE95sry0cWr9k51TRsYAu+Yrl8/ByZHTsXDRs5jL9Th6ZZcxo2dHrKXmtCwzHRcEw0HBMNx2Oy9B/6jED2Lp0vyQAAAABJRU5ErkJggg==';
-        ctx.drawImage(img, 0, 0, 40, 40);
+        img.src = fill ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC45bDN+TgAAApdJREFUaEPtWc1KW0EUDrjL+9RVN2ZVNC1SaBdREewmYkW00NI+QVEkxJ+2/iBq1KX2CVrJM3Tj1ifIG9yebzhnvFxO4iR3Zm4C94Nvk8yc7zs/czOXVEower3eFLHqyCneVjxghk11iYkjsbbYRCDOJqzxfw+Pyf5NdyCxRtbz3viJQJDFrfG9624yv36STC8eDiTWYK2SSJwkIMSCxkSrc5/MrOyrZgextnKQtK/u04mETwICLGSEl75equaG4fK3TpwkEJgFjGB97ZdqaBS++XgcNgkE5MDezQuDJkHB8KQwAj7Gph8z41Rl+XxAJYim+jiwmrBP4mBzAn66QEFs9Ud52gzL2ocDf11ABYim+nh2a4IhCC1OIF8XaLOtvsuPlOXCnttnffh249RPFyQBXAE0oZCEZvwEHKr8wrETxSTgkWUCQJlADhaTQHmIn+g1Afyo4LaoCWnUquxaeTBzM82VgL1K7F78UcVCsHX5V8znv9BRgOhj5GV8BJIAWvpu60wV9EloeBkfAQWxYxSjC6nq5x8fAQWyXXjV/KEK+yBie62+AJUgmi6EfC/w9h6ggQLaLsyu+n+pR8wg1RegIsRgZyHI7GdBgW0XGp/PVSOjsPHlImz1BagM0XsXolRfQAK2C5vbd6qhYYgYUaovQIWIpgsQrq8dqcZciL0p8+GrL4AQC+YapaijkwUJ2lHa2vmtGhxE7Ik6OlmgYkQ7Su8/ud+TsLaQ0ckCwmzAGHq5/PydH2vGwrwABtiI0zWj0LnvBzJiz8PG91vVOIjvUtWPP/f9gEoS7Shp/yHgs7EanSxgiI0Zo3OrP615/KMz1uYFMMYGjeHXzbbhRJgXwCAbFdOTY14Ao0Qc7DQnw3yJoVCp/AcXkU+yAO498gAAAABJRU5ErkJggg=='
+            :'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC45bDN+TgAAAylJREFUaEPVmdtOMjEUhX0Wn9CHwkPQeIxwwQ0SD1eaqIkHghEidxD1Dfrvb0KT+ScLpu0UEy6+xL1ou9fedGbKuNVqtTYaKW4SUkzl9/d329ipYVvNTUWKsWBqYW5guBoYk60QKYaCiYWZwc/PjxuNRu729tZdXl66drvtdnd3C/gbjc8+Pj4cY5mzmNuoECmGQGJv/PHx0R0fHzvTg2Ds09NTuZDkIqRYhzf/9fXlzs/PpckQLi4u3HQ6bVSEFFfhzb+/v7v9/X1pLAbWGA6HyUVIcRll8+xt07LAWqlFSFHhzbNtcnS+CmumbCcpKmzRHS66Jnu+Dq6JxYW9Y7H0UUWKVegIneFuY/FaeX5+jvoWpFiFjtCZmFtlKicnJ1HfghTL0Ak6wkPK4iAODg6CtGXwsCMnuS2WvjxSLEMnjOIpavGfcHd3RwFB34IUy/gCOApYvJKQLoeM6XQ6+QvgPGPxn3B4eJi/gJwPrjrIlb2Avb09mWwdkCt7AUdHRzLZOiBX9gK63a5MVibXRUyu7AVwa7P4T8h9Gy0eZJwWLQ5CdTmk856Yk6kUq9CJ7+/vKBOpkINc5LRY+ikjxSosZrh+vy+T5oQc5MpdQLGNPj8/ZdKckINc5LRY+ikjRQUdMYozu8VrgbXJQS6LpY8qUlTQEWPw8vIik+fg9fU1qvsgxWXQGc7qp6en0kATzs7Oon+NgRSXQWfo0NvbmzTRBF4UsDY5LJb5FVJcBR0yiiOvxVmIOT5XkeIq6JAxmEwm0kwKrMWarG2xzLsMKdZBpwx3fX0tDcVwc3OT3H2QYh10yhjM5/NGp1TmsgZrsaZpMt8qpBiCLyLmjFSlyStFjxRDscTFVrq6upIGV8Ec5rKGxXL9EKQYCp0ziq0U+3q96dbxSDEGXwRnmJDfzYwZj8dZzIMUY/FF3N/fS9NlGJPLPEgxBTNUHDN6vZ40Dnxm4xrv+zJSTIGOGoPZbFa83zTtP9D4jDGMZU4OpJiKL6L6PwT+RsttHqTYBF8EhzOLC1IPaiFIsSm+iIeHBwfrMg9SzMGiCB50sBbzIMVNQoqbhBQ3h9bWP/HfsYvIwP9AAAAAAElFTkSuQmCC';
+        
+        ctx.drawImage(img, 0, 0, 40 * canvasScale, 40 * canvasScale);
 
         if (num !== undefined) {
-            ctx.fillStyle = fill !== undefined ? 'white' : '#444';
-            var fontsize = (num < 10 ? 14 : 12) * canvasScale;
+            ctx.fillStyle = "white";//fill !== undefined ? 'white' : '#444';
+            var fontsize = (num < 10 ? 14 : 11) * canvasScale;
             ctx.font = fontsize + "px Arial";
             var offsetX = (num < 10 ? 16 : 13) * canvasScale;
             ctx.fillText(num, offsetX, 20 * canvasScale);
         }
     };
 
-    export function createSmallProbes (jqDiv, count, offset) {
-        jqDiv.empty();
-        var width = 40 + offset * count;
-        var height = 40 + offset * count;
-        var canvas = $("<canvas width='" + width + "' height='" + height + "'></canvas>").appendTo(jqDiv);
-
-        var ctx = (<HTMLCanvasElement>canvas.get(0)).getContext("2d");
-        var img = new Image();   // Create new img element
-        img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuOWwzfk4AAAJvSURBVGhD1dg7r0xRGMbxg1AR30JCQ+PSCCpxLcQXEFEr+A4IhWiJKKYXH4C4VW4NlUuBApW4JoTwf5M5yeTs/9p7rTVril38kpNn9l7vc/bZe2adWZpMJqOm4ZhoOCYajomGlVZhHy7hIT7h99RHPMBF7EEca2sU07DQGpzCG/zL9AonsRq2ZjYNC2zGU1jJHI+xCbZ2Fg0zHcR3WLES37AfNmOQhhmifNzbVqhGrFX1S2g4IG6bFld+pfhLFN9OGvaIB/YZrEALj1D0YGvYI95tbHBLJ2CzlYYJ8d5d8lZZ6yWyPyc0TNgLG2i+ZGYpu2EdOjRMiE9YG7YIF2AdOjRMiO2BDZuVc5VzjrkP69ChYULsbWzYInyAdejQMKHlB9eQX7AOHRom/IQNW4QfsA4dGia8hw1bhLewDh0aJtyBDZvV6iG+DevQoWHCediwRTgH69ChYULsFm2Ysaucc+WXZe9MNUxYh5IStT5jLaxDh4Y9bsCGtnQdNltp2GMXbGhLO2GzlYYDnsAGtxBr28wkDQcchw1v4RhsZpKGA2Kv/gJWYB7PUfx9kYYZjsJKzOMIbFYvDTPdgxWpcRc2Y5CGmbbhD6xQiVhjK2zGIA0LXIGVKnEZtnYWDQtswDtYsRyx64w1bO0sGhY6ACuXI861NbNpWOEarGCfq7C1imhYYT1KvjN6jTjH1iqiYaUdyPm/OY7ZDlujmIZzOAsrPesM7NwqGs4htgK3YMXDTdh51TSc00bE95sry0cWr9k51TRsYAu+Yrl8/ByZHTsXDRs5jL9Th6ZZcxo2dHrKXmtCwzHRcEw0HBMNx2Oy9B/6jED2Lp0vyQAAAABJRU5ErkJggg==';
-    
-    
-        var drawProbe = function (top, left) {
-            ctx.drawImage(img, 0, 0, 40, 40);
-        }
-
-        var ofs = (count - 1) * offset;
-        for (var i = 0; i < count; i++) {
-            drawProbe(ofs, ofs);
-            ofs -= offset;
-        }
-    };
     export function ProbePull(hostDiv, d3Div) {
         var _host = hostDiv;
 
-        var draggable = $("<div></div>").addClass("dragPoint").addClass("probe").appendTo(_host);
-        createSmallProbes(draggable, 4, 1.2);
+        var draggable = _host.addClass("dragPoint").addClass("probe");//   $("<div></div>").addClass("dragPoint").addClass("probe").appendTo(_host);
 
         draggable.draggable({
             containment: "document",
@@ -58,7 +37,7 @@ module ChartViewer {
             zIndex: 2500,
             helper: function () {
                 var hdr = $("<div></div>").addClass("dragPoint");
-                createSmallProbe(hdr, true);
+                createSmallProbe(hdr);
                 return hdr;
             },
             appendTo: d3Div

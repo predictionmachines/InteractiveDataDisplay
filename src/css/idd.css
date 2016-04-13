@@ -117,7 +117,7 @@
     border: 1px solid rgba(0,0,0,0.12);
     padding: 5px;
     /*max-height: 400px;*/
-    max-width: 250px;
+    max-width: 225px;
     cursor: default;
     overflow: scroll;
     overflow-y: auto;
@@ -127,7 +127,7 @@
 .idd-legend-item
 {
     /*position: relative;*/
-    width: 240px;
+    width: 215px;
     height: auto;
     background-color: white;
     box-shadow: 0 0 2px rgba(0,0,0, 0.2);
@@ -140,7 +140,7 @@
 }
 .idd-legend-item-title
 {    
-    width: 215px;
+    width: 190px;
     vertical-align: top;
     padding-bottom: 16px;
     padding-left: 16px;
@@ -150,7 +150,7 @@
 }
 .idd-legend-item-title-name
 {
-    width: 120px;
+    width: 95px;
     height: 24px;
     line-height: 24px;
     vertical-align: top;
@@ -176,6 +176,7 @@
     padding-bottom: 16px;
     padding-right: 16px;
     padding-left: 16px;
+    font-family: Segoe UI;
 }
 /*elements for compact legend*/
 .idd-legend-compact
@@ -234,6 +235,7 @@
     padding-bottom: 6px;
     padding-right: 6px;
     padding-left: 6px;
+    font-family: Segoe UI;
 }
 /*legend elements*/
 .idd-legend-item-property

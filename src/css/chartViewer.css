@@ -11,7 +11,7 @@
     border: 1px solid rgba(0,0,0,0.12);
     padding: 5px;
     /*max-height: 400px;*/
-    max-width: 250px;
+    max-width: 225px;
     cursor: default;
     overflow: scroll;
     overflow-y: auto;
@@ -31,7 +31,7 @@
 }
 .probeCard {
     position: relative;
-    width: 240px;
+    width: 215px;
     height: auto;
     background-color: white;
     box-shadow: 0 0 2px rgba(0,0,0, 0.2);
@@ -47,7 +47,7 @@
     /*background-color: #F1F9FF;*/
 }
 .probeHeader {
-    width: 140px;
+    width: 115px;
     height: 40px;
     line-height: 24px;
     vertical-align: top;
@@ -65,11 +65,11 @@
     width: 110px;
     height: 24px;
     line-height: 24px;
-    vertical-align: top;
-    font-size: 16px;
+    vertical-align: middle;
+    font-size: 15px;
     font-family: Segoe UI;
-    margin-left: 16px;
-    margin-right: 16px;
+    margin-left: 8px;
+    margin-right: 8px;
     display:inline-block;
     overflow: hidden;
     white-space: nowrap;
@@ -115,24 +115,15 @@
     top: 0px;
     right: 0px;
 }
-
 .probecard-record {
     margin-top: 5px;
     margin-bottom: 5px;
     padding: 16px;
+    font-size: 14px;
+    font-family: Segoe UI;
 }
 
-.probecard-highlighted {
-    background-color: #F1F9FF;
-}
 
-.probecard-title {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: middle;
-    margin-bottom: 10px;
-}
 .checkButton {
     width: 13px;
     height: 13px;
@@ -144,10 +135,10 @@
     border: 1px solid #888;
     float: left;
 }
-
 .checkButton-checked {
     background-color: #365C95;
 }
+
 .dsv-propagate {
     z-index: 1000;
     position: absolute;
@@ -159,7 +150,6 @@
     background-color: transparent;
     position: relative;
 }
-
 .dsv-onscreennavigation {
     display: block;
     background-color: transparent;
@@ -257,7 +247,7 @@
     width: 40px;
     height: 40px;
     display: block;
-    background-image: url('icons/ic_place.png');
+    background-image: url('icons/ic_place_standart.png');
     -moz-background-size: cover;
     -o-background-size: cover;
     -webkit-background-size: cover;
@@ -266,8 +256,9 @@
     margin-right: auto;
     margin-top: 5px;
     cursor: pointer;
+    position: relative;
 }
-.idd-onscreennavigation-probepull:hover {
+.dsv-onscreennavigation-probepull:hover {
     background-image: url('icons/ic_place_black.png');
 }
 .dsv-leftpanelhidebutton {
