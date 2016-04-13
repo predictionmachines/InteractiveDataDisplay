@@ -1,5 +1,7 @@
 Interactive Data Display
 ------------------------
+[![Build Status](https://travis-ci.org/itislab/InteractiveDataDisplay.svg?branch=travis)](https://travis-ci.org/itislab/InteractiveDataDisplay)
+------------------------
 
 Interactive Data Display for JavaScript (IDD for short) is a set of controls for adding interactive visualization of dynamic data to your application. 
 It allows to create line graphs, bubble charts, heat maps and other complex 2D plots which are very common in scientific software. 
