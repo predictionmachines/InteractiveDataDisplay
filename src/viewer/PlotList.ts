@@ -1,8 +1,7 @@
-﻿
-/// <reference path="viewstate.ts" />
-/// <reference path="utils.ts" />
-/// <reference path="plotregistry.ts" />
-/// <reference path="plotviewer.ts" />
+﻿/// <reference path="ViewState.ts" />
+/// <reference path="Utils.ts" />
+/// <reference path="PlotRegistry.ts" />
+/// <reference path="PlotViewer.ts" />
 
 module ChartViewer {
     export function PlotList(rootDiv, plotViewer, persistentViewState, transientViewState) {
