@@ -1645,7 +1645,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                                 removeLegendItem(plotLegends[j]);
                             }
                     });
-                    legend[0].style = "display: none";
+                    $(legend[0]).css( "display", "none" );
                     if (plotLegends.length == 0) divStyle.display = "none";
                 };
 
