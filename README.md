@@ -1,6 +1,6 @@
 Interactive Data Display
 ------------------------
-[![Build Status](https://travis-ci.org/itislab/InteractiveDataDisplay.svg?branch=travis)](https://travis-ci.org/itislab/InteractiveDataDisplay)
+[![Build Status](https://travis-ci.org/itislab/InteractiveDataDisplay.svg?branch=master)](https://travis-ci.org/itislab/InteractiveDataDisplay)
 ------------------------
 
 Interactive Data Display for JavaScript (IDD for short) is a set of controls for adding interactive visualization of dynamic data to your application. 
