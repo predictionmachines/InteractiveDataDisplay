@@ -2,7 +2,7 @@
 /// <reference path="ViewState.ts" />
 /// <reference path="onScreenNavigation.ts" />
 /// <reference path="PlotRegistry.ts" />
-/// <reference path="Uncertainlineplot.ts" />
+/// <reference path="UncertainLinePlot.ts" />
 /// <reference path="PlotViewer.ts" />
 module Plot {
     export module MarkerShape {

@@ -1,5 +1,5 @@
-﻿/// <reference path="plotlist.ts" />
-/// <reference path="plotviewer.ts" />
+﻿/// <reference path="PlotList.ts" />
+/// <reference path="PlotViewer.ts" />
 /// <reference path="ViewState.ts" />
 module ChartViewer {
     export class ChartViewerControl implements ViewerControl {

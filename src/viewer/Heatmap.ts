@@ -1,6 +1,6 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="plotregistry.ts" />
-/// <reference path="utils.ts" />
+/// <reference path="PlotRegistry.ts" />
+/// <reference path="Utils.ts" />
 declare var InteractiveDataDisplay: any;
 declare var Microsoft: any;
 
