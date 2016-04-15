@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="utils.ts" />
-/// <reference path="plotregistry.ts" />
-/// <reference path="uncertainlineplot.ts" />
+/// <reference path="Utils.ts" />
+/// <reference path="PlotRegistry.ts" />
+/// <reference path="UncertainLinePlot.ts" />
 declare var InteractiveDataDisplay: any;
 declare var Microsoft: any;
 
