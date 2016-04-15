@@ -47,12 +47,11 @@
     /*background-color: #F1F9FF;*/
 }
 .probeHeader {
-    width: 115px;
+    width: 160px;
     height: 40px;
     line-height: 24px;
     vertical-align: top;
     font-size: 19px;
-    font-family: Segoe UI;
     display:inline-block;
     overflow: hidden;
     white-space: nowrap;
@@ -65,9 +64,8 @@
     width: 110px;
     height: 24px;
     line-height: 24px;
-    vertical-align: middle;
+    vertical-align: top;
     font-size: 15px;
-    font-family: Segoe UI;
     margin-left: 8px;
     margin-right: 8px;
     display:inline-block;
@@ -120,7 +118,8 @@
     margin-bottom: 5px;
     padding: 16px;
     font-size: 14px;
-    font-family: Segoe UI;
+    overflow:hidden;
+    width: 140px;
 }
 
 
