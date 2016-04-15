@@ -121,8 +121,6 @@
     overflow:hidden;
     width: 140px;
 }
-
-
 .checkButton {
     width: 13px;
     height: 13px;
@@ -138,13 +136,7 @@
     background-color: #365C95;
 }
 
-.dsv-propagate {
-    z-index: 1000;
-    position: absolute;
-    top: 0;
-    left: 0;
-    background-color: transparent;
-}
+
 .dsv-onscreennavigationcontainer {
     background-color: transparent;
     position: relative;
@@ -156,11 +148,7 @@
     top: 10px;
     right: 10px;
 }
-.dsv-ploteditor-record {
-    display: inline-block;
-    margin-left: 30px;
-    margin-top: 10px;
-}
+
 .dsv-visualizaition-control {
     width: 100%;
     height: 100%;
@@ -210,17 +198,6 @@
     right: 65px;
     top: 0;
     /*float: right;*/
-}
-.dsv-plot-editor {
-    width: 100%;
-    height: 100%;
-    display: block;
-    float: right;
-    overflow-y: auto;
-    overflow-x: hidden;
-    position: absolute;
-    top: 0px;
-    left: 0px;
 }
 
 /*Plot list base style*/

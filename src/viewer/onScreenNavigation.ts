@@ -47,66 +47,6 @@ module ChartViewer {
         });
     };
 
-    export function LogScaleSwitcher(d3Chart, persistentViewState) {
-        var prevState = undefined;
-        var switchToState = function (state) {
-            if (state !== prevState) {
-                switch (state) {
-                    case 0:
-                        d3Chart.xDataTransform = undefined;
-                        d3Chart.yDataTransform = undefined;
-                        break;
-                    case 1:
-                        d3Chart.xDataTransform = InteractiveDataDisplay.logTransform;
-                        d3Chart.yDataTransform = undefined;
-                        break;
-                    case 2:
-                        d3Chart.xDataTransform = undefined;
-                        d3Chart.yDataTransform = InteractiveDataDisplay.logTransform;
-                        break;
-                    case 3:
-                        d3Chart.xDataTransform = InteractiveDataDisplay.logTransform;
-                        d3Chart.yDataTransform = InteractiveDataDisplay.logTransform;
-                        break;
-                }
-                prevState = state;
-            }
-        }
-
-        if (persistentViewState !== undefined) {
-
-            var initialState = persistentViewState.axisTransform ? (persistentViewState.axisTransform.x && persistentViewState.axisTransform.x == "log10" ? 1 : 0) |
-                (persistentViewState.axisTransform.y && persistentViewState.axisTransform.y == "log10" ? 2 : 0) :
-                0;
-            switchToState(initialState);
-
-            var _viewStateUpdateCallback = function (state, propName) {
-                if (propName === "axisTransform") {
-                    var state1 = persistentViewState.axisTransform ? (persistentViewState.axisTransform.x && persistentViewState.axisTransform.x == "log10" ? 1 : 0) |
-                        (persistentViewState.axisTransform.y && persistentViewState.axisTransform.y == "log10" ? 2 : 0) :
-                        0;
-                    switchToState(state1);
-                }
-            };
-            persistentViewState.subscribe(_viewStateUpdateCallback);
-        }
-
-        this.switch = function () {
-            if (d3Chart.mapControl) return;
-            var state = (((d3Chart.xDataTransform ? 1 : 0) | (d3Chart.yDataTransform ? 2 : 0)) + 1) % 4;
-            switchToState(state);
-
-            if (persistentViewState !== undefined) {
-                persistentViewState.axisTransform = {
-                    x: d3Chart.xDataTransform && d3Chart.xDataTransform.type,
-                    y: d3Chart.yDataTransform && d3Chart.yDataTransform.type,
-                };
-            }
-
-            d3Chart.fitToView(); // doing this manually
-        }
-    };
-
     export function OnScreenNavigation(div, d3Chart, persistentViewState) {
         var that = this;
         
