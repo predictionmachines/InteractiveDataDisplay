@@ -1,8 +1,8 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
-/// <reference path="draggabledomplot.ts" />
-/// <reference path="utils.ts" />
-/// <reference path="onscreennavigation.ts" />
+/// <reference path="DraggableDomPlot.ts" />
+/// <reference path="Utils.ts" />
+/// <reference path="onScreenNavigation.ts" />
 declare var InteractiveDataDisplay: any;
 declare var Microsoft: any;
 module ChartViewer {

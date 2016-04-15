@@ -18,7 +18,7 @@ module ChartViewer {
         ctx.drawImage(img, 0, 0, 40 * canvasScale, 40 * canvasScale);
 
         if (num !== undefined) {
-            ctx.fillStyle = "white";//fill !== undefined ? 'white' : '#444';
+            ctx.fillStyle = "white";
             var fontsize = (num < 10 ? 14 : 11) * canvasScale;
             ctx.font = fontsize + "px Arial";
             var offsetX = (num < 10 ? 16 : 13) * canvasScale;
@@ -29,8 +29,7 @@ module ChartViewer {
     export function ProbePull(hostDiv, d3Div) {
         var _host = hostDiv;
 
-        var draggable = _host.addClass("dragPoint").addClass("probe");//   $("<div></div>").addClass("dragPoint").addClass("probe").appendTo(_host);
-
+        var draggable = $("<div></div>").addClass("dragPoint").addClass("probe").appendTo(_host);
         draggable.draggable({
             containment: "document",
             scroll: false,
