@@ -145,7 +145,7 @@ module ChartViewer {
             var plots = [heatmap, heatmap_nav];
            
             heatmap_nav.opacity = 0.5;
-            heatmap_nav.palette = InteractiveDataDisplay.ColorPalette.parse("0=#00000000=#00000080=1");
+            heatmap_nav.colorPalette = InteractiveDataDisplay.ColorPalette.parse("0=#00000000=#00000080=1");
             heatmap_nav.getTooltip = function (xd, yd, xp, yp) {
                 return undefined;
             }
@@ -261,8 +261,8 @@ module ChartViewer {
             var drawArgs = {
                 x: undefined,
                 y: undefined,
-                f: undefined,
-                palette: undefined
+                values: undefined,
+                colorPalette: undefined
             };
 
             if (!heatmap.x || !heatmap.y || !heatmap.values) return;
@@ -290,7 +290,7 @@ module ChartViewer {
                     };
                 }
 
-                drawArgs.f = r.m;
+                drawArgs.values = r.m;
                 drawArgs.x = r.x;
                 drawArgs.y = r.y;
 
@@ -326,7 +326,7 @@ module ChartViewer {
                     };
                 }
 
-                drawArgs.f = r.f;
+                drawArgs.values = r.f;
                 plots[0].values = r.f;
                 plots[0].f_formatter = getFormatter(r.f, get2dRange);
 
@@ -344,8 +344,8 @@ module ChartViewer {
                 plots[1].x = undefined;
                 plots[1].y = undefined;
             }
-            plots[0].range = get2dRange(drawArgs.f);
-            drawArgs.palette = Heatmap.BuildPalette(heatmap, plots[0].range.min, plots[0].range.max);
+            plots[0].range = get2dRange(drawArgs.values);
+            drawArgs.colorPalette = Heatmap.BuildPalette(heatmap, plots[0].range.min, plots[0].range.max);
             plots[0].draw(drawArgs, heatmap.titles);
 
         }

@@ -21,26 +21,8 @@ module ChartViewer {
             // except it also can sort data series by x.
             var plot = plots[0];
             var bandDef = <Plot.BandDefinition><any>plotDefinition;
-            var drawArgs = {
-                x: [],
-                y1: [],
-                y2: [],
-                fill: undefined,
-            }
-
-            drawArgs.x = bandDef.x;
-
-            var y1 = bandDef.y1;
-            var y2 = bandDef.y2;
-           
-            var len = Math.min(drawArgs.x.length,
-                Math.min(y1.length, y2.length));
-            drawArgs.y1 = CutArray(y1, len);
-            drawArgs.y2 = CutArray(y2, len);
-            drawArgs.x = CutArray(drawArgs.x, len);
-            drawArgs.fill = bandDef.fill;
-   
-            plot.draw(drawArgs);
+            
+            plot.draw(bandDef);
         }
     }
 }

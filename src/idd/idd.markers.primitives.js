@@ -56,6 +56,7 @@
                 if(n > 0 && typeof(data.color[0]) === "number"){ // color is a data series                 
                     var palette = data.colorPalette;
                     if(palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
+                    if (typeof palette == 'string') palette = new InteractiveDataDisplay.ColorPalette.parse(palette);
                     if (palette != undefined && palette.isNormalized) {
                         var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
                         r = InteractiveDataDisplay.Utils.makeNonEqual(r);
@@ -82,13 +83,12 @@
             if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
             if (InteractiveDataDisplay.Utils.isArray(data.size)) {
                 if (data.size.length != n) throw "Length of the array 'size' is different than length of the array 'y'"
-                if (data.sizePalette != undefined) { // 'size' is a data series 
-                    var palette = data.sizePalette;
-                    if (palette.isNormalized) {
-                        var r = InteractiveDataDisplay.Utils.getMinMax(data.size);
-                        r = InteractiveDataDisplay.Utils.makeNonEqual(r);
-                        data.sizePalette = palette = new InteractiveDataDisplay.SizePalette(false, palette.sizeRange, r);
-                    }
+                if (data.sizeRange != undefined) { // 'size' is a data series 
+                    var sizeRange = data.sizeRange ? data.sizeRange : { min: 5, max: 50 }; //var palette = data.sizePalette;
+                    var r = InteractiveDataDisplay.Utils.getMinMax(data.size);
+                    r = InteractiveDataDisplay.Utils.makeNonEqual(r);
+                    data.sizePalette = palette = new InteractiveDataDisplay.SizePalette(false, sizeRange, r);
+                    
                     for (var i = 0; i < n; i++) {
                         var size = data.size[i];
                         if (size != size) // NaN

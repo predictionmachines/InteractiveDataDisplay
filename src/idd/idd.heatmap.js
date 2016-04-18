@@ -23,9 +23,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     // Initialization (#1)
     var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv2d);
     var initialData = initializer(div);
-    if (initialData && typeof initialData.y !== 'undefined' && typeof initialData.f !== 'undefined') {
+    if (initialData && typeof initialData.y !== 'undefined' && typeof initialData.values !== 'undefined') {
         var y = initialData.y;
-        var f = initialData.f;
+        var f = initialData.values;
         var n = y.length;
         var m = f.length;
         if (n > 1 && m > 0 && y[0] > y[1]) {
@@ -70,7 +70,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var _paletteColors;
 
     loadOpacity((initialData && typeof (initialData.opacity) != 'undefined') ? parseFloat(initialData.opacity) : 1.0);
-    loadPalette((initialData && typeof (initialData.palette) != 'undefined') ? initialData.palette : InteractiveDataDisplay.palettes.grayscale);
+    loadPalette((initialData && typeof (initialData.colorPalette) != 'undefined') ? initialData.colorPalette : InteractiveDataDisplay.palettes.grayscale);
 
     var findFminmax = function () {
         var n = _f.length;
@@ -108,7 +108,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     };
 
     this.draw = function (data, titles) {
-        var f = data.f;
+        var f = data.values;
         if (!f) throw "Data series f is undefined";
         var n = f.length;
         var m = f[0].length;
@@ -145,8 +145,8 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         if (data && typeof (data.opacity) != 'undefined') {
             loadOpacity(parseFloat(data.opacity));
         }
-        if (data && typeof (data.palette) != 'undefined')
-            loadPalette(data.palette);
+        if (data && typeof (data.colorPalette) != 'undefined')
+            loadPalette(data.colorPalette);
         if (_palette.isNormalized) findFminmax();
 
         _dataChanged = true;
@@ -557,16 +557,13 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
 
         var onLegendRemove = function () {
             that.host.unbind("appearanceChanged");
-
-            //div[0].innerHTML = "";
-            //div.removeClass("idd-legend-item");
         };
 
         return { name: nameDiv, legend: {thumbnail: canvas, content: infoDiv}, onLegendRemove: onLegendRemove };
     };
 
     // Initialization 
-    if (initialData && typeof initialData.f != 'undefined')
+    if (initialData && typeof initialData.values != 'undefined')
         this.draw(initialData);
 };
 InteractiveDataDisplay.Heatmap.prototype = new InteractiveDataDisplay.CanvasPlot();

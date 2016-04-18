@@ -87,7 +87,7 @@ declare module Plot {
         y?: string;
     };
     type LineDefinition = {
-        x: number[];
+        x?: number[];
         y: number[] | Quantiles;
         stroke?: Color;
         thickness?: number;
@@ -99,7 +99,7 @@ declare module Plot {
         titles?: LineTitles;
     };
     type BandDefinition = {
-        x: number[];
+        x?: number[];
         y1: number[];
         y2: number[];
         fill?: Color;
@@ -115,7 +115,7 @@ declare module Plot {
         titles?: BoxPlotTitles;
     };
     type MarkersDefinition = {
-        x: number[];
+        x?: number[];
         y: number[];
         /**use Plot.MarkerShape*/
         shape?: string;
@@ -123,7 +123,7 @@ declare module Plot {
         colorPalette?: ColorPalette;
         size?: number | number[] | Quantiles;
         sizeRange?: SizeRange;
-        borderColor?: Color;
+        border?: Color;
         displayName?: string;
         titles?: MarkersTitles;
     };

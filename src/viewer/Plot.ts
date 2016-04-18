@@ -58,7 +58,7 @@ module Plot {
     export type BandTitles = { x?: string, y1?: string, y2?: string }; 
     export type BoxPlotTitles = { x?: string, y?: string };
     export type LineDefinition = {
-        x: number[];
+        x?: number[];
         y: number[] | Quantiles;
         stroke?: Color;
         thickness?: number;
@@ -69,7 +69,7 @@ module Plot {
         titles?: LineTitles;
     }
     export type BandDefinition = {
-        x: number[];
+        x?: number[];
         y1: number[];
         y2: number[];
         fill?: Color;
@@ -85,14 +85,14 @@ module Plot {
         titles?: BoxPlotTitles;
     }
     export type MarkersDefinition = {
-        x: number[];
+        x?: number[];
         y: number[];
         shape?: string;
         color?: Color | number[] | Quantiles;
         colorPalette?: ColorPalette;
         size?: number | number[] | Quantiles;
         sizeRange?: SizeRange;
-        borderColor?: Color;
+        border?: Color;
         displayName?: string
         titles?: MarkersTitles;
     }

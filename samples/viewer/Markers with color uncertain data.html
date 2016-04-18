@@ -45,7 +45,7 @@
             }
             ChartViewer.show($("#chart"), {
                 "markers": Plot.markers({
-                    x: x, y: y, shape: 'circle', color: { median: color_mean, lower95: color_l95, upper95: color_u95, lower68: color_l68, upper68: color_u68 },
+                    x: x, y: y, shape:'bulleye', color: { median: color_mean, lower95: color_l95, upper95: color_u95, lower68: color_l68, upper68: color_u68 },
                     size: 15.0, colorPalette: 'brown, orange, yellow, lightgreen, blue', titles: { x: "lon", y: "lat", size: "s", color: "wheat" } })
             });
         });

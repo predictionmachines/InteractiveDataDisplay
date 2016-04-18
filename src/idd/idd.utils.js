@@ -206,14 +206,14 @@ InteractiveDataDisplay.Utils =
         
         getMinMaxForPair: function (arrayx, arrayy) {
             if (!arrayx || arrayx.length === 0) return undefined;
-            if (!arrayy || arrayx.length !== arrayy.length) throw 'Arrays should be equal';
+            if (!arrayy || ((arrayx.length !== arrayy.length) && (!arrayy.median || arrayy.median.length !== arrayx.length))) throw 'Arrays should be equal';
             var n = arrayx.length;
             var minx, maxx;
             var miny, maxy;
             var vx, vy;
             for (var i = 0; i < n; i++) {
                 vx = arrayx[i];
-                vy = arrayy[i];
+                vy = arrayy.median ? arrayy.median[i] : arrayy[i];
 
                 if (isNaN(vx) || isNaN(vy)) continue;
 
@@ -223,7 +223,7 @@ InteractiveDataDisplay.Utils =
             }
             for (i++; i < n; i++) {
                 vx = arrayx[i];
-                vy = arrayy[i];
+                vy = arrayy.median ? arrayy.median[i] : arrayy[i];
 
                 if (isNaN(vx) || isNaN(vy)) continue;
 

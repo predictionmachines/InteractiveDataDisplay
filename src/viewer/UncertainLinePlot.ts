@@ -19,39 +19,37 @@ module ChartViewer {
 
             // default styles:
             if (initialData) {
-                _fill_68 = typeof initialData.fill_68 != "undefined" ? initialData.fill_68 : _fill_68;
-                _fill_95 = typeof initialData.fill_95 != "undefined" ? initialData.fill_95 : _fill_95;
+                _fill_68 = typeof initialData.fill68 != "undefined" ? initialData.fill68 : _fill_68;
+                _fill_95 = typeof initialData.fill95 != "undefined" ? initialData.fill95 : _fill_95;
                 _stroke = typeof initialData.stroke != "undefined" ? initialData.stroke : _stroke;
                 _thickness = typeof initialData.thickness != "undefined" ? initialData.thickness : _thickness;
 
             }
 
             this.draw = function (data) {
-                var y_mean = data.y_mean;
+                var y_mean = InteractiveDataDisplay.Utils.isArray(data.y) ? data.y : data.y.median;
                 if (!y_mean) throw "Data series y_mean is undefined";
                 var n = y_mean.length;
 
-                var y_u68 = data.y_u68;
+                var y_u68 = data.y.upper68;
                 if (y_u68 && y_u68.length !== n)
                     throw "Data series y_u68 and y_mean have different lengths";
 
-                var y_l68 = data.y_l68;
+                var y_l68 = data.y.lower68;
                 if (y_l68 && y_l68.length !== n)
                     throw "Data series y_l68 and y_mean have different lengths";
 
-                var y_u95 = data.y_u95;
+                var y_u95 = data.y.upper95;
                 if (y_u95 && y_u95.length !== n)
                     throw "Data series y_u95 and y_mean have different lengths";
 
-                var y_l95 = data.y_l95;
+                var y_l95 = data.y.lower95;
                 if (y_l95 && y_l95.length !== n)
                     throw "Data series y_l95 and y_mean have different lengths";
 
                 if (!data.x) {
                     data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
                 }
-
-                if (n != data.x.length) throw "Data series x and y1,y2 have different lengths";
                 _y_mean = y_mean;
                 _y_u68 = y_u68;
                 _y_l68 = y_l68;
@@ -59,9 +57,78 @@ module ChartViewer {
                 _y_l95 = y_l95;
                 _x = data.x;
 
+                var doSort = (!data.treatAs || data.treatAs == "function") && !IsOrderedArray(_x);
+                if (InteractiveDataDisplay.Utils.isArray(y_mean)) { // certain values
+                    _y_mean = y_mean;
+                    if (doSort) {
+                        var len = Math.min(_x.length, y_mean.length);
+                        _y_mean = CutArray(y_mean, len);
+                        _x = CutArray(_x, len);
+                        if (doSort) {
+                            var forSort = [];
+                            for (var i = 0; i < len; i++)
+                                if (!isNaN(_x[i])) {
+                                    forSort.push({
+                                        x: _x[i],
+                                        y_mean: _y_mean[i],
+                                    });
+                                }
+                            forSort.sort(function (a, b) { return a.x - b.x; });
+                            _y_mean = [];
+                            _x = [];
+                            for (var i = 0; i < forSort.length; i++) {
+                                _y_mean.push(forSort[i].y_mean);
+                                _x.push(forSort[i].x);
+                            }
+                        }
+                    }
+                } else { // uncertain values
+                    var y = data.y;
+                    var len = Math.min(_x.length,
+                        Math.min(y.median.length,
+                            Math.min(y.upper68.length,
+                                Math.min(y.lower68.length,
+                                    Math.min(y.upper95.length, y.lower95.length)))));
+                    _y_mean = CutArray(y.median, len);
+                    _y_u68 = CutArray(y.upper68, len);
+                    _y_l68 = CutArray(y.lower68, len);
+                    _y_u95 = CutArray(y.upper95, len);
+                    _y_l95 = CutArray(y.lower95, len);
+                    _x = CutArray(_x, len);
+                    if (doSort) {
+                        var forSort = [];
+                        for (var i = 0; i < len; i++) {
+                            if (!isNaN(_x[i])) {
+                                forSort.push({
+                                    x: _x[i],
+                                    y_mean: _y_mean[i],
+                                    y_u68: _y_u68[i],
+                                    y_l68: _y_l68[i],
+                                    y_u95: _y_u95[i],
+                                    y_l95: _y_l95[i]
+                                });
+                            }
+                        }
+                        forSort.sort(function (a, b) { return a.x - b.x; });
+                        _y_mean = [];
+                        _y_u68 = [];
+                        _y_l68 = [];
+                        _y_u95 = [];
+                        _y_l95 = [];
+                        _x = [];
+                        for (var i = 0; i < forSort.length; i++) {
+                            _y_mean.push(forSort[i].y_mean);
+                            _y_u68.push(forSort[i].y_u68);
+                            _y_l68.push(forSort[i].y_l68);
+                            _y_u95.push(forSort[i].y_u95);
+                            _y_l95.push(forSort[i].y_l95);
+                            _x.push(forSort[i].x);
+                        }
+                    }
+                }
                 // styles:
-                _fill_68 = typeof data.fill_68 != "undefined" ? data.fill_68 : _fill_68;
-                _fill_95 = typeof data.fill_95 != "undefined" ? data.fill_95 : _fill_95;
+                _fill_68 = typeof data.fill68 != "undefined" ? data.fill68 : _fill_68;
+                _fill_95 = typeof data.fill95 != "undefined" ? data.fill95 : _fill_95;
                 _stroke = typeof data.stroke != "undefined" ? data.stroke : _stroke;
                 _thickness = typeof data.thickness != "undefined" ? data.thickness : _thickness;
 

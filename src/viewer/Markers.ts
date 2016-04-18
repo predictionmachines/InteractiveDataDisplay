@@ -85,9 +85,6 @@ module ChartViewer {
 
                 if (resultMarkers.length > 0) {
                     var result = $("<div></div>");
-                    //var thumbnail = Markers.createThumbnail(<Plot.MarkersDefinition><any>plotDefinition);
-                    //thumbnail.css("float", "left").css("margin-right", 3).appendTo(result);
-
                     var toolTip = plotDefinition.displayName != undefined ? plotDefinition.displayName : '(not specified)';
                     var ttHeader = $("<div></div>").addClass("probecard-title").text(toolTip);
                     toolTip = "";
@@ -107,127 +104,36 @@ module ChartViewer {
         },
 
         draw(plots: IDDPlot[], plotDefinition: PlotInfo) {
-                var plot = <Plot.MarkersDefinition><any>plotDefinition;
-                if (!plot.shape) {
-                    plot.shape = "box";
-                }
-                var drawArgs = {
-                    x: undefined,
-                    y: undefined,
-                    shape: undefined,
-                    u95: undefined,
-                    l95: undefined,
-                    u68: undefined,
-                    l68: undefined,
-                    y_mean: undefined,
-                    color: undefined,
-                    colorPalette: undefined,
-                    //uncertainColorPalette: undefined,
-                    size: undefined,
-                    sizePalette: undefined,
-                    //maxDelta: undefined,
-                    bullEyeShape: undefined,
-                    border: undefined
-                };
-                var toolTipData = {
-                    x: undefined,
-                    y: undefined,
-                    median: undefined,
-                    color: undefined,
-                    size: undefined
-                };
-                var toolTipFormatters = {};
-                var colorRange, sizeRange;
-                drawArgs.border = plot.borderColor;
-                if (plot.x == undefined && !InteractiveDataDisplay.Utils.isArray(plot.y)) {
-                    plot.x = [];
-                    for (var i = 0; i < plot.y["median"].length; i++) plot.x.push(i);
-                }
-                drawArgs.x = plot.x;
-                if (drawArgs.y === undefined && InteractiveDataDisplay.Utils.isArray(plot.y))
-                    drawArgs.y = plot.y;
-                else
-                    drawArgs.y = (<Plot.Quantiles><any>plot.y).median;
+            var plot = <Plot.MarkersDefinition><any>plotDefinition;
+            var toolTipData = {
+                x: undefined,
+                y: undefined,
+                median: undefined,
+                color: undefined,
+                size: undefined
+            };
+            var toolTipFormatters = {};
+            var colorRange, sizeRange;
+           
+            toolTipData[getTitle(plotDefinition, "x")] = plot.x;
 
-                var len = Math.min(drawArgs.x.length, drawArgs.y.length);
-                if (drawArgs.y !== undefined) {
-                    drawArgs.x = CutArray(drawArgs.x, len);
-                    drawArgs.y = CutArray(drawArgs.y, len);
-                }
+            if (plot.y !== undefined) {
+                toolTipData[getTitle(plotDefinition, "y")] = plot.y;
+            }
+           
+            if (!InteractiveDataDisplay.Utils.isArray(plot.y)) {
+                var y = <Plot.Quantiles><any>plot.y;
 
-                toolTipData[getTitle(plotDefinition, "x")] = drawArgs.x;
-
-                if (plot.y !== undefined) {
-                    toolTipData[getTitle(plotDefinition, "y")] = drawArgs.y;
-                }
-                var getDataFromPalette = function (data, d3Palette) {
-                    var result = [];
-                    var cl = Math.min(drawArgs.x.length, data.length);
-                    for (var i = 0; i < cl; i++) {
-                        var rgba = d3Palette ? d3Palette.getRgba(data[i]) : { r: 0, g: 0, b: 0, a: 0.2 };
-                        result.push("rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")");
-                    }
-                    return result;
-                }
-
-                if (!InteractiveDataDisplay.Utils.isArray(plot.y)) {
-                    //Y is uncertainty, using box&whisker
-                    switch (plot.shape) {
-                        case "boxnowhisker":
-                            drawArgs.shape = InteractiveDataDisplay.BoxNoWhisker;
-                            break;
-                        case "boxwhisker":
-                            drawArgs.shape = InteractiveDataDisplay.BoxWhisker;
-                            break;
-                        case "whisker":
-                            drawArgs.shape = InteractiveDataDisplay.Whisker;
-                            break;
-                        default:
-                            drawArgs.shape = InteractiveDataDisplay.BoxWhisker;
-                            break;
-                    }
-                    var y = <Plot.Quantiles><any>plot.y;
-                    drawArgs.u95 = y.upper95;
-                    drawArgs.l95 = y.lower95;
-                    drawArgs.u68 = y.upper68;
-                    drawArgs.l68 = y.lower68;
-                    drawArgs.y_mean = y.median;
-
-                    toolTipData[getTitle(plotDefinition, "y") + " median"] = y.median;
-                    toolTipData["upper 68%"] = y.upper68;
-                    toolTipData["lower 68%"] = y.lower68;
-                    toolTipData["upper 95%"] = y.upper95;
-                    toolTipData["lower 95%"] = y.lower95;
-                } else {
-                    if (plot.shape === "boxnowhisker" || plot.shape === "boxwhisker" || plot.shape === "whisker")
-                        plot.shape = "box";
-                }
-
-                if (typeof plot.color === "undefined") {
-                    if (drawArgs.shape === undefined) drawArgs.shape = plot.shape;
-                    if (InteractiveDataDisplay.Utils.isArray(plot.y)) drawArgs.color = plot.color = "#1F497D";
-                }
-                else if (typeof plot.color === "string") {
-                    if (drawArgs.shape === undefined) drawArgs.shape = plot.shape;
-                    drawArgs.color = <string>plot.color;
-
-                }
-                else if (InteractiveDataDisplay.Utils.isArray(plot.color)) {
-                    if (drawArgs.shape === undefined) drawArgs.shape = plot.shape;
+                toolTipData[getTitle(plotDefinition, "y") + " median"] = y.median;
+                toolTipData["upper 68%"] = y.upper68;
+                toolTipData["lower 68%"] = y.lower68;
+                toolTipData["upper 95%"] = y.upper95;
+                toolTipData["lower 95%"] = y.lower95;
+            } else {
+                if (InteractiveDataDisplay.Utils.isArray(plot.color)) {
                     toolTipData[getTitle(plotDefinition, "color")] = plot.color;
-                    drawArgs.color = plot.color;
-                    drawArgs.colorPalette = Markers.BuildPalette(plot);
-                } else {
-                    //Color is uncertainty data, using bull eye markers
-                    drawArgs.shape = InteractiveDataDisplay.BullEye;//Markers.BullEye;
-                    drawArgs.bullEyeShape = plot.shape;
-
+                } else if (plot.color && typeof plot.color["median"] !== "undefined") {
                     var color = <Plot.Quantiles>plot.color;
-
-                    drawArgs.u95 = color.upper95;
-                    drawArgs.l95 = color.lower95;
-                    drawArgs.colorPalette = Markers.BuildPaletteForUncertain(plot);
-
                     if (plot.titles != undefined && plot.titles.color != undefined)
                         toolTipData[getTitle(plotDefinition, "color") + " median"] = color.median;
                     toolTipData["upper (95%)"] = color.upper95;
@@ -236,41 +142,17 @@ module ChartViewer {
 
                 if (plot.size && typeof plot.size["median"] !== "undefined") {
                     var size = <Plot.Quantiles>plot.size;
-                    //Size is uncertainty data, using petalled markers
-                    drawArgs.shape = InteractiveDataDisplay.Petal;//Markers.Petal;
-                    drawArgs.u95 = CutArray(size.upper95, len);
-                    drawArgs.l95 = CutArray(size.lower95, len);
-
                     if (plot.titles != undefined && plot.titles.size != undefined)
                         toolTipData[getTitle(plotDefinition, "size") + " median"] = size.median;
                     else toolTipData["size median"] = size.median;
                     toolTipData["upper 95%"] = size.upper95;
                     toolTipData["lower 95%"] = size.lower95;
-
-                    //var i = 0;
-                    //while (isNaN(size.upper95[i]) || isNaN(size.lower95[i])) i++;
-                    //var maxDelta = size.upper95[i] - size.lower95[i];
-                    //i++;
-                    //for (; i < size.upper95.length; i++)
-                    //    if (!isNaN(size.upper95[i]) && !isNaN(size.lower95[i]))
-                    //        maxDelta = Math.max(maxDelta, size.upper95[i] - size.lower95[i]);
-                    //drawArgs.maxDelta = maxDelta;
-
-                    //sizeRange = { from: 0, to: maxDelta };
-                    drawArgs.size = 15;
                 }
                 else if (InteractiveDataDisplay.Utils.isArray(plot.size)) {
                     toolTipData[getTitle(plotDefinition, "size")] = plot.size;
-                    drawArgs.sizePalette = Markers.BuildSizePalette(plot);
-                    drawArgs.size = <number[]>plot.size;
                 }
-                else if (plot.size) {
-                    drawArgs.size = <number>plot.size;
-                }
-                else {
-                    drawArgs.size = plot.size = 8;
-                }
-                plots[0].draw(drawArgs, plot.titles);
+            }
+                plots[0].draw(plot, plot.titles);
 
                 var getRange = function (arr) {
                     return { min: GetMin(arr), max: GetMax(arr) }
@@ -284,8 +166,8 @@ module ChartViewer {
                 plots[0].ttFormatters = toolTipFormatters;
 
                 var res = {
-                    x: { min: GetMin(drawArgs.x), max: GetMax(drawArgs.x) },
-                    y: { min: GetMin(drawArgs.y), max: GetMax(drawArgs.y) },
+                    x: { min: GetMin(plot.x), max: GetMax(plot.x) },
+                    y: { min: GetMin(plot.y), max: GetMax(plot.y) },
                     color: undefined,
                     size: undefined
                 };
@@ -294,7 +176,6 @@ module ChartViewer {
                 if (sizeRange)
                     res.size = sizeRange;
                 return res;
-            
         }
     }
 }
