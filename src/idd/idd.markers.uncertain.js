@@ -711,8 +711,8 @@ InteractiveDataDisplay.BoxWhisker = {
     hitTest: function (marker, transform, ps, pd) {
         var xScreen = transform.dataToScreenX(marker.x);
 
-        var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
-        var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
+        var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.lower95 : marker.y_min);
+        var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.upper95 : marker.y_max);
 
         var isIntersecting =
             ps.x > xScreen - marker.size / 2 &&
@@ -964,8 +964,8 @@ InteractiveDataDisplay.BoxNoWhisker = {
     hitTest: function (marker, transform, ps, pd) {
                 var xScreen = transform.dataToScreenX(marker.x);
 
-                var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
-                var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
+                var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.lower95 : marker.y_min);
+                var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.upper95 : marker.y_max);
 
                 var isIntersecting =
                     ps.x > xScreen - marker.size / 2 &&
@@ -1212,8 +1212,8 @@ InteractiveDataDisplay.Whisker = {
     hitTest: function (marker, transform, ps, pd) {
                 var xScreen = transform.dataToScreenX(marker.x);
 
-                var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
-                var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
+                var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.lower95 : marker.y_min);
+                var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.upper95 : marker.y_max);
 
                 var isIntersecting =
                     ps.x > xScreen - marker.size / 2 &&

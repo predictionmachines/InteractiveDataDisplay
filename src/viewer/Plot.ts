@@ -91,7 +91,7 @@ module Plot {
         color?: Color | number[] | Quantiles;
         colorPalette?: ColorPalette;
         size?: number | number[] | Quantiles;
-        sizeRange?: SizeRange;
+        sizeRange?: Object;
         border?: Color;
         displayName?: string
         titles?: MarkersTitles;
@@ -119,6 +119,7 @@ module Plot {
     export function boxplot(element: BoxPlotDefinition) {
         var plotInfo = <ChartViewer.PlotInfo><any>element;
         plotInfo.kind = "markers";
+        plotInfo["shape"] = "boxwhisker";
         return plotInfo;
     }
     export function markers(element: MarkersDefinition) {

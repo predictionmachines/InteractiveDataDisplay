@@ -83,12 +83,13 @@
             if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
             if (InteractiveDataDisplay.Utils.isArray(data.size)) {
                 if (data.size.length != n) throw "Length of the array 'size' is different than length of the array 'y'"
-                if (data.sizeRange != undefined) { // 'size' is a data series 
-                    var sizeRange = data.sizeRange ? data.sizeRange : { min: 5, max: 50 }; //var palette = data.sizePalette;
-                    var r = InteractiveDataDisplay.Utils.getMinMax(data.size);
-                    r = InteractiveDataDisplay.Utils.makeNonEqual(r);
-                    data.sizePalette = palette = new InteractiveDataDisplay.SizePalette(false, sizeRange, r);
-                    
+                if (data.sizePalette != undefined) { // 'size' is a data series 
+                    var palette = data.sizePalette;
+                    if (palette.isNormalized) {
+                        var r = InteractiveDataDisplay.Utils.getMinMax(data.size);
+                        r = InteractiveDataDisplay.Utils.makeNonEqual(r);
+                        data.sizePalette = palette = new InteractiveDataDisplay.SizePalette(false, palette.sizeRange, r);
+                    }
                     for (var i = 0; i < n; i++) {
                         var size = data.size[i];
                         if (size != size) // NaN
@@ -97,6 +98,7 @@
                             sizes[i] = palette.getSize(size)
                     }
                 } else { // 'size' contains values in pixels
+                    sizes = data.size;
                     data.sizeMax = InteractiveDataDisplay.Utils.getMax(data.size);
                 }
             } else { // sizes is a constant

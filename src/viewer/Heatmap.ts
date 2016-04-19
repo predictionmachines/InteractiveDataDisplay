@@ -133,7 +133,7 @@ module ChartViewer {
                 .appendTo(chart.host);
             var heatmap = new InteractiveDataDisplay.Heatmap(div, chart.master);
             chart.addChild(heatmap);
-            
+
             var div2 = $("<div></div>")
                 .attr("data-idd-name", plotDefinition.displayName + "__nav_")
                 .appendTo(chart.host);
@@ -143,7 +143,7 @@ module ChartViewer {
             };
             chart.addChild(heatmap_nav);
             var plots = [heatmap, heatmap_nav];
-           
+
             heatmap_nav.opacity = 0.5;
             heatmap_nav.colorPalette = InteractiveDataDisplay.ColorPalette.parse("0=#00000000=#00000080=1");
             heatmap_nav.getTooltip = function (xd, yd, xp, yp) {
@@ -255,13 +255,13 @@ module ChartViewer {
 
             return plots;
         },
- 
+
         draw(plots: IDDPlot[], plotDefinition: PlotInfo) {
             var heatmap = <Plot.HeatmapDefinition><any>plotDefinition;
             var drawArgs = {
                 x: undefined,
                 y: undefined,
-                values: undefined,
+                f: undefined,
                 colorPalette: undefined
             };
 
@@ -290,7 +290,7 @@ module ChartViewer {
                     };
                 }
 
-                drawArgs.values = r.m;
+                drawArgs.f = r.m;
                 drawArgs.x = r.x;
                 drawArgs.y = r.y;
 
@@ -326,7 +326,7 @@ module ChartViewer {
                     };
                 }
 
-                drawArgs.values = r.f;
+                drawArgs.f = r.f;
                 plots[0].values = r.f;
                 plots[0].f_formatter = getFormatter(r.f, get2dRange);
 
@@ -344,7 +344,7 @@ module ChartViewer {
                 plots[1].x = undefined;
                 plots[1].y = undefined;
             }
-            plots[0].range = get2dRange(drawArgs.values);
+            plots[0].range = get2dRange(drawArgs.f);
             drawArgs.colorPalette = Heatmap.BuildPalette(heatmap, plots[0].range.min, plots[0].range.max);
             plots[0].draw(drawArgs, heatmap.titles);
 

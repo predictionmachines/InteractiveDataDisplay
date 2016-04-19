@@ -5,48 +5,6 @@ declare var InteractiveDataDisplay: any;
 declare var Microsoft: any;
 
 module ChartViewer {
-    module Markers {
-        var defaultPalette = InteractiveDataDisplay.ColorPalette.parse("black,#e5e5e5");
-
-        export function BuildPalette(plot: Plot.MarkersDefinition) {
-            var d3Palette = plot.colorPalette ? InteractiveDataDisplay.ColorPalette.parse(plot.colorPalette) : defaultPalette;
-            if (d3Palette.isNormalized) {
-                var colorRange = { min: GetMin(plot.color), max: GetMax(plot.color) };
-                if (colorRange.min === colorRange.max) 
-                    d3Palette = d3Palette.absolute(colorRange.min - 0.5, colorRange.max + 0.5);
-                else 
-                    d3Palette = d3Palette.absolute(colorRange.min, colorRange.max);
-            }
-            return d3Palette;
-        }
-
-        export function BuildPaletteForUncertain(plot: Plot.MarkersDefinition) {
-            var d3Palette = plot.colorPalette ? InteractiveDataDisplay.ColorPalette.parse(plot.colorPalette) : defaultPalette;
-            if (d3Palette.isNormalized) {
-                var color = <Plot.Quantiles>plot.color;
-                var colorRange = {
-                    min: GetMin(color.lower95),
-                    max: GetMax(color.upper95)
-                };
-                if (colorRange.min > colorRange.max) {
-                    d3Palette = d3Palette;
-                }
-                else if (colorRange.min === colorRange.max) {
-                    d3Palette = d3Palette.absolute(colorRange.min - 0.5, colorRange.max + 0.5);
-                } else {
-                    d3Palette = d3Palette.absolute(colorRange.min, colorRange.max);
-                }
-            }
-            return d3Palette;
-        }
-
-        export function BuildSizePalette(plot: Plot.MarkersDefinition) {
-            var sizeRange = plot.sizeRange ? plot.sizeRange : { min: 5, max: 50 };
-            var valueRange = { min: GetMin(plot.size), max: GetMax(plot.size) };
-            return new InteractiveDataDisplay.SizePalette(false, sizeRange, valueRange);
-        }
-    }
-
     PlotRegistry["markers"] = {
         initialize(plotDefinition: PlotInfo, viewState: ViewState, chart: IDDPlot) {
             var div = $("<div></div>")
@@ -117,7 +75,7 @@ module ChartViewer {
            
             toolTipData[getTitle(plotDefinition, "x")] = plot.x;
 
-            if (plot.y !== undefined) {
+            if (plot.y !== undefined && InteractiveDataDisplay.Utils.isArray(plot.y)) {
                 toolTipData[getTitle(plotDefinition, "y")] = plot.y;
             }
            
@@ -129,53 +87,53 @@ module ChartViewer {
                 toolTipData["lower 68%"] = y.lower68;
                 toolTipData["upper 95%"] = y.upper95;
                 toolTipData["lower 95%"] = y.lower95;
-            } else {
-                if (InteractiveDataDisplay.Utils.isArray(plot.color)) {
-                    toolTipData[getTitle(plotDefinition, "color")] = plot.color;
-                } else if (plot.color && typeof plot.color["median"] !== "undefined") {
-                    var color = <Plot.Quantiles>plot.color;
-                    if (plot.titles != undefined && plot.titles.color != undefined)
-                        toolTipData[getTitle(plotDefinition, "color") + " median"] = color.median;
-                    toolTipData["upper (95%)"] = color.upper95;
-                    toolTipData["lower (95%)"] = color.lower95;
-                }
+            } 
 
-                if (plot.size && typeof plot.size["median"] !== "undefined") {
-                    var size = <Plot.Quantiles>plot.size;
-                    if (plot.titles != undefined && plot.titles.size != undefined)
-                        toolTipData[getTitle(plotDefinition, "size") + " median"] = size.median;
-                    else toolTipData["size median"] = size.median;
-                    toolTipData["upper 95%"] = size.upper95;
-                    toolTipData["lower 95%"] = size.lower95;
-                }
-                else if (InteractiveDataDisplay.Utils.isArray(plot.size)) {
-                    toolTipData[getTitle(plotDefinition, "size")] = plot.size;
-                }
+            if (InteractiveDataDisplay.Utils.isArray(plot.color)) {
+                toolTipData[getTitle(plotDefinition, "color")] = plot.color;
+            } else if (plot.color && typeof plot.color["median"] !== "undefined") {
+                var color = <Plot.Quantiles>plot.color;
+                if (plot.titles != undefined && plot.titles.color != undefined)
+                    toolTipData[getTitle(plotDefinition, "color") + " median"] = color.median;
+                toolTipData["upper (95%)"] = color.upper95;
+                toolTipData["lower (95%)"] = color.lower95;
             }
-                plots[0].draw(plot, plot.titles);
 
-                var getRange = function (arr) {
-                    return { min: GetMin(arr), max: GetMax(arr) }
-                }
+            if (plot.size && typeof plot.size["median"] !== "undefined") {
+                var size = <Plot.Quantiles>plot.size;
+                if (plot.titles != undefined && plot.titles.size != undefined)
+                    toolTipData[getTitle(plotDefinition, "size") + " median"] = size.median;
+                else toolTipData["size median"] = size.median;
+                toolTipData["upper 95%"] = size.upper95;
+                toolTipData["lower 95%"] = size.lower95;
+            }
+            else if (InteractiveDataDisplay.Utils.isArray(plot.size)) {
+                toolTipData[getTitle(plotDefinition, "size")] = plot.size;
+            }
+            plots[0].draw(plot, plot.titles);
 
-                for (var prop in toolTipData) {
-                    toolTipFormatters[prop] = getFormatter(toolTipData[prop], getRange);
-                }
+            var getRange = function (arr) {
+                return { min: GetMin(arr), max: GetMax(arr) }
+            }
 
-                plots[0].ttData = toolTipData;
-                plots[0].ttFormatters = toolTipFormatters;
+            for (var prop in toolTipData) {
+                toolTipFormatters[prop] = getFormatter(toolTipData[prop], getRange);
+            }
 
-                var res = {
-                    x: { min: GetMin(plot.x), max: GetMax(plot.x) },
-                    y: { min: GetMin(plot.y), max: GetMax(plot.y) },
-                    color: undefined,
-                    size: undefined
-                };
-                if (colorRange)
-                    res.color = colorRange;
-                if (sizeRange)
-                    res.size = sizeRange;
-                return res;
+            plots[0].ttData = toolTipData;
+            plots[0].ttFormatters = toolTipFormatters;
+
+            var res = {
+                x: { min: GetMin(plot.x), max: GetMax(plot.x) },
+                y: { min: GetMin(plot.y), max: GetMax(plot.y) },
+                color: undefined,
+                size: undefined
+            };
+            if (colorRange)
+                res.color = colorRange;
+            if (sizeRange)
+                res.size = sizeRange;
+            return res;
         }
     }
 }

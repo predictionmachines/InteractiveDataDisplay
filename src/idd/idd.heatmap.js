@@ -1,18 +1,18 @@
 ﻿// See http://jsperf.com/rendering-a-frame-in-image-data
 InteractiveDataDisplay.heatmapBackgroundRenderer = new InteractiveDataDisplay.SharedRenderWorker(
-    function() {
+    function () {
         var workerCodeUri;
-        if(typeof InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64 === 'undefined' || /PhantomJS/.test(window.navigator.userAgent)) {
+        if (typeof InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64 === 'undefined' || /PhantomJS/.test(window.navigator.userAgent)) {
             // Build process usually initializes the heatmapBackgroundRendererCodeBase64 with base64 encoded 
             // concatenation of idd.heatmapworker.js and idd.transforms.js.
             workerCodeUri = "idd.heatmapworker.js";
         }
         else {
-           var workerBlob = new Blob([ window.atob(InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64) ], { type: 'text/javascript' });
-           workerCodeUri = window.URL.createObjectURL(workerBlob);
+            var workerBlob = new Blob([window.atob(InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64)], { type: 'text/javascript' });
+            workerCodeUri = window.URL.createObjectURL(workerBlob);
         }
         return workerCodeUri
-    } (),
+    }(),
     function (heatmapPlot, completedTask) {
         heatmapPlot.onRenderTaskCompleted(completedTask);
     });
@@ -23,9 +23,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     // Initialization (#1)
     var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv2d);
     var initialData = initializer(div);
-    if (initialData && typeof initialData.y !== 'undefined' && typeof initialData.values !== 'undefined') {
+    if (initialData && typeof initialData.y !== 'undefined' && typeof initialData.f !== 'undefined') {
         var y = initialData.y;
-        var f = initialData.values;
+        var f = initialData.f;
         var n = y.length;
         var m = f.length;
         if (n > 1 && m > 0 && y[0] > y[1]) {
@@ -108,7 +108,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     };
 
     this.draw = function (data, titles) {
-        var f = data.values;
+        var f = data.f;
         if (!f) throw "Data series f is undefined";
         var n = f.length;
         var m = f[0].length;
@@ -397,7 +397,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         InteractiveDataDisplay.Heatmap.prototype.onDataTransformChanged.call(this, arg);
     };
 
-    
+
     var getCellContaining = function (x_d, y_d) {
         var n = _x.length;
         var m = _y.length;
@@ -559,11 +559,11 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             that.host.unbind("appearanceChanged");
         };
 
-        return { name: nameDiv, legend: {thumbnail: canvas, content: infoDiv}, onLegendRemove: onLegendRemove };
+        return { name: nameDiv, legend: { thumbnail: canvas, content: infoDiv }, onLegendRemove: onLegendRemove };
     };
 
     // Initialization 
-    if (initialData && typeof initialData.values != 'undefined')
+    if (initialData && typeof initialData.f != 'undefined')
         this.draw(initialData);
 };
 InteractiveDataDisplay.Heatmap.prototype = new InteractiveDataDisplay.CanvasPlot();
