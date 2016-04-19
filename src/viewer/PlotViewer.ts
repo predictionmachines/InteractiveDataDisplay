@@ -84,7 +84,7 @@ module ChartViewer {
                 var draggable = $("<div></div>");
                 draggable.addClass("dragPoint");
 
-                probesPlot.add(draggable, 'none', x, y, undefined, undefined, 0, 1);
+                probesPlot.add(draggable, 'none', x , y, undefined, undefined, 0.5, 1);
                 var children = probesPlot.domElements;
                 var addedDragable = children[children.length - 1];
                 addedDragable.id = id;
@@ -103,9 +103,9 @@ module ChartViewer {
                 });
 
                 if (probe.selected) {
-                    createSmallProbe(draggable, false, id, "#365C95");
+                    createSmallProbe(draggable,id, "#365C95");
                 } else {
-                    createSmallProbe(draggable, false, id);
+                    createSmallProbe(draggable, id);
                 }
             }
             probesPlot.host.droppable({
@@ -114,7 +114,7 @@ module ChartViewer {
                 drop: function (event, ui) {
                     var pos = $(this).offset();
                     var probePosition = {
-                        x: ui.position.left,
+                        x: ui.position.left + ui.draggable.width() / 2, 
                         y: ui.position.top + ui.draggable.height()
                     };
 
@@ -123,7 +123,6 @@ module ChartViewer {
                     var y = iddChart.yDataTransform ? iddChart.yDataTransform.plotToData(cs.screenToPlotY(probePosition.y)) : cs.screenToPlotY(probePosition.y);
 
                     var id = persistentViewState.probesViewModel.addProbe({ x: x, y: y });
-
                     addNewProbe({ id: id, location: { x: x, y: y } });
                 },
             });
@@ -162,7 +161,7 @@ module ChartViewer {
                         var children = probesPlot.domElements;
                         for (var i = 0; i < children.length; i++) {
                             var possibleProbe = children[i];
-                            createSmallProbe(possibleProbe, false, possibleProbe.id);
+                            createSmallProbe(possibleProbe, possibleProbe.id);
                         }
                         break;
                     case "selected":
@@ -170,9 +169,9 @@ module ChartViewer {
                         for (var i = 0; i < children.length; i++) {
                             var possibleProbe = children[i];
                             if (possibleProbe.id === probe.id) {
-                                createSmallProbe(possibleProbe, false, possibleProbe.id, "#365C95");
+                                createSmallProbe(possibleProbe, possibleProbe.id, "#365C95");
                             } else {
-                                createSmallProbe(possibleProbe, false, possibleProbe.id);
+                                createSmallProbe(possibleProbe, possibleProbe.id);
                             }
                         }
                         break;
@@ -385,6 +384,21 @@ module ChartViewer {
             this.updateAxes();
             this.persistentViewState.probesViewModel.refresh();
             this.updateMap();            
+
+
+            var z = 0;
+            for (var id in this.currentPlots) {
+                var p = this.currentPlots[id];
+                if (p.ZIndex) z = Math.max(p.ZIndex, z);
+            }
+            for (var id in this.currentPlots) {
+                var p = this.currentPlots[id];
+                if (!p.ZIndex) p.ZIndex = ++z;
+                if (!p.Plots) continue;
+                for (var j = 0; j < p.Plots.length; ++j)
+                    p.Plots[j].host.css("z-index", p.ZIndex);//p.ZIndex
+            }
+
 
             if (this.persistentViewState.selectedPlots)
                 this.setupPlotsVisibility();

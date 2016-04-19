@@ -177,12 +177,12 @@ module ChartViewer {
             }
 
             var iconScale = 0.6;
-            var probeHeader = $("<div></div>").addClass("probeHeader").appendTo(probeDiv).height(55 * iconScale);
-            var probeIcon = $("<div></div>").addClass("probe").css("float", "left").css("margin-right", 3).height(55 * iconScale).appendTo(probeHeader);
+            var probeHeader = $("<div></div>").addClass("probeHeader").appendTo(probeDiv).height(40 * iconScale);
+            var probeIcon = $("<div></div>").addClass("probe").css("float", "left").css("margin-right", 3).width(40 * iconScale).height(40 * iconScale).appendTo(probeHeader);
             if (probe.selected) {
-                createSmallProbe(probeIcon, false, probe.id, "#365C95", iconScale);
+                createSmallProbe(probeIcon, probe.id, "#365C95", iconScale);
             } else {
-                createSmallProbe(probeIcon, false, probe.id, undefined, iconScale);
+                createSmallProbe(probeIcon, probe.id, undefined, iconScale);
             }
             $("<div></div>").addClass("probeHeader-name").text("(" + transientViewState.plotXFormatter.toString(probe.location.x) + ", " + transientViewState.plotYFormatter.toString(probe.location.y) + ")").appendTo(probeHeader);
 

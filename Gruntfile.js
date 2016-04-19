@@ -52,6 +52,7 @@
                     "src/idd/idd.markers.uncertain.js",
                     "src/idd/idd.area.js",
                     "src/idd/idd.heatmap.js",
+                    "src/idd/idd.onscreennavigation.js",
                     "src/idd/idd.bingmapsplot.js",
                     "src/idd/wrapper_footer.txt"
                 ],
