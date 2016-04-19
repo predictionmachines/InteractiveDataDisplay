@@ -107,7 +107,7 @@ module ChartViewer {
             return {
                 x: ux,
                 y: uy,
-                f: f,
+                values: f,
                 m: m,
                 lb68: lb68,
                 ub68: ub68
@@ -261,7 +261,7 @@ module ChartViewer {
             var drawArgs = {
                 x: undefined,
                 y: undefined,
-                f: undefined,
+                values: undefined,
                 colorPalette: undefined
             };
 
@@ -290,7 +290,7 @@ module ChartViewer {
                     };
                 }
 
-                drawArgs.f = r.m;
+                drawArgs.values = r.m;
                 drawArgs.x = r.x;
                 drawArgs.y = r.y;
 
@@ -326,7 +326,7 @@ module ChartViewer {
                     };
                 }
 
-                drawArgs.f = r.f;
+                drawArgs.values = r.f;
                 plots[0].values = r.f;
                 plots[0].f_formatter = getFormatter(r.f, get2dRange);
 
@@ -344,7 +344,7 @@ module ChartViewer {
                 plots[1].x = undefined;
                 plots[1].y = undefined;
             }
-            plots[0].range = get2dRange(drawArgs.f);
+            plots[0].range = get2dRange(drawArgs.values);
             drawArgs.colorPalette = Heatmap.BuildPalette(heatmap, plots[0].range.min, plots[0].range.max);
             plots[0].draw(drawArgs, heatmap.titles);
 

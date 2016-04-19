@@ -23,9 +23,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     // Initialization (#1)
     var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv2d);
     var initialData = initializer(div);
-    if (initialData && typeof initialData.y !== 'undefined' && typeof initialData.f !== 'undefined') {
+    if (initialData && typeof initialData.y !== 'undefined' && typeof initialData.values !== 'undefined') {
         var y = initialData.y;
-        var f = initialData.f;
+        var f = initialData.values;
         var n = y.length;
         var m = f.length;
         if (n > 1 && m > 0 && y[0] > y[1]) {
@@ -108,7 +108,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     };
 
     this.draw = function (data, titles) {
-        var f = data.f;
+        var f = data.values;
         if (!f) throw "Data series f is undefined";
         var n = f.length;
         var m = f[0].length;
@@ -563,7 +563,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     };
 
     // Initialization 
-    if (initialData && typeof initialData.f != 'undefined')
+    if (initialData && typeof initialData.values != 'undefined')
         this.draw(initialData);
 };
 InteractiveDataDisplay.Heatmap.prototype = new InteractiveDataDisplay.CanvasPlot();
