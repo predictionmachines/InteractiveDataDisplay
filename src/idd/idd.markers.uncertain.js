@@ -121,7 +121,7 @@
         context.strokeStyle = "black";
 
         context.beginPath();
-        var n = 1000;
+        var n = 200;
         var alpha = Math.PI * 2 / n;
         for (var i = 0; i < n; i++) {
             var phi = alpha * i;
