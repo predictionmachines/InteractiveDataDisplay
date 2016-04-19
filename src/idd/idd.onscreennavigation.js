@@ -203,14 +203,7 @@
         coords.y = (event.pageY - offset.top - xhalf) / xhalf;
     };
     this.remove = function () {
-        lockNavigation.removeClass("idd-onscreennavigation-navigationlockpressed");
-        pannerDiv.removeClass("idd-onscreennavigation-panner");
-        zoomInDiv.removeClass("idd-onscreennavigation-zoomin");
-        zoomOutDiv.removeClass("idd-onscreennavigation-zoomout");
-        fitDiv.removeClass("idd-onscreennavigation-fit");
-        logScale.removeClass("idd-onscreennavigation-logscale");
         div.removeClass('idd-navigation-container');
         div[0].innerHTML = "";
     };
-    return div;
 }

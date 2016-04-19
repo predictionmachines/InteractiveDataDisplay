@@ -22,7 +22,7 @@
         $(function () {
             var cv = ChartViewer.show($("#chart"), {
                 "elem1": Plot.line({ x: [1, 2, 3, 4], y: [0, 3, 1, 5], thickness: 3 }),
-                "elem2": Plot.markers({ x: [0.7, 1.1, 0.8, 1.1], y: [0, 0, 1, 1], shape: 'circle', color: [1, 2, 3, 0], size: [10, 15, 8, 13], colorPalette: "yellow, green", sizeRange: { min: 5, max: 30 } }),
+                "elem2": Plot.markers({ x: [0.7, 1.1, 0.8, 1.1], y: [0, 0, 1, 1], shape: 'circle', color: [1, 2, 3, 0], size: [10, 15, 8, 13], colorPalette: "yellow, green", sizePalette: new InteractiveDataDisplay.SizePalette(true,{ min: 5, max: 30 }) }),
                 "elem3": Plot.heatmap({ x: [0, 0.1, 0.3, 0.5], y: [0, 4, -1, 2], values: [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6], [4, 5, 6, 7]], colorPalette: 'red, blue' }),
                 "elem4": Plot.markers({ x: [3, 3.4, 3.8, 4.2], y: [3, 1, 0, 4], shape: 'triangle', color: [1, 2, 3, 4], size: [10, 15, 8, 13], colorPalette: "green, blue" })
             });

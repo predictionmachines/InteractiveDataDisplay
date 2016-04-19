@@ -117,7 +117,7 @@ declare module Plot {
         color?: Color | number[] | Quantiles;
         colorPalette?: ColorPalette;
         size?: number | number[] | Quantiles;
-        sizeRange?: Object;
+        sizePalette?: Object;
         border?: Color;
         displayName?: string;
         titles?: MarkersTitles;

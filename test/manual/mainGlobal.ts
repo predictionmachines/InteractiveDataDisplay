@@ -1,5 +1,5 @@
 ///<reference path="../../dist/chartViewer.d.ts"/>
-
+declare var InteractiveDataDisplay: any;
 module main {
     export function start() {
         var el = document.getElementById("chart"); 
@@ -18,7 +18,8 @@ module main {
                 x: [1, 2, 3, 4],
                 y: [1, 4, 6, 9],
                 shape: Plot.MarkerShape.Cross,
-                size: [1,2,3,4],
+                size: [1, 2, 3, 4],
+                sizePalette: new InteractiveDataDisplay.SizePalette(true, { min: 5, max: 25 }),
                 color: [1, 2, 3, 4],
                 colorPalette: 'green, blue',
                 displayName: "mark",

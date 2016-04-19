@@ -71,7 +71,6 @@ module ChartViewer {
                 size: undefined
             };
             var toolTipFormatters = {};
-            var colorRange, sizeRange;
            
             toolTipData[getTitle(plotDefinition, "x")] = plot.x;
 
@@ -125,14 +124,8 @@ module ChartViewer {
 
             var res = {
                 x: { min: GetMin(plot.x), max: GetMax(plot.x) },
-                y: { min: GetMin(plot.y), max: GetMax(plot.y) },
-                color: undefined,
-                size: undefined
+                y: { min: GetMin(plot.y), max: GetMax(plot.y) }
             };
-            if (colorRange)
-                res.color = colorRange;
-            if (sizeRange)
-                res.size = sizeRange;
             return res;
         }
     }

@@ -45,8 +45,6 @@ module Plot {
         Function: string;
         Trajectory: string;
     }
-	/**SizeRange is { min: number; max: number }*/
-    export type SizeRange = { min: number, max: number };
     /**Color is a string that supports same color definition as in CSS: "blue", "#606060", "rgba(10,150,200,100)"*/
     export type Color = string;
     /**ColorPalette is a string that has specific syntax to define palettes, e.g. "reg,green,blue" or "0=red=white=blue=100"*/
@@ -91,7 +89,7 @@ module Plot {
         color?: Color | number[] | Quantiles;
         colorPalette?: ColorPalette;
         size?: number | number[] | Quantiles;
-        sizeRange?: Object;
+        sizePalette?: Object;
         border?: Color;
         displayName?: string
         titles?: MarkersTitles;
