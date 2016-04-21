@@ -117,7 +117,7 @@
     border: 1px solid rgba(0,0,0,0.12);
     padding: 5px;
     /*max-height: 400px;*/
-    max-width: 250px;
+    max-width: 225px;
     cursor: default;
     overflow: scroll;
     overflow-y: auto;
@@ -127,7 +127,7 @@
 .idd-legend-item
 {
     /*position: relative;*/
-    width: 240px;
+    width: 215px;
     height: auto;
     background-color: white;
     box-shadow: 0 0 2px rgba(0,0,0, 0.2);
@@ -140,7 +140,7 @@
 }
 .idd-legend-item-title
 {    
-    width: 215px;
+    width: 190px;
     vertical-align: top;
     padding-bottom: 16px;
     padding-left: 16px;
@@ -150,12 +150,11 @@
 }
 .idd-legend-item-title-name
 {
-    width: 120px;
+    width: 95px;
     height: 24px;
     line-height: 24px;
     vertical-align: top;
     font-size: 19px;
-    font-family: Segoe UI;
     margin-left: 16px;
     margin-right: 16px;
     display:inline-block;
@@ -213,7 +212,6 @@
     line-height: 18px;
     vertical-align: top;
     font-size: 14px;
-    font-family: Segoe UI;
     margin-left: 6px;
     margin-right: 6px;
     display:inline-block;
@@ -282,4 +280,166 @@
     -o-transform-origin: center;
     -webkit-transform: rotate(-90deg);
     -webkit-transform-origin: center;
+}
+/*Navigation panel*/
+.idd-navigation-container {
+    height: auto;
+    position: relative;
+    width: 65px;
+    display:inline-block;
+}
+.idd-navigation-container:focus {
+    outline: none;
+    border: transparent;
+    border-color: inherit;
+}
+.idd-onscreennavigation-panner {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_pan.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+    margin-top: 5px;
+}
+.idd-onscreennavigation-panner-moved {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_pan_black.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+    margin-top: 5px;
+}
+.idd-onscreennavigation-panner:hover {
+    background-image: url('icons/ic_pan_black.png');
+}
+.idd-onscreennavigation-zoomin {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_zoom_in.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-zoomin:hover {
+    background-image: url('icons/ic_zoom_in_black.png');
+}
+.idd-onscreennavigation-zoomout {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_zoom_out.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-zoomout:hover {
+    background-image: url('icons/ic_zoom_out_black.png');
+}
+.idd-onscreennavigation-logscale {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_straighten.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-logscale:hover {
+    background-image: url('icons/ic_straighten_black.png');
+}
+.idd-onscreennavigation-fit {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_center_focus_weak.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-fit:hover {
+    background-image: url('icons/ic_center_focus_weak_black.png');
+}
+.idd-onscreennavigation-fit-pressed {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_center_focus_strong.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-fit-pressed:hover {
+    background-image: url('icons/ic_center_focus_strong_black.png');
+}
+.idd-onscreennavigation-navigationlock {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_lock_open.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-navigationlock:hover {
+    background-image: url('icons/ic_lock_open_black.png');
+}
+.idd-onscreennavigation-navigationlockpressed {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_lock.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-navigationlockpressed:hover {
+    background-image: url('icons/ic_lock_black.png');
 }
