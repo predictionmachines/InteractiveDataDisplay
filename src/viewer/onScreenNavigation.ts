@@ -49,11 +49,7 @@ module ChartViewer {
 
     export function OnScreenNavigation(div, d3Chart, persistentViewState) {
         var that = this;
-        
         InteractiveDataDisplay.NavigationPanel(d3Chart, div);
-        var probePullDiv = $("<div></div>").addClass("dsv-onscreennavigation-probepull").appendTo(div);
-        var probePull = new ProbePull(probePullDiv, d3Chart.centralPart);
-
-
+        var hideShowLegend = $('<div></div>').addClass("idd-onscreennavigation-viewlegend").prependTo(div);
     }
 }

@@ -15,8 +15,9 @@
     var pannerDiv = $("<div></div>").addClass("idd-onscreennavigation-panner").appendTo(ZoomAndPanDiv);
     var zoomInDiv = $("<div></div>").addClass("idd-onscreennavigation-zoomin").appendTo(ZoomAndPanDiv);
     var zoomOutDiv = $("<div></div>").addClass("idd-onscreennavigation-zoomout").appendTo(ZoomAndPanDiv);
-    var fitDiv = $("<div></div>").addClass("idd-onscreennavigation-fit").appendTo(div);
-    var logScale = $("<div></div>").addClass("idd-onscreennavigation-logscale").appendTo(div);
+    var fitDiv = $("<div></div>").addClass("idd-onscreennavigation-fit").appendTo(ZoomAndPanDiv);
+    var logScale = $("<div></div>").addClass("idd-onscreennavigation-logscale").appendTo(ZoomAndPanDiv);
+    var help = $('<div></div>').addClass("idd-onscreennavigation-help").appendTo(div);
     var obs = undefined;
     var observable = Rx.Observable.create(function (rx) {
         obs = rx;
@@ -118,7 +119,7 @@
             d3Chart.navigation.gestureSource = defaultGestureSource;
             lockNavigation.removeClass("idd-onscreennavigation-navigationlockpressed").addClass("idd-onscreennavigation-navigationlock");
             ZoomAndPanDiv.animate({
-                height: 135,
+                height: 225,
             }, 200);
         }
     });

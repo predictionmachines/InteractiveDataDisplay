@@ -29,6 +29,7 @@
     display: block;
     float: left;
     white-space: nowrap;
+    font-size: x-small;
     left: 0;
     top: 0;
 }
@@ -442,4 +443,38 @@
 }
 .idd-onscreennavigation-navigationlockpressed:hover {
     background-image: url('icons/ic_lock_black.png');
+}
+.idd-onscreennavigation-help {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_help.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-help:hover {
+    background-image: url('icons/ic_help_black.png');
+}
+.idd-onscreennavigation-viewlegend {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-image: url('icons/ic_view_list.png');
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    -webkit-background-size: cover;
+    background-size: cover;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.idd-onscreennavigation-viewlegend:hover {
+    background-image: url('icons/ic_view_list_black.png');
 }
