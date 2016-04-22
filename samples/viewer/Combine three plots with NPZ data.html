@@ -59,8 +59,8 @@
             
             ChartViewer.show(document.getElementById("chart"), {
                 "line1": Plot.line({x: x, y: y, stroke: "#7F7F7F"}),
-                "markers": Plot.markers({ x: x, y: y, shape: "triangle", color: "#C0504D" }),
-                "line2": Plot.line({ x: x, y: { median: y_median, lower68: y_l68, upper68: y_u68, lower95: y_l95, upper95: y_u95 }, fill68: '#2E5894', fill95: '#6D9BC3' })
+                "markers": Plot.markers({ x: x, y: y, shape: "triangle", color: "#C0504D", displayName: "line" }),
+                "line2": Plot.line({ x: x, y: { median: y_median, lower68: y_l68, upper68: y_u68, lower95: y_l95, upper95: y_u95 }, fill68: '#2E5894', fill95: '#6D9BC3', displayName: "line" })
             });
         });
     </script>

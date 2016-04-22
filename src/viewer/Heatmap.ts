@@ -112,17 +112,7 @@ module ChartViewer {
                 lb68: lb68,
                 ub68: ub68
             };
-        }
-
-        var defaultPalette = InteractiveDataDisplay.ColorPalette.parse("black,#e5e5e5");
-
-        export function BuildPalette(plot: Plot.HeatmapDefinition, min, max) {
-            var d3Palette = plot.colorPalette ? InteractiveDataDisplay.ColorPalette.parse(plot.colorPalette) : defaultPalette;
-            if (d3Palette.isNormalized) {
-                d3Palette = d3Palette.absolute(min, max);
-            }
-            return d3Palette;
-        }
+        };
     }
 
 
@@ -265,12 +255,11 @@ module ChartViewer {
                 colorPalette: undefined
             };
 
-            if (!heatmap.x || !heatmap.y || !heatmap.values) return;
+            if (!heatmap.values) return;
             var isOneDimensional = heatmap.values["median"] !== undefined && !InteractiveDataDisplay.Utils.isArray(heatmap.values["median"][0])
                 || !InteractiveDataDisplay.Utils.isArray(heatmap.values[0]);
 
-            var min = 0, max = 1;
-            if (heatmap.values["median"]) {
+            if (heatmap.values["median"]) {//uncertainty
                 var unc_values = <Plot.Quantiles>heatmap.values;
                 var r;
                 if (isOneDimensional) {
@@ -310,6 +299,11 @@ module ChartViewer {
 
                 plots[1].f_ub = r.ub68;
                 plots[1].f_ub_formatter = getFormatter(r.ub68, get2dRange);
+                //common part
+                plots[0].range = get2dRange(drawArgs.values);
+                drawArgs.colorPalette = heatmap.colorPalette;
+                plots[0].draw(drawArgs, heatmap.titles);
+
             }
             else {
                 var values = <any>heatmap.values;
@@ -320,21 +314,18 @@ module ChartViewer {
                     }, heatmap.treatAs === Plot.HeatmapRenderType.Discrete);
                 } else {
                     r = {
-                        f: values,
+                        values: values,
                         x: heatmap.x,
                         y: heatmap.y
                     };
                 }
-
-                drawArgs.values = r.f;
-                plots[0].values = r.f;
-                plots[0].f_formatter = getFormatter(r.f, get2dRange);
+                r.colorPalette = heatmap.colorPalette;
+                plots[0].values = r.values;
+                plots[0].f_formatter = getFormatter(r.values ,get2dRange);
 
                 plots[0].x = r.x;
                 plots[0].y = r.y;
-                drawArgs.x = r.x;
-                drawArgs.y = r.y;
-
+                
                 plots[1].f_median = undefined;
                 plots[1].f_median_formatter = undefined;
                 plots[1].f_lb = undefined;
@@ -343,11 +334,10 @@ module ChartViewer {
                 plots[1].f_ub_formatter = undefined;
                 plots[1].x = undefined;
                 plots[1].y = undefined;
-            }
-            plots[0].range = get2dRange(drawArgs.values);
-            drawArgs.colorPalette = Heatmap.BuildPalette(heatmap, plots[0].range.min, plots[0].range.max);
-            plots[0].draw(drawArgs, heatmap.titles);
 
+                plots[0].range = get2dRange(r.values);
+                plots[0].draw(r, heatmap.titles);
+            }
         }
     }
 }

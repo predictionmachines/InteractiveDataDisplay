@@ -106,7 +106,6 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
 
         that.requestNextFrame();
     };
-
     this.draw = function (data, titles) {
         var f = data.values;
         if (!f) throw "Data series f is undefined";

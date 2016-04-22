@@ -18,6 +18,14 @@
         $(document).ready(function () {
             var dataSet = {
                 "heatmap": {
+                    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]]
+                },
+                //"heatmap with": {
+                //    y: [-4, 0, 4],
+                //    x: [-2, 0, 5],
+                //    values: [1, 2, 3]
+                //},
+                "heatmap with x, y": {
                     y: [-4, 0, 4],
                     x: [-2, 0, 5],
                     values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]]
@@ -27,6 +35,12 @@
                     x: [-2, 0, 5],
                     values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
                     colorPalette: "yellow, red",
+                },
+                "heatmap with building color palette": {
+                    y: [-4, 0, 4],
+                    x: [-2, 0, 5],
+                    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
+                    colorPalette: new InteractiveDataDisplay.ColorPalette.parse("yellow, red"),
                 },
                 "heatmap with uncertain data": {
                     x: [-2, 0, 5],
