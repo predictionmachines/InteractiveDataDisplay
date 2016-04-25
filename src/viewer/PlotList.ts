@@ -18,7 +18,7 @@ module ChartViewer {
         });
         persistentViewState.probesViewModel.refresh(persistentViewState.probesViewModel.getProbes());
         var probesDiv = $("<div></div>").addClass('probes').appendTo(rootDiv);
-        var probesTitle = $("<div style='width:240px'></div>").appendTo(probesDiv);
+        var probesTitle = $("<div style='width:240px; margin-bottom: 16px'></div>").appendTo(probesDiv);
         var probePullDiv = $("<div></div>").addClass("dsv-onscreennavigation-probepull").appendTo(probesTitle);
         var probePull = new ProbePull(probePullDiv, plotViewer.iddChart.centralPart);
         var titleDiv = $("<div style='width: 195px; display:inline-block'></div>").appendTo(probesTitle);

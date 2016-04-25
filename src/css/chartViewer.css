@@ -2,7 +2,6 @@
 .probes 
 {
     margin-top: 20px;
-    max-width: 225px;
 }
 .probes-list
 {
@@ -47,6 +46,14 @@
 .probeCard-selected {
     /*background-color: #F1F9FF;*/
 }
+.probecard-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
 .probeHeader {
     width: 160px;
     height: 40px;
@@ -66,7 +73,7 @@
     height: 24px;
     line-height: 24px;
     vertical-align: top;
-    font-size: 15px;
+    font-size: 17px;
     margin-left: 8px;
     margin-right: 8px;
     display:inline-block;
@@ -181,7 +188,7 @@
     right: 65px;
 }
 .dsv-leftpanel {
-    width: 260px;
+    width: 270px;
     height: 100%;
     display: inline-block;
     position: relative;
@@ -252,6 +259,7 @@
     display: table-cell;
     vertical-align: middle;
     font-size: larger;
+    padding-bottom: 15px;
 }
 
 .plotcard-error {

@@ -57,9 +57,11 @@ module ChartViewer {
                 if (isLeftpanelShown) {
                     isLeftpanelShown = false;
                     leftpanel.hide();
+                    $(hideShowLegend).removeClass("idd-onscreennavigation-showlegend").addClass("idd-onscreennavigation-hidelegend");
                 } else {
                     isLeftpanelShown = true;
                     leftpanel.show();
+                    $(hideShowLegend).removeClass("idd-onscreennavigation-hidelegend").addClass("idd-onscreennavigation-showlegend");
                 }
                 rightpanel.width(controlDiv.width() - leftPanelContainer.width() - that.rightPanelExtraShift - that.navigationPanelShift);
                 that.plotViewer.updateLayout();
