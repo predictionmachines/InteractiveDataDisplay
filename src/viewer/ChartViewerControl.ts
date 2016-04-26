@@ -46,34 +46,30 @@ module ChartViewer {
             var rightpanel = this.rightpanel = controlDiv.find(".dsv-rightpanel");
             var leftpanel = controlDiv.find(".dsv-leftpanel");
             var leftPanelContainer = this.leftPanelContainer = controlDiv.find(".dsv-leftpanelcontainer");
-            var hidebutton = $("<div></div>").addClass("dsv-leftpanelhidebutton").appendTo(leftPanelContainer);
-            var isLeftpanelShown = true;
+            var isLeftpanelShown = false;
 
             this.plotViewer = new PlotViewer(controlDiv.find(".dsv-visualization-preview"), navigationDiv, this.persistentViewState, this.transientViewState);
             var plotListDiv = controlDiv.find(".plotlist");
             this.plotList = new PlotList(plotListDiv, this.plotViewer, this.persistentViewState, this.transientViewState);
             this.plotList.isEditable = false;
-           
-            hidebutton.click(function () {
+            var hideShowLegend = navigationDiv[0].children[0].firstChild.firstChild; 
+            $(hideShowLegend).click(function () {
                 if (isLeftpanelShown) {
                     isLeftpanelShown = false;
                     leftpanel.hide();
-                    hidebutton.attr("class", "dsv-leftpanelshowbutton");
+                    $(hideShowLegend).removeClass("idd-onscreennavigation-showlegend").addClass("idd-onscreennavigation-hidelegend");
                 } else {
                     isLeftpanelShown = true;
                     leftpanel.show();
-                    hidebutton.attr("class", "dsv-leftpanelhidebutton");
+                    $(hideShowLegend).removeClass("idd-onscreennavigation-hidelegend").addClass("idd-onscreennavigation-showlegend");
                 }
                 rightpanel.width(controlDiv.width() - leftPanelContainer.width() - that.rightPanelExtraShift - that.navigationPanelShift);
                 that.plotViewer.updateLayout();
             });
 
-            if (controlDiv.width() < this.minWidthToShowLeftPanel) {
-                leftPanelContainer.hide();
-                rightpanel.width(controlDiv.width() - this.rightPanelExtraShift - this.navigationPanelShift);
-            } else {
-                rightpanel.width(controlDiv.width() - leftPanelContainer.width() - this.rightPanelExtraShift - this.navigationPanelShift);
-            }
+            leftpanel.hide();
+            rightpanel.width(controlDiv.width() - leftPanelContainer.width() - this.rightPanelExtraShift - this.navigationPanelShift);
+            
             $(window).resize(function () { that.updateLayout(); });
             this.updateLayout();
         }

@@ -301,7 +301,7 @@ module ChartViewer {
                 
                     ctx.beginPath();
                     ctx.moveTo(0, 0);
-                    ctx.lineTo(0, 10);
+                    ctx.lineTo(0, 20);
                     ctx.lineTo(20, 40);
                     ctx.lineTo(40, 40);
                     ctx.lineTo(40, 20);

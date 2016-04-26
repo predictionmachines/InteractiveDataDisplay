@@ -1,4 +1,4 @@
-﻿InteractiveDataDisplay.NavigationPanel = function (d3Chart, div) {
+﻿InteractiveDataDisplay.NavigationPanel = function (plot, div, url) {
     var that = this;
     var leftKeyCode = 37;
     var upKeyCode = 38;
@@ -10,13 +10,33 @@
     var equalKey = 187;
     div.attr("tabindex", "0");
     div.addClass('idd-navigation-container');
+    if (plot.legend) {
+        var hideShowLegend = $('<div></div>').appendTo(div);
+        if (plot.legend.isVisible) hideShowLegend.addClass("idd-onscreennavigation-showlegend");
+        else hideShowLegend.addClass("idd-onscreennavigation-hidelegend");
+        hideShowLegend.click(function () {
+            if (plot.legend.isVisible) {
+                plot.legend.isVisible = false;
+                hideShowLegend.removeClass("idd-onscreennavigation-showlegend").addClass("idd-onscreennavigation-hidelegend");
+            } else {
+                plot.legend.isVisible = true;
+                hideShowLegend.removeClass("idd-onscreennavigation-hidelegend").addClass("idd-onscreennavigation-showlegend");
+            }
+        });
+    };
+    var help;
+    if (url) {
+        help = $('<a style="display:block" target="_blank"></div>').addClass("idd-onscreennavigation-help").appendTo(div);
+        help.attr('href', url);
+    }
+    else help = $('<a href="https://github.com/predictionmachines/InteractiveDataDisplay/wiki/UI-Guidelines" style="display:block" target="_blank"></div>').addClass("idd-onscreennavigation-help").appendTo(div);
     var lockNavigation = $("<div></div>").addClass("idd-onscreennavigation-navigationlockpressed").appendTo(div);
     var ZoomAndPanDiv = $("<div style='overflow: hidden; height: 0px'></div>").appendTo(div);
     var pannerDiv = $("<div></div>").addClass("idd-onscreennavigation-panner").appendTo(ZoomAndPanDiv);
     var zoomInDiv = $("<div></div>").addClass("idd-onscreennavigation-zoomin").appendTo(ZoomAndPanDiv);
     var zoomOutDiv = $("<div></div>").addClass("idd-onscreennavigation-zoomout").appendTo(ZoomAndPanDiv);
-    var fitDiv = $("<div></div>").addClass("idd-onscreennavigation-fit").appendTo(div);
-    var logScale = $("<div></div>").addClass("idd-onscreennavigation-logscale").appendTo(div);
+    var fitDiv = $("<div></div>").addClass("idd-onscreennavigation-fit").appendTo(ZoomAndPanDiv);
+    var logScale = $("<div></div>").addClass("idd-onscreennavigation-logscale").appendTo(ZoomAndPanDiv);
     var obs = undefined;
     var observable = Rx.Observable.create(function (rx) {
         obs = rx;
@@ -24,53 +44,53 @@
             obs = undefined;
         };
     });
-    var LogScaleSwitcher = function (d3Chart) {
+    var LogScaleSwitcher = function (plot) {
         var prevState = undefined;
         var switchToState = function (state) {
             if (state !== prevState) {
                 switch (state) {
                     case 0:
-                        d3Chart.xDataTransform = undefined;
-                        d3Chart.yDataTransform = undefined;
+                        plot.xDataTransform = undefined;
+                        plot.yDataTransform = undefined;
                         break;
                     case 1:
-                        d3Chart.xDataTransform = InteractiveDataDisplay.logTransform;
-                        d3Chart.yDataTransform = undefined;
+                        plot.xDataTransform = InteractiveDataDisplay.logTransform;
+                        plot.yDataTransform = undefined;
                         break;
                     case 2:
-                        d3Chart.xDataTransform = undefined;
-                        d3Chart.yDataTransform = InteractiveDataDisplay.logTransform;
+                        plot.xDataTransform = undefined;
+                        plot.yDataTransform = InteractiveDataDisplay.logTransform;
                         break;
                     case 3:
-                        d3Chart.xDataTransform = InteractiveDataDisplay.logTransform;
-                        d3Chart.yDataTransform = InteractiveDataDisplay.logTransform;
+                        plot.xDataTransform = InteractiveDataDisplay.logTransform;
+                        plot.yDataTransform = InteractiveDataDisplay.logTransform;
                         break;
                 }
                 prevState = state;
             }
         };
         this.switch = function () {
-            if (d3Chart.mapControl)
+            if (plot.mapControl)
                 return;
-            var state = (((d3Chart.xDataTransform ? 1 : 0) | (d3Chart.yDataTransform ? 2 : 0)) + 1) % 4;
+            var state = (((plot.xDataTransform ? 1 : 0) | (plot.yDataTransform ? 2 : 0)) + 1) % 4;
             switchToState(state);
-            d3Chart.fitToView(); // doing this manually
+            plot.fitToView(); // doing this manually
         };
     };
-    var logScaleSwitcher = new LogScaleSwitcher(d3Chart);
+    var logScaleSwitcher = new LogScaleSwitcher(plot);
     logScale.click(function (e) {
         logScaleSwitcher.switch();
-        var gestureSource = d3Chart.navigation.gestureSource;
-        d3Chart.navigation.gestureSource = gestureSource.merge(observable);
+        var gestureSource = plot.navigation.gestureSource;
+        plot.navigation.gestureSource = gestureSource.merge(observable);
     });
     var gestureSource = undefined;
-    if (d3Chart.navigation.gestureSource !== undefined) {
-        gestureSource = observable.merge(d3Chart.navigation.gestureSource);
+    if (plot.navigation.gestureSource !== undefined) {
+        gestureSource = observable.merge(plot.navigation.gestureSource);
     }
     else {
         gestureSource = observable;
     }
-    d3Chart.navigation.gestureSource = gestureSource;
+    plot.navigation.gestureSource = gestureSource;
     var panLeft = function () {
         if (obs)
             obs.onNext(new InteractiveDataDisplay.Gestures.PanGesture(10, 0, "Mouse"));
@@ -88,37 +108,37 @@
             obs.onNext(new InteractiveDataDisplay.Gestures.PanGesture(0, -10, "Mouse"));
     };
     var getZoomFactor = function () {
-        if (d3Chart.mapControl === undefined)
+        if (plot.mapControl === undefined)
             return InteractiveDataDisplay.Gestures.zoomLevelFactor;
         else
             return 3.0;
     };
     var zoomIn = function () {
         if (obs) 
-            obs.onNext(new InteractiveDataDisplay.Gestures.ZoomGesture(d3Chart.centralPart.width() / 2, d3Chart.centralPart.height() / 2, 1.0 / getZoomFactor(), "Mouse"));
+            obs.onNext(new InteractiveDataDisplay.Gestures.ZoomGesture(plot.centralPart.width() / 2, plot.centralPart.height() / 2, 1.0 / getZoomFactor(), "Mouse"));
     };
     var zoomOut = function () {
         if (obs)
-            obs.onNext(new InteractiveDataDisplay.Gestures.ZoomGesture(d3Chart.centralPart.width() / 2, d3Chart.centralPart.height() / 2, getZoomFactor(), "Mouse"));
+            obs.onNext(new InteractiveDataDisplay.Gestures.ZoomGesture(plot.centralPart.width() / 2, plot.centralPart.height() / 2, getZoomFactor(), "Mouse"));
     };
     var fitToView = function () {
-        d3Chart.fitToView();
+        plot.fitToView();
     };
-    var defaultGestureSource = d3Chart.navigation.gestureSource;
-    d3Chart.navigation.gestureSource = undefined;
+    var defaultGestureSource = plot.navigation.gestureSource;
+    plot.navigation.gestureSource = undefined;
     lockNavigation.click(function () {
-        if (d3Chart.navigation.gestureSource !== undefined) {
-            d3Chart.navigation.gestureSource = undefined;
+        if (plot.navigation.gestureSource !== undefined) {
+            plot.navigation.gestureSource = undefined;
             lockNavigation.removeClass("idd-onscreennavigation-navigationlock").addClass("idd-onscreennavigation-navigationlockpressed");
             ZoomAndPanDiv.animate({
                 height: 0,
             }, 200);
         }
         else {
-            d3Chart.navigation.gestureSource = defaultGestureSource;
+            plot.navigation.gestureSource = defaultGestureSource;
             lockNavigation.removeClass("idd-onscreennavigation-navigationlockpressed").addClass("idd-onscreennavigation-navigationlock");
             ZoomAndPanDiv.animate({
-                height: 135,
+                height: 225,
             }, 200);
         }
     });
@@ -136,13 +156,13 @@
         e.stopPropagation();
         zoomIn();
     });
-    if (d3Chart.isAutoFitEnabled)
+    if (plot.isAutoFitEnabled)
         fitDiv.attr("class", "idd-onscreennavigation-fit-pressed");
     fitDiv.click(function () {
-        d3Chart.isAutoFitEnabled = !d3Chart.isAutoFitEnabled;
+        plot.isAutoFitEnabled = !plot.isAutoFitEnabled;
     });
-    d3Chart.host.on("isAutoFitEnabledChanged", function () {
-        if (d3Chart.isAutoFitEnabled) {
+    plot.host.on("isAutoFitEnabledChanged", function () {
+        if (plot.isAutoFitEnabled) {
             fitDiv.attr("class", "idd-onscreennavigation-fit-pressed");
         }
         else {
