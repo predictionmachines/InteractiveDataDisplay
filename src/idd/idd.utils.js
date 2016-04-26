@@ -35,6 +35,37 @@ InteractiveDataDisplay.Utils =
                 arr instanceof Uint32Array;
         },
 
+        isOrderedArray: function (arr) {
+            if (arr.length <= 1)
+                return true;
+            else {
+                if (isNaN(arr[1]))
+                    return false;
+                if (isNaN(arr[2]))
+                    return false;
+
+                var diff = arr[1] - arr[0];
+                for (var i = 2; i < arr.length; i++) {
+                    var diff_i = arr[i] - arr[i - 1];
+                    if (diff * diff_i < 0)
+                        return false;
+                }
+                return true;
+            }
+        },
+
+        cutArray: function (arr, len) {
+            if (arr == undefined) return arr;
+            if (arr.length > len) {
+                var result = new Array(len);
+                for (var i = 0; i < len; i++) {
+                    result[i] = arr[i];
+                }
+                return result;
+            } else {
+                return arr;
+            }
+        },
         // Returns intersection of two rectangles {x,y,width,height}, left-bottom corner
         // If no intersection, returns undefined.
         intersect: function (rect1, rect2) {

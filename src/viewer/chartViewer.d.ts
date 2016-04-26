@@ -88,6 +88,8 @@ declare module Plot {
         thickness?: number;
         /**use Plot.LineTreatAs*/
         treatAs?: string;
+        lineCap?: string;
+        lineJoin?: string;
         fill68?: Color;
         fill95?: Color;
         displayName?: string;

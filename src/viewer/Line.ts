@@ -1,7 +1,6 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="Utils.ts" />
 /// <reference path="PlotRegistry.ts" />
-/// <reference path="UncertainLinePlot.ts" />
 declare var InteractiveDataDisplay: any;
 declare var Microsoft: any;
 
@@ -11,7 +10,7 @@ module ChartViewer {
             var div = $("<div></div>")
                 .attr("data-idd-name", plotDefinition.displayName)
                 .appendTo(chart.host);
-            var plot = new UncertainLinePlot(div, chart.master);
+            var plot = new InteractiveDataDisplay.Polyline(div, chart.master);
             chart.addChild(plot);
             return [plot];
         },

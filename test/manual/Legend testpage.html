@@ -34,7 +34,7 @@
             });
             add.click(function () {
                 var heatmap = plot.heatmap("heatmap", {
-                    x: [-2, 0, 5], y: [-4, 0, 4], f: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
+                    x: [-2, 0, 5], y: [-4, 0, 4], values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
                     colorPalette: InteractiveDataDisplay.ColorPalette.parse("lightgreen, lightblue, blue")
                 });
             });

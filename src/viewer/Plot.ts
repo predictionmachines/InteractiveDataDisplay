@@ -2,7 +2,6 @@
 /// <reference path="ViewState.ts" />
 /// <reference path="onScreenNavigation.ts" />
 /// <reference path="PlotRegistry.ts" />
-/// <reference path="UncertainLinePlot.ts" />
 /// <reference path="PlotViewer.ts" />
 module Plot {
     export module MarkerShape {
@@ -61,6 +60,8 @@ module Plot {
         stroke?: Color;
         thickness?: number;
         treatAs?: string;
+        lineCap?: string;
+        lineJoin?: string;
         fill68?: Color;
         fill95?: Color;
         displayName?: string;
