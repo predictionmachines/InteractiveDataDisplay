@@ -1,3 +1,11 @@
+## 1.2.1 (April 26, 2016)
+
+ - Updated UI:
+   - ChartViewer legend is now on the right and is hidden by default
+   - Navigation panel is updated, in particular, it allows showing and hiding the legend
+   - Increased axes titles font size and added margin for the vertical axis title
+ - Fixes bug which prevented reordering of plots having same name
+
 ### 1.2.0  (April 19, 2016) 
 
  - Marker plot is significantly refactored.
