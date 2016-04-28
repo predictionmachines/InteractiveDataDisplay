@@ -1487,7 +1487,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         setTimeout(function () {
             if (_host && _host.attr("data-idd-legend")) {
                 var legendDiv = $("#" +_host.attr("data-idd-legend"));
-                var _legend = new InteractiveDataDisplay.Legend(that, legendDiv, true);
+                var _legend = new InteractiveDataDisplay.Legend(that, legendDiv, true, true);
                 Object.defineProperty(that, "legend", { get: function () { return _legend; }, configurable: false });
             }
         }, 0);
@@ -1517,12 +1517,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
     var _plotLegends = [];
     //Legend with hide/show function
-    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact) {
+    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact, stopPropagation) {
 
         var plotLegends = [];
         var divStyle = _jqdiv[0].style;
         //Stop event propagation
-        if (isCompact) {
+        if (isCompact && stopPropagation) {
             InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
                 _jqdiv[0].addEventListener(eventName, function (e) {
                     e.stopPropagation();
