@@ -26,6 +26,10 @@ describe('InteractiveDataDisplay.Plot', function () {
     beforeEach(function () {
         plot = newPlot("master");
     });
+    
+    afterEach(function () {
+        plot.onChildrenChanged = function() { };
+    });
 
     it('should be properly initialized', function () {
         expect(plot.name).toBe("master");
@@ -55,8 +59,8 @@ describe('InteractiveDataDisplay.Plot', function () {
         var element = newPlotNoInitialization("line1", "polyline");
         var div = plot.host;
         plot.onChildrenChanged = function() {
-          // This should be true when polyline div is appended
-          expect(plot.children.length).toBe(1);          
+          // This should be true when polyline div is appended          
+          expect(plot.children.length).toBe(1);                    
           expect(div.children().length).toBe(1);
           
           plot.onChildrenChanged = function() {
