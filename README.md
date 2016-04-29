@@ -11,6 +11,11 @@ and Microsoft Research Cambridge.
 
 Documentation is available [here](https://github.com/predictionmachines/InteractiveDataDisplay/wiki). 
 
+Build Status
+------------
+
+[![Build Status](https://travis-ci.org/predictionmachines/InteractiveDataDisplay.svg?branch=master)](https://travis-ci.org/predictionmachines/InteractiveDataDisplay)
+
 Building IDD
 ------------
 
