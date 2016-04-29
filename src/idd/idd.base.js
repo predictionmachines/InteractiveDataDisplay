@@ -2538,7 +2538,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // width, height are optional size of the element in the data space
         // returns added DOM element
         this.add = function (element, scaleMode, x, y, width, height, originX, originY) {
-            var el = $(element).appendTo(this.host);
+            var el = $(element)
+            if(!this.host[0].contains(element))
+                el.appendTo(this.host);
             addElement(el, scaleMode, x, y, width, height, originX, originY);
             this.invalidateLocalBounds();
             this.requestUpdateLayout();
