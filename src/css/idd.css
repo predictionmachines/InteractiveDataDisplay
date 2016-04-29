@@ -58,7 +58,7 @@
     text-align: center;
     font-size: smaller;
 }
-
+/*ToolTips*/
 .idd-tooltip
 {
     background-color: rgb(249, 251, 195);
@@ -82,7 +82,19 @@
 {
     margin-bottom: 5px;
 }
-
+.idd-tooltip-name 
+{
+    font-size:14px;
+    font-weight:bold;
+}
+.idd-tooltip-compositevalue 
+{
+    margin-left: 8px;
+}
+.idd-tooltip-itemvalues {
+    margin-bottom: 8px;
+    margin-left: 0px;
+}
 .idd-verticalTitle
 {
     font-size: smaller;

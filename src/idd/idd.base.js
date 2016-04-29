@@ -2156,7 +2156,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var myImageData = context.getImageData(sx, sy, 1, 1);
             if (myImageData.data[0] === 0 && myImageData.data[1] === 0 && myImageData.data[2] === 0 && myImageData.data[3] === 0)
                 return undefined;
-            return "<div>" + (this.name || "Polyline") + "</div>";
+            var $toolTip = $("<div></div>")
+            $("<div></div>").addClass('idd-tooltip-name').text((this.name || "Polyline")).appendTo($toolTip);
+            return $toolTip;
         };
         var renderLine = function (_x, _y, _stroke, _thickness, plotRect, screenSize, context) {
             if (_x === undefined || _y == undefined)
@@ -2278,9 +2280,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.renderCore = function (plotRect, screenSize) {
             InteractiveDataDisplay.Polyline.prototype.renderCore.call(this, plotRect, screenSize);
 
-            var context = this.getContext(true);
-            InteractiveDataDisplay.Area.render(that, _x, _y_l95, _y_u95, _fill95, plotRect, screenSize, context, 0.5);
-            InteractiveDataDisplay.Area.render(that, _x, _y_l68, _y_u68, _fill68, plotRect, screenSize, context, 0.5);
+            var context = this.getContext(false);
+            InteractiveDataDisplay.Area.render.call(this, _x, _y_l95, _y_u95, _fill95, plotRect, screenSize, context, 0.5);
+            InteractiveDataDisplay.Area.render.call(this, _x, _y_l68, _y_u68, _fill68, plotRect, screenSize, context, 0.5);
             renderLine(_x, _y, _stroke, _thickness, plotRect, screenSize, context);
         };
 

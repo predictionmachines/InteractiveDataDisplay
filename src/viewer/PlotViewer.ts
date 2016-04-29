@@ -42,7 +42,7 @@ module ChartViewer {
 
             var iddChart = this.iddChart = InteractiveDataDisplay.asPlot(iddDiv);
             iddChart.legend.isVisible = false;
-            iddChart.isToolTipEnabled = false;
+            iddChart.isToolTipEnabled = true;
             iddChart.doFitOnDataTransformChanged = false;
         
             //adding onscreen navigation

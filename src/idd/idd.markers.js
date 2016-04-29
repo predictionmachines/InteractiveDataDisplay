@@ -131,8 +131,9 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 total_bb.height = t - b;
             }
             return total_bb;
-        } else if(typeof _data.x != "undefined" && typeof _data.y != "undefined") {
-            return InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_data.x, _data.y, dataToPlotX, dataToPlotY);
+        } else if (typeof _data.x != "undefined" && typeof _data.y != "undefined") {
+            if (!InteractiveDataDisplay.Utils.isArray(_data.y)) return InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_data.x, _data.y.median, dataToPlotX, dataToPlotY);
+            else return InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_data.x, _data.y, dataToPlotX, dataToPlotY);
         } 
         return undefined;
     };
@@ -183,7 +184,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
     };
 
     this.findToolTipMarkers = function (xd, yd, xp, yp) {
-        if(_shape == undefined || typeof _shape.hitTest == "undefined" || _renderData == undefined) return [];
+        if (_shape == undefined || typeof _shape.hitTest == "undefined" || _renderData == undefined) return [];
+        var that = this;
         var t = this.getTransform();
         var ps = { x: t.dataToScreenX(xd), y: t.dataToScreenY(yd) };
         var pd = { x: xd, y: yd };
@@ -192,7 +194,6 @@ InteractiveDataDisplay.Markers = function (div, master) {
         var n = pattern.length;
         var arrays = pattern.arrays;
         var row = pattern.scalars;
-         
         var found = [];           
         for(var i = 0; i < n; i++){
             for(var prop in arrays) row[prop] = arrays[prop][i];
@@ -200,14 +201,16 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 // todo: this is a shape-dependent code; needs factorization or a rule of using `indices` property
                 var j = row.indices;
                 var dataRow = {};
-                // makes slice of the original data row
-                for (var prop in _originalData) {
-                    var vals = _originalData[prop];
-                    if(InteractiveDataDisplay.Utils.isArray(vals) && j < vals.length){
-                        dataRow[prop] = vals[j];
-                    } // scalars do not go to the tooltip since they are identical for all markers
+                if (_shape.getTooltipData) dataRow = _shape.getTooltipData(_originalData, j);
+                else {// makes slice of the original data row
+                    for (var prop in _originalData) {
+                        var vals = _originalData[prop];
+                        if (InteractiveDataDisplay.Utils.isArray(vals) && j < vals.length) {
+                            dataRow[prop] = vals[j];
+                        }// scalars do not go to the tooltip since they are identical for all markers
+                    }
+                    dataRow["index"] = j;
                 }
-                dataRow["index"] = j;
                 found.push(dataRow);
             }
         }
@@ -219,24 +222,29 @@ InteractiveDataDisplay.Markers = function (div, master) {
         var that = this;
         var resultMarkers = that.findToolTipMarkers(xd, yd, xp, yp);
         var buildTooltip = function (markerInfo) {
-            var content = undefined;
+            var $content = $("<div></div>").addClass('idd-tooltip-compositevalue');
             for (var prop in markerInfo) {
                 if (markerInfo.hasOwnProperty(prop)) {
                     var propTitle = that.getTitle(prop);
-                    if (content)
-                        content += "<br/><b>" + propTitle + "</b>: " + markerInfo[prop];
+                    var markerContent = undefined;
+                    if (typeof markerInfo[prop] == 'object') {
+                        markerContent = buildTooltip(markerInfo[prop]);
+                    }
+                    if (markerContent)
+                        $content.append($("<div>" + propTitle + ":</div>")).append(markerContent);
                     else
-                        content = "<b>" + propTitle + "</b>: " + markerInfo[prop];
+                        $content.append($("<div>" + propTitle + ": " + markerInfo[prop] + "</div>"));
                 }
             }
-            return "<div>" + content + "</div>";
+            return $content;
         };
         if (resultMarkers.length > 0) {
-            var toolTip = "<b>" + that.name + "</b>";
+            var $toolTip = $("<div></div>")
+            $("<div></div>").addClass('idd-tooltip-name').text((that.name || "markers")).appendTo($toolTip);
             resultMarkers.forEach(function (markerInfo) {
-                toolTip += "<br/>" + buildTooltip(markerInfo);
+                buildTooltip(markerInfo).addClass('idd-tooltip-itemvalues').appendTo($toolTip);
             });
-            return "<div>" + toolTip + "</div>";
+            return $toolTip;
         }
     };
     

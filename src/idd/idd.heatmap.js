@@ -471,8 +471,11 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
 
         var value = this.getValue(xd, yd);
         if (value == null) return;
-        return "<div>" + (this.name || "heatmap") +
-            ": " + value + "</div>";
+        var $toolTip = $("<div></div>")
+        $("<div></div>").addClass('idd-tooltip-name').text((this.name || "heatmap")).appendTo($toolTip);
+        var propTitle = this.getTitle("values");
+        $("<div>" + propTitle + ": " + value + "</div>").appendTo($toolTip);
+        return $toolTip;
     };
 
 

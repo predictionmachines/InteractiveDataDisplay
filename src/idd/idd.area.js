@@ -156,14 +156,13 @@ InteractiveDataDisplay.Area = function (div, master) {
 }
 
 InteractiveDataDisplay.Area.prototype = new InteractiveDataDisplay.CanvasPlot;
-
-InteractiveDataDisplay.Area.render = function (that, _x, _y1, _y2, _fill, plotRect, screenSize, context, globalAlpha) {
+InteractiveDataDisplay.Area.render = function (_x, _y1, _y2, _fill, plotRect, screenSize, context, globalAlpha) {
     if (_x === undefined || _y1 == undefined || _y2 == undefined)
         return;
     var n = _y1.length;
     if (n == 0) return;
 
-    var t = that.getTransform();
+    var t = this.getTransform();
     var dataToScreenX = t.dataToScreenX;
     var dataToScreenY = t.dataToScreenY;
 
