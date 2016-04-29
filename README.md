@@ -1,6 +1,8 @@
 Interactive Data Display
 ------------------------
 
+[![Build Status](https://travis-ci.org/predictionmachines/InteractiveDataDisplay.svg?branch=master)](https://travis-ci.org/predictionmachines/InteractiveDataDisplay)
+
 Interactive Data Display for JavaScript (IDD for short) is a set of controls for adding interactive visualization of dynamic data to your application. 
 It allows to create line graphs, bubble charts, heat maps and other complex 2D plots which are very common in scientific software. 
 Dynamic Data Display integrates well with Bing Maps control to show data on a geographic map in latitude/longitude coordinates. 
@@ -11,10 +13,6 @@ and Microsoft Research Cambridge.
 
 Documentation is available [here](https://github.com/predictionmachines/InteractiveDataDisplay/wiki). 
 
-Build Status
-------------
-
-[![Build Status](https://travis-ci.org/predictionmachines/InteractiveDataDisplay.svg?branch=master)](https://travis-ci.org/predictionmachines/InteractiveDataDisplay)
 
 Building IDD
 ------------
