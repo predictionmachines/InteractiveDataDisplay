@@ -8,8 +8,7 @@ It allows to create line graphs, bubble charts, heat maps and other complex 2D p
 Dynamic Data Display integrates well with Bing Maps control to show data on a geographic map in latitude/longitude coordinates. 
 The controls can also be operated programmatically. 
 
-IDD is being developed in close collaboration between [Information Technologies in Sciences laboratory](http://itis.cs.msu.ru) of Moscow State University 
-and Microsoft Research Cambridge. 
+IDD is being developed in close collaboration between [Information Technologies in Sciences laboratory](http://itis.cs.msu.ru) of Moscow State University and Microsoft Research Cambridge. 
 
 Documentation is available [here](https://github.com/predictionmachines/InteractiveDataDisplay/wiki). 
 
