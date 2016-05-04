@@ -72,7 +72,7 @@ InteractiveDataDisplay.Area = function (div, master) {
         InteractiveDataDisplay.Area.prototype.renderCore.call(this, plotRect, screenSize);
         var context = that.getContext(true);
 
-        InteractiveDataDisplay.Area.render(that, _x, _y1, _y2, _fill, plotRect, screenSize, context);
+        InteractiveDataDisplay.Area.render.call(this, _x, _y1, _y2, _fill, plotRect, screenSize, context);
     };
 
     // Clipping algorithms
