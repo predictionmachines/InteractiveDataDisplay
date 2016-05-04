@@ -42,7 +42,7 @@ module ChartViewer {
 
             var iddChart = this.iddChart = InteractiveDataDisplay.asPlot(iddDiv);
             iddChart.legend.isVisible = false;
-            iddChart.isToolTipEnabled = true;
+            iddChart.isToolTipEnabled = false;
             iddChart.doFitOnDataTransformChanged = false;
         
             //adding onscreen navigation
@@ -64,7 +64,9 @@ module ChartViewer {
                 var result = [];
                 for (var i = 0; i < children.length; i++) {
                     if (children[i].isVisible) {
-                        var tt = children[i].getTooltip(probe.location.x, probe.location.y, 0, 0, probe);
+                        var xd = children[i].xDataTransform ? children[i].xDataTransform.plotToData(probe.location.x) : probe.location.x;
+                        var yd = children[i].yDataTransform ? children[i].yDataTransform.plotToData(probe.location.y) : probe.location.y;
+                        var tt = children[i].getTooltip(probe.location.x, probe.location.y, xd, yd);
                         if (tt !== undefined) {
                             result.push(tt);
                         }

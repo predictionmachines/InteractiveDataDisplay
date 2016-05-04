@@ -124,7 +124,7 @@
 .probecard-record {
     margin-top: 5px;
     margin-bottom: 5px;
-    padding: 16px;
+    padding: 16px 16px 0px 16px;
     font-size: 14px;
     overflow:hidden;
     width: 140px;
