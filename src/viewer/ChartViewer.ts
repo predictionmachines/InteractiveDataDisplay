@@ -193,7 +193,7 @@ module ChartViewer {
                 if (persistentViewState.uncertaintyRange !== undefined && persistentViewState.uncertaintyRange.probeid === probe.id) {
                     persistentViewState.uncertaintyRange = undefined;
                 }
-                if (hostDiv[0].childNodes.length == 0) div[0].style.display = "none";
+                if (hostDiv[0].childNodes.length == 0) hostDiv[0].style.display = "none";
             });
 
             var fitBtn = $("<div></div>").addClass("probeCard-fit").appendTo(actionPanel);
@@ -232,7 +232,7 @@ module ChartViewer {
             var probe = args.probe;
             switch (args.status) {
                 case "add":
-                    div[0].style.display = "block";
+                    hostDiv[0].style.display = "block";
                     var probeDiv = getProbeDiv(args.probe);
                     var probeHost = $("<div></div>").css("display", "inline").appendTo(_host);
                     probeDiv.appendTo(probeHost);
@@ -244,7 +244,7 @@ module ChartViewer {
                         if (pDiv.id === probe.id) {
                             pDiv.host.remove();
                             probeDivs = probeDivs.filter(function (d) { return d.id !== probe.id });
-                            if (hostDiv[0].childNodes.length == 0) div[0].style.display = "none";
+                            if (hostDiv[0].childNodes.length == 0) hostDiv[0].style.display = "none";
                             break;
                         }
                     }

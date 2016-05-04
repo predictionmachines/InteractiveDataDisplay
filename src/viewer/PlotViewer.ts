@@ -287,7 +287,7 @@ module ChartViewer {
 
             if (xAxisStr !== "") {
                 if (this.xAxisTitle === undefined) {
-                    this.xAxisTitle = $(this.iddChart.addDiv('<div style="text-align: center"></div>', "bottom"));
+                    this.xAxisTitle = $(this.iddChart.addDiv('<div style="font-size: larger; text-align: center"></div>', "bottom"));
                 }
                 this.xAxisTitle.text(xAxisStr);
             } else {
