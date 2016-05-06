@@ -20,11 +20,11 @@
                 "heatmap": {
                     values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]]
                 },
-                //"heatmap with": {
-                //    y: [-4, 0, 4],
-                //    x: [-2, 0, 5],
-                //    values: [1, 2, 3]
-                //},
+                "heatmap with": {
+                    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
+                    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
+                    values: [1, 2, 3, 4, 5, 4, 3, 2, 1]
+                },
                 "heatmap with x, y": {
                     y: [-4, 0, 4],
                     x: [-2, 0, 5],
@@ -36,6 +36,13 @@
                     values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
                     colorPalette: "yellow, red",
                 },
+                "heatmap with treatAs": {
+                    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
+                    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
+                    values: [1, 2, 3, 4, 5, 4, 3, 2, 1],
+                    colorPalette: "yellow, red",
+                    treatAs: "discrete"
+                },
                 "heatmap with building color palette": {
                     y: [-4, 0, 4],
                     x: [-2, 0, 5],
@@ -43,14 +50,12 @@
                     colorPalette: new InteractiveDataDisplay.ColorPalette.parse("yellow, red"),
                 },
                 "heatmap with uncertain data": {
-                    x: [-2, 0, 5],
-                    y: [-4, 0, 4],
+                    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
+                    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
                     values: {
-                        median: [-12, 3, 11],
-                        lower95: [-12.6, 2.85, 10.45],
-                        upper95: [-11.4, 3.15, 11.55],
-                        lower68: [-13.2, 2.7, 9.9],
-                        upper68: [-10.8, 3.3, 12.1]
+                        median: [1, 2, 3, 4, 5, 4, 3, 2, 1],
+                        lower68: [-3, -1, 1, 1, 4, 2, 1, 0, 0],
+                        upper68: [4, 6, 7, 8, 9, 7, 5, 4, 2]
                     },
                     colorPalette: 'brown, orange, yellow, lightgreen, lightblue'
                 }

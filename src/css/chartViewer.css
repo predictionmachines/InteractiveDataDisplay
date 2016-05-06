@@ -129,21 +129,6 @@
     overflow:hidden;
     width: 140px;
 }
-.checkButton {
-    width: 13px;
-    height: 13px;
-    margin-left: 10px;
-    margin-top: 5px;
-    margin-right: 5px;
-    cursor: pointer;
-    background-color: #F1F9FF;
-    border: 1px solid #888;
-    float: left;
-}
-.checkButton-checked {
-    background-color: #365C95;
-}
-
 
 .dsv-onscreennavigationcontainer {
     background-color: transparent;

@@ -1,3 +1,6 @@
+ - Polyline plot is refactored (y may be uncertain value)
+ - Heatmap plot is refactored **(values instead of f)** Values may be uncertain value.
+
 ## 1.2.1 (April 26, 2016)
 
  - Updated UI:

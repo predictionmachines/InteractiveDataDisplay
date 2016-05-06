@@ -62,12 +62,15 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var _y;
     var _x;
     var _f;
+    var _f_u68, _f_l68, _f_median;
     var _fmin, _fmax;
     var _opacity; // 1 is opaque, 0 is transparent
     var _mode; // gradient or matrix
     var _palette;
     var _dataChanged;
     var _paletteColors;
+    var _interval;
+    var _heatmap_nav;
 
     loadOpacity((initialData && typeof (initialData.opacity) != 'undefined') ? parseFloat(initialData.opacity) : 1.0);
     loadPalette((initialData && typeof (initialData.colorPalette) != 'undefined') ? initialData.colorPalette : InteractiveDataDisplay.palettes.grayscale);
@@ -93,6 +96,115 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var lastCompletedTask;
     var that = this;
 
+    //from chart viewer
+    var makeHeatmapData = function(x, y, z, isDiscrete) {
+        if (!x || !y || !z) return {};
+        if (!x.length || !y.length || (z.v && !z.v.length) || (z.m && (!z.m.length || !z.lb68.length || !z.ub68.length))) return {};
+
+        // Convert to Array.
+        x = Array.prototype.slice.call(x);
+        y = Array.prototype.slice.call(y);
+
+        if (z.v) {
+            z.v = Array.prototype.slice.call(z.v);
+        } else if (z.m) {
+            z.m = Array.prototype.slice.call(z.m);
+            z.lb68 = Array.prototype.slice.call(z.lb68);
+            z.ub68 = Array.prototype.slice.call(z.ub68);
+        }
+
+        // All arrays must have the same length.
+        if (z.v && (x.length !== y.length || x.length !== z.v.length || y.length !== z.v.length)) {
+            x.length = y.length = z.v.length = Math.min(x.length, y.length, z.v.length);
+        } else if (z.m && (x.length !== y.length || x.length !== z.m.length || y.length !== z.m.length || z.m.length !== z.lb68.length || z.m.length !== z.ub68.length)) {
+            x.length = y.length = z.m.length = z.lb68.length = z.ub68.length = Math.min(x.length, y.length, z.m.length, z.lb68.length, z.ub68.length);
+        }
+
+        // Remember indices in unsorted arrays.
+        var ix = x.map(function (a, i) { return { v: a, i: i }; });
+        var iy = y.map(function (a, i) { return { v: a, i: i }; });
+
+        // Get sorted arrays.
+        var sx = ix.sort(function (a, b) { return a.v < b.v ? -1 : a.v > b.v ? 1 : 0; });
+        var sy = iy.sort(function (a, b) { return a.v < b.v ? -1 : a.v > b.v ? 1 : 0; });
+
+        // Get unique sorted arrays of grid dimensions.
+        var ux = sx.filter(function (a, i) { return !i || a.v != sx[i - 1].v; }).map(function (a) { return a.v; });
+        var uy = sy.filter(function (a, i) { return !i || a.v != sy[i - 1].v; }).map(function (a) { return a.v; });
+
+        // Using initial indices get arrays of grid indices for dimensions.
+        var i, j, ifx = [], ify = [];
+        i = 0; sx.forEach(function (a, k) { return ifx[a.i] = !k ? 0 : a.v != sx[k - 1].v ? ++i : i; });
+        i = 0; sy.forEach(function (a, k) { return ify[a.i] = !k ? 0 : a.v != sy[k - 1].v ? ++i : i; });
+
+        var f, m, lb68, ub68;
+
+        // Initializes 2d array with NaNs.
+        var initNaNs = function (d1, d2) {
+            var a = [];
+            for (var i = 0; i < d1; ++i) {
+                a[i] = [];
+                for (var j = 0; j < d2; ++j) {
+                    a[i][j] = NaN;
+                }
+            }
+            return a;
+        }
+
+        if (z.v) {
+            f = initNaNs(ux.length, uy.length);
+
+            for (i = 0; i < z.v.length; ++i) {
+                f[ifx[i]][ify[i]] = z.v[i];
+            }
+        } else {
+            m = initNaNs(ux.length, uy.length);
+            lb68 = initNaNs(ux.length, uy.length);
+            ub68 = initNaNs(ux.length, uy.length);
+
+            for (i = 0; i < z.m.length; ++i) {
+                m[ifx[i]][ify[i]] = z.m[i];
+                lb68[ifx[i]][ify[i]] = z.lb68[i];
+                ub68[ifx[i]][ify[i]] = z.ub68[i];
+            }
+        }
+
+
+        if (isDiscrete) {
+            if (ux.length >= 2) {
+                var newx = [];
+                newx.push(ux[0] - (ux[1] - ux[0]) / 2);
+                var m;
+                for (m = 1; m < ux.length; m++) {
+                    newx.push(ux[m] - (ux[m] - ux[m - 1]) / 2);
+                }
+                newx.push(ux[ux.length - 1] + (ux[ux.length - 1] - ux[ux.length - 2]) / 2);
+                ux = newx;
+            }
+
+            if (uy.length >= 2) {
+                var newy = [];
+                newy.push(uy[0] - (uy[1] - uy[0]) / 2);
+                var k;
+                for (k = 1; k < uy.length; k++) {
+                    newy.push(uy[k] - (uy[k] - uy[k - 1]) / 2);
+                }
+                newy.push(uy[uy.length - 1] + (uy[uy.length - 1] - uy[uy.length - 2]) / 2);
+                uy = newy;
+            }
+        }
+
+
+        return {
+            x: ux,
+            y: uy,
+            values: f,
+            m: m,
+            l68: lb68,
+            u68: ub68
+        };
+    };
+
     this.onRenderTaskCompleted = function (completedTask) {
         lastCompletedTask = completedTask;
         if (_innerCanvas.width !== lastCompletedTask.width || _innerCanvas.height !== lastCompletedTask.height) {
@@ -109,31 +221,92 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     this.draw = function (data, titles) {
         var f = data.values;
         if (!f) throw "Data series f is undefined";
-        var n = f.length;
-        var m = f[0].length;
-
+        var isOneDimensional = f["median"] !== undefined && !InteractiveDataDisplay.Utils.isArray(f["median"][0])
+                || !InteractiveDataDisplay.Utils.isArray(f[0]);
         var x = data.x;
-        if (!x) {
-            x = InteractiveDataDisplay.Utils.range(0, n);
-        } else {
-            if (x.length != n && x.length != n + 1) throw "Data series x must have length equal or one more than length of data series f by first dimension";
-        }
-
         var y = data.y;
-        if (!y) {
-            y = InteractiveDataDisplay.Utils.range(0, m);
-        } else {
-            if (y.length != m && y.length != m + 1) throw "Data series y must have length equal or one more than length of data series f by second dimension";
-        }
 
-        _x = x;
-        _y = y;
-        _f = f;
-        if (x.length == n) {
-            if (y.length != m) throw "Data series y must have length equal to length of data series f by second dimension";
+        if (f["median"]) {//uncertainty
+            var div = $("<div></div>")
+                .attr("data-idd-name", "heatmap__nav_")
+                .appendTo(this.master.host);
+            _heatmap_nav = new InteractiveDataDisplay.Heatmap(div, this.master);
+            _heatmap_nav.getLegend = function () {
+                return undefined;
+            };
+            this.addChild(_heatmap_nav);
+            _heatmap_nav.opacity = 0.5;
+            _heatmap_nav.colorPalette = InteractiveDataDisplay.ColorPalette.parse("0=#00000000=#00000080=1");
+            _heatmap_nav.getTooltip = function (xd, yd, xp, yp) {
+                return undefined;
+            }
+            if (isOneDimensional) {
+                var r = makeHeatmapData(x, y, {
+                    v: undefined,
+                    m: f.median,
+                    lb68: f.lower68,
+                    ub68: f.upper68
+                }, data.treatAs === 'discrete');
+                _x = r.x;
+                _y = r.y;
+                _f = r.m;
+                _f_median = r.m;
+                _f_l68 = r.l68;
+                _f_u68 = r.u68;
+
+                _heatmap_nav._x = r.x;
+                _heatmap_nav._y = r.y;
+                _heatmap_nav._f = r.m;
+                _heatmap_nav._f_median = r.m;
+                _heatmap_nav._f_l68 = r.l68;
+                _heatmap_nav._f_u68 = r.u68;
+            } else {
+                _x = x;
+                _y = y;
+                _f = f.median;
+                _f_median = f.median;
+                _f_l68 = f.lower68;
+                _f_u68 = f.upper68;
+
+                _heatmap_nav._x = r.x;
+                _heatmap_nav._y = r.y;
+                _heatmap_nav._f = f.median;
+                _heatmap_nav._f_median = f.median68;
+                _heatmap_nav._f_l68 = f.lower68;
+                _heatmap_nav._f_u68 = f.upper68;
+            }
+        } else {
+            if (isOneDimensional) {
+                var r = makeHeatmapData(x, y, {
+                    v: f
+                }, data.treatAs === 'discrete');
+                _x = r.x;
+                _y = r.y;
+                _f = r.values;
+            } else {
+                _f = f;
+                _x = x;
+                _y = y;
+            }
+        }
+        var n = _f_median ? _f_median.length : _f.length;
+        var m = _f_median ? _f_median[0].length : _f[0].length;
+        if (!_x) {
+            _x = InteractiveDataDisplay.Utils.range(0, n);
+        } else {
+            if (_x.length != n && _x.length != n + 1) throw "Data series x must have length equal or one more than length of data series f by first dimension";
+        }
+        if (!_y) {
+             _y = InteractiveDataDisplay.Utils.range(0, m);
+         } else {
+             if (_y.length != m && _y.length != m + 1) throw "Data series y must have length equal or one more than length of data series f by second dimension";
+         }
+
+        if (_x.length == n) {
+            if (_y.length != m) throw "Data series y must have length equal to length of data series f by second dimension";
             _mode = 'gradient';
         } else {
-            if (y.length != m + 1) throw "Data series y must have length equal to one more than length of data series f by second dimension";
+            if (_y.length != m + 1) throw "Data series y must have length equal to one more than length of data series f by second dimension";
             _mode = 'matrix';
         }
 
@@ -428,7 +601,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     /// in the point (xd,yd) in data coordinates.
     /// Depends on the heatmap mode.
     /// Returns null, if the point is outside of the plot.
-    this.getValue = function (xd, yd) {
+    this.getValue = function (xd, yd, array) {
         var n = _x.length;
         var m = _y.length;
         if (n == 0 || m == 0) return null;
@@ -440,10 +613,10 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         var value;
         if (_mode === "gradient") {
             var flb, flt, frt, frb;
-            flt = _f[cell.iLeft][cell.jBottom + 1];
-            flb = _f[cell.iLeft][cell.jBottom];
-            frt = _f[cell.iLeft + 1][cell.jBottom + 1];
-            frb = _f[cell.iLeft + 1][cell.jBottom];
+            flt = array[cell.iLeft][cell.jBottom + 1];
+            flb = array[cell.iLeft][cell.jBottom];
+            frt = array[cell.iLeft + 1][cell.jBottom + 1];
+            frb = array[cell.iLeft + 1][cell.jBottom];
 
             if (isNaN(flt) || isNaN(flb) || isNaN(frt) || isNaN(frb)) {
                 value = NaN;
@@ -460,21 +633,71 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 value = kx * (xd - x0) + fleft;
             }
         } else {
-            value = _f[cell.iLeft][cell.jBottom];
+            value = array[cell.iLeft][cell.jBottom];
         }
         return value;
     };
 
-    this.getTooltip = function (xd, yd) {
+    this.getTooltip = function (xd, yd, xp, yp, probe) {
         if (_f === undefined)
             return;
 
-        var value = this.getValue(xd, yd);
-        if (value == null) return;
-        var $toolTip = $("<div></div>")
+        var $toolTip = $("<div></div>");
         $("<div></div>").addClass('idd-tooltip-name').text((this.name || "heatmap")).appendTo($toolTip);
-        var propTitle = this.getTitle("values");
-        $("<div>" + propTitle + ": " + value + "</div>").appendTo($toolTip);
+            
+        if (_f !== undefined) {
+            if (_f_u68 === undefined || _f_l68 === undefined || _f_median === undefined) {
+                var value = this.getValue(xd, yd, _f);
+                if (value == null) return;
+                var propTitle = this.getTitle("values");
+                $("<div>" + propTitle + ": " + value + "</div>").appendTo($toolTip);
+            } else {
+                var lb = this.getValue(xd, yd, _f_l68);
+                var ub = this.getValue(xd, yd, _f_u68);
+                var median = this.getValue(xd, yd, _f_median);
+                var propTitle = this.getTitle("values");
+                var uncertainContent = $("<div></div>").addClass('idd-tooltip-compositevalue');
+                uncertainContent.append($("<div>median: " + median + "</div>"));
+                uncertainContent.append($("<div>lower 68%: " + lb + "</div>"));
+                uncertainContent.append($("<div>upper 68%: " + ub + "</div>"));
+                var $content = $("<div></div>");
+                $content.append($("<div>" + propTitle + ":</div>")).append(uncertainContent);
+                $content.appendTo($toolTip);
+
+                var checkBoxCnt = $("<div></div>").css("display", "inline-block").appendTo($toolTip);
+                var showSimilarBtn = $("<div></div>").addClass("checkButton").appendTo(checkBoxCnt);
+
+                if (_interval) {
+                    $(".checkButton").removeClass("checkButton-checked");
+                    showSimilarBtn.addClass("checkButton-checked");
+                }
+                showSimilarBtn.click(function () {
+                    if (showSimilarBtn.hasClass("checkButton-checked")) {
+                        showSimilarBtn.removeClass("checkButton-checked");
+                        _interval = undefined;
+                        _heatmap_nav.host.css("visibility", "hidden");
+                    }
+                    else {
+                        $(".checkButton").removeClass("checkButton-checked");
+                        showSimilarBtn.addClass("checkButton-checked");
+                        _interval = { min: lb, max: ub };
+                        var fmedian = _heatmap_nav._f_median;
+                        var shadeData = new Array(fmedian.length);
+                        for (var i = 0; i < fmedian.length; i++) {
+                            var fmedian_i = fmedian[i]
+                            shadeData[i] = new Array(fmedian_i.length);
+                            for (var j = 0; j < fmedian_i.length; j++) {
+                                shadeData[i][j] = (_heatmap_nav._f_l68[i][j] < _interval.max && _heatmap_nav._f_u68[i][j] > _interval.min) ? 0 : 1;
+                            }
+                        }
+                        _heatmap_nav.draw({ x: _heatmap_nav._x, y: _heatmap_nav._y, f: shadeData });
+                        _heatmap_nav.host.css("visibility", "visible");
+                    }
+                });
+
+                $($("<span style='margin-left:3px;'>highlight similar</span>")).appendTo(checkBoxCnt);
+            }
+        }
         return $toolTip;
     };
 
@@ -495,7 +718,6 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         },
         configurable: false
     });
-
 
     Object.defineProperty(this, "opacity", {
         get: function () { return _opacity; },

@@ -96,6 +96,20 @@
     margin-bottom: 8px;
     margin-left: 0px;
 }
+.checkButton {
+    width: 13px;
+    height: 13px;
+    margin-top: 3px;
+    margin-right: 5px;
+    cursor: pointer;
+    background-color: #F1F9FF;
+    border: 1px solid #888;
+    float: left;
+}
+.checkButton-checked {
+    background-color: #365C95;
+}
+
 .idd-verticalTitle
 {
     font-size: smaller;

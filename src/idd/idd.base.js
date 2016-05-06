@@ -548,7 +548,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 childPlot.onAddedTo(this.master); // changing master 
             childPlot.order = childPlot.order == Number.MAX_SAFE_INTEGER ? childPlot.order : (InteractiveDataDisplay.Utils.getMaxOrder(this.master) + 1);
             _children.push(childPlot);
-
             if (this.master._sharedCanvas) {
                 this.master._sharedCanvas.remove();
                 this.master._sharedCanvas = undefined;
