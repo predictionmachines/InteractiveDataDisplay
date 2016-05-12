@@ -54,6 +54,7 @@
                     "src/idd/idd.heatmap.js",
                     "src/idd/idd.onscreennavigation.js",
                     "src/idd/idd.bingmapsplot.js",
+                    "src/idd/idd.ko.js",
                     "src/idd/wrapper_footer.txt"
                 ],
                 dest: 'dist/idd.js',
@@ -100,6 +101,7 @@
                 vendor: [
                     "ext/jquery/dist/jquery.js",
                     "ext/rxjs/dist/rx.lite.js",
+		    "https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js",
                     "<%= concat.dist.dest %>"
                 ]
             },
