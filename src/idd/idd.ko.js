@@ -1,4 +1,6 @@
 if(ko) { //add Knockout bindings. Requires that IDD loaded after Knockout
+    var lineThickness = 3;
+
     ko.bindingHandlers.iddPlotName = {
         update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             var value = valueAccessor();
