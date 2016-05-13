@@ -321,6 +321,7 @@ module ChartViewer {
                 .css("z-index", 0)
                 .prependTo(this.iddChart.host);
             var plot = new InteractiveDataDisplay.BingMapsPlot(div, this.iddChart);
+            plot.order = 9007199254740991;
             this.iddChart.addChild(plot);
             return plot;
         }

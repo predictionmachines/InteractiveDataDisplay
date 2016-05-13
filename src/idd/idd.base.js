@@ -547,6 +547,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (childPlot.master !== this.master)
                 childPlot.onAddedTo(this.master); // changing master 
             childPlot.order = childPlot.order == Number.MAX_SAFE_INTEGER ? childPlot.order : (InteractiveDataDisplay.Utils.getMaxOrder(this.master) + 1);
+            if (childPlot.order < Number.MAX_SAFE_INTEGER) childPlot.host.css("z-index", childPlot.order);
             _children.push(childPlot);
             if (this.master._sharedCanvas) {
                 this.master._sharedCanvas.remove();
@@ -1438,7 +1439,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return plot;
         };
 
-        this.heatmap = function (name, data) {
+        this.heatmap = function (name, data, titles) {
             var plot = this.get(name);
             if (!plot) {
                 var div = $("<div></div>")
@@ -1449,7 +1450,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 this.addChild(plot);
             }
             if (data !== undefined) {
-                plot.draw(data);
+                plot.draw(data, titles);
             }
             return plot;
         };

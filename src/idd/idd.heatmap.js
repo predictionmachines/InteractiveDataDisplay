@@ -225,11 +225,11 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 || !InteractiveDataDisplay.Utils.isArray(f[0]);
         var x = data.x;
         var y = data.y;
-
+        _interval = data.interval;
         if (f["median"]) {//uncertainty
             var div = $("<div></div>")
                 .attr("data-idd-name", "heatmap__nav_")
-                .appendTo(this.master.host);
+                .appendTo(this.host);
             _heatmap_nav = new InteractiveDataDisplay.Heatmap(div, this.master);
             _heatmap_nav.getLegend = function () {
                 return undefined;
@@ -274,6 +274,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 _heatmap_nav._f_median = f.median68;
                 _heatmap_nav._f_l68 = f.lower68;
                 _heatmap_nav._f_u68 = f.upper68;
+            }
+            if (_interval) {
+                updateInterval();
             }
         } else {
             if (isOneDimensional) {
@@ -637,7 +640,19 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         }
         return value;
     };
-
+    var updateInterval = function () {
+        var fmedian = _heatmap_nav._f_median;
+        var shadeData = new Array(fmedian.length);
+        for (var i = 0; i < fmedian.length; i++) {
+            var fmedian_i = fmedian[i];
+            shadeData[i] = new Array(fmedian_i.length);
+            for (var j = 0; j < fmedian_i.length; j++) {
+                shadeData[i][j] = (_heatmap_nav._f_l68[i][j] < _interval.max && _heatmap_nav._f_u68[i][j] > _interval.min) ? 1 : 0;
+            }
+        }
+        _heatmap_nav.draw({ x: _heatmap_nav._x, y: _heatmap_nav._y, values: shadeData });
+        _heatmap_nav.host.css("visibility", "visible");
+    };
     this.getTooltip = function (xd, yd, xp, yp, probe) {
         if (_f === undefined)
             return;
@@ -670,6 +685,8 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 if (_interval) {
                     $(".checkButton").removeClass("checkButton-checked");
                     showSimilarBtn.addClass("checkButton-checked");
+                    _interval = { min: lb, max: ub };
+                    updateInterval();
                 }
                 showSimilarBtn.click(function () {
                     if (showSimilarBtn.hasClass("checkButton-checked")) {
@@ -681,17 +698,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                         $(".checkButton").removeClass("checkButton-checked");
                         showSimilarBtn.addClass("checkButton-checked");
                         _interval = { min: lb, max: ub };
-                        var fmedian = _heatmap_nav._f_median;
-                        var shadeData = new Array(fmedian.length);
-                        for (var i = 0; i < fmedian.length; i++) {
-                            var fmedian_i = fmedian[i]
-                            shadeData[i] = new Array(fmedian_i.length);
-                            for (var j = 0; j < fmedian_i.length; j++) {
-                                shadeData[i][j] = (_heatmap_nav._f_l68[i][j] < _interval.max && _heatmap_nav._f_u68[i][j] > _interval.min) ? 0 : 1;
-                            }
-                        }
-                        _heatmap_nav.draw({ x: _heatmap_nav._x, y: _heatmap_nav._y, f: shadeData });
-                        _heatmap_nav.host.css("visibility", "visible");
+                        updateInterval();
                     }
                 });
 
@@ -718,7 +725,6 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         },
         configurable: false
     });
-
     Object.defineProperty(this, "opacity", {
         get: function () { return _opacity; },
         set: function (value) {
@@ -731,7 +737,17 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         },
         configurable: false
     });
-
+    Object.defineProperty(this, "interval", {
+        get: function () { return _interval; },
+        set: function (value) {
+            if (value == _interval) return;
+            _interval = value;
+            updateInterval()
+            this.fireAppearanceChanged("interval");
+            this.requestNextFrame();
+        },
+        configurable: false
+    });
     Object.defineProperty(this, "mode", {
         get: function () { return _mode; },
         configurable: false

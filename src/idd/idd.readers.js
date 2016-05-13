@@ -130,7 +130,7 @@ InteractiveDataDisplay.readCsv2d = function (jqDiv) {
                 }
                 data.x = x;
                 data.y = y;
-                data.f = f;
+                data.values = f;
             }
         }
     }

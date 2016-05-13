@@ -46,7 +46,7 @@
                     f[i][j] = Math.sqrt(x[i] * x[i] + y[j] * y[j])
                               * Math.abs(Math.cos(x[i] * x[i] + y[j] * y[j] + phase));
             phase += 0.1;
-            heatmap.draw({ x: x, y: y, f: f });
+            heatmap.draw({ x: x, y: y, values: f });
             setTimeout(modelRun, 1000 / 60.0);
         }
     </script>

@@ -14,9 +14,9 @@ module ChartViewer {
             chart.addChild(heatmap);
 
             var plots = [heatmap];
-            var getHeader = function () {
-                return plotDefinition.displayName;
-            }
+            //var getHeader = function () {
+            //    return plotDefinition.displayName;
+            //}
 
             //heatmap.getTooltip = function (xd, yd, xp, yp, probe) {
             //    var pinCoord = { x: xd, y: yd };
