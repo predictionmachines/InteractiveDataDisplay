@@ -164,6 +164,7 @@
     cursor: pointer;
     padding-right: 4px;
     padding-left:4px;
+    box-sizing: initial;
 }
 .idd-legend-item-title
 {    
