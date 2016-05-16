@@ -18,7 +18,7 @@ ChartViewer:
 
 Add following line to `bower.json` to get all required scripts and resources:
 
-	"ChartViewer": "https://github.com/predictionmachines/InteractiveDataDisplay.git"
+	"idd": "~1.1.1"
 
 Dependencies:
 
@@ -36,15 +36,42 @@ Add following references to your HTML page (don't forget to correct paths):
     <link rel="stylesheet" href="dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="dist/chartViewer.css" />
 
-    <script src="dist/modernizr.js"></script>
-    <script src="dist/jquery.js"></script>
-    <script src="dist/rx.lite.js"></script>
-    <script src="dist/idd.js"></script>
-    <script src="dist/jquery-ui.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0-beta.1/jquery-ui.min.js"></script>
     <script src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+    
+    <script src="dist/idd.js"></script>
     <script src="dist/chartViewer.js"></script>
 
 The variables `ChartViewer` and `Plot` are globally defined.
+
+### Use as AMD module in TypeScript
+
+1. Add reference to `require.js` script in HTML file.
+
+2. Create file `config.js` and configure following modules using `require.config` (please don't forget to update paths):
+
+        require.config({
+            baseUrl: ".",
+            paths: {
+                "chartViewer": "scripts/chartViewer",
+                "jquery": "scripts/jquery",
+                "jquery-ui": "scripts/jquery-ui",
+                "idd": "scripts/idd",
+                "idd-css": "scripts/idd",
+                "rx": "scripts/rx.lite",
+                "css": "scripts/css"
+            },
+        })
+
+3.  Import `chartViewer` module and get `Charting` object which has two properties: `ChartViewer` and `Plot`:
+
+		import Charting = require("chartViewer.umd");
+		Charting.ChartViewer.show(chartDiv, {
+			"y(x)": Charting.Plot.line({ x: [0,1,2], y: [3,4,2] })
+		});
 
 ### Use as AMD module
 
@@ -67,17 +94,16 @@ The variables `ChartViewer` and `Plot` are globally defined.
 
 3. Require `chartViewer` module and get `Charting` object which has two properties: `ChartViewer` and `Plot`:
 
-		require(["chartViewer"], function (Charting) {
+		require(["chartViewer.umd"], function (Charting) {
 				Charting.ChartViewer.show(chartDiv, {
 					"y(x)": Charting.Plot.line({ x: [0,1,2], y: [3,4,2] })
 				});
 		});
 
 ### Licensing
-Please see the file called LICENSE.
+Please see the file called [LICENSE](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/LICENSE).
 
 ## How to create a ChartViewer
-
 
 Use `ChartViewer.show(htmlElement, plots) : ViewerControl` method to turn the `htmlElement` to a ChartViewer and show the given plot definitions `plots`.
 
@@ -102,7 +128,8 @@ The following list shows which plot kinds are supported by the ChartViewer:
 
 * `line` dispays information as straight line segments connecting a series of data points. If a variable determining the position on the vertical axis is uncertain,
  bands corresponding to the quantiles of the uncertain values are displayed instead of line segments.
-* `band` draws a colored band between two scalar grid functions `y1[i]=y1(x[i])` and `y2[i]=y2(x[i])`
+* `band` draws a colored band between two scalar grid functions `y1[i]=y1(x[i])` and `y2[i]=y2(x[i])`.
+* `boxplot` draws a colored box plot. The variable determinig the position on vertical axis is uncertain. 
 * `markers` displays data as a collection of points, each having the value of one variable determining the position on the horizontal axis and the value of the other variable determining the position on the vertical axis. Other variables
 can be bound to marker size and color. Dependent variable, size-bound variable or color-bound variable can be real or uncertain.  
 * `heatmap` displays a graphical representation of data where the individual values contained in a matrix are represented as colors. If the values are uncertain,
@@ -120,16 +147,19 @@ Use `Plot.line(LineDefinition) : PlotInfo` to a define a line plot.
 		y: number[] | Quantiles;
 		stroke?: Color;
 		thickness?: number;
-		treatAs?: LineTreatAs;
+		treatAs?: string;
 		fill68?: Color;
 		fill95?: Color;
 		displayName?: string;
 		titles?: LineTitles;
 	}
 
-where
+`treatAs` is one of pre-defined values:
 
-	enum LineTreatAs {Function,Trajectory}
+	module LineTreatAs {
+		var Function = "function";
+		var Trajectory = "trajectory";
+	}
 
 If `treatAs` is `"Function"` (default value), the series `x[i]` and `y[i]` are sorted by increasing values `x`. Otherwise, the arrays are rendered as is.
 
@@ -167,8 +197,8 @@ Example:
 ### BoxPlot
 
 The plot draws a colored boxplot.
-Use `Plot.boxplot(BoxPlotDefinition) : PlotInfo` to a define a box plot.
-
+Use `Plot.boxplot(BoxPlotDefinition) : PlotInfo` to a define a box plot (https://en.wikipedia.org/wiki/Box_plot).  
+	
 	type BoxPlotDefinition = {
 		y: Quantiles;
 		x?: number[];
@@ -181,7 +211,9 @@ Use `Plot.boxplot(BoxPlotDefinition) : PlotInfo` to a define a box plot.
 Example:
 
 	ChartViewer.show(chartDiv, {
-		"boxplot": Plot.boxplot({ y: { median: [1,2,3], lower68: [0,0,0], upper68: [4,4,4], lower95: [0.5,1,2], upper95: [2,3,3.5] }, x : [1,2,3], border: 'red', fill: 'gray' })
+		"boxplot": Plot.boxplot({ 
+			y: { median: [1,2,3], lower68: [0,0,0], upper68: [4,4,4], lower95: [0.5,1,2], upper95: [2,3,3.5] }, 
+			x : [1,2,3], border: 'red', fill: 'gray' })
 	});
 
 
@@ -195,8 +227,8 @@ Use `Plot.markers(MarkersDefinition) : PlotInfo` to a define a markers plot.
 
 	type MarkersDefinition = {
 		x: number[];
-		y: number[] | Quantiles;
-		shape?: MarkerShape | string;		
+		y: number[];
+		shape?: string;		
 		color?: Color | number[] | Quantiles;
 		colorPalette?: ColorPalette;
 		size?: number | number[] | Quantiles;
@@ -216,12 +248,12 @@ and proportional to the corresponding value of the array `size`:
 
 Marker shape is either one of pre-defined shapes or a cutom marker shape identified by a string:
 
-	type MarkerShape = {        
-		Box,
-        Circle,
-        Diamond,
-        Cross,
-        Triangle
+	module MarkerShape {        
+		var Box = "box";
+        var Circle = "circle";
+        var Diamond = "diamond";
+        var Cross = "cross";
+        var Triangle = "triangle";
 	}
 
 Example:
@@ -232,9 +264,7 @@ Example:
 
 
 #### Remarks
-
-* If `y` is a value of `Quantiles`, then `color` and `size` must not be of types `Quantiles`, `shape` is ignored
-	and [box plots](https://en.wikipedia.org/wiki/Box_plot)	are displayed.   
+ 
 * If `color` is a value of `Color`, the `colorPalette` is ignored.
 * If `color` is a value of `Quantiles`, `size` must be a `number`; `shape` is ignored
 	and markers are rendered as so-called 'bull-eyes' glyphs when outer and inner colors indicate level of uncertainty.
@@ -255,16 +285,16 @@ Use `Plot.heatmap(HeatmapDefinition) : PlotInfo` to a define a heatmap plot.
 		y: number[];
 		values: number[] | Quantiles;
 		colorPalette?: ColorPalette;
-		treatAs?: HeatmapRenderType; 		 
+		treatAs?: string; 		 
 		displayName?: string;
 		titles?: HeatmapTitles;
 	}
 
-where:
+`treatAs` is one of pre-defined values:
 
-	type HeatmapRenderType = {        
-		Gradient,
-		Discrete
+	module HeatmapRenderType {        
+		var Gradient = "gradient";
+		var Discrete =  "discrete";
 	}
 
 #### Tabular input

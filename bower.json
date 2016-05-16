@@ -1,6 +1,6 @@
 {
   "name": "idd",
-  "version": "1.1.0",
+  "version": "1.1.4",
   "authors": [
     "Microsoft Corporation"
   ],
@@ -8,11 +8,14 @@
   "main": [
     "./dist/idd.js",
     "./dist/idd.css",
-    "./dist/chartViewer.js",
     "./dist/chartViewer.css",
-    "./dist/chartViewer.d.ts"
+    "./dist/chartViewer.js",
+    "./dist/chartViewer.d.ts",
+    "./dist/chartViewer.umd.js",
+    "./dist/chartViewer.umd.d.ts"
   ],
   "moduleType": [
+    "globals",
     "amd"
   ],
   "keywords": [

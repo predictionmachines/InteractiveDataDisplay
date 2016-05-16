@@ -4,6 +4,7 @@
     <title>Combined three plots with NPZ data (markers, line and line with uncertainty)</title>
     <link rel="stylesheet" type="text/css" href="../../dist/chartViewer.css" />
     <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../../src/css/IDDTheme.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -58,14 +59,14 @@
             
             ChartViewer.show(document.getElementById("chart"), {
                 "line1": Plot.line({x: x, y: y, stroke: "#7F7F7F"}),
-                "markers": Plot.markers({ x: x, y: y, shape: "triangle", color: "#C0504D" }),
+                "markers": Plot.markers({ x: x, y: y, shape: "triangle", color: "#C0504D"}),
                 "line2": Plot.line({ x: x, y: { median: y_median, lower68: y_l68, upper68: y_u68, lower95: y_l95, upper95: y_u95 }, fill68: '#2E5894', fill95: '#6D9BC3' })
             });
         });
     </script>
 </head>
 <body>
-    <div id="chart" style="width:100%; height:100%"></div>
+    <div id="chart" style="width:1500px; height:800px"></div>
     <div id="site_csv" style="display:none">t,p,sd_p,lsd_p,tc,mld,dmld,light,n0
 4.00989,1.241090868,0.771567698,0.571644187,0,61.79658127,0.00225544,21.44522066,3.763404249
 11.985505,1.071711094,0.998787925,0.790669815,8,61.81462479,0.095594883,21.31196034,3.767286821

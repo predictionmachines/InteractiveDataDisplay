@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
     <title>Depth Graph Sample Page</title>
-    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
@@ -16,39 +16,53 @@
         
         var barMarker = {
             draw: function (marker, plotRect, screenSize, transform, context) {
-                        var barWidth = 0.5 * marker.barWidth;
-                        var xLeft = transform.dataToScreenX(marker.x - barWidth);
-                        var xRight = transform.dataToScreenX(marker.x + barWidth);
-                        if (xLeft > screenSize.width || xRight < 0) return;
-                        var yTop = transform.dataToScreenY(marker.y);
-                        var yBottom = transform.dataToScreenY(0);
-                        if (yTop > yBottom) {
-                            var k = yBottom;
-                            yBottom = yTop;
-                            yTop = k;
-                        }
-                        if (yTop > screenSize.height || yBottom < 0) return;
+                var barWidth = 0.5 * marker.barWidth;
+                var xLeft = transform.dataToScreenX(marker.x - barWidth);
+                var xRight = transform.dataToScreenX(marker.x + barWidth);
+                if (xLeft > screenSize.width || xRight < 0) return;
+                var yTop = transform.dataToScreenY(marker.y);
+                var yBottom = transform.dataToScreenY(0);
+                if (yTop > yBottom) {
+                    var k = yBottom;
+                    yBottom = yTop;
+                    yTop = k;
+                }
+                if (yTop > screenSize.height || yBottom < 0) return;
 
-                        if (marker.shadow) {
-                            context.fillStyle = marker.shadow;
-                            context.fillRect(xLeft + 2, yTop + 2, xRight - xLeft, yBottom - yTop);
-                        }
+                if (marker.shadow) {
+                    context.fillStyle = marker.shadow;
+                    context.fillRect(xLeft + 2, yTop + 2, xRight - xLeft, yBottom - yTop);
+                }
 
-                        context.fillStyle = marker.color;
-                        context.fillRect(xLeft, yTop, xRight - xLeft, yBottom - yTop);
-                        if (marker.border) {
-                            context.strokeStyle = marker.border;
-                            context.strokeRect(xLeft, yTop, xRight - xLeft, yBottom - yTop);
-                        }
-                    },
-        
-            getBoundingBox: function (marker) {
-                var barWidth = marker.barWidth;
-                var xLeft = marker.x - barWidth / 2;
-                var yBottom = Math.min(0, marker.y);
-                return { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
+                context.fillStyle = marker.color;
+                context.fillRect(xLeft, yTop, xRight - xLeft, yBottom - yTop);
+                if (marker.border) {
+                    context.strokeStyle = marker.border;
+                    context.strokeRect(xLeft, yTop, xRight - xLeft, yBottom - yTop);
+                }
             },
-        
+            
+            prepare: function(data) {
+                if(data.x == undefined)
+                    data.x = InteractiveDataDisplay.Utils.range(0, data.y.length - 1);
+                
+                if(data.colorPalette && data.color){
+                    if(data.colorPalette.isNormalized){
+                        var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
+                        r = InteractiveDataDisplay.Utils.makeNonEqual(r);
+                        data.colorPalette = data.colorPalette.absolute(r.min, r.max);
+                    }
+                    var n = data.color.length;
+                    var colors = new Array(n);
+                    for (var i = 0; i < n; i++){
+                        var color = data.color[i];
+                        var rgba = data.colorPalette.getRgba(color);                        
+                        colors[i] = "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
+                    }
+                    data.color = colors;
+                }
+            },
+
             hitTest: function (marker, transform, ps, pd) {
                 var barWidth = marker.barWidth;
                 var xLeft = marker.x - barWidth / 2;

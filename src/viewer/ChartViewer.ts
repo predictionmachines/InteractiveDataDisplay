@@ -1,10 +1,32 @@
+/// <reference path="ChartViewerControl.ts" />
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="chartViewer.d.ts" />
-/// <reference path="chartviewercontrol.ts" />
-
 declare var InteractiveDataDisplay: any;
 
 module ChartViewer {
+    export interface ViewState {
+        [name: string]: any;
+    }
+    export interface Titles {
+        [seriesName: string]: string;
+    }
+    export interface PlotInfo {
+        kind: string;
+        displayName: string;
+        titles?: Titles;
+        [propertyName: string]: any;
+
+    }
+    export interface ChartInfo {
+        [id: string]: PlotInfo;
+    }
+    export interface PropertyTitles {
+        [prop: string]: string;
+    }
+    export interface ViewerControl {
+        update(plots: ChartInfo);
+        viewState: ViewState;
+        dispose(): void;
+    }
     export function ProbesVM(initialProbes) {
         var that = this;
 
@@ -141,12 +163,13 @@ module ChartViewer {
         }
     }
 
-    export function ProbesControl(hostDiv, persistentViewState, transientViewState) {
+    export function ProbesControl(div, hostDiv, persistentViewState, transientViewState) {
         var probesVM = persistentViewState.probesViewModel;
         var _host = hostDiv;
         var probeDivs = [];
 
         var getProbeDiv = function (probe) {
+            div[0].style.display = "block";
             var probeDiv = $("<div></div>").addClass("probeCard");
 
             if (probe.selected === true) {
@@ -154,24 +177,26 @@ module ChartViewer {
             }
 
             var iconScale = 0.6;
-            var probeHeader = $("<div></div>").appendTo(probeDiv).height(55 * iconScale);
-            var probeIcon = $("<div></div>").addClass("probe").css("float", "left").css("margin-right", 3).height(55 * iconScale).appendTo(probeHeader);
+            var probeHeader = $("<div></div>").addClass("probeHeader").appendTo(probeDiv).height(40 * iconScale);
+            var probeIcon = $("<div></div>").addClass("probe").css("float", "left").css("margin-right", 3).width(40 * iconScale).height(40 * iconScale).appendTo(probeHeader);
             if (probe.selected) {
-                createSmallProbe(probeIcon, false, probe.id, "#365C95", iconScale);
+                createSmallProbe(probeIcon, probe.id, "#365C95", iconScale);
             } else {
-                createSmallProbe(probeIcon, false, probe.id, undefined, iconScale);
+                createSmallProbe(probeIcon, probe.id, undefined, iconScale);
             }
-            $("<div></div>").text("(" + transientViewState.plotXFormatter.toString(probe.location.x) + ", " + transientViewState.plotYFormatter.toString(probe.location.y) + ")").appendTo(probeHeader);
+            $("<div></div>").addClass("probeHeader-name").text("(" + transientViewState.plotXFormatter.toString(probe.location.x) + ", " + transientViewState.plotYFormatter.toString(probe.location.y) + ")").appendTo(probeHeader);
 
-            var deleteBtn = $("<div></div>").addClass("probeCard-remove").appendTo(probeHeader);
+            var actionPanel = $("<div></div>").addClass("probeActionPanel").appendTo(probeDiv);
+            var deleteBtn = $("<div></div>").addClass("probeCard-remove").appendTo(actionPanel);
             deleteBtn.click(function () {
                 probesVM.removeProbe(probe.id);
                 if (persistentViewState.uncertaintyRange !== undefined && persistentViewState.uncertaintyRange.probeid === probe.id) {
                     persistentViewState.uncertaintyRange = undefined;
                 }
+                if (hostDiv[0].childNodes.length == 0) hostDiv[0].style.display = "none";
             });
 
-            var fitBtn = $("<div></div>").addClass("probeCard-fit").appendTo(probeHeader);
+            var fitBtn = $("<div></div>").addClass("probeCard-fit").appendTo(actionPanel);
             fitBtn.click(function () {
                 probesVM.fitToProbe(probe.id);
             });
@@ -207,6 +232,7 @@ module ChartViewer {
             var probe = args.probe;
             switch (args.status) {
                 case "add":
+                    hostDiv[0].style.display = "block";
                     var probeDiv = getProbeDiv(args.probe);
                     var probeHost = $("<div></div>").css("display", "inline").appendTo(_host);
                     probeDiv.appendTo(probeHost);
@@ -218,6 +244,7 @@ module ChartViewer {
                         if (pDiv.id === probe.id) {
                             pDiv.host.remove();
                             probeDivs = probeDivs.filter(function (d) { return d.id !== probe.id });
+                            if (hostDiv[0].childNodes.length == 0) hostDiv[0].style.display = "none";
                             break;
                         }
                     }

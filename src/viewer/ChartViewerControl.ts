@@ -1,6 +1,5 @@
-﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="plotlist.ts" />
-/// <reference path="plotviewer.ts" />
+﻿/// <reference path="PlotList.ts" />
+/// <reference path="PlotViewer.ts" />
 /// <reference path="ViewState.ts" />
 module ChartViewer {
     export class ChartViewerControl implements ViewerControl {
@@ -42,41 +41,35 @@ module ChartViewer {
             leftPanel.append($("<div class='plotlist'></div>"));
             rightPanel.append($("<div class='dsv-visualization-preview'></div>"));
             var navigationDiv = $("<div class='dsv-navigation-container'></div>").appendTo(visControl);
-
+            navigationDiv.addClass('no-print');
             // creating hide/show leftpanel button
             var rightpanel = this.rightpanel = controlDiv.find(".dsv-rightpanel");
             var leftpanel = controlDiv.find(".dsv-leftpanel");
             var leftPanelContainer = this.leftPanelContainer = controlDiv.find(".dsv-leftpanelcontainer");
-            var hidebutton = $("<div></div>").addClass("dsv-leftpanelhidebutton").appendTo(leftPanelContainer);
-            var isLeftpanelShown = true;
+            var isLeftpanelShown = false;
 
             this.plotViewer = new PlotViewer(controlDiv.find(".dsv-visualization-preview"), navigationDiv, this.persistentViewState, this.transientViewState);
             var plotListDiv = controlDiv.find(".plotlist");
-            this.plotList = new PlotList(plotListDiv, this.persistentViewState, this.transientViewState);
+            this.plotList = new PlotList(plotListDiv, this.plotViewer, this.persistentViewState, this.transientViewState);
             this.plotList.isEditable = false;
-            this.plotList.subscribe(function (args) {
-                that.plotViewer.draw(args);
-            });
-            hidebutton.click(function () {
+            var hideShowLegend = navigationDiv[0].children[0].firstChild.firstChild; 
+            $(hideShowLegend).click(function () {
                 if (isLeftpanelShown) {
                     isLeftpanelShown = false;
                     leftpanel.hide();
-                    hidebutton.attr("class", "dsv-leftpanelshowbutton");
+                    $(hideShowLegend).removeClass("idd-onscreennavigation-showlegend").addClass("idd-onscreennavigation-hidelegend");
                 } else {
                     isLeftpanelShown = true;
                     leftpanel.show();
-                    hidebutton.attr("class", "dsv-leftpanelhidebutton");
+                    $(hideShowLegend).removeClass("idd-onscreennavigation-hidelegend").addClass("idd-onscreennavigation-showlegend");
                 }
                 rightpanel.width(controlDiv.width() - leftPanelContainer.width() - that.rightPanelExtraShift - that.navigationPanelShift);
                 that.plotViewer.updateLayout();
             });
 
-            if (controlDiv.width() < this.minWidthToShowLeftPanel) {
-                leftPanelContainer.hide();
-                rightpanel.width(controlDiv.width() - this.rightPanelExtraShift - this.navigationPanelShift);
-            } else {
-                rightpanel.width(controlDiv.width() - leftPanelContainer.width() - this.rightPanelExtraShift - this.navigationPanelShift);
-            }
+            leftpanel.hide();
+            rightpanel.width(controlDiv.width() - leftPanelContainer.width() - this.rightPanelExtraShift - this.navigationPanelShift);
+            
             $(window).resize(function () { that.updateLayout(); });
             this.updateLayout();
         }
@@ -100,8 +93,7 @@ module ChartViewer {
                 }
                 else plotItems[id] = null;
             }
-            plotItems = this.plotViewer.draw(plotItems);
-            this.plotList.draw(plotItems);
+            plotItems = this.plotViewer.draw(plotItems); 
         }
         
         updateLayout() {
@@ -117,7 +109,7 @@ module ChartViewer {
         }        
 
         dispose() {
-            this.plotList.unsubscribe(this);
+            this.plotList.remove();
             this.controlDiv.children().remove();
         }
     }

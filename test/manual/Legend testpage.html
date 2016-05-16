@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Legend test page</title>
+    <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="../../dist/idd.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var plot = InteractiveDataDisplay.asPlot("chart");
+           
+            var markers = plot.markers("sinfdsfsdfsdfdgfdgdfgdgdffdgfdddddd", { y: [1, -0.2, 0, -0.3, -0.5], x: [-0.5, 0.5, 0.6, 0.7, 0.9], size: 10, shape: 'circle', color: [1, 2, 3, 4, 5], colorPalette: InteractiveDataDisplay.ColorPalette.parse("yellow, red") });
+            var area = plot.area("area", { y1: [0 ,1, 3, 2, 1, 0, -1], y2: [0, -1, -3, -2, -1, 0, 1], x: [-1.5,-1, 0, 1, 2, 3, 4], fill: 'orange' });
+            var legendDiv = $('#legend');
+            var legend = new InteractiveDataDisplay.Legend(plot, legendDiv);
+            var legendDiv2 = $('#legend2');
+            var legend2 = new InteractiveDataDisplay.Legend(markers, legendDiv2);
+            var navigationDiv = $('#navigation');
+            var navigationPanel = new InteractiveDataDisplay.NavigationPanel(plot, navigationDiv);
+            var hide = $('#btn');
+            var add = $('#btn1');
+            var show = $('#btn2');
+            var remove = $('#btn3');
+            
+            hide.click(function () {
+                legend.remove();
+            });
+            add.click(function () {
+                var heatmap = plot.heatmap("heatmap", {
+                    x: [-2, 0, 5], y: [-4, 0, 4], f: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
+                    palette: InteractiveDataDisplay.ColorPalette.parse("lightgreen, lightblue, blue")
+                });
+            });
+            show.click(function () {
+                legend = new InteractiveDataDisplay.Legend(plot, legendDiv);
+                plot.legend.isVisible = true;
+            });
+            remove.click(function () {
+                markers.remove();
+            });
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <h1 align="center">Legend test page</h1>
+    </header>
+    <div style="width:1500px; height: 600px">
+        <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px; float: left;">
+        <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Legend Sample</div>
+        </div>
+        <div id="navigation" style="float:left; margin:5px;"></div>
+        <button id="btn" style="float : left; margin: 5px">Hide</button>
+        <button id="btn2" style="float: left; margin: 5px">Show</button>
+        <button id="btn1" style="float: left; margin: 5px">Add plot</button>
+        <button id="btn3" style="float: left; margin: 5px">Remove plot</button>
+        <div id="legend" style="width:auto; height:auto; margin-left: 50px; margin-top:30px;"></div>
+        <div id="legend2" style="width:auto; height:auto; margin-left: 50px; margin-top:30px;"></div>
+    </div>
+    <div style="float: left; margin-top: 50px">
+        <br /> <br />
+        <b>[State 0] On this page you should see chart containing 2 elements: area and markers. Also you should see 2 legends (one of them is compact).</b>
+        <br />
+        <img src="png/legend_state0.PNG" />
+        <br />
+        <b>[User Action 1] Reorder two elements in right legend.</b>
+        <br />
+        <img src="png/legend_action1.PNG" />
+        <br />
+        <b>[User Action 2] Click 'Add plot' button.</b>
+        <br />
+        <img src="png/legend_action2.PNG" />
+        <br />
+        <b>[User Action 3] Reorder elements: first element - markers, second - area, third - heatmap.</b>
+        <br />
+        <img src="png/legend_action3.PNG" />
+        <br />
+        <b>[User Action 4] Click 'Remove plot' button.</b>
+        <br />
+        <img src="png/legend_action4.PNG" />
+    </div>
+</body>
+</html>

@@ -12,6 +12,9 @@
 /src/viewer/*.js.map
 # JS files
 /src/viewer/*.js
+/test/manual/main.js
+/test/manual/mainGlobal.js
 !src/viewer/MathUtils.js
 !src/viewer/Chart.header.js
 !src/viewer/Chart.footer.js
+.baseDir.*

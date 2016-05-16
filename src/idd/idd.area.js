@@ -142,9 +142,72 @@ InteractiveDataDisplay.Area = function (div, master) {
         InteractiveDataDisplay.Area.prototype.onDataTransformChanged.call(this, arg);
     };
 
+    this.getLegend = function () {
+        var that = this;
+        var canvas = $("<canvas></canvas>");
+        canvas[0].width = 40;
+        canvas[0].height = 40;
+        var ctx = canvas.get(0).getContext("2d");
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = _fill;
+        ctx.fillStyle = _fill;
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, 10);
+        ctx.lineTo(30, 40);
+        ctx.lineTo(40, 40);
+        ctx.lineTo(40, 30);
+        ctx.lineTo(10, 0);
+        ctx.lineTo(0, 0);
+        ctx.fill();
+        ctx.stroke();
+        ctx.closePath();
+
+        var nameDiv = $("<span></span>");
+        var setName = function () {
+            nameDiv.text(that.name);
+        }
+        setName();
+
+        this.host.bind("appearanceChanged",
+            function (event, propertyName) {
+                if (!propertyName || propertyName == "name")
+                    setName();
+
+                ctx.clearRect(0, 0, canvas[0].width, canvas[0].height);
+                ctx.strokeStyle = _fill;
+                ctx.fillStyle = _fill;
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, 10);
+                ctx.lineTo(30, 40);
+                ctx.lineTo(40, 40);
+                ctx.lineTo(40, 30);
+                ctx.lineTo(10, 0);
+                ctx.lineTo(0, 0);
+                ctx.fill();
+                ctx.stroke();
+                ctx.closePath();
+            });
+
+        var that = this;
+
+        var onLegendRemove = function () {
+            that.host.unbind("appearanceChanged");
+
+            //div[0].innerHTML = "";
+            //div.removeClass("idd-legend-item");
+        };
+
+        //return { div: div, onLegendRemove: onLegendRemove };
+        return { name: nameDiv, legend: { thumbnail: canvas, content: undefined }, onLegendRemove: onLegendRemove };
+    };
     // Initialization 
     if (initialData && initialData.x && initialData.y1 && initialData.y2)
         this.draw(initialData);
+
 }
 
 InteractiveDataDisplay.Area.prototype = new InteractiveDataDisplay.CanvasPlot;

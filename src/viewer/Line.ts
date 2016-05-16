@@ -1,8 +1,7 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="chartviewer.d.ts" />
-/// <reference path="utils.ts" />
-/// <reference path="plotregistry.ts" />
-/// <reference path="uncertainlineplot.ts" />
+/// <reference path="Utils.ts" />
+/// <reference path="PlotRegistry.ts" />
+/// <reference path="UncertainLinePlot.ts" />
 declare var InteractiveDataDisplay: any;
 declare var Microsoft: any;
 
@@ -40,7 +39,7 @@ module ChartViewer {
             drawArgs.x = lineDef.x;
 
             var doSort = (!lineDef.treatAs || lineDef.treatAs == "function") && !IsOrderedArray(drawArgs.x);
-            if (Array.isArray(lineDef.y)) { // certain values
+            if (InteractiveDataDisplay.Utils.isArray(lineDef.y)) { // certain values
                 drawArgs.y_mean = <number[]>lineDef.y;
                 if (doSort) {
                     var len = Math.min(drawArgs.x.length, plot.y.length);
@@ -112,63 +111,6 @@ module ChartViewer {
             }
             plot.draw(drawArgs);
             //return { x: { from: GetMin(plot.x), to: GetMax(plot.x), y: { from: GetMin(drawArgs.y_mean), to: GetMax(drawArgs.y_mean) } } };
-        },
-
-        createPlotCardContent: function (plotInfo) {
-            var lineDef = <Plot.LineDefinition><any>plotInfo;
-            var titleDiv = $("<div class='dsv-plotcard-title'></div>");
-            var canvas = $("<canvas class='dsv-plotcard-thumbnail'></canvas>").appendTo(titleDiv);
-            $("<div></div>").addClass('dsv-plotcard-resolved').appendTo(titleDiv).text(plotInfo.displayName);
-
-            canvas.prop({ width: 20, height: 20 });
-            var ctx = (<HTMLCanvasElement>canvas.get(0)).getContext("2d");
-            var isUncertainData = !Array.isArray(lineDef.y);
-            if (isUncertainData) {
-                ctx.globalAlpha = 0.5;
-                ctx.strokeStyle = lineDef.fill68;
-                ctx.fillStyle = lineDef.fill68;
-
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(0, 10);
-                ctx.lineTo(10, 20);
-                ctx.lineTo(20, 20);
-                ctx.lineTo(20, 10);
-                ctx.lineTo(10, 0);
-                ctx.lineTo(0, 0);
-                ctx.fill();
-                ctx.stroke();
-                ctx.closePath();
-
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(0, 5);
-                ctx.lineTo(15, 20);
-                ctx.lineTo(20, 20);
-                ctx.lineTo(20, 15);
-                ctx.lineTo(5, 0);
-                ctx.lineTo(0, 0);
-                ctx.fill();
-                ctx.stroke();
-                ctx.closePath();
-            }
-
-            ctx.globalAlpha = 1.0;
-            ctx.strokeStyle = lineDef.stroke;
-            ctx.lineWidth = lineDef.thickness;
-
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(20, 20);
-            ctx.stroke();
-            ctx.closePath();
-
-            return {
-                content: titleDiv
-            }
-        },
-        subscribeToViewState: function (plots, persistentViewState) {
-
-        },
+        }
     }
 }

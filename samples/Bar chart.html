@@ -3,13 +3,13 @@
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
     <title>Bar chart</title>
-    <link rel="stylesheet" type="text/css" href="../src/css/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
-    <script src="../dist/idd.min.js"></script>
+    <script src="../dist/idd.js"></script>
 
     <script type="text/javascript">
         var N = 20;
@@ -41,11 +41,31 @@
                     context.strokeRect(xLeft, yTop, xRight - xLeft, yBottom - yTop);
                 }
             },
-
-            getBoundingBox: function (marker) {
-                var barWidth = marker.barWidth;
-                var xLeft = marker.x - barWidth / 2;
-                var yBottom = Math.min(0, marker.y);
+            
+            prepare: function(data) {
+                if(data.x == undefined)
+                    data.x = InteractiveDataDisplay.Utils.range(0, data.y.length - 1);
+                
+                if(data.colorPalette && data.color){
+                    if(data.colorPalette.isNormalized){
+                        var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
+                        r = InteractiveDataDisplay.Utils.makeNonEqual(r);
+                        data.colorPalette = data.colorPalette.absolute(r.min, r.max);
+                    }
+                    var n = data.color.length;
+                    var colors = new Array(n);
+                    for (var i = 0; i < n; i++){
+                        var color = data.color[i];
+                        var rgba = data.colorPalette.getRgba(color);                        
+                        colors[i] = "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
+                    }
+                    data.color = colors;
+                }
+            },
+            getBoundingBox: function (marker) {  
+                var barWidth = marker.barWidth;  
+                var xLeft = marker.x - barWidth / 2;  
+                var yBottom = Math.min(0, marker.y);  
                 return { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
             },
 
@@ -71,14 +91,14 @@
                 y[i] = Math.random() * N - N / 2;
                 color[i] = y[i];
             }
-            bars.draw({ y: y, color: color, colorPalette: colorPalette, barWidth: 0.9, shadow: 'grey', shape: barMarker }, 
+            bars.draw({ y: y, color: color, colorPalette: colorPalette, border:'grey', barWidth: 0.9, shadow: 'grey', shape: barMarker }, 
                 { color: "rate" });
         });
     </script>
 </head>
 <body>
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
-        <div data-idd-name="bars" data-idd-plot="markers" data-idd-style="border:grey;">
+        <div data-idd-name="bars" data-idd-plot="markers">
         </div>
     </div>
 </body>

@@ -5,6 +5,23 @@ InteractiveDataDisplay.Utils =
     {
         //trim: function (s) { return s.replace(/^[\s\n]+|[\s\n]+$/g, ''); },
 
+        applyMask: function(mask, array, newLength) {
+            var n = mask.length;
+            var newArr = new Array(newLength);
+            for(var i = 0, j = 0; i < n; i++){
+                if(mask[i] === 0) newArr[j++] = array[i];
+            }
+            return newArr;
+        },
+        
+        maskNaN: function(mask, numArray){            
+            for(var n = mask.length; --n>=0; ){
+                 var v = numArray[n];
+                 if(v != v) // NaN
+                    mask[n] = 1;
+            }
+        },
+
         //Returns true if value is Array or TypedArray
         isArray: function(arr) {
             return arr instanceof Array || 
@@ -119,6 +136,14 @@ InteractiveDataDisplay.Utils =
             return defaultSource;
         },
 
+        makeNonEqual: function(range) {
+            if(range.min == range.max){
+                if(range.min == 0) return { min : -1, max : 1}
+                else if(range.min > 0)  return { min : range.min * 0.9, max : range.min * 1.1}
+                else return { min : range.min * 1.1, max : range.min * 0.9}
+            }else return range;
+        },
+
         getMinMax: function (array) {
             if (!array || array.length === 0) return undefined;
             var n = array.length;
@@ -126,14 +151,14 @@ InteractiveDataDisplay.Utils =
             var v;
             for (var i = 0; i < n; i++) {
                 v = array[i];
-                if (!isNaN(v)) {
+                if (v == v) {
                     min = max = v;
                     break;
                 }
             }
             for (i++; i < n; i++) {
                 v = array[i];
-                if (!isNaN(v)) {
+                if (v == v) {
                     if (v < min) min = v;
                     else if (v > max) max = v;
                 }
@@ -141,6 +166,44 @@ InteractiveDataDisplay.Utils =
             return { min: min, max: max };
         },
 
+        getMin: function (array) {
+            if (!array || array.length === 0) return undefined;
+            var n = array.length;
+            var min;
+            var v;
+            for (var i = 0; i < n; i++) {
+                v = array[i];
+                if (v == v) {
+                    min = v;
+                    break;
+                }
+            }
+            for (i++; i < n; i++) {
+                v = array[i];
+                if (v == v && v < min) min = v;
+            }
+            return min;
+        },
+
+        getMax: function (array) {
+            if (!array || array.length === 0) return undefined;
+            var n = array.length;
+            var max;
+            var v;
+            for (var i = 0; i < n; i++) {
+                v = array[i];
+                if (v == v) {
+                    max = v;
+                    break;
+                }
+            }
+            for (i++; i < n; i++) {
+                v = array[i];
+                if (v == v && v > max) max = v;
+            }
+            return max;
+        },
+        
         getMinMaxForPair: function (arrayx, arrayy) {
             if (!arrayx || arrayx.length === 0) return undefined;
             if (!arrayy || arrayx.length !== arrayy.length) throw 'Arrays should be equal';
@@ -170,6 +233,42 @@ InteractiveDataDisplay.Utils =
                 else if (vy > maxy) maxy = vy;
             }
             return { minx: minx, maxx: maxx, miny: miny, maxy: maxy };
+        },
+
+        enumPlots: function (plot) {
+            var plotsArray = [];
+            var enumRec = function (p, plotsArray) {
+                plotsArray.push(p);
+                if (p.children)
+                    p.children.forEach(function (child) {
+                        enumRec(child, plotsArray);
+                    });
+            };
+            enumRec(plot, plotsArray);
+            plotsArray.sort(function (a, b) { return b.order - a.order; });
+            return plotsArray;
+        },
+        reorder: function (p, p_before, isPrev) {
+            var plots = p.master ? InteractiveDataDisplay.Utils.enumPlots(p.master) : InteractiveDataDisplay.Utils.enumPlots(p);
+            p.order = isPrev ? (p_before.order): (p_before.order + 1);
+            var shift = function (masterPlot,p) {
+                if (masterPlot.order >= p.order && masterPlot != p && masterPlot.order < Number.MAX_SAFE_INTEGER) masterPlot.order += 1;
+                if (masterPlot.children)
+                    masterPlot.children.forEach(function (child) {
+                        shift(child, p);
+                    });
+            }
+            shift(p.master, p);
+        },
+    
+        getMaxOrder: function (p) {
+            var z = p.order != Number.MAX_SAFE_INTEGER ? p.order : 0;
+            if (p.children)
+                p.children.forEach(function (child) {
+                    var order = InteractiveDataDisplay.Utils.getMaxOrder(child);
+                    if (order != Number.MAX_SAFE_INTEGER) z = Math.max(z, order);
+                });
+            return z;
         },
 
         getBoundingBoxForArrays: function (_x, _y, dataToPlotX, dataToPlotY) {
