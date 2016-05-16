@@ -26,15 +26,15 @@ describe('Utility function', function () {
             var data = InteractiveDataDisplay.readCsv2d(div);
             expect(typeof data.x !== 'undefined').toBeTruthy();
             expect(typeof data.y !== 'undefined').toBeTruthy();
-            expect(typeof data.f !== 'undefined').toBeTruthy();
+            expect(typeof data.values !== 'undefined').toBeTruthy();
             expect(data.x.length, 3);
             expect(data.y.length, 2);
-            expect(data.f.length, 3);
+            expect(data.values.length, 3);
             for (var i = 0; i < 3; i++) {
-                expect(data.f[i].length).toBe(2);
+                expect(data.values[i].length).toBe(2);
                 expect(data.x[i]).toBeEqualEps(i + 1);
                 for (var j = 0; j < 2; j++) {
-                    expect(data.f[i][j]).toBeEqualEps(data.x[i] * data.y[j]);
+                    expect(data.values[i][j]).toBeEqualEps(data.x[i] * data.y[j]);
                 }
             }
             for (var j = 0; j < 2; j++) {
@@ -72,7 +72,7 @@ describe('Utility function', function () {
         var data = InteractiveDataDisplay.readCsv2d(div);
         expect(typeof data.x === 'undefined').toBeTruthy();
         expect(typeof data.y === 'undefined').toBeTruthy();
-        expect(typeof data.f === 'undefined').toBeTruthy();
+        expect(typeof data.values === 'undefined').toBeTruthy();
 
         div = $("<div><p>\n" +
             "f 1 2 3\n" +
@@ -81,6 +81,6 @@ describe('Utility function', function () {
         data = InteractiveDataDisplay.readCsv2d(div);
         expect(typeof data.x === 'undefined').toBeTruthy();
         expect(typeof data.y === 'undefined').toBeTruthy();
-        expect(typeof data.f === 'undefined').toBeTruthy();
+        expect(typeof data.values === 'undefined').toBeTruthy();
     });
 });

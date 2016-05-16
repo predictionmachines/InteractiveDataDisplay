@@ -271,7 +271,7 @@ describe('InteractiveDataDisplay.Heatmap', function () {
 
     it('should initialize using InteractiveDataDisplay.Plot.heatmap()', function () {
         var master = newPlot("master");
-        var h = master.heatmap("heat123", { f: fSimple });
+        var h = master.heatmap("heat123", { values: fSimple });
         expect(master.children.length).toBe(1);
         expect(h.children.length).toBe(0);
         expect(h.isMaster).toBe(false);
@@ -279,7 +279,7 @@ describe('InteractiveDataDisplay.Heatmap', function () {
         expect(h.name).toBe("heat123");
         expect(h).toBe(InteractiveDataDisplay.asPlot(h.host[0]));
 
-        var h2 = master.heatmap("heat123", { f: fSimple });
+        var h2 = master.heatmap("heat123", { values: fSimple });
         expect(h2).toBe(h);
         expect(master.children.length).toBe(1);
         expect(h2.children.length).toBe(0);
@@ -304,16 +304,16 @@ describe('InteractiveDataDisplay.Heatmap', function () {
         var y4 = [0, 1, 2, 3];
         var f23 = [[0, 1, 2], [3, 4, 5]];
 
-        var h1 = master.heatmap("heat1", { f: f23, x: x2, y: y3 });
+        var h1 = master.heatmap("heat1", { values: f23, x: x2, y: y3 });
         expect(h1.mode).toBe("gradient");
 
-        var h2 = master.heatmap("heat2", { f: f23, x: x3, y: y4 });
+        var h2 = master.heatmap("heat2", { values: f23, x: x3, y: y4 });
         expect(h2.mode).toBe("matrix");
 
-        expect(function () { master.heatmap("heat3", { f: f23, x: x2, y: x2 }); }).toThrow();
+        expect(function () { master.heatmap("heat3", { values: f23, x: x2, y: x2 }); }).toThrow();
         expect(master.children.length).toBe(3);
 
-        expect(function () { master.heatmap("heat4", { f: [[1, 2, 3]], x: [0], y: [0, 1, 2] }); }).toThrow();
+        expect(function () { master.heatmap("heat4", { values: [[1, 2, 3]], x: [0], y: [0, 1, 2] }); }).toThrow();
     });
 
     /* it('renders a gradient heatmap', function () {
