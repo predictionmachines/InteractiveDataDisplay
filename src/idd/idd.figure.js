@@ -562,6 +562,16 @@ InteractiveDataDisplay.Figure = function (div, master) {
         InteractiveDataDisplay.Figure.prototype.arrange.call(this, finalRect);
         //InteractiveDataDisplay.Utils.arrangeDiv(this.host, finalSize);
     };
+    
+    this.exportContentToSvg = function(plotRect, screenSize, svg) {
+        var plots_g = svg.group("plots");
+        var xoffs = this.host.width() - screenSize.width;
+        var yoffs = this.host.height() - screenSize.height;
+        plots_g
+            .viewbox(0, 0, screenSize.width, screenSize.height)
+            .translate(xoffs, -yoffs);
+        InteractiveDataDisplay.Figure.prototype.exportContentToSvg.call(this, plotRect, screenSize, plots_g);      
+    };    
 
     this.requestUpdateLayout();
 }
