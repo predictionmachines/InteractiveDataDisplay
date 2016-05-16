@@ -66,7 +66,7 @@ module ChartViewer {
                     if (children[i].isVisible) {
                         var xd = children[i].xDataTransform ? children[i].xDataTransform.plotToData(probe.location.x) : probe.location.x;
                         var yd = children[i].yDataTransform ? children[i].yDataTransform.plotToData(probe.location.y) : probe.location.y;
-                        var tt = children[i].getTooltip(probe.location.x, probe.location.y, xd, yd);
+                        var tt = children[i].getTooltip(probe.location.x, probe.location.y, xd, yd, true);
                         if (tt !== undefined) {
                             result.push(tt);
                         }

@@ -70,6 +70,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var _dataChanged;
     var _paletteColors;
     var _interval;
+    var _originalInterval;
     var _heatmap_nav;
 
     loadOpacity((initialData && typeof (initialData.opacity) != 'undefined') ? parseFloat(initialData.opacity) : 1.0);
@@ -225,6 +226,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 || !InteractiveDataDisplay.Utils.isArray(f[0]);
         var x = data.x;
         var y = data.y;
+        if (_originalInterval == undefined && _interval == undefined) _originalInterval = data.interval;
         _interval = data.interval;
         if (f["median"]) {//uncertainty
             var div = $("<div></div>")
@@ -235,8 +237,6 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 return undefined;
             };
             this.addChild(_heatmap_nav);
-            _heatmap_nav.opacity = 0.5;
-            _heatmap_nav.colorPalette = InteractiveDataDisplay.ColorPalette.parse("0=#00000000=#00000080=1");
             _heatmap_nav.getTooltip = function (xd, yd, xp, yp) {
                 return undefined;
             }
@@ -254,12 +254,11 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 _f_l68 = r.l68;
                 _f_u68 = r.u68;
 
-                _heatmap_nav._x = r.x;
-                _heatmap_nav._y = r.y;
-                _heatmap_nav._f = r.m;
-                _heatmap_nav._f_median = r.m;
-                _heatmap_nav._f_l68 = r.l68;
-                _heatmap_nav._f_u68 = r.u68;
+                _heatmap_nav.x = r.x;
+                _heatmap_nav.y = r.y;
+                _heatmap_nav.f_median = r.m;
+                _heatmap_nav.f_l68 = r.l68;
+                _heatmap_nav.f_u68 = r.u68;
             } else {
                 _x = x;
                 _y = y;
@@ -268,12 +267,11 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 _f_l68 = f.lower68;
                 _f_u68 = f.upper68;
 
-                _heatmap_nav._x = r.x;
-                _heatmap_nav._y = r.y;
-                _heatmap_nav._f = f.median;
-                _heatmap_nav._f_median = f.median68;
-                _heatmap_nav._f_l68 = f.lower68;
-                _heatmap_nav._f_u68 = f.upper68;
+                _heatmap_nav.x = r.x;
+                _heatmap_nav.y = r.y;
+                _heatmap_nav.f_median = f.median68;
+                _heatmap_nav.f_l68 = f.lower68;
+                _heatmap_nav.f_u68 = f.upper68;
             }
             if (_interval) {
                 updateInterval();
@@ -641,71 +639,88 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         return value;
     };
     var updateInterval = function () {
-        var fmedian = _heatmap_nav._f_median;
+        var fmedian = _heatmap_nav.f_median;
         var shadeData = new Array(fmedian.length);
         for (var i = 0; i < fmedian.length; i++) {
             var fmedian_i = fmedian[i];
             shadeData[i] = new Array(fmedian_i.length);
             for (var j = 0; j < fmedian_i.length; j++) {
-                shadeData[i][j] = (_heatmap_nav._f_l68[i][j] < _interval.max && _heatmap_nav._f_u68[i][j] > _interval.min) ? 1 : 0;
+                shadeData[i][j] = (_heatmap_nav.f_l68[i][j] < _interval.max && _heatmap_nav.f_u68[i][j] > _interval.min) ? 0 : 1;
             }
         }
-        _heatmap_nav.draw({ x: _heatmap_nav._x, y: _heatmap_nav._y, values: shadeData });
+        _heatmap_nav.draw({ x: _heatmap_nav.x, y: _heatmap_nav.y, values: shadeData, opacity: 0.5, colorPalette: InteractiveDataDisplay.ColorPalette.parse("0=#00000000=#00000080=1") });
         _heatmap_nav.host.css("visibility", "visible");
     };
-    this.getTooltip = function (xd, yd, xp, yp, probe) {
+    this.getTooltip = function (xd, yd, xp, yp, changeInterval) {
         if (_f === undefined)
             return;
+        var that = this;
+        var pinCoord = { x: xd, y: yd };
+        if (_f_u68 === undefined || _f_l68 === undefined || _f_median === undefined) {
+            var $toolTip = $("<div></div>");
+            $("<div></div>").addClass('idd-tooltip-name').text((this.name || "heatmap")).appendTo($toolTip);
+            var value = this.getValue(pinCoord.x, pinCoord.y, _f, _mode);
+            if (value == null) return;
+            var propTitle = this.getTitle("values");
+            $("<div>" + propTitle + ": " + value + "</div>").appendTo($toolTip);
+            return $toolTip;
+        } else {
+            var $toolTip = $("<div></div>");
+            $("<div></div>").addClass('idd-tooltip-name').text((this.name || "heatmap")).appendTo($toolTip);
+            var lb = this.getValue(pinCoord.x, pinCoord.y, _f_l68);
+            var ub = this.getValue(pinCoord.x, pinCoord.y, _f_u68);
+            var median = this.getValue(pinCoord.x, pinCoord.y, _f_median);
+            if (lb == null || ub == null || median == null) return;
+            var propTitle = this.getTitle("values");
+            var uncertainContent = $("<div></div>").addClass('idd-tooltip-compositevalue');
+            uncertainContent.append($("<div>median: " + median + "</div>"));
+            uncertainContent.append($("<div>lower 68%: " + lb + "</div>"));
+            uncertainContent.append($("<div>upper 68%: " + ub + "</div>"));
+            var $content = $("<div></div>");
+            $content.append($("<div>" + propTitle + ":</div>")).append(uncertainContent);
+            $content.appendTo($toolTip);
 
-        var $toolTip = $("<div></div>");
-        $("<div></div>").addClass('idd-tooltip-name').text((this.name || "heatmap")).appendTo($toolTip);
+            var checkBoxCnt = $("<div></div>").css("display", "inline-block").appendTo($toolTip);
+            var showSimilarBtn = $("<div></div>").addClass("checkButton").appendTo(checkBoxCnt);
             
-        if (_f !== undefined) {
-            if (_f_u68 === undefined || _f_l68 === undefined || _f_median === undefined) {
-                var value = this.getValue(xd, yd, _f);
-                if (value == null) return;
-                var propTitle = this.getTitle("values");
-                $("<div>" + propTitle + ": " + value + "</div>").appendTo($toolTip);
-            } else {
-                var lb = this.getValue(xd, yd, _f_l68);
-                var ub = this.getValue(xd, yd, _f_u68);
-                var median = this.getValue(xd, yd, _f_median);
-                var propTitle = this.getTitle("values");
-                var uncertainContent = $("<div></div>").addClass('idd-tooltip-compositevalue');
-                uncertainContent.append($("<div>median: " + median + "</div>"));
-                uncertainContent.append($("<div>lower 68%: " + lb + "</div>"));
-                uncertainContent.append($("<div>upper 68%: " + ub + "</div>"));
-                var $content = $("<div></div>");
-                $content.append($("<div>" + propTitle + ":</div>")).append(uncertainContent);
-                $content.appendTo($toolTip);
-
-                var checkBoxCnt = $("<div></div>").css("display", "inline-block").appendTo($toolTip);
-                var showSimilarBtn = $("<div></div>").addClass("checkButton").appendTo(checkBoxCnt);
-
-                if (_interval) {
+            if (_interval ) {
+                if (changeInterval) {
+                    if (_interval != _originalInterval) {
+                        _interval = { min: lb, max: ub };
+                        $(".checkButton").removeClass("checkButton-checked");
+                        showSimilarBtn.addClass("checkButton-checked");
+                        this.fireAppearanceChanged("interval");
+                    } else $(".checkButton").removeClass("checkButton-checked");
+                }  else {
+                    $(".checkButton").removeClass("checkButton-checked");
+                    showSimilarBtn.addClass("checkButton-checked");
+                }
+                updateInterval();
+            }
+            showSimilarBtn.click(function () {
+                if (showSimilarBtn.hasClass("checkButton-checked")) {
+                    showSimilarBtn.removeClass("checkButton-checked");
+                    if (_originalInterval) {
+                        _interval = _originalInterval;
+                        updateInterval();
+                    } else {
+                        _interval = undefined;
+                        _heatmap_nav.host.css("visibility", "hidden");
+                    }
+                }
+                else {
                     $(".checkButton").removeClass("checkButton-checked");
                     showSimilarBtn.addClass("checkButton-checked");
                     _interval = { min: lb, max: ub };
                     updateInterval();
                 }
-                showSimilarBtn.click(function () {
-                    if (showSimilarBtn.hasClass("checkButton-checked")) {
-                        showSimilarBtn.removeClass("checkButton-checked");
-                        _interval = undefined;
-                        _heatmap_nav.host.css("visibility", "hidden");
-                    }
-                    else {
-                        $(".checkButton").removeClass("checkButton-checked");
-                        showSimilarBtn.addClass("checkButton-checked");
-                        _interval = { min: lb, max: ub };
-                        updateInterval();
-                    }
-                });
+                that.fireAppearanceChanged("interval");
+            });
 
-                $($("<span style='margin-left:3px;'>highlight similar</span>")).appendTo(checkBoxCnt);
-            }
+            $($("<span style='margin-left:3px;'>highlight similar</span>")).appendTo(checkBoxCnt);
+            return $toolTip;
         }
-        return $toolTip;
+        return;
     };
 
 
@@ -742,7 +757,8 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         set: function (value) {
             if (value == _interval) return;
             _interval = value;
-            updateInterval()
+            _originalInterval = value;
+            updateInterval();
             this.fireAppearanceChanged("interval");
             this.requestNextFrame();
         },
@@ -781,11 +797,21 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             }
         }
         refreshColor();
-
+        var intervalDiv;
+        var refreshInterval = function () {
+            if (_interval == undefined && intervalDiv) intervalDiv.empty();
+            else {
+                if (intervalDiv) intervalDiv.text("highlighted interval: " + _interval.min + ", " + _interval.max);
+                else if (_interval) intervalDiv = $("<div style='font-size:14px;'>highlighted interval: " + _interval.min + ", " + _interval.max + "</div>").appendTo(infoDiv);
+            }
+        }
+        refreshInterval();
         this.host.bind("appearanceChanged",
             function (event, propertyName) {
                 if (!propertyName || propertyName == "name")
                     setName();
+                if (!propertyName || propertyName == "interval")
+                    refreshInterval();
                 if (!propertyName || propertyName == "values" || propertyName == "colorPalette")
                     refreshColor();
                 if (!propertyName || propertyName == "palette") paletteControl.palette = _palette;

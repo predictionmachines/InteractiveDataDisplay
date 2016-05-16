@@ -2,6 +2,7 @@
 .probes 
 {
     margin-top: 20px;
+    box-sizing: content-box;
 }
 .probes-list
 {
@@ -17,6 +18,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     list-style-type: none;
+    box-sizing: content-box;
 }
 .probe {
     width: 40px;
@@ -42,6 +44,7 @@
     display: inline-block;
     padding-right: 4px;
     padding-left:4px;
+    box-sizing: content-box;
 }
 .probeCard-selected {
     /*background-color: #F1F9FF;*/
@@ -67,6 +70,7 @@
     text-overflow: ellipsis;
     padding-top: 16px;
     padding-left: 16px;
+    box-sizing: content-box;
 }
 .probeHeader-name {
     width: 110px;
@@ -81,6 +85,7 @@
     white-space: nowrap;
     word-wrap: normal; /* для IE */
     text-overflow: ellipsis;
+    box-sizing: content-box;
 }
 .probeActionPanel {
     width: 22px;
@@ -89,6 +94,7 @@
     padding-bottom: 16px;
     padding-right:7px;
     padding-top: 16px;
+    box-sizing: content-box;
 }
 .probeCard-remove {
     width: 20px;

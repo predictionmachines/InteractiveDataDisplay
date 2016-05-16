@@ -72,6 +72,7 @@
     padding: 5px;
     position: absolute;
     display: block;
+    box-sizing: content-box;
 }
 
 .idd-tooltip-coordinates
@@ -91,10 +92,12 @@
 .idd-tooltip-compositevalue 
 {
     margin-left: 8px;
+    box-sizing: content-box;
 }
 .idd-tooltip-itemvalues {
     margin-bottom: 8px;
     margin-left: 0px;
+    box-sizing: content-box;
 }
 .checkButton {
     width: 13px;
@@ -150,6 +153,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     list-style-type: none;
+    box-sizing: content-box;
 }
 .idd-legend-item
 {
@@ -164,7 +168,7 @@
     cursor: pointer;
     padding-right: 4px;
     padding-left:4px;
-    box-sizing: initial;
+    box-sizing: content-box;
 }
 .idd-legend-item-title
 {    
@@ -175,6 +179,7 @@
     padding-top: 16px;
     padding-right: 8px;
     height: 24px;
+    box-sizing: content-box;
 }
 .idd-legend-item-title-name
 {
@@ -196,6 +201,7 @@
     width: 24px;
     height: 24px;
     display:inline-block;
+    box-sizing: content-box;
 }
 .idd-legend-item-info
 {
@@ -203,6 +209,7 @@
     padding-bottom: 16px;
     padding-right: 16px;
     padding-left: 16px;
+    box-sizing: content-box;
 }
 /*elements for compact legend*/
 .idd-legend-compact
@@ -217,6 +224,7 @@
     overflow: scroll;
     overflow-y: auto;
     overflow-x: hidden;
+    box-sizing: content-box;
 }
 .idd-legend-item-compact
 {
@@ -225,6 +233,7 @@
     height: auto;
     background-color: rgba(255,255,255,0.5);
     border-bottom: 1px solid rgba(0,0,0,0.12); 
+    box-sizing: content-box;
 }
 .idd-legend-item-title-compact
 {    
@@ -232,6 +241,7 @@
     vertical-align: top;
     padding: 6px;
     height: 18px;
+    box-sizing: content-box;
 }
 .idd-legend-item-title-name-compact
 {
@@ -253,6 +263,7 @@
     width: 18px;
     height: 18px;
     display:inline-block;
+    box-sizing: content-box;
 }
 .idd-legend-item-info-compact
 {
@@ -260,6 +271,7 @@
     padding-bottom: 6px;
     padding-right: 6px;
     padding-left: 6px;
+    box-sizing: content-box;
 }
 /*legend elements*/
 .idd-legend-item-property

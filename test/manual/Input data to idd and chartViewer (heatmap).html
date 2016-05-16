@@ -17,39 +17,49 @@
     <script type="text/javascript">
         $(document).ready(function () {
             var dataSet = {
-                //"heatmap": {
-                //    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]]
-                //},
-                //"heatmap with": {
-                //    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
-                //    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
-                //    values: [1, 2, 3, 4, 5, 4, 3, 2, 1]
-                //},
-                //"heatmap with x, y": {
-                //    y: [-4, 0, 4],
-                //    x: [-2, 0, 5],
-                //    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]]
-                //},
-                //"heatmap with color palette": {
-                //    y: [-4, 0, 4],
-                //    x: [-2, 0, 5],
-                //    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
-                //    colorPalette: "yellow, red",
-                //},
-                //"heatmap with treatAs": {
-                //    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
-                //    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
-                //    values: [1, 2, 3, 4, 5, 4, 3, 2, 1],
-                //    colorPalette: "yellow, red",
-                //    treatAs: "discrete"
-                //},
-                //"heatmap with building color palette": {
-                //    y: [-4, 0, 4],
-                //    x: [-2, 0, 5],
-                //    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
-                //    colorPalette: new InteractiveDataDisplay.ColorPalette.parse("yellow, red"),
-                //},
+                "heatmap": {
+                    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]]
+                },
+                "heatmap with": {
+                    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
+                    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
+                    values: [1, 2, 3, 4, 5, 4, 3, 2, 1]
+                },
+                "heatmap with x, y": {
+                    y: [-4, 0, 4],
+                    x: [-2, 0, 5],
+                    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]]
+                },
+                "heatmap with color palette": {
+                    y: [-4, 0, 4],
+                    x: [-2, 0, 5],
+                    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
+                    colorPalette: "yellow, red",
+                },
+                "heatmap with treatAs": {
+                    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
+                    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
+                    values: [1, 2, 3, 4, 5, 4, 3, 2, 1],
+                    colorPalette: "yellow, red",
+                    treatAs: "discrete"
+                },
+                "heatmap with building color palette": {
+                    y: [-4, 0, 4],
+                    x: [-2, 0, 5],
+                    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
+                    colorPalette: new InteractiveDataDisplay.ColorPalette.parse("yellow, red"),
+                },
                 "heatmap with uncertain data": {
+                    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
+                    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
+                    values: {
+                        median: [1, 2, 3, 4, 5, 4, 3, 2, 1],
+                        lower68: [-3, -1, 1, 1, 4, 2, 1, 0, 0],
+                        upper68: [4, 6, 7, 8, 9, 7, 5, 4, 2]
+                    },
+                    colorPalette: 'brown, orange, yellow, lightgreen, lightblue'
+                },
+                "heatmap with uncertain data and interval": {
                     x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
                     y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
                     values: {
@@ -59,14 +69,6 @@
                     },
                     colorPalette: 'brown, orange, yellow, lightgreen, lightblue',
                     interval: {min: 0, max: 1}
-                },
-                "heatmap with": {
-                    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
-                    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
-                    values: [1, 0, 0, 0, 1, 1, 0, 0, 1],
-                    opacity: 0.5,
-                    colorPalette: new InteractiveDataDisplay.ColorPalette.parse("0=#00000000=#00000080=1"),
-                    mode: 'matrix'
                 }
             };
             
@@ -76,7 +78,6 @@
                 var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px; float: left;"></div>').appendTo(div);
                 var plot = InteractiveDataDisplay.asPlot(chart);
                 var heatmap = plot.heatmap("heatmap", dataSet[data]);
-
                 var chartViewer = $('<div style="width: 1000px; height: 500px; float: right;"></div>').appendTo(div);
                 ChartViewer.show(chartViewer, {
                     "heatmap": Plot.heatmap(dataSet[data]),

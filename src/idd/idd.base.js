@@ -2156,7 +2156,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (myImageData.data[0] === 0 && myImageData.data[1] === 0 && myImageData.data[2] === 0 && myImageData.data[3] === 0)
                 return undefined;
             var $toolTip = $("<div></div>")
-            $("<div></div>").addClass('idd-tooltip-name').text((this.name || "Polyline")).appendTo($toolTip);
+            $("<div></div>").addClass('idd-tooltip-name').text((this.name || "polyline")).appendTo($toolTip);
             return $toolTip;
         };
         var renderLine = function (_x, _y, _stroke, _thickness, plotRect, screenSize, context) {
