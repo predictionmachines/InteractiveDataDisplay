@@ -265,18 +265,29 @@
     },
     getTooltipData: function (originalData, index) {
         var dataRow = {};
-        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length) 
-            dataRow['x'] = originalData.x[index];
-        if (InteractiveDataDisplay.Utils.isArray(originalData.y) && index < originalData.y.length) 
-            dataRow['y'] = originalData.y[index];
-        if (InteractiveDataDisplay.Utils.isArray(originalData.color) && index < originalData.color.length)
-            dataRow['color'] = originalData.color[index];
+        var formatter = {};
+        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length) {
+            formatter["x"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.x);
+            dataRow['x'] = formatter["x"].toString(originalData.x[index]);
+        }
+        if (InteractiveDataDisplay.Utils.isArray(originalData.y) && index < originalData.y.length) {
+            formatter["y"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y);
+            dataRow['y'] = formatter["y"].toString(originalData.y[index]);
+        }
+        if (InteractiveDataDisplay.Utils.isArray(originalData.color) && index < originalData.color.length) {
+            formatter["color"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.color);
+            dataRow['color'] = formatter["color"].toString(originalData.color[index]);
+        }
         if (originalData.size) {
             dataRow['size'] = {};
-            if (InteractiveDataDisplay.Utils.isArray(originalData.size.lower95) && index < originalData.size.lower95.length)
-                dataRow['size']["lower 95%"] = originalData.size.lower95[index];
-            if (InteractiveDataDisplay.Utils.isArray(originalData.size.upper95) && index < originalData.size.upper95.length)
-                dataRow['size']["upper 95%"] = originalData.size.upper95[index];
+            if (InteractiveDataDisplay.Utils.isArray(originalData.size.lower95) && index < originalData.size.lower95.length) {
+                formatter["lower95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.size.lower95);
+                dataRow['size']["lower 95%"] = formatter["lower95"].toString(originalData.size.lower95[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.size.upper95) && index < originalData.size.upper95.length) {
+                formatter["upper95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.size.upper95);
+                dataRow['size']["upper 95%"] = formatter["upper95"].toString(originalData.size.upper95[index]);
+            }
         }
         dataRow["index"] = index;
         return dataRow;
@@ -591,19 +602,30 @@ InteractiveDataDisplay.BullEye = {
       },
     getTooltipData: function (originalData, index) {
         var dataRow = {};
-        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length)
-            dataRow['x'] = originalData.x[index];
-        if (InteractiveDataDisplay.Utils.isArray(originalData.y) && index < originalData.y.length)
-            dataRow['y'] = originalData.y[index];
+        var formatter = {};
+        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length) {
+            formatter["x"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.x);
+            dataRow['x'] = formatter["x"].toString(originalData.x[index]);
+        }
+        if (InteractiveDataDisplay.Utils.isArray(originalData.y) && index < originalData.y.length) {
+            formatter["y"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y);
+            dataRow['y'] = formatter["y"].toString(originalData.y[index]);
+        }
         if (originalData.color) {
             dataRow['color'] = {};
-            if (InteractiveDataDisplay.Utils.isArray(originalData.color.lower95) && index < originalData.color.lower95.length)
-                dataRow['color']["lower 95%"] = originalData.color.lower95[index];
-            if (InteractiveDataDisplay.Utils.isArray(originalData.color.upper95) && index < originalData.color.upper95.length)
-                dataRow['color']["upper 95%"] = originalData.color.upper95[index];
+            if (InteractiveDataDisplay.Utils.isArray(originalData.color.lower95) && index < originalData.color.lower95.length) {
+                formatter["lower95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.color.lower95);
+                dataRow['color']["lower 95%"] = formatter["lower95"].toString(originalData.color.lower95[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.color.upper95) && index < originalData.color.upper95.length) {
+                formatter["upper95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.color.upper95);
+                dataRow['color']["upper 95%"] = formatter["upper95"].toString(originalData.color.upper95[index]);
+            }
         }
-        if (InteractiveDataDisplay.Utils.isArray(originalData.size) && index < originalData.size.length)
-            dataRow['size'] = originalData.size[index];
+        if (InteractiveDataDisplay.Utils.isArray(originalData.size) && index < originalData.size.length) {
+            formatter["size"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.size);
+            dataRow['size'] = formatter["size"].toString(originalData.size[index]);
+        }
         dataRow["index"] = index;
         return dataRow;
     }
@@ -889,23 +911,38 @@ InteractiveDataDisplay.BoxWhisker = {
     },
     getTooltipData: function (originalData, index) {
         var dataRow = {};
-        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length)
-            dataRow['x'] = originalData.x[index];
+        var formatter = {};
+        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length) {
+            formatter["x"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.x);
+            dataRow['x'] = formatter["x"].toString(originalData.x[index]);
+        }
         if (originalData.y) {
             dataRow['y'] = {};
-            if (InteractiveDataDisplay.Utils.isArray(originalData.y.median) && index < originalData.y.median.length)
-                dataRow['y']["median"] = originalData.y.median[index];
-            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower95) && index < originalData.y.lower95.length)
-                dataRow['y']["lower 95%"] = originalData.y.lower95[index];
-            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper95) && index < originalData.y.upper95.length)
-                dataRow['y']["upper 95%"] = originalData.y.upper95[index];
-            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower68) && index < originalData.y.lower68.length)
-                dataRow['y']["lower 68%"] = originalData.y.lower68[index];
-            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper68) && index < originalData.y.upper68.length)
-                dataRow['y']["upper 68%"] = originalData.y.upper68[index];
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.median) && index < originalData.y.median.length) {
+                formatter["median"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.median);
+                dataRow['y']["median"] = formatter["median"].toString(originalData.y.median[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower95) && index < originalData.y.lower95.length) {
+                formatter["lower95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.lower95);
+                dataRow['y']["lower 95%"] = formatter["lower95"].toString(originalData.y.lower95[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper95) && index < originalData.y.upper95.length) {
+                formatter["upper95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.upper95);
+                dataRow['y']["upper 95%"] = formatter["upper95"].toString(originalData.y.upper95[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower68) && index < originalData.y.lower68.length) {
+                formatter["lower68"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.lower68);
+                dataRow['y']["lower 68%"] = formatter["lower68"].toString(originalData.y.lower68[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper68) && index < originalData.y.upper68.length) {
+                formatter["upper68"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.upper68);
+                dataRow['y']["upper 68%"] = formatter["upper68"].toString(originalData.y.upper68[index]);
+            }
         }
-        if (InteractiveDataDisplay.Utils.isArray(originalData.size) && index < originalData.size.length)
-            dataRow['size'] = originalData.size[index];
+        if (InteractiveDataDisplay.Utils.isArray(originalData.size) && index < originalData.size.length) {
+            formatter["size"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.size);
+            dataRow['size'] = formatter["size"].toString(originalData.size[index]);
+        }
         dataRow["index"] = index;
         return dataRow;
     }
@@ -1152,16 +1189,25 @@ InteractiveDataDisplay.BoxNoWhisker = {
     },
     getTooltipData: function (originalData, index) {
         var dataRow = {};
-        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length)
-            dataRow['x'] = originalData.x[index];
+        var formatter = {};
+        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length) {
+            formatter["x"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.x);
+            dataRow['x'] = formatter["x"].toString(originalData.x[index]);
+        }
         if (originalData.y) {
             dataRow['y'] = {};
-            if (InteractiveDataDisplay.Utils.isArray(originalData.y.median) && index < originalData.y.median.length)
-                dataRow['y']["median"] = originalData.y.median[index];
-            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower68) && index < originalData.y.lower68.length)
-                dataRow['y']["lower 68%"] = originalData.y.lower68[index];
-            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper68) && index < originalData.y.upper68.length)
-                dataRow['y']["upper 68%"] = originalData.y.upper68[index];
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.median) && index < originalData.y.median.length) {
+                formatter["median"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.median);
+                dataRow['y']["median"] = formatter["median"].toString(originalData.y.median[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower68) && index < originalData.y.lower68.length) {
+                formatter["lower68"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.lower68);
+                dataRow['y']["lower 68%"] = formatter["lower68"].toString(originalData.y.lower68[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper68) && index < originalData.y.upper68.length) {
+                formatter["upper68"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.upper68);
+                dataRow['y']["upper 68%"] = formatter["upper68"].toString(originalData.y.upper68[index]);
+            }
         }
         if (InteractiveDataDisplay.Utils.isArray(originalData.size) && index < originalData.size.length)
             dataRow['size'] = originalData.size[index];
@@ -1428,16 +1474,25 @@ InteractiveDataDisplay.Whisker = {
     },
     getTooltipData: function (originalData, index) {
         var dataRow = {};
-        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length)
-            dataRow['x'] = originalData.x[index];
+        var formatter = {};
+        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length) {
+            formatter["x"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.x);
+            dataRow['x'] = formatter["x"].toString(originalData.x[index]);
+        }
         if (originalData.y) {
             dataRow['y'] = {};
-            if (InteractiveDataDisplay.Utils.isArray(originalData.y.median) && index < originalData.y.median.length)
-                dataRow['y']["median"] = originalData.y.median[index];
-            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower95) && index < originalData.y.lower95.length)
-                dataRow['y']["lower 95%"] = originalData.y.lower95[index];
-            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper95) && index < originalData.y.upper95.length)
-                dataRow['y']["upper 95%"] = originalData.y.upper95[index];
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.median) && index < originalData.y.median.length) {
+                formatter["median"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.median);
+                dataRow['y']["median"] = formatter["median"].toString(originalData.y.median[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower95) && index < originalData.y.lower95.length) {
+                formatter["lower95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.lower95);
+                dataRow['y']["lower 95%"] = formatter["lower95"].toString(originalData.y.lower95[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper95) && index < originalData.y.upper95.length) {
+                formatter["upper95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.upper95);
+                dataRow['y']["upper 95%"] = formatter["upper95"].toString(originalData.y.upper95[index]);
+            }
         }
         if (InteractiveDataDisplay.Utils.isArray(originalData.size) && index < originalData.size.length)
             dataRow['size'] = originalData.size[index];

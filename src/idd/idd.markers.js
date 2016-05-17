@@ -11,7 +11,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
     var _renderData = {};
     var _markerPushpins = undefined;
     var _pushpinsVisible = false;
-    
+    var _formatter = {};
     var that = this;
     
     var destroyPushpins = function() {
@@ -206,7 +206,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
                     for (var prop in _originalData) {
                         var vals = _originalData[prop];
                         if (InteractiveDataDisplay.Utils.isArray(vals) && j < vals.length) {
-                            dataRow[prop] = vals[j];
+                            _formatter[prop] = new InteractiveDataDisplay.AdaptiveFormatter(vals);
+                            dataRow[prop] = _formatter[prop].toString(vals[j]);
                         }// scalars do not go to the tooltip since they are identical for all markers
                     }
                     dataRow["index"] = j;
@@ -232,8 +233,10 @@ InteractiveDataDisplay.Markers = function (div, master) {
                     }
                     if (markerContent)
                         $content.append($("<div>" + propTitle + ":</div>")).append(markerContent);
-                    else
+                    else {
                         $content.append($("<div>" + propTitle + ": " + markerInfo[prop] + "</div>"));
+
+                    }
                 }
             }
             return $content;

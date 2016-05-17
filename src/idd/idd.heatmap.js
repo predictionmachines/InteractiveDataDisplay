@@ -72,26 +72,29 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var _interval;
     var _originalInterval;
     var _heatmap_nav;
+    var _formatter_f, _formatter_f_median, _formatter_f_l68, _formatter_f_u68, _formatter_interval;
 
     loadOpacity((initialData && typeof (initialData.opacity) != 'undefined') ? parseFloat(initialData.opacity) : 1.0);
     loadPalette((initialData && typeof (initialData.colorPalette) != 'undefined') ? initialData.colorPalette : InteractiveDataDisplay.palettes.grayscale);
 
-    var findFminmax = function () {
-        var n = _f.length;
+    var findFminmax = function (f) {
+        var n = f.length;
         if (n < 1) return;
-        var m = _f[0].length;
+        var m = f[0].length;
         if (m < 1) return;
-        _fmin = _fmax = _f[0][0];
+        var fmin, fmax;
+        fmin = fmax = f[0][0];
         for (var i = 0; i < n; i++) {
-            var fi = _f[i];
+            var fi = f[i];
             for (var j = 0; j < m; j++) {
                 var v = fi[j];
                 if (v == v) {
-                    if (v > _fmax) _fmax = v;
-                    else if (v < _fmin) _fmin = v;
+                    if (v > fmax /*|| isNan(_fmax)*/) fmax = v;
+                    else if (v < fmin /*|| isNAn(_fmin)*/) fmin = v;
                 }
             }
         }
+        return { min: fmin, max: fmax };
     };
 
     var lastCompletedTask;
@@ -290,6 +293,12 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 _y = y;
             }
         }
+
+        _formatter_f = undefined;
+        _formatter_f_median = undefined;
+        _formatter_f_l68 = undefined;
+        _formatter_f_u68 = undefined;
+
         var n = _f_median ? _f_median.length : _f.length;
         var m = _f_median ? _f_median[0].length : _f[0].length;
         if (!_x) {
@@ -320,8 +329,11 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         }
         if (data && typeof (data.colorPalette) != 'undefined')
             loadPalette(data.colorPalette);
-        if (_palette.isNormalized) findFminmax();
-
+        if (_palette.isNormalized) {
+            var minmax = findFminmax(_f);
+            _fmin = minmax.min;
+            _fmax = minmax.max;
+        }
         _dataChanged = true;
         var prevBB = this.invalidateLocalBounds();
         var bb = this.getLocalBounds();
@@ -657,14 +669,22 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         var that = this;
         var pinCoord = { x: xd, y: yd };
         if (_f_u68 === undefined || _f_l68 === undefined || _f_median === undefined) {
+            var fminmax = findFminmax(_f);
+            _formatter_f = InteractiveDataDisplay.AdaptiveFormatter(fminmax.min, fminmax.max);
             var $toolTip = $("<div></div>");
             $("<div></div>").addClass('idd-tooltip-name').text((this.name || "heatmap")).appendTo($toolTip);
             var value = this.getValue(pinCoord.x, pinCoord.y, _f, _mode);
             if (value == null) return;
             var propTitle = this.getTitle("values");
-            $("<div>" + propTitle + ": " + value + "</div>").appendTo($toolTip);
+            $("<div>" + propTitle + ": " + _formatter_f.toString(value) + "</div>").appendTo($toolTip);
             return $toolTip;
         } else {
+            var fminmax = findFminmax(_f_median);
+            _formatter_f_median = InteractiveDataDisplay.AdaptiveFormatter(fminmax.min, fminmax.max);
+            fminmax = findFminmax(_f_l68);
+            _formatter_f_l68 = InteractiveDataDisplay.AdaptiveFormatter(fminmax.min, fminmax.max);
+            fminmax = findFminmax(_f_u68);
+            _formatter_f_u68 = InteractiveDataDisplay.AdaptiveFormatter(fminmax.min, fminmax.max);
             var $toolTip = $("<div></div>");
             $("<div></div>").addClass('idd-tooltip-name').text((this.name || "heatmap")).appendTo($toolTip);
             var lb = this.getValue(pinCoord.x, pinCoord.y, _f_l68);
@@ -673,9 +693,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             if (lb == null || ub == null || median == null) return;
             var propTitle = this.getTitle("values");
             var uncertainContent = $("<div></div>").addClass('idd-tooltip-compositevalue');
-            uncertainContent.append($("<div>median: " + median + "</div>"));
-            uncertainContent.append($("<div>lower 68%: " + lb + "</div>"));
-            uncertainContent.append($("<div>upper 68%: " + ub + "</div>"));
+            uncertainContent.append($("<div>median: " + _formatter_f_median.toString(median) + "</div>"));
+            uncertainContent.append($("<div>lower 68%: " + _formatter_f_l68.toString(lb) + "</div>"));
+            uncertainContent.append($("<div>upper 68%: " + _formatter_f_u68.toString(ub) + "</div>"));
             var $content = $("<div></div>");
             $content.append($("<div>" + propTitle + ":</div>")).append(uncertainContent);
             $content.appendTo($toolTip);
@@ -730,7 +750,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             if (value == _palette) return;
             if (!value) throw "Heatmap palette is undefined";
             if (_palette && value.isNormalized && !_palette.isNormalized && _f) {
-                findFminmax();
+                var minmax = findFminmax(_f);
+                _fmin = minmax.min;
+                _fmax = minmax.max;
             }
             loadPalette(value);
             lastCompletedTask = undefined;
@@ -801,8 +823,12 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         var refreshInterval = function () {
             if (_interval == undefined && intervalDiv) intervalDiv.empty();
             else {
-                if (intervalDiv) intervalDiv.text("highlighted interval: " + _interval.min + ", " + _interval.max);
-                else if (_interval) intervalDiv = $("<div style='font-size:14px;'>highlighted interval: " + _interval.min + ", " + _interval.max + "</div>").appendTo(infoDiv);
+                if (_interval) {
+                    _formatter_interval = InteractiveDataDisplay.AdaptiveFormatter(_interval.min, _interval.max);
+                    if (intervalDiv) intervalDiv.text("highlighted interval: " + _formatter_interval.toString(_interval.min) + ", " + _formatter_interval.toString(_interval.max));
+                    else intervalDiv = $("<div style='font-size:14px;'>highlighted interval: " + _formatter_interval.toString(_interval.min) + ", " + _formatter_interval.toString(_interval.max) + "</div>").appendTo(infoDiv);
+
+                }
             }
         }
         refreshInterval();
