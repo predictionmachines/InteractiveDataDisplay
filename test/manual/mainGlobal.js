@@ -17,7 +17,6 @@ var main;
                 y: [1, 4, 6, 9],
                 shape: Plot.MarkerShape.Cross,
                 size: [1, 2, 3, 4],
-                sizePalette: new InteractiveDataDisplay.SizePalette(true, { min: 5, max: 25 }),
                 color: [1, 2, 3, 4],
                 colorPalette: 'green, blue',
                 displayName: "mark",
