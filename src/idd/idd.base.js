@@ -636,7 +636,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         //Gets linear list of plots from hierarchy
         this.getPlotsSequence = function () {
-            var plots = [this];
+            var plots = [that];
             var n = _children.length;
             for (var i = 0; i < n; i++) {
                 var plot = _children[i];
@@ -899,6 +899,33 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // screenSize   {width,height}      Size of the output region to render inside
         // This method should be implemented by derived plots.
         this.renderCore = function (plotRect, screenSize) {
+        };
+        
+        /// Renders the plot to the svg and returns the svg object.
+        this.exportToSvg = function() {
+            if(!SVG.supported) throw "SVG is not supported";
+            
+            var screenSize = that.screenSize;
+            var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
+            
+            var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            var svg = SVG(svgHost).size(_host.width(), _host.height());
+            that.exportContentToSvg(plotRect, screenSize, svg);
+            return svg;            
+        };
+        
+        this.exportContentToSvg = function(plotRect, screenSize, svg) {
+            var plots = this.getPlotsSequence();
+            for(var i = 0; i < plots.length; i++){
+                plots[i].renderCoreSvg(plotRect, screenSize, svg);
+            }
+        };
+        
+        // Renders this plot to svg using the current coordinate transform and screen size.
+        // plotRect     {x,y,width,height}  Rectangle in the plot plane which is visible, (x,y) is left/bottom of the rectangle
+        // screenSize   {width,height}      Size of the output region to render inside
+        // This method should be implemented by derived plots.
+        this.renderCoreSvg = function (plotRect, screenSize, svg) {
         };
 
         // Notifies derived plots that isRendered changed.
@@ -2174,6 +2201,120 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 context.stroke(); // finishing previous segment (it is broken by missing value)
             }
         };
+        
+        this.renderCoreSvg = function (plotRect, screenSize, svg) {
+            if (_x === undefined || _y == undefined) return;
+            var n = _y.length;
+            if (n == 0) return;
+
+            var t = this.getTransform();
+            var dataToScreenX = t.dataToScreenX;
+            var dataToScreenY = t.dataToScreenY;
+
+            // size of the canvas
+            var w_s = screenSize.width;
+            var h_s = screenSize.height;
+            var xmin = 0, xmax = w_s;
+            var ymin = 0, ymax = h_s;
+
+            var x1, x2, y1, y2;
+            var i = 0;
+            
+            var segment;
+            var drawSegment = function() {
+                svg.polyline(segment).stroke({ color: _stroke, width: _thickness }).fill('none');
+            }
+            // Looking for non-missing value
+            var nextValuePoint = function () {
+                segment = new Array(0);
+                for (; i < n; i++) {
+                    if (isNaN(_x[i]) || isNaN(_y[i])) continue; // missing value
+                    x1 = dataToScreenX(_x[i]);
+                    y1 = dataToScreenY(_y[i]);
+                    c1 = code(x1, y1, xmin, xmax, ymin, ymax);
+                    break;
+                }
+                if (c1 == 0) // point is inside visible rect 
+                    segment.push([x1, y1]);
+            };
+            nextValuePoint();
+
+            var c1, c2, c1_, c2_;
+            var dx, dy;
+            var x2_, y2_;
+            var m = 1; // number of points for the current batch
+            for (i++; i < n; i++) {
+                if (isNaN(_x[i]) || isNaN(_y[i])) // missing value
+                {
+                    if (m == 1) { // single point surrounded by missing values
+                        drawSegment(); // finishing previous segment (it is broken by missing value)
+                        var c = code(x1, y1, xmin, xmax, ymin, ymax);
+                        if (c == 0) {
+                            context.beginPath();
+                            context.arc(x1, y1, _thickness / 2, 0, 2 * Math.PI);
+                            context.fill();
+                        }
+                    } else {
+                        drawSegment(); // finishing previous segment (it is broken by missing value)
+                    }
+                    i++;
+                    nextValuePoint();
+                    m = 1;
+                    continue;
+                }
+
+                x2_ = x2 = dataToScreenX(_x[i]);
+                y2_ = y2 = dataToScreenY(_y[i]);
+                if (Math.abs(x1 - x2) < 1 && Math.abs(y1 - y2) < 1) continue;
+
+                // Clipping and drawing segment p1 - p2:
+                c1_ = c1;
+                c2_ = c2 = code(x2, y2, xmin, xmax, ymin, ymax);
+
+                while (c1 | c2) {
+                    if (c1 & c2) break; // segment is invisible
+                    dx = x2 - x1;
+                    dy = y2 - y1;
+                    if (c1) {
+                        if (x1 < xmin) { y1 += dy * (xmin - x1) / dx; x1 = xmin; }
+                        else if (x1 > xmax) { y1 += dy * (xmax - x1) / dx; x1 = xmax; }
+                        else if (y1 < ymin) { x1 += dx * (ymin - y1) / dy; y1 = ymin; }
+                        else if (y1 > ymax) { x1 += dx * (ymax - y1) / dy; y1 = ymax; }
+                        c1 = code(x1, y1, xmin, xmax, ymin, ymax);
+                    } else {
+                        if (x2 < xmin) { y2 += dy * (xmin - x2) / dx; x2 = xmin; }
+                        else if (x2 > xmax) { y2 += dy * (xmax - x2) / dx; x2 = xmax; }
+                        else if (y2 < ymin) { x2 += dx * (ymin - y2) / dy; y2 = ymin; }
+                        else if (y2 > ymax) { x2 += dx * (ymax - y2) / dy; y2 = ymax; }
+                        c2 = code(x2, y2, xmin, xmax, ymin, ymax);
+                    }
+                }
+                if (!(c1 & c2)) {
+                    if (c1_ != 0){ // point wasn't visible
+                        drawSegment();
+                        segment = new Array(0);
+                        segment.push([x1, y1]);
+                    }
+                    segment.push([x2, y2]);
+                    m++;
+                }
+
+                x1 = x2_;
+                y1 = y2_;
+                c1 = c2_;
+            }
+
+            // Final stroke
+            if (m == 1) { // single point surrounded by missing values
+                drawSegment(); // finishing previous segment (it is broken by missing value)
+                var c = code(x1, y1, xmin, xmax, ymin, ymax);
+                if (c == 0) {
+                    svg.circle(_thickness).translate(x1, y1).fill(_stroke);
+                }
+            } else {
+                drawSegment(); // finishing previous segment (it is broken by missing value)
+            }
+        };
 
         // Clipping algorithms
         var code = function (x, y, xmin, xmax, ymin, ymax) {
@@ -2663,10 +2804,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             },
             configurable: false
         });
-
-        this.renderCore = function (plotRect, screenSize) {
-            InteractiveDataDisplay.GridlinesPlot.prototype.renderCore.call(this, plotRect, screenSize);
-
+        
+        var initializeAxes = function(){
             if (!_xAxis) {
                 var axisName = this.host.attr("data-idd-xaxis");
                 if (axisName) {
@@ -2681,7 +2820,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     if (axis) _yAxis = axis;
                 }
             }
+        };
 
+        this.renderCore = function (plotRect, screenSize) {
+            InteractiveDataDisplay.GridlinesPlot.prototype.renderCore.call(this, plotRect, screenSize);
+
+            initializeAxes();
             var ctx = this.getContext(true);
             ctx.strokeStyle = _stroke;
             ctx.fillStyle = _stroke;
@@ -2707,6 +2851,34 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (!ticks[i].invisible) {
                     v = (screenSize.height - 1) - _yAxis.getCoordinateFromTick(ticks[i].position);
                     ctx.fillRect(0, v, screenSize.width, strokeThickness);
+                }
+            }
+        };
+        
+        this.renderCoreSvg = function (plotRect, screenSize, svg) {
+            initializeAxes();
+
+            var strokeThickness = parseInt(_thickness.slice(0, -2));
+            var style = { width: strokeThickness, color: _stroke };
+
+            var ticks = [];
+            var v;
+            if (_xAxis)
+                ticks = _xAxis.ticks;
+            for (var i = 0, len = ticks.length; i < len; i++) {
+                if (!ticks[i].invisible) {
+                    v = _xAxis.getCoordinateFromTick(ticks[i].position);
+                    svg.polyline([[v,0], [v,screenSize.height-1]]).stroke(style).fill('none');
+                }
+            }
+
+            ticks = [];
+            if (_yAxis)
+                ticks = _yAxis.ticks;
+            for (var i = 0, len = ticks.length; i < len; i++) {
+                if (!ticks[i].invisible) {
+                    v = (screenSize.height - 1) - _yAxis.getCoordinateFromTick(ticks[i].position);
+                    svg.polyline([[0,v], [screenSize.width-1,v]]).stroke(style).fill('none');
                 }
             }
         };

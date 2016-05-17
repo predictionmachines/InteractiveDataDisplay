@@ -49,7 +49,8 @@
     "rxjs": "~4.0.6",
     "jquery": "~2.1.4",
     "modernizr": "~2.8.3",
-    "jqueryui": "~1.11.4"
+    "jqueryui": "~1.11.4",
+    "svg.js": "~2.3.0"
   },
   "devDependencies": {
     "jasmine": "~2.3.4",

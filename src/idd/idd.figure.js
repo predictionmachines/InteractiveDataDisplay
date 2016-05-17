@@ -562,6 +562,63 @@ InteractiveDataDisplay.Figure = function (div, master) {
         InteractiveDataDisplay.Figure.prototype.arrange.call(this, finalRect);
         //InteractiveDataDisplay.Utils.arrangeDiv(this.host, finalSize);
     };
+    
+    this.exportContentToSvg = function(plotRect, screenSize, svg) {
+        var left_g = svg.group();
+        var leftLine = 0;
+        for(var i = 0; i < leftChildren.length; i++){
+            var child = leftChildren[i];
+            var child_g = left_g.group();
+            child_g.translate(leftLine, 0);
+            leftLine += child.width();
+            if(child.content && child.content.axis){                
+                child.content.axis.renderToSvg(child_g);
+            }
+        }
+        
+        var top_g = svg.group();
+        var topLine = 0;
+        for(var i = 0; i < topChildren.length; i++){
+            var child = topChildren[i];
+            var child_g = top_g.group();
+            child_g.translate(leftLine, topLine);
+            topLine += child.height();
+            if(child.content && child.content.axis){                
+                child.content.axis.renderToSvg(child_g);
+            }
+        }
+        left_g.translate(0, topLine);
+        
+        var bottom_g = svg.group();
+        var bottomLine = topLine + screenSize.height;
+        for(var i = 0; i < bottomChildren.length; i++){
+            var child = bottomChildren[i];
+            var child_g = bottom_g.group();
+            child_g.translate(leftLine, bottomLine);
+            bottomLine += child.height();
+            if(child.content && child.content.axis){                
+                child.content.axis.renderToSvg(child_g);
+            }
+        }
+        
+        var right_g = svg.group();
+        var rightLine = leftLine + screenSize.width;
+        for(var i = 0; i < rightChildren.length; i++){
+            var child = rightChildren[i];
+            var child_g = right_g.group();
+            child_g.translate(rightLine, topLine);
+            rightLine += child.width();
+            if(child.content && child.content.axis){                
+                child.content.axis.renderToSvg(child_g);
+            }
+        }
+        
+        var plots_g = svg.group();
+        plots_g
+            .viewbox(0, 0, screenSize.width, screenSize.height)
+            .translate(leftLine, topLine);
+        InteractiveDataDisplay.Figure.prototype.exportContentToSvg.call(this, plotRect, screenSize, plots_g);
+    };    
 
     this.requestUpdateLayout();
 }
