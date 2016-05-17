@@ -7,13 +7,10 @@
     switch (axisType) {
         case "numeric":
             return new InteractiveDataDisplay.NumericAxis(div);
-            break;
         case "log":
             return new InteractiveDataDisplay.LogarithmicAxis(div);
-            break;
         case "labels":
             return new InteractiveDataDisplay.LabelledAxis(div, params);
-            break;
     }
 };
 
@@ -245,6 +242,8 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             return x;
         };
     }
+    
+    var minTicks = false;    
 
     // function to render ticks and labels
     var render = function () {
@@ -291,7 +290,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             }
         }
 
-        var minTicks = false;
+        minTicks = false;
         if (_tickSource.getMinTicks) {
             if (newResult == -1 && iterations > InteractiveDataDisplay.maxTickArrangeIterations || _ticks.length < 2) {
                 newTicks = _tickSource.getMinTicks();
@@ -419,6 +418,128 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
             }
         }
+    };
+    
+    this.renderToSvg = function (svg) {
+        var path = "";
+        var drawHLine = function(x,y,w) {
+            path += "M" + x + " " + y + "h" + w; 
+        };
+        var drawVLine = function(x,y,h) {
+            path += "M" + x + " " + y + "v" + h; 
+        };
+
+        var textShift;
+        var baseline;
+        // render base line
+        if (isHorizontal) {
+            baseline = _height-1;
+            if (_mode == "bottom"){
+                drawHLine(0,0,_size);
+                textShift = InteractiveDataDisplay.tickLength;
+            } else { // top
+                drawHLine(0, baseline, _size);
+                textShift = -textOffset;
+            }
+        }
+        else {
+            baseline = _width-1;
+            if (_mode == "right"){ 
+                drawVLine(0, 0, _size);
+                textShift = InteractiveDataDisplay.tickLength + textOffset;
+            }
+            else {
+                drawVLine(baseline,0,_size);
+                textShift = 0;
+            }
+        }      
+        
+        // render ticks and labels (if necessary)
+        // if range is single point - render only label in the middle of axis
+        var x, shift;
+        var len = _ticks.length;
+        var fontSize, fontFamily;
+        if(len > 0){
+            var style = window.getComputedStyle(_ticks[0].label[0], null);
+            fontSize = parseFloat(style.getPropertyValue('font-size')); 
+            fontFamily = style.getPropertyValue('font-family');
+        }
+        for (var i = 0; i < len; i++) {
+            x = ticksInfo[i].position;
+            if (isHorizontal) { // horizontal (top and bottom)
+                shift = ticksInfo[i].width / 2;
+                if (minTicks) {
+                    if (i == 0) shift *= 2;
+                    else if (i == len - 1) shift = 0;
+                }
+                else {
+                    if (i == 0 && x < shift) shift = 0;
+                    else if (i == len - 1 && x + shift > _size) shift *= 2;
+                }
+
+                if (!_ticks[i].invisible) {
+                    if(_mode == "top") drawVLine(x, baseline, -InteractiveDataDisplay.tickLength);
+                    else drawVLine(x, 0, InteractiveDataDisplay.tickLength); // bottom long tick
+                }
+                
+                if (_ticks[i].label)
+                    svg.text(_tickSource.getInnerText(_ticks[i].position))
+                        .translate(x - shift, textShift)
+                        .font({
+                            family: fontFamily,
+                            size: fontSize
+                        });
+            }
+            else { // vertical (left and right)
+                x = (_size - 1) - x;
+                shift = ticksInfo[i].height * 0.66;
+                if (minTicks) {
+                    if (i == 0) shift = 0;
+                    else if (i == len - 1) shift *= 2;
+                }
+                else {
+                    if (i == 0 && x + shift > _size) shift *= 2;
+                    else if (i == len - 1 && x < shift) shift = 0;
+                }
+
+                if (!_ticks[i].invisible)
+                    if(_mode == "left") drawHLine(baseline, x, -InteractiveDataDisplay.tickLength);
+                    else drawHLine(0, x, InteractiveDataDisplay.tickLength);
+                    
+                if (_ticks[i].label) {
+                    var leftShift = 0;                    
+                    if (_mode == "left")
+                        leftShift = text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width) + textShift;
+                    svg.text(_tickSource.getInnerText(_ticks[i].position))
+                        .translate(leftShift + textShift, x-shift)
+                        .font({
+                            family: fontFamily,
+                            size: fontSize
+                        });
+                }
+            }
+        }
+        
+        // get and draw minor ticks
+        var smallTicks = _tickSource.getSmallTicks(_ticks);
+        if (smallTicks.length > 0) {
+            // check for enough space
+            var l = Math.abs(that.getCoordinateFromTick(smallTicks[1]) - that.getCoordinateFromTick(smallTicks[0]));
+            for (var k = 1; k < smallTicks.length - 1; k++) {
+                l = Math.min(l, Math.abs(that.getCoordinateFromTick(smallTicks[k + 1]) - that.getCoordinateFromTick(smallTicks[k])));
+            }
+
+            if (l >= InteractiveDataDisplay.minTickSpace) {
+                for (var i = 0, len = smallTicks.length; i < len; i++) {
+                    x = that.getCoordinateFromTick(smallTicks[i]);
+                    if (_mode == "bottom") drawVLine(x, 0, smallTickLength);
+                    else if (_mode == "top") drawVLine(x, baseline, -smallTickLength);
+                    else if (_mode == "left") drawHLine(baseline, _size - x, -smallTickLength);
+                    else if (_mode == "right") drawHLine(0.5, _size - x, smallTickLength);
+                }
+            }
+        } 
+        svg.path(path).stroke(strokeStyle).fill('none');    
     };
 
     // append all new label divs to host and add class for them
@@ -582,7 +703,7 @@ InteractiveDataDisplay.TickSource = function () {
 
     // function to get div's innerText
     this.getInnerText = function (x) {
-        return x;
+        return x.toString();
     };
 
     // make all not used divs invisible (final step)
@@ -629,10 +750,10 @@ InteractiveDataDisplay.NumericTickSource = function () {
     var delta, beta;
 
     this.getInnerText = function (x) {
-        if (x == 0) return x;
+        if (x == 0) return x.toString();
         else if (beta >= InteractiveDataDisplay.minNumOrder)
             return this.round(x / Math.pow(10, beta), -1) + "e+" + beta;
-        return this.round(x, beta);
+        return this.round(x, beta).toString();
     };
 
     this.getTicks = function (_range) {
@@ -801,7 +922,7 @@ InteractiveDataDisplay.LogarithmicTickSource = function () {
     // redefined function for innerText - if degree is less than specific constant then render full number otherwise render 10 with degree
     this.getInnerText = function (x) {
         if (Math.abs(x) < InteractiveDataDisplay.minLogOrder)
-            return Math.pow(10, x);
+            return Math.pow(10, x).toString();
         else
             return "10<sup>" + x + "</sup>";
     };
