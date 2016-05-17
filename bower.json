@@ -56,4 +56,5 @@
     "jasmine": "~2.3.4",
     "requirejs": "~2.1.22",
     "require-css": "~0.1.8"
-  }}
+  }
+}

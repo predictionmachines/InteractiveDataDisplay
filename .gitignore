@@ -7,7 +7,7 @@
 /idd.heatmapworker.js
 /.grunt/**
 /.tscache/**
-/typings/**
+# /typings/**
 # JS Map files
 /src/viewer/*.js.map
 # JS files
