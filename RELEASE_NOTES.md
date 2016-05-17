@@ -1,3 +1,8 @@
+##### 1.3.0 (unreleased)
+
+New features:
+ - Export to SVG: figure, numeric axis and polyline can be exported to SVG. Uses SVG.js. See method `Plot.exportToSvg()` and the sample [Vector export](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/samples/Vector%20export.html#L22).
+
 ## 1.2.1 (April 26, 2016)
 
  - Updated UI:
