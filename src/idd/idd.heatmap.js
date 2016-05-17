@@ -232,16 +232,18 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         if (_originalInterval == undefined && _interval == undefined) _originalInterval = data.interval;
         _interval = data.interval;
         if (f["median"]) {//uncertainty
-            var div = $("<div></div>")
-                .attr("data-idd-name", "heatmap__nav_")
-                .appendTo(this.host);
-            _heatmap_nav = new InteractiveDataDisplay.Heatmap(div, this.master);
-            _heatmap_nav.getLegend = function () {
-                return undefined;
-            };
-            this.addChild(_heatmap_nav);
-            _heatmap_nav.getTooltip = function (xd, yd, xp, yp) {
-                return undefined;
+            if (_heatmap_nav == undefined) {
+                var div = $("<div></div>")
+                    .attr("data-idd-name", "heatmap__nav_")
+                    .appendTo(this.host);
+                _heatmap_nav = new InteractiveDataDisplay.Heatmap(div, this.master);
+                _heatmap_nav.getLegend = function () {
+                    return undefined;
+                };
+                this.addChild(_heatmap_nav);
+                _heatmap_nav.getTooltip = function (xd, yd, xp, yp) {
+                    return undefined;
+                }
             }
             if (isOneDimensional) {
                 var r = makeHeatmapData(x, y, {
@@ -280,6 +282,10 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 updateInterval();
             }
         } else {
+            if (_heatmap_nav) {
+                _heatmap_nav.remove();
+            }
+            _heatmap_nav = undefined;
             if (isOneDimensional) {
                 var r = makeHeatmapData(x, y, {
                     v: f
@@ -661,7 +667,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             }
         }
         _heatmap_nav.draw({ x: _heatmap_nav.x, y: _heatmap_nav.y, values: shadeData, opacity: 0.5, colorPalette: InteractiveDataDisplay.ColorPalette.parse("0=#00000000=#00000080=1") });
-        _heatmap_nav.host.css("visibility", "visible");
+        _heatmap_nav.isVisible = true;
     };
     this.getTooltip = function (xd, yd, xp, yp, changeInterval) {
         if (_f === undefined)
@@ -725,7 +731,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                         updateInterval();
                     } else {
                         _interval = undefined;
-                        _heatmap_nav.host.css("visibility", "hidden");
+                        _heatmap_nav.isVisible = false;
                     }
                 }
                 else {
@@ -770,18 +776,6 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             loadOpacity(value);
 
             this.fireAppearanceChanged("opacity");
-            this.requestNextFrame();
-        },
-        configurable: false
-    });
-    Object.defineProperty(this, "interval", {
-        get: function () { return _interval; },
-        set: function (value) {
-            if (value == _interval) return;
-            _interval = value;
-            _originalInterval = value;
-            updateInterval();
-            this.fireAppearanceChanged("interval");
             this.requestNextFrame();
         },
         configurable: false
