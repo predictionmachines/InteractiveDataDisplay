@@ -436,7 +436,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             baseline = _height-1;
             if (_mode == "bottom"){
                 drawHLine(0,0,_size);
-                textShift = InteractiveDataDisplay.tickLength;
+                textShift = InteractiveDataDisplay.tickLength - textOffset;
             } else { // top
                 drawHLine(0, baseline, _size);
                 textShift = -textOffset;
@@ -483,7 +483,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
                 
                 if (_ticks[i].label)
-                    svg.text(_tickSource.getInnerText(_ticks[i].position))
+                    _tickSource.renderToSvg(_ticks[i], svg)
                         .translate(x - shift, textShift)
                         .font({
                             family: fontFamily,
@@ -510,7 +510,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                     var leftShift = 0;                    
                     if (_mode == "left")
                         leftShift = text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width) + textShift;
-                    svg.text(_tickSource.getInnerText(_ticks[i].position))
+                    _tickSource.renderToSvg(_ticks[i], svg)
                         .translate(leftShift + textShift, x-shift)
                         .font({
                             family: fontFamily,
@@ -764,6 +764,10 @@ InteractiveDataDisplay.NumericTickSource = function () {
 
         return createTicks();
     };
+    
+    this.renderToSvg = function (tick, svg) {
+        return svg.text(that.getInnerText(tick.position));
+    }
 
     var createTicks = function () {
         var ticks = [];
@@ -1060,6 +1064,10 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var delta = _ticks.length - _labels.length;
 
     var rotateLabels = params && params.rotate ? params.rotate : false;
+    
+    this.renderToSvg = function (tick, svg) {
+        return svg.text(tick.text);
+    }
 
     this.getTicks = function (_range) {
         InteractiveDataDisplay.LabelledTickSource.prototype.getTicks.call(this, _range);
@@ -1127,7 +1135,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
                     if (rotateLabels) {
                         div.addClass('idd-verticalText');
                     }
-                    ticks[l] = { position: value, label: div };
+                    ticks[l] = { position: value, label: div, text: _labels[m] };
                     l++;
                 }
                 m += currStep;
@@ -1166,7 +1174,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
                             div.addClass('idd-verticalText');
                             div.css("transform", "rotate(-90deg) scale(" + scale + ", " + scale + ")");
                         }
-                        ticks[l] = { position: v, label: div, invisible: true };
+                        ticks[l] = { position: v, label: div, invisible: true, text: _labels[m1-1] };
                         l++;
                     }
                 }
@@ -1214,13 +1222,13 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
             if (rotateLabels) {
                 div.addClass('idd-verticalText');
             }
-            ticks[0] = { position: _ticks[0], label: div };
+            ticks[0] = { position: _ticks[0], label: div, text: _labels[0] };
 
             div = that.getDiv(_labels[_labels.length - 1]);
             if (rotateLabels) {
                 div.addClass('idd-verticalText');
             }
-            ticks[1] = { position: _ticks[_ticks.length - 1], label: div };
+            ticks[1] = { position: _ticks[_ticks.length - 1], label: div, text: _labels[_labels.length - 1] };
             that.refreshDivs();
         }
         return ticks;

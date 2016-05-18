@@ -566,7 +566,7 @@ InteractiveDataDisplay.Figure = function (div, master) {
     this.exportContentToSvg = function(plotRect, screenSize, svg) {
         var left_g = svg.group();
         var leftLine = 0;
-        for(var i = 0; i < leftChildren.length; i++){
+        for(var i = leftChildren.length; --i>=0; ){
             var child = leftChildren[i];
             var child_g = left_g.group();
             child_g.translate(leftLine, 0);
@@ -578,7 +578,7 @@ InteractiveDataDisplay.Figure = function (div, master) {
         
         var top_g = svg.group();
         var topLine = 0;
-        for(var i = 0; i < topChildren.length; i++){
+        for(var i = topChildren.length; --i>=0; ){
             var child = topChildren[i];
             var child_g = top_g.group();
             child_g.translate(leftLine, topLine);
