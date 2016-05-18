@@ -547,8 +547,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (childPlot.master !== this.master)
                 childPlot.onAddedTo(this.master); // changing master 
             childPlot.order = childPlot.order == Number.MAX_SAFE_INTEGER ? childPlot.order : (InteractiveDataDisplay.Utils.getMaxOrder(this.master) + 1);
+            if (childPlot.order < Number.MAX_SAFE_INTEGER) childPlot.host.css("z-index", childPlot.order);
             _children.push(childPlot);
-
             if (this.master._sharedCanvas) {
                 this.master._sharedCanvas.remove();
                 this.master._sharedCanvas = undefined;
@@ -1230,8 +1230,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                                 xd = my_xd;
                                 yd = my_yd;
 
+                                var formatter1 = new InteractiveDataDisplay.AdaptiveFormatter(_master.visibleRect.x, _master.visibleRect.x + _master.visibleRect.width);
+                                var formatter2 = new InteractiveDataDisplay.AdaptiveFormatter(_master.visibleRect.y, _master.visibleRect.y + _master.visibleRect.height);
                                 if (_tooltipSettings === undefined || _tooltipSettings.showCursorCoordinates !== false)
-                                    tooltips.push("<div class='idd-tooltip-coordinates'>" + xd + ", " + yd + "</div>");
+                                    tooltips.push("<div class='idd-tooltip-coordinates'>" + formatter1.toString(xd) + ", " + formatter2.toString(yd) + "</div>");
                             }
                             tooltips.push(myTooltip);
                         }
@@ -1466,7 +1468,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return plot;
         };
 
-        this.heatmap = function (name, data) {
+        this.heatmap = function (name, data, titles) {
             var plot = this.get(name);
             if (!plot) {
                 var div = $("<div></div>")
@@ -1477,7 +1479,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 this.addChild(plot);
             }
             if (data !== undefined) {
-                plot.draw(data);
+                plot.draw(data, titles);
             }
             return plot;
         };
@@ -2002,7 +2004,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
     // Renders a function y=f(x) as a polyline.
     InteractiveDataDisplay.Polyline = function (div, master) {
-
+        var that = this;
         // Initialization (#1)
         var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
         var initialData = initializer(div);
@@ -2012,6 +2014,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         var _y;
         var _x;
+        var _y_u68, _y_l68, _y_u95, _y_l95;
+        var _fill68 = 'blue';
+        var _fill95 = 'pink';
         var _thickness = 1;
         var _stroke = '#4169ed';
         var _lineCap = 'butt';
@@ -2023,10 +2028,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _stroke = typeof initialData.stroke != "undefined" ? initialData.stroke : _stroke;
             _lineCap = typeof initialData.lineCap != "undefined" ? initialData.lineCap : _lineCap;
             _lineJoin = typeof initialData.lineJoin != "undefined" ? initialData.lineJoin : _lineJoin;
+            _fill68 = typeof initialData.fill68 != "undefined" ? initialData.fill68 : _fill68;
+            _fill95 = typeof initialData.fill95 != "undefined" ? initialData.fill95 : _fill95;
         }
 
         this.draw = function (data) {
-            var y = data.y;
+            var y = data.y.median ? data.y.median : data.y;
             if (!y) throw "Data series y is undefined";
             var n = y.length;
 
@@ -2036,6 +2043,96 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (n != data.x.length) throw "Data series x and y have different lengths";
             _y = y;
             _x = data.x;
+                
+            var y_u68 = data.y.upper68;
+            if (y_u68 && y_u68.length !== n)
+                throw "Data series y_u68 and y_median have different lengths";
+
+            var y_l68 = data.y.lower68;
+            if (y_l68 && y_l68.length !== n)
+                throw "Data series y_l68 and y_median have different lengths";
+
+            var y_u95 = data.y.upper95;
+            if (y_u95 && y_u95.length !== n)
+                throw "Data series y_u95 and y_median have different lengths";
+
+            var y_l95 = data.y.lower95;
+            if (y_l95 && y_l95.length !== n)
+                throw "Data series y_l95 and y_median have different lengths";
+            
+            _y_u68 = y_u68;
+            _y_l68 = y_l68;
+            _y_u95 = y_u95;
+            _y_l95 = y_l95;
+
+            //sort
+            var doSort = (!data.treatAs || data.treatAs == "function") && !InteractiveDataDisplay.Utils.isOrderedArray(_x);
+            if (InteractiveDataDisplay.Utils.isArray(data.y)) { // certain values
+                _y = y;
+                if (doSort) {
+                    var len = Math.min(_x.length, y.length);
+                    _y = InteractiveDataDisplay.Utils.cutArray(y, len);
+                    _x = InteractiveDataDisplay.Utils.cutArray(_x, len);
+                    if (doSort) {
+                        var forSort = [];
+                        for (var i = 0; i < len; i++)
+                            if (!isNaN(_x[i])) {
+                                forSort.push({
+                                    x: _x[i],
+                                    y: _y[i],
+                                });
+                            }
+                        forSort.sort(function (a, b) { return a.x - b.x; });
+                        _y = [];
+                        _x = [];
+                        for (var i = 0; i < forSort.length; i++) {
+                            _y.push(forSort[i].y);
+                            _x.push(forSort[i].x);
+                        }
+                    }
+                }
+            } else { // uncertain values
+                var y = data.y;
+                var len = Math.min(_x.length, y.median.length);
+                if (y.upper68 && y.lower68) len = Math.min(len, Math.min(y.upper68.length, y.lower68.length));
+                if (y.upper95 && y.lower95) len = Math.min(len, Math.min(y.upper95.length, y.lower95.length));
+                _y = InteractiveDataDisplay.Utils.cutArray(y.median, len);
+                _y_u68 = InteractiveDataDisplay.Utils.cutArray(y.upper68, len);
+                _y_l68 = InteractiveDataDisplay.Utils.cutArray(y.lower68, len);
+                _y_u95 = InteractiveDataDisplay.Utils.cutArray(y.upper95, len);
+                _y_l95 = InteractiveDataDisplay.Utils.cutArray(y.lower95, len);
+                _x = InteractiveDataDisplay.Utils.cutArray(_x, len);
+                if (doSort) {
+                    var forSort = [];
+                    for (var i = 0; i < len; i++) {
+                        if (!isNaN(_x[i])) {
+                            forSort.push({
+                                x: _x[i],
+                                y: _y[i],
+                                y_u68: _y_u68[i],
+                                y_l68: _y_l68[i],
+                                y_u95: _y_u95[i],
+                                y_l95: _y_l95[i]
+                            });
+                        }
+                    }
+                    forSort.sort(function (a, b) { return a.x - b.x; });
+                    _y = [];
+                    _y_u68 = [];
+                    _y_l68 = [];
+                    _y_u95 = [];
+                    _y_l95 = [];
+                    _x = [];
+                    for (var i = 0; i < forSort.length; i++) {
+                        _y.push(forSort[i].y);
+                        _y_u68.push(forSort[i].y_u68);
+                        _y_l68.push(forSort[i].y_l68);
+                        _y_u95.push(forSort[i].y_u95);
+                        _y_l95.push(forSort[i].y_l95);
+                        _x.push(forSort[i].x);
+                    }
+                }
+            }
 
             // styles:
             _thickness = typeof data.thickness != "undefined" ? data.thickness : _thickness;
@@ -2044,6 +2141,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _stroke = typeof data.stroke != "undefined" ? data.stroke : _stroke;
             _lineCap = typeof data.lineCap != "undefined" ? data.lineCap : _lineCap;
             _lineJoin = typeof data.lineJoin != "undefined" ? data.lineJoin : _lineJoin;
+            _fill68 = typeof data.fill68 != "undefined" ? data.fill68 : _fill68;
+            _fill95 = typeof data.fill95 != "undefined" ? data.fill95 : _fill95;
 
             this.invalidateLocalBounds();
 
@@ -2055,15 +2154,21 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.computeLocalBounds = function (step, computedBounds) {
             var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
             var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
-            return InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_x, _y, dataToPlotX, dataToPlotY);
+           
+            var mean = InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_x, _y, dataToPlotX, dataToPlotY);
+            var u68 = InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_x, _y_u68, dataToPlotX, dataToPlotY);
+            var l68 = InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_x, _y_l68, dataToPlotX, dataToPlotY);
+            var u95 = InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_x, _y_u95, dataToPlotX, dataToPlotY);
+            var l95 = InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_x, _y_l95, dataToPlotX, dataToPlotY);
+
+            return InteractiveDataDisplay.Utils.unionRects(mean, InteractiveDataDisplay.Utils.unionRects(u68, InteractiveDataDisplay.Utils.unionRects(l68, InteractiveDataDisplay.Utils.unionRects(u95, l95))));
+
         };
 
         // Returns 4 margins in the screen coordinate system
         this.getLocalPadding = function () {
-            var padding = _thickness / 2;
-            return { left: padding, right: padding, top: padding, bottom: padding };
+            return { left: 0, right: 0, top: 0, bottom: 0 };
         };
-
 
         this.getTooltip = function (xd, yd, px, py) {
             if (_x === undefined || _y == undefined)
@@ -2079,18 +2184,17 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var myImageData = context.getImageData(sx, sy, 1, 1);
             if (myImageData.data[0] === 0 && myImageData.data[1] === 0 && myImageData.data[2] === 0 && myImageData.data[3] === 0)
                 return undefined;
-            return "<div>" + (this.name || "Polyline") + "</div>";
+            var $toolTip = $("<div></div>")
+            $("<div></div>").addClass('idd-tooltip-name').text((this.name || "polyline")).appendTo($toolTip);
+            return $toolTip;
         };
-
-        this.renderCore = function (plotRect, screenSize) {
-            InteractiveDataDisplay.Polyline.prototype.renderCore.call(this, plotRect, screenSize);
-
+        var renderLine = function (_x, _y, _stroke, _thickness, plotRect, screenSize, context) {
             if (_x === undefined || _y == undefined)
                 return;
             var n = _y.length;
             if (n == 0) return;
 
-            var t = this.getTransform();
+            var t = that.getTransform();
             var dataToScreenX = t.dataToScreenX;
             var dataToScreenY = t.dataToScreenY;
 
@@ -2100,7 +2204,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var xmin = 0, xmax = w_s;
             var ymin = 0, ymax = h_s;
 
-            var context = this.getContext(true);
+            context.globalAlpha = 1.0;
             context.strokeStyle = _stroke;
             context.fillStyle = _stroke; // for single points surrounded with missing values
             context.lineWidth = _thickness;
@@ -2200,6 +2304,14 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             } else {
                 context.stroke(); // finishing previous segment (it is broken by missing value)
             }
+        }
+        this.renderCore = function (plotRect, screenSize) {
+            InteractiveDataDisplay.Polyline.prototype.renderCore.call(this, plotRect, screenSize);
+
+            var context = this.getContext(false);
+            InteractiveDataDisplay.Area.render.call(this, _x, _y_l95, _y_u95, _fill95, plotRect, screenSize, context, 0.5);
+            InteractiveDataDisplay.Area.render.call(this, _x, _y_l68, _y_u68, _fill68, plotRect, screenSize, context, 0.5);
+            renderLine(_x, _y, _stroke, _thickness, plotRect, screenSize, context);
         };
         
         this.renderCoreSvg = function (plotRect, screenSize, svg) {
@@ -2377,12 +2489,70 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             configurable: false
         });
 
+        Object.defineProperty(this, "fill68", {
+            get: function () { return _fill68; },
+            set: function (value) {
+                if (value == _fill68) return;
+                _fill68 = value;
+
+                this.fireAppearanceChanged("fill68");
+                this.requestNextFrameOrUpdate();
+            },
+            configurable: false
+        });
+
+        Object.defineProperty(this, "fill95", {
+            get: function () { return _fill95; },
+            set: function (value) {
+                if (value == _fill95) return;
+                _fill95 = value;
+
+                this.fireAppearanceChanged("fill95");
+                this.requestNextFrameOrUpdate();
+            },
+            configurable: false
+        });
         this.getLegend = function () {
             var canvas = $("<canvas></canvas>");
             
             canvas[0].width = 40;
             canvas[0].height = 40;
             var ctx = canvas.get(0).getContext("2d");
+            var isUncertainData95 = _y_u95 != undefined && _y_l95 != undefined;
+            var isUncertainData68 = _y_u68 != undefined && _y_l68 != undefined;
+            if (isUncertainData95) {
+                ctx.globalAlpha = 0.5;
+                ctx.strokeStyle = _fill95;
+                ctx.fillStyle = _fill95;
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, 20);
+                ctx.lineTo(20, 40);
+                ctx.lineTo(40, 40);
+                ctx.lineTo(40, 20);
+                ctx.lineTo(20, 0);
+                ctx.lineTo(0, 0);
+                ctx.fill();
+                ctx.stroke();
+                ctx.closePath();
+            }
+            if (isUncertainData68) {
+                ctx.globalAlpha = 0.5;
+                ctx.strokeStyle = _fill68;
+                ctx.fillStyle = _fill68;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, 10);
+                ctx.lineTo(30, 40);
+                ctx.lineTo(40, 40);
+                ctx.lineTo(40, 30);
+                ctx.lineTo(10, 0);
+                ctx.lineTo(0, 0);
+                ctx.fill();
+                ctx.stroke();
+                ctx.closePath();
+            }
             ctx.strokeStyle = _stroke;
             ctx.lineWidth = _thickness;
             ctx.moveTo(0, 0);
@@ -2402,6 +2572,41 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                         setName();
 
                     ctx.clearRect(0, 0, canvas[0].width, canvas[0].height);
+                    var isUncertainData95 = _y_u95 != undefined && _y_l95 != undefined;
+                    var isUncertainData68 = _y_u68 != undefined && _y_l68 != undefined; 
+                    if (isUncertainData95) {
+                        ctx.globalAlpha = 0.5;
+                        ctx.strokeStyle = _fill95;
+                        ctx.fillStyle = _fill95;
+
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(0, 20);
+                        ctx.lineTo(20, 40);
+                        ctx.lineTo(40, 40);
+                        ctx.lineTo(40, 20);
+                        ctx.lineTo(20, 0);
+                        ctx.lineTo(0, 0);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+                    if (isUncertainData68) {
+                        ctx.globalAlpha = 0.5;
+                        ctx.strokeStyle = _fill68;
+                        ctx.fillStyle = _fill68;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(0, 10);
+                        ctx.lineTo(30, 40);
+                        ctx.lineTo(40, 40);
+                        ctx.lineTo(40, 30);
+                        ctx.lineTo(10, 0);
+                        ctx.lineTo(0, 0);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
                     ctx.strokeStyle = _stroke;
                     ctx.lineWidth = _thickness;
                     ctx.moveTo(0, 0);

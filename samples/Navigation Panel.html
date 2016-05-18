@@ -13,9 +13,21 @@
 
     <script type="text/javascript">
         $(document).ready(function () {
+            var state = 0;
             var chart = InteractiveDataDisplay.asPlot($("#chart"));
-            var navigation = $('#navigationPanel');
-            InteractiveDataDisplay.NavigationPanel(chart, navigation);
+            var panel;
+            $("#but").click(function () {
+                if (state == 0) { // add navigation
+                    panel = new InteractiveDataDisplay.NavigationPanel(chart, $('#navigationPanel'));
+                    $("#but").attr("value", "Remove navigation");
+                    state = 1;
+                }
+                else { // remove navigation
+                    panel.remove();
+                    $("#but").attr("value", "Add navigation");
+                    state = 0;
+                }
+            });
         });
     </script>
 </head>
@@ -329,5 +341,6 @@
         </div>
     </div>
     <div id="navigationPanel" style="float:left; margin:5px;"></div>
+    <input type="button" id="but" value="Add Navigation" />
 </body>
 </html>

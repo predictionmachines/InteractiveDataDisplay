@@ -59,7 +59,7 @@
     text-align: center;
     font-size: smaller;
 }
-
+/*ToolTips*/
 .idd-tooltip
 {
     background-color: rgb(249, 251, 195);
@@ -72,6 +72,7 @@
     padding: 5px;
     position: absolute;
     display: block;
+    box-sizing: content-box;
 }
 
 .idd-tooltip-coordinates
@@ -82,6 +83,34 @@
 .idd-tooltip-item
 {
     margin-bottom: 5px;
+}
+.idd-tooltip-name 
+{
+    font-size:14px;
+    font-weight:bold;
+}
+.idd-tooltip-compositevalue 
+{
+    margin-left: 8px;
+    box-sizing: content-box;
+}
+.idd-tooltip-itemvalues {
+    margin-bottom: 8px;
+    margin-left: 0px;
+    box-sizing: content-box;
+}
+.checkButton {
+    width: 13px;
+    height: 13px;
+    margin-top: 3px;
+    margin-right: 5px;
+    cursor: pointer;
+    background-color: #F1F9FF;
+    border: 1px solid #888;
+    float: left;
+}
+.checkButton-checked {
+    background-color: #365C95;
 }
 
 .idd-verticalTitle
@@ -124,6 +153,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     list-style-type: none;
+    box-sizing: content-box;
 }
 .idd-legend-item
 {
@@ -138,6 +168,7 @@
     cursor: pointer;
     padding-right: 4px;
     padding-left:4px;
+    box-sizing: content-box;
 }
 .idd-legend-item-title
 {    
@@ -148,6 +179,7 @@
     padding-top: 16px;
     padding-right: 8px;
     height: 24px;
+    box-sizing: content-box;
 }
 .idd-legend-item-title-name
 {
@@ -169,6 +201,7 @@
     width: 24px;
     height: 24px;
     display:inline-block;
+    box-sizing: content-box;
 }
 .idd-legend-item-info
 {
@@ -176,6 +209,7 @@
     padding-bottom: 16px;
     padding-right: 16px;
     padding-left: 16px;
+    box-sizing: content-box;
 }
 /*elements for compact legend*/
 .idd-legend-compact
@@ -190,6 +224,7 @@
     overflow: scroll;
     overflow-y: auto;
     overflow-x: hidden;
+    box-sizing: content-box;
 }
 .idd-legend-item-compact
 {
@@ -198,6 +233,7 @@
     height: auto;
     background-color: rgba(255,255,255,0.5);
     border-bottom: 1px solid rgba(0,0,0,0.12); 
+    box-sizing: content-box;
 }
 .idd-legend-item-title-compact
 {    
@@ -205,6 +241,7 @@
     vertical-align: top;
     padding: 6px;
     height: 18px;
+    box-sizing: content-box;
 }
 .idd-legend-item-title-name-compact
 {
@@ -226,6 +263,7 @@
     width: 18px;
     height: 18px;
     display:inline-block;
+    box-sizing: content-box;
 }
 .idd-legend-item-info-compact
 {
@@ -233,6 +271,7 @@
     padding-bottom: 6px;
     padding-right: 6px;
     padding-left: 6px;
+    box-sizing: content-box;
 }
 /*legend elements*/
 .idd-legend-item-property

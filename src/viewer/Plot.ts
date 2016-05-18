@@ -2,7 +2,6 @@
 /// <reference path="ViewState.ts" />
 /// <reference path="onScreenNavigation.ts" />
 /// <reference path="PlotRegistry.ts" />
-/// <reference path="UncertainLinePlot.ts" />
 /// <reference path="PlotViewer.ts" />
 module Plot {
     export module MarkerShape {
@@ -45,8 +44,6 @@ module Plot {
         Function: string;
         Trajectory: string;
     }
-	/**SizeRange is { min: number; max: number }*/
-    export type SizeRange = { min: number, max: number };
     /**Color is a string that supports same color definition as in CSS: "blue", "#606060", "rgba(10,150,200,100)"*/
     export type Color = string;
     /**ColorPalette is a string that has specific syntax to define palettes, e.g. "reg,green,blue" or "0=red=white=blue=100"*/
@@ -58,18 +55,20 @@ module Plot {
     export type BandTitles = { x?: string, y1?: string, y2?: string }; 
     export type BoxPlotTitles = { x?: string, y?: string };
     export type LineDefinition = {
-        x: number[];
+        x?: number[];
         y: number[] | Quantiles;
         stroke?: Color;
         thickness?: number;
         treatAs?: string;
+        lineCap?: string;
+        lineJoin?: string;
         fill68?: Color;
         fill95?: Color;
         displayName?: string;
         titles?: LineTitles;
     }
     export type BandDefinition = {
-        x: number[];
+        x?: number[];
         y1: number[];
         y2: number[];
         fill?: Color;
@@ -85,14 +84,14 @@ module Plot {
         titles?: BoxPlotTitles;
     }
     export type MarkersDefinition = {
-        x: number[];
+        x?: number[];
         y: number[];
         shape?: string;
         color?: Color | number[] | Quantiles;
         colorPalette?: ColorPalette;
         size?: number | number[] | Quantiles;
-        sizeRange?: SizeRange;
-        borderColor?: Color;
+        sizePalette?: Object;
+        border?: Color;
         displayName?: string
         titles?: MarkersTitles;
     }
@@ -119,6 +118,7 @@ module Plot {
     export function boxplot(element: BoxPlotDefinition) {
         var plotInfo = <ChartViewer.PlotInfo><any>element;
         plotInfo.kind = "markers";
+        plotInfo["shape"] = "boxwhisker";
         return plotInfo;
     }
     export function markers(element: MarkersDefinition) {

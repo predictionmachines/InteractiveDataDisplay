@@ -222,4 +222,8 @@
         coords.x = (event.pageX - offset.left - xhalf) / xhalf;
         coords.y = (event.pageY - offset.top - xhalf) / xhalf;
     };
+    this.remove = function () {
+        div.removeClass('idd-navigation-container');
+        div[0].innerHTML = "";
+    };
 }

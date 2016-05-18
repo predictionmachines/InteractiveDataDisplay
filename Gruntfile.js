@@ -34,6 +34,7 @@
                     "src/idd/idd.settings.js",
                     "src/idd/idd.utils.js",
                     "src/idd/idd.boundplots.js",
+                    "src/idd/idd.formatter.js",
                     "src/idd/idd.base.js",
                     "src/idd/idd.readers.js",
                     "src/idd/idd.axis.js",

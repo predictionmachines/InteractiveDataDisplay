@@ -56,6 +56,7 @@
                 if(n > 0 && typeof(data.color[0]) === "number"){ // color is a data series                 
                     var palette = data.colorPalette;
                     if(palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
+                    if (typeof palette == 'string') palette = new InteractiveDataDisplay.ColorPalette.parse(palette);
                     if (palette != undefined && palette.isNormalized) {
                         var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
                         r = InteractiveDataDisplay.Utils.makeNonEqual(r);
@@ -97,6 +98,7 @@
                             sizes[i] = palette.getSize(size)
                     }
                 } else { // 'size' contains values in pixels
+                    sizes = data.size;
                     data.sizeMax = InteractiveDataDisplay.Utils.getMax(data.size);
                 }
             } else { // sizes is a constant

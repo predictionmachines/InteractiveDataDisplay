@@ -1,5 +1,4 @@
 ﻿// Area plot takes data with coordinates named 'x', 'y1', 'y2' and a fill colour named 'fill'. 
-
 InteractiveDataDisplay.Area = function (div, master) {
     var that = this;
     var defaultFill = "rgba(0,0,0,0.2)";
@@ -68,66 +67,12 @@ InteractiveDataDisplay.Area = function (div, master) {
     this.getLocalPadding = function () {
         return { left: 0, right: 0, top: 0, bottom: 0 };
     };
-
+    
     this.renderCore = function (plotRect, screenSize) {
         InteractiveDataDisplay.Area.prototype.renderCore.call(this, plotRect, screenSize);
         var context = that.getContext(true);
 
-        if (_x === undefined || _y1 == undefined || _y2 == undefined)
-            return;
-        var n = _y1.length;
-        if (n == 0) return;
-
-        var t = that.getTransform();
-        var dataToScreenX = t.dataToScreenX;
-        var dataToScreenY = t.dataToScreenY;
-
-        // size of the canvas
-        var w_s = screenSize.width;
-        var h_s = screenSize.height;
-        var xmin = 0, xmax = w_s;
-        var ymin = 0, ymax = h_s;
-
-        context.fillStyle = _fill;
-
-        //Drawing polygons
-        var polygons = [];
-        var curInd = undefined;
-        for (var i = 0; i < n; i++) {
-            if (isNaN(_x[i]) || isNaN(_y1[i]) || isNaN(_y2[i])) {
-                if (curInd === undefined) {
-                    curInd = i;
-                }
-                else {
-                    polygons.push([curInd, i]);
-                    curInd = undefined;
-                }
-            } else {
-                if (curInd === undefined) {
-                    curInd = i;
-                }
-                else {
-                    if (i === n - 1) {
-                        polygons.push([curInd, i]);
-                        curInd = undefined;
-                    }
-                }
-            }
-        }
-
-        var nPoly = polygons.length;
-        for (var i = 0; i < nPoly; i++) {
-            context.beginPath();
-            var curPoly = polygons[i];
-            context.moveTo(dataToScreenX(_x[curPoly[0]]), dataToScreenY(_y1[curPoly[0]]));
-            for (var j = curPoly[0] + 1; j <= curPoly[1]; j++) {
-                context.lineTo(dataToScreenX(_x[j]), dataToScreenY(_y1[j]));
-            }
-            for (var j = curPoly[1]; j >= curPoly[0]; j--) {
-                context.lineTo(dataToScreenX(_x[j]), dataToScreenY(_y2[j]));
-            }
-            context.fill();
-        }
+        InteractiveDataDisplay.Area.render.call(this, _x, _y1, _y2, _fill, plotRect, screenSize, context);
     };
 
     // Clipping algorithms
@@ -211,3 +156,61 @@ InteractiveDataDisplay.Area = function (div, master) {
 }
 
 InteractiveDataDisplay.Area.prototype = new InteractiveDataDisplay.CanvasPlot;
+InteractiveDataDisplay.Area.render = function (_x, _y1, _y2, _fill, plotRect, screenSize, context, globalAlpha) {
+    if (_x === undefined || _y1 == undefined || _y2 == undefined)
+        return;
+    var n = _y1.length;
+    if (n == 0) return;
+
+    var t = this.getTransform();
+    var dataToScreenX = t.dataToScreenX;
+    var dataToScreenY = t.dataToScreenY;
+
+    // size of the canvas
+    var w_s = screenSize.width;
+    var h_s = screenSize.height;
+    var xmin = 0, xmax = w_s;
+    var ymin = 0, ymax = h_s;
+
+    context.globalAlpha = globalAlpha;
+    context.fillStyle = _fill;
+
+    //Drawing polygons
+    var polygons = [];
+    var curInd = undefined;
+    for (var i = 0; i < n; i++) {
+        if (isNaN(_x[i]) || isNaN(_y1[i]) || isNaN(_y2[i])) {
+            if (curInd === undefined) {
+                curInd = i;
+            }
+            else {
+                polygons.push([curInd, i]);
+                curInd = undefined;
+            }
+        } else {
+            if (curInd === undefined) {
+                curInd = i;
+            }
+            else {
+                if (i === n - 1) {
+                    polygons.push([curInd, i]);
+                    curInd = undefined;
+                }
+            }
+        }
+    }
+
+    var nPoly = polygons.length;
+    for (var i = 0; i < nPoly; i++) {
+        context.beginPath();
+        var curPoly = polygons[i];
+        context.moveTo(dataToScreenX(_x[curPoly[0]]), dataToScreenY(_y1[curPoly[0]]));
+        for (var j = curPoly[0] + 1; j <= curPoly[1]; j++) {
+            context.lineTo(dataToScreenX(_x[j]), dataToScreenY(_y1[j]));
+        }
+        for (var j = curPoly[1]; j >= curPoly[0]; j--) {
+            context.lineTo(dataToScreenX(_x[j]), dataToScreenY(_y2[j]));
+        }
+        context.fill();
+    }
+};

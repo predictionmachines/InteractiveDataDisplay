@@ -184,7 +184,7 @@ module ChartViewer {
             } else {
                 createSmallProbe(probeIcon, probe.id, undefined, iconScale);
             }
-            $("<div></div>").addClass("probeHeader-name").text("(" + transientViewState.plotXFormatter.toString(probe.location.x) + ", " + transientViewState.plotYFormatter.toString(probe.location.y) + ")").appendTo(probeHeader);
+            $("<div></div>").addClass("probeHeader-name").text(transientViewState.plotXFormatter.toString(probe.location.x) + ", " + transientViewState.plotYFormatter.toString(probe.location.y)).appendTo(probeHeader);
 
             var actionPanel = $("<div></div>").addClass("probeActionPanel").appendTo(probeDiv);
             var deleteBtn = $("<div></div>").addClass("probeCard-remove").appendTo(actionPanel);

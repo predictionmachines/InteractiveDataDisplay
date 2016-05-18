@@ -1,3 +1,7 @@
+ - Polyline plot is refactored (y may be uncertain value)
+ - Heatmap plot is refactored **(values instead of f)** Values may be uncertain value.
+ - Heatmap can get interval = {min, max}.
+
 ##### 1.3.0 (unreleased)
 
 New features:

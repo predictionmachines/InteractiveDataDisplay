@@ -53,11 +53,6 @@ declare module Plot {
         lower95: number[];
         upper95: number[];
     };
-    /**SizeRange is { min: number; max: number }*/
-    type SizeRange = {
-        min: number;
-        max: number;
-    };
     /**Color is a string that supports same color definition as in CSS: "blue", "#606060", "rgba(10,150,200,100)"*/
     type Color = string;
     /**ColorPalette is a string that has specific syntax to define palettes, e.g. "reg,green,blue" or "0=red=white=blue=100"*/
@@ -87,19 +82,21 @@ declare module Plot {
         y?: string;
     };
     type LineDefinition = {
-        x: number[];
+        x?: number[];
         y: number[] | Quantiles;
         stroke?: Color;
         thickness?: number;
         /**use Plot.LineTreatAs*/
         treatAs?: string;
+        lineCap?: string;
+        lineJoin?: string;
         fill68?: Color;
         fill95?: Color;
         displayName?: string;
         titles?: LineTitles;
     };
     type BandDefinition = {
-        x: number[];
+        x?: number[];
         y1: number[];
         y2: number[];
         fill?: Color;
@@ -115,15 +112,15 @@ declare module Plot {
         titles?: BoxPlotTitles;
     };
     type MarkersDefinition = {
-        x: number[];
+        x?: number[];
         y: number[];
         /**use Plot.MarkerShape*/
         shape?: string;
         color?: Color | number[] | Quantiles;
         colorPalette?: ColorPalette;
         size?: number | number[] | Quantiles;
-        sizeRange?: SizeRange;
-        borderColor?: Color;
+        sizePalette?: Object;
+        border?: Color;
         displayName?: string;
         titles?: MarkersTitles;
     };

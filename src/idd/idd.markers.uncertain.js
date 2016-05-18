@@ -2,12 +2,12 @@
     prepare: function (data) {
         if (!data.maxDelta) {
             var i = 0;
-            while (isNaN(data.u95[i]) || isNaN(data.l95[i])) i++;
-            var maxDelta = data.u95[i] - data.l95[i];
+            while (isNaN(data.size.upper95[i]) || isNaN(data.size.lower95[i])) i++;
+            var maxDelta = data.size.upper95[i] - data.size.lower95[i];
             i++;
-            for (; i < data.u95.length; i++)
-                if (!isNaN(data.u95[i]) && !isNaN(data.l95[i]))
-                    maxDelta = Math.max(maxDelta, data.u95[i] - data.l95[i]);
+            for (; i < data.size.upper95.length; i++)
+                if (!isNaN(data.size.upper95[i]) && !isNaN(data.size.lower95[i]))
+                    maxDelta = Math.max(maxDelta, data.size.upper95[i] - data.size.lower95[i]);
             data.maxDelta = maxDelta;
         }
         // y
@@ -61,10 +61,26 @@
 
         // sizes    
         var sizes = new Array(n);
-        if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
-        if (InteractiveDataDisplay.Utils.isArray(data.l95) && InteractiveDataDisplay.Utils.isArray(data.u95)) {
-            if (data.l95.length != n && data.u95.length != n) throw "Length of the array 'size' is different than length of the array 'y'";
+        if (InteractiveDataDisplay.Utils.isArray(data.size.lower95) && InteractiveDataDisplay.Utils.isArray(data.size.upper95)) {
+            if (data.size.lower95.length != n && data.size.upper95.length != n) throw "Length of the array 'size' is different than length of the array 'y'";
+            if (n > 0 && typeof (data.size.lower95[0]) === "number" && typeof (data.size.upper95[0]) === "number") { // color is a data series                 
+                var sizes_u95 = [];
+                var sizes_l95 = [];
+                for (var i = 0; i < n; i++) {
+                    var size_u95 = data.size.upper95[i];
+                    var size_l95 = data.size.lower95[i];
+                    if (size_u95 != size_u95 || size_l95 != size_l95)
+                        mask[i] = 1;
+                    else {
+                        sizes_u95[i] = data.size.upper95[i];
+                        sizes_l95[i] = data.size.lower95[i];
+                    }
+                }
+                data.upper95 = sizes_u95;
+                data.lower95 = sizes_l95;
+            }
         }
+        data.size = '15.0';
         for (var i = 0; i < n; i++) sizes[i] = data.size;
             data.sizeMax = data.size;
         data.size = sizes;
@@ -77,6 +93,8 @@
             data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
             data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
             data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
+            data.upper95 = InteractiveDataDisplay.Utils.applyMask(mask, data.upper95, m);
+            data.lower95 = InteractiveDataDisplay.Utils.applyMask(mask, data.lower95, m);
             if (data.individualColors)
                 data.color = InteractiveDataDisplay.Utils.applyMask(mask, data.color, m);
             var indices = Array(m);
@@ -100,7 +118,7 @@
         if (y0 > screenSize.height || y0 < 0) return;
 
         var maxSize = marker.size / 2;
-        var minSize = maxSize * (1 - (marker.u95 - marker.l95) / marker.maxDelta);
+        var minSize = maxSize * (1 - (marker.upper95 - marker.lower95) / marker.maxDelta);
         if (marker.maxDelta <= 0) minSize = NaN;
 
         InteractiveDataDisplay.Petal.drawSample(context, x0, y0, minSize, maxSize, marker.color);
@@ -244,6 +262,35 @@
         refreshColor();
         refreshSize();
         renderShape();
+    },
+    getTooltipData: function (originalData, index) {
+        var dataRow = {};
+        var formatter = {};
+        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length) {
+            formatter["x"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.x);
+            dataRow['x'] = formatter["x"].toString(originalData.x[index]);
+        }
+        if (InteractiveDataDisplay.Utils.isArray(originalData.y) && index < originalData.y.length) {
+            formatter["y"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y);
+            dataRow['y'] = formatter["y"].toString(originalData.y[index]);
+        }
+        if (InteractiveDataDisplay.Utils.isArray(originalData.color) && index < originalData.color.length) {
+            formatter["color"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.color);
+            dataRow['color'] = formatter["color"].toString(originalData.color[index]);
+        }
+        if (originalData.size) {
+            dataRow['size'] = {};
+            if (InteractiveDataDisplay.Utils.isArray(originalData.size.lower95) && index < originalData.size.lower95.length) {
+                formatter["lower95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.size.lower95);
+                dataRow['size']["lower 95%"] = formatter["lower95"].toString(originalData.size.lower95[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.size.upper95) && index < originalData.size.upper95.length) {
+                formatter["upper95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.size.upper95);
+                dataRow['size']["upper 95%"] = formatter["upper95"].toString(originalData.size.upper95[index]);
+            }
+        }
+        dataRow["index"] = index;
+        return dataRow;
     }
 };
 InteractiveDataDisplay.BullEye = {
@@ -269,22 +316,22 @@ InteractiveDataDisplay.BullEye = {
             data.border = null; // no border
 
         // colors        
-        if (InteractiveDataDisplay.Utils.isArray(data.l95) && InteractiveDataDisplay.Utils.isArray(data.u95)) {
-            if (data.l95.length != n && data.u95.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
-            if (n > 0 && typeof (data.l95[0]) === "number" && typeof (data.u95[0]) === "number") { // color is a data series                 
+        if (InteractiveDataDisplay.Utils.isArray(data.color.lower95) && InteractiveDataDisplay.Utils.isArray(data.color.upper95)) {
+            if (data.color.lower95.length != n && data.color.upper95.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
+            if (n > 0 && typeof (data.color.lower95[0]) === "number" && typeof (data.color.upper95[0]) === "number") { // color is a data series                 
                 var palette = data.colorPalette;
                 if (palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
                 if (typeof palette == 'string') palette = new InteractiveDataDisplay.ColorPalette.parse(palette);
                 if (palette != undefined && palette.isNormalized) {
-                    var r = { min: InteractiveDataDisplay.Utils.getMin(data.l95), max: InteractiveDataDisplay.Utils.getMax(data.u95) };
+                    var r = { min: InteractiveDataDisplay.Utils.getMin(data.color.lower95), max: InteractiveDataDisplay.Utils.getMax(data.color.upper95) };
                     r = InteractiveDataDisplay.Utils.makeNonEqual(r);
                     data.colorPalette = palette = palette.absolute(r.min, r.max);
                 }
                 var colors_u95 = [];
                 var colors_l95 = [];
                 for (var i = 0; i < n; i++){
-                    var color_u95 = data.u95[i];
-                    var color_l95 = data.l95[i];
+                    var color_u95 = data.color.upper95[i];
+                    var color_l95 = data.color.lower95[i];
                     if (color_u95 != color_u95 || color_l95 != color_l95)
                         mask[i] = 1;
                     else {
@@ -294,8 +341,8 @@ InteractiveDataDisplay.BullEye = {
                         colors_l95[i] = "rgba(" + l95rgba.r + "," + l95rgba.g + "," + l95rgba.b + "," + l95rgba.a + ")";
                     }
                 }
-                data.u95 = colors_u95;
-                data.l95 = colors_l95;
+                data.upper95 = colors_u95;
+                data.lower95 = colors_l95;
             }
             data.individualColors = true;
         } else {
@@ -339,8 +386,8 @@ InteractiveDataDisplay.BullEye = {
             data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
             data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
             if (data.individualColors) {
-                data.u95 = InteractiveDataDisplay.Utils.applyMask(mask, data.u95, m);
-                data.l95 = InteractiveDataDisplay.Utils.applyMask(mask, data.l95, m);
+                data.upper95 = InteractiveDataDisplay.Utils.applyMask(mask, data.upper95, m);
+                data.lower95 = InteractiveDataDisplay.Utils.applyMask(mask, data.lower95, m);
             }
             var indices = Array(m);
             for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
@@ -357,8 +404,8 @@ InteractiveDataDisplay.BullEye = {
     draw: function (marker, plotRect, screenSize, transform, context) {
 
           var mean = marker.y_mean;
-          var u95 = marker.u95;
-          var l95 = marker.l95;
+          var u95 = marker.upper95;
+          var l95 = marker.lower95;
 
           var msize = marker.size;
           var shift = msize / 2;
@@ -552,20 +599,48 @@ InteractiveDataDisplay.BullEye = {
           refreshColor();
           refreshSize();
           renderShape();
-      }
-      
+      },
+    getTooltipData: function (originalData, index) {
+        var dataRow = {};
+        var formatter = {};
+        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length) {
+            formatter["x"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.x);
+            dataRow['x'] = formatter["x"].toString(originalData.x[index]);
+        }
+        if (InteractiveDataDisplay.Utils.isArray(originalData.y) && index < originalData.y.length) {
+            formatter["y"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y);
+            dataRow['y'] = formatter["y"].toString(originalData.y[index]);
+        }
+        if (originalData.color) {
+            dataRow['color'] = {};
+            if (InteractiveDataDisplay.Utils.isArray(originalData.color.lower95) && index < originalData.color.lower95.length) {
+                formatter["lower95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.color.lower95);
+                dataRow['color']["lower 95%"] = formatter["lower95"].toString(originalData.color.lower95[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.color.upper95) && index < originalData.color.upper95.length) {
+                formatter["upper95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.color.upper95);
+                dataRow['color']["upper 95%"] = formatter["upper95"].toString(originalData.color.upper95[index]);
+            }
+        }
+        if (InteractiveDataDisplay.Utils.isArray(originalData.size) && index < originalData.size.length) {
+            formatter["size"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.size);
+            dataRow['size'] = formatter["size"].toString(originalData.size[index]);
+        }
+        dataRow["index"] = index;
+        return dataRow;
+    }
 };
 
 InteractiveDataDisplay.BoxWhisker = {
     prepare: function (data) {
         // y
-        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
-        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
-        var n = data.y.length;
+        if (data.y.median == undefined || data.y.median == null) throw "The mandatory property 'y' is undefined or null";
+        if (!InteractiveDataDisplay.Utils.isArray(data.y.median)) throw "The property 'y' must be an array of numbers";
+        var n = data.y.median.length;
 
         var mask = new Int8Array(n);
-        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
-        data.y_mean = data.y;
+        InteractiveDataDisplay.Utils.maskNaN(mask, data.y.median);
+        data.y_mean = data.y.median;
 
         // x
         if (data.x == undefined)
@@ -584,8 +659,34 @@ InteractiveDataDisplay.BoxWhisker = {
         // sizes    
         var sizes = new Array(n);
         if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
-        if (InteractiveDataDisplay.Utils.isArray(data.l95) && InteractiveDataDisplay.Utils.isArray(data.u95)) {
-            if (data.l95.length != n && data.u95.length != n) throw "Length of the array 'size' is different than length of the array 'y'";
+        if (InteractiveDataDisplay.Utils.isArray(data.y.lower95) && InteractiveDataDisplay.Utils.isArray(data.y.upper95) &&
+            InteractiveDataDisplay.Utils.isArray(data.y.lower68) && InteractiveDataDisplay.Utils.isArray(data.y.upper68)) {
+            if (data.y.lower95.length != n && data.y.upper95.length != n && data.y.lower68.length != n && data.y.upper68.length != n)
+                throw "Length of the array 'y' is different than length of the array 'y'";
+            if (n > 0 && typeof (data.y.lower95[0]) === "number" && typeof (data.y.upper95[0]) === "number" && typeof (data.y.lower68[0]) === "number" && typeof (data.y.upper68[0]) === "number") { // color is a data series                 
+                var ys_u95 = [];
+                var ys_l95 = [];
+                var ys_u68 = [];
+                var ys_l68 = [];
+                for (var i = 0; i < n; i++) {
+                    var y_u95 = data.y.upper95[i];
+                    var y_l95 = data.y.lower95[i];
+                    var y_u68 = data.y.upper68[i];
+                    var y_l68 = data.y.lower68[i];
+                    if (y_u95 != y_u95 || y_l95 != y_l95 || y_u68 != y_u68 || y_l68 != y_l68)
+                        mask[i] = 1;
+                    else {
+                        ys_u95[i] = data.y.upper95[i];
+                        ys_l95[i] = data.y.lower95[i];
+                        ys_u68[i] = data.y.upper68[i];
+                        ys_l68[i] = data.y.lower68[i];
+                    }
+                }
+                data.upper95 = ys_u95;
+                data.lower95 = ys_l95;
+                data.upper68 = ys_u68;
+                data.lower68 = ys_l68;
+            }
         }
         for (var i = 0; i < n; i++) sizes[i] = data.size;
         data.sizeMax = data.size;
@@ -597,8 +698,13 @@ InteractiveDataDisplay.BoxWhisker = {
         if (m > 0) { // there are missing values
             m = n - m;
             data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
-            data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
+            data.y_mean = InteractiveDataDisplay.Utils.applyMask(mask, data.y_mean, m);
             data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
+            data.upper95 = InteractiveDataDisplay.Utils.applyMask(mask, data.upper95, m);
+            data.lower95 = InteractiveDataDisplay.Utils.applyMask(mask, data.lower95, m);
+            data.upper68 = InteractiveDataDisplay.Utils.applyMask(mask, data.upper68, m);
+            data.lower68 = InteractiveDataDisplay.Utils.applyMask(mask, data.lower68, m);
+
             var indices = Array(m);
             for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
             data.indices = indices;
@@ -617,11 +723,11 @@ InteractiveDataDisplay.BoxWhisker = {
         var msize = marker.size;
         var shift = msize / 2;
         var x = transform.dataToScreenX(marker.x);
-        var y = transform.dataToScreenY(marker.y);
-        var u68 = transform.dataToScreenY(marker.u68);
-        var l68 = transform.dataToScreenY(marker.l68);
-        var u95 = transform.dataToScreenY(marker.u95);
-        var l95 = transform.dataToScreenY(marker.l95);
+        var y = transform.dataToScreenY(marker.y_mean);
+        var u68 = transform.dataToScreenY(marker.upper68);
+        var l68 = transform.dataToScreenY(marker.lower68);
+        var u95 = transform.dataToScreenY(marker.upper95);
+        var l95 = transform.dataToScreenY(marker.lower95);
         var mean = transform.dataToScreenY(marker.y_mean);
 
         context.beginPath();
@@ -662,8 +768,8 @@ InteractiveDataDisplay.BoxWhisker = {
     hitTest: function (marker, transform, ps, pd) {
         var xScreen = transform.dataToScreenX(marker.x);
 
-        var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
-        var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
+        var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.lower95 : marker.y_min);
+        var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.upper95 : marker.y_max);
 
         var isIntersecting =
             ps.x > xScreen - marker.size / 2 &&
@@ -802,18 +908,55 @@ InteractiveDataDisplay.BoxWhisker = {
         refreshColor();
         refreshSize();
         renderShape();
+    },
+    getTooltipData: function (originalData, index) {
+        var dataRow = {};
+        var formatter = {};
+        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length) {
+            formatter["x"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.x);
+            dataRow['x'] = formatter["x"].toString(originalData.x[index]);
+        }
+        if (originalData.y) {
+            dataRow['y'] = {};
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.median) && index < originalData.y.median.length) {
+                formatter["median"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.median);
+                dataRow['y']["median"] = formatter["median"].toString(originalData.y.median[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower95) && index < originalData.y.lower95.length) {
+                formatter["lower95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.lower95);
+                dataRow['y']["lower 95%"] = formatter["lower95"].toString(originalData.y.lower95[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper95) && index < originalData.y.upper95.length) {
+                formatter["upper95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.upper95);
+                dataRow['y']["upper 95%"] = formatter["upper95"].toString(originalData.y.upper95[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower68) && index < originalData.y.lower68.length) {
+                formatter["lower68"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.lower68);
+                dataRow['y']["lower 68%"] = formatter["lower68"].toString(originalData.y.lower68[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper68) && index < originalData.y.upper68.length) {
+                formatter["upper68"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.upper68);
+                dataRow['y']["upper 68%"] = formatter["upper68"].toString(originalData.y.upper68[index]);
+            }
+        }
+        if (InteractiveDataDisplay.Utils.isArray(originalData.size) && index < originalData.size.length) {
+            formatter["size"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.size);
+            dataRow['size'] = formatter["size"].toString(originalData.size[index]);
+        }
+        dataRow["index"] = index;
+        return dataRow;
     }
 };
 InteractiveDataDisplay.BoxNoWhisker = {
     prepare: function (data) {
         // y
-        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
-        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
-        var n = data.y.length;
+        if (data.y.median == undefined || data.y.median == null) throw "The mandatory property 'y' is undefined or null";
+        if (!InteractiveDataDisplay.Utils.isArray(data.y.median)) throw "The property 'y' must be an array of numbers";
+        var n = data.y.median.length;
 
         var mask = new Int8Array(n);
-        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
-        data.y_mean = data.y;
+        InteractiveDataDisplay.Utils.maskNaN(mask, data.y.median);
+        data.y_mean = data.y.median;
 
         // x
         if (data.x == undefined)
@@ -832,8 +975,25 @@ InteractiveDataDisplay.BoxNoWhisker = {
         // sizes    
         var sizes = new Array(n);
         if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
-        if (InteractiveDataDisplay.Utils.isArray(data.l95) && InteractiveDataDisplay.Utils.isArray(data.u95)) {
-            if (data.l95.length != n && data.u95.length != n) throw "Length of the array 'size' is different than length of the array 'y'";
+        if (InteractiveDataDisplay.Utils.isArray(data.y.lower68) && InteractiveDataDisplay.Utils.isArray(data.y.upper68)) {
+            if (data.y.lower68.length != n && data.y.upper68.length != n)
+                throw "Length of the array 'y' is different than length of the array 'y'";
+            if (n > 0 && typeof (data.y.lower68[0]) === "number" && typeof (data.y.upper68[0]) === "number") { // color is a data series                 
+                var ys_u68 = [];
+                var ys_l68 = [];
+                for (var i = 0; i < n; i++) {
+                    var y_u68 = data.y.upper68[i];
+                    var y_l68 = data.y.lower68[i];
+                    if (y_u68 != y_u68 || y_l68 != y_l68)
+                        mask[i] = 1;
+                    else {
+                        ys_u68[i] = data.y.upper68[i];
+                        ys_l68[i] = data.y.lower68[i];
+                    }
+                }
+                data.upper68 = ys_u68;
+                data.lower68 = ys_l68;
+            }
         }
         for (var i = 0; i < n; i++) sizes[i] = data.size;
         data.sizeMax = data.size;
@@ -845,8 +1005,10 @@ InteractiveDataDisplay.BoxNoWhisker = {
         if (m > 0) { // there are missing values
             m = n - m;
             data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
-            data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
+            data.y_mean = InteractiveDataDisplay.Utils.applyMask(mask, data.y_mean, m);
             data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
+            data.upper68 = InteractiveDataDisplay.Utils.applyMask(mask, data.upper68, m);
+            data.lower68 = InteractiveDataDisplay.Utils.applyMask(mask, data.lower68, m);
             var indices = Array(m);
             for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
             data.indices = indices;
@@ -865,11 +1027,9 @@ InteractiveDataDisplay.BoxNoWhisker = {
                 var msize = marker.size;
                 var shift = msize / 2;
                 var x = transform.dataToScreenX(marker.x);
-                var y = transform.dataToScreenY(marker.y);
-                var u68 = transform.dataToScreenY(marker.u68);
-                var l68 = transform.dataToScreenY(marker.l68);
-                var u95 = transform.dataToScreenY(marker.u95);
-                var l95 = transform.dataToScreenY(marker.l95);
+                var y = transform.dataToScreenY(marker.y_mean);
+                var u68 = transform.dataToScreenY(marker.upper68);
+                var l68 = transform.dataToScreenY(marker.lower68);
                 var mean = transform.dataToScreenY(marker.y_mean);
 
                 context.beginPath();
@@ -898,8 +1058,8 @@ InteractiveDataDisplay.BoxNoWhisker = {
     hitTest: function (marker, transform, ps, pd) {
                 var xScreen = transform.dataToScreenX(marker.x);
 
-                var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
-                var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
+                var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.lower95 : marker.y_min);
+                var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.upper95 : marker.y_max);
 
                 var isIntersecting =
                     ps.x > xScreen - marker.size / 2 &&
@@ -1026,19 +1186,46 @@ InteractiveDataDisplay.BoxNoWhisker = {
         refreshColor();
         refreshSize();
         renderShape();
+    },
+    getTooltipData: function (originalData, index) {
+        var dataRow = {};
+        var formatter = {};
+        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length) {
+            formatter["x"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.x);
+            dataRow['x'] = formatter["x"].toString(originalData.x[index]);
+        }
+        if (originalData.y) {
+            dataRow['y'] = {};
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.median) && index < originalData.y.median.length) {
+                formatter["median"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.median);
+                dataRow['y']["median"] = formatter["median"].toString(originalData.y.median[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower68) && index < originalData.y.lower68.length) {
+                formatter["lower68"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.lower68);
+                dataRow['y']["lower 68%"] = formatter["lower68"].toString(originalData.y.lower68[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper68) && index < originalData.y.upper68.length) {
+                formatter["upper68"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.upper68);
+                dataRow['y']["upper 68%"] = formatter["upper68"].toString(originalData.y.upper68[index]);
+            }
+        }
+        if (InteractiveDataDisplay.Utils.isArray(originalData.size) && index < originalData.size.length)
+            dataRow['size'] = originalData.size[index];
+        dataRow["index"] = index;
+        return dataRow;
     }
 };
 
 InteractiveDataDisplay.Whisker = {
     prepare: function (data) {
         // y
-        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
-        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
-        var n = data.y.length;
+        if (data.y.median == undefined || data.y.median == null) throw "The mandatory property 'y' is undefined or null";
+        if (!InteractiveDataDisplay.Utils.isArray(data.y.median)) throw "The property 'y' must be an array of numbers";
+        var n = data.y.median.length;
 
         var mask = new Int8Array(n);
-        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
-        data.y_mean = data.y;
+        InteractiveDataDisplay.Utils.maskNaN(mask, data.y.median);
+        data.y_mean = data.y.median;
 
         // x
         if (data.x == undefined)
@@ -1057,8 +1244,25 @@ InteractiveDataDisplay.Whisker = {
         // sizes    
         var sizes = new Array(n);
         if (data.size == undefined) data.size = InteractiveDataDisplay.Markers.defaults.size;
-        if (InteractiveDataDisplay.Utils.isArray(data.l95) && InteractiveDataDisplay.Utils.isArray(data.u95)) {
-            if (data.l95.length != n && data.u95.length != n) throw "Length of the array 'size' is different than length of the array 'y'";
+        if (InteractiveDataDisplay.Utils.isArray(data.y.lower95) && InteractiveDataDisplay.Utils.isArray(data.y.upper95)) {
+            if (data.y.lower95.length != n && data.y.upper95.length != n)
+                throw "Length of the array 'y' is different than length of the array 'y'";
+            if (n > 0 && typeof (data.y.lower95[0]) === "number" && typeof (data.y.upper95[0]) === "number") { // color is a data series                 
+                var ys_u95 = [];
+                var ys_l95 = [];
+                for (var i = 0; i < n; i++) {
+                    var y_u95 = data.y.upper95[i];
+                    var y_l95 = data.y.lower95[i];
+                    if (y_u95 != y_u95 || y_l95 != y_l95)
+                        mask[i] = 1;
+                    else {
+                        ys_u95[i] = data.y.upper95[i];
+                        ys_l95[i] = data.y.lower95[i];
+                    }
+                }
+                data.upper95 = ys_u95;
+                data.lower95 = ys_l95;
+            }
         }
         for (var i = 0; i < n; i++) sizes[i] = data.size;
         data.sizeMax = data.size;
@@ -1070,8 +1274,10 @@ InteractiveDataDisplay.Whisker = {
         if (m > 0) { // there are missing values
             m = n - m;
             data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
-            data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
+            data.y_mean = InteractiveDataDisplay.Utils.applyMask(mask, data.y_mean, m);
             data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
+            data.upper95 = InteractiveDataDisplay.Utils.applyMask(mask, data.upper95, m);
+            data.lower95 = InteractiveDataDisplay.Utils.applyMask(mask, data.lower95, m);
             var indices = Array(m);
             for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
             data.indices = indices;
@@ -1090,11 +1296,9 @@ InteractiveDataDisplay.Whisker = {
                 var msize = marker.size;
                 var shift = msize / 2;
                 var x = transform.dataToScreenX(marker.x);
-                var y = transform.dataToScreenY(marker.y);
-                var u68 = transform.dataToScreenY(marker.u68);
-                var l68 = transform.dataToScreenY(marker.l68);
-                var u95 = transform.dataToScreenY(marker.u95);
-                var l95 = transform.dataToScreenY(marker.l95);
+                var y = transform.dataToScreenY(marker.y_mean);
+                var u95 = transform.dataToScreenY(marker.upper95);
+                var l95 = transform.dataToScreenY(marker.lower95);
                 var mean = transform.dataToScreenY(marker.y_mean);
 
                 context.beginPath();
@@ -1129,8 +1333,8 @@ InteractiveDataDisplay.Whisker = {
     hitTest: function (marker, transform, ps, pd) {
                 var xScreen = transform.dataToScreenX(marker.x);
 
-                var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.l95 : marker.y_min);
-                var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.u95 : marker.y_max);
+                var ymax = transform.dataToScreenY(marker.y_min === undefined ? marker.lower95 : marker.y_min);
+                var ymin = transform.dataToScreenY(marker.y_max === undefined ? marker.upper95 : marker.y_max);
 
                 var isIntersecting =
                     ps.x > xScreen - marker.size / 2 &&
@@ -1267,6 +1471,33 @@ InteractiveDataDisplay.Whisker = {
         refreshSize();
         renderShape();
         return { thumbnail: canvas, content: itemDiv };
+    },
+    getTooltipData: function (originalData, index) {
+        var dataRow = {};
+        var formatter = {};
+        if (InteractiveDataDisplay.Utils.isArray(originalData.x) && index < originalData.x.length) {
+            formatter["x"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.x);
+            dataRow['x'] = formatter["x"].toString(originalData.x[index]);
+        }
+        if (originalData.y) {
+            dataRow['y'] = {};
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.median) && index < originalData.y.median.length) {
+                formatter["median"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.median);
+                dataRow['y']["median"] = formatter["median"].toString(originalData.y.median[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.lower95) && index < originalData.y.lower95.length) {
+                formatter["lower95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.lower95);
+                dataRow['y']["lower 95%"] = formatter["lower95"].toString(originalData.y.lower95[index]);
+            }
+            if (InteractiveDataDisplay.Utils.isArray(originalData.y.upper95) && index < originalData.y.upper95.length) {
+                formatter["upper95"] = new InteractiveDataDisplay.AdaptiveFormatter(originalData.y.upper95);
+                dataRow['y']["upper 95%"] = formatter["upper95"].toString(originalData.y.upper95[index]);
+            }
+        }
+        if (InteractiveDataDisplay.Utils.isArray(originalData.size) && index < originalData.size.length)
+            dataRow['size'] = originalData.size[index];
+        dataRow["index"] = index;
+        return dataRow;
     }
 };
 InteractiveDataDisplay.Markers.shapes["boxwhisker"] = InteractiveDataDisplay.BoxWhisker;

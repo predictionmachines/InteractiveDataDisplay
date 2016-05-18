@@ -81,6 +81,16 @@ InteractiveDataDisplay.readCsv = function (jqPlotDiv) {
                     data[header[j - j0]][i] = parseFloat(elems[j]);
                 }
             }
+
+            for (var j = 0; j < header.length; j++)
+            {
+                var complexHeader = header[j].split('.');
+                if (complexHeader.length > 1) {
+                    if (!data[complexHeader[0]]) data[complexHeader[0]] = {};
+                    data[complexHeader[0]][complexHeader[1]] = data[header[j]];
+                    delete data[header[j]];
+                }
+            }
         }
     }
     return data;
@@ -120,7 +130,7 @@ InteractiveDataDisplay.readCsv2d = function (jqDiv) {
                 }
                 data.x = x;
                 data.y = y;
-                data.f = f;
+                data.values = f;
             }
         }
     }

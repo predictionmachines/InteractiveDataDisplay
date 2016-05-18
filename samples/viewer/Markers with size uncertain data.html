@@ -45,9 +45,10 @@
                     else if (headers[j] == 'w_ub95') size_u95.push(parseFloat(data1[j]));
                 }
             }
+            x.pop();
             ChartViewer.show($("#chart"), {
                 "markers": Plot.markers({
-                    x: x, y: y, color: color, size: { median: size_mean, lower95: size_l95, upper95: size_u95, lower68: size_l68, upper68: size_u68 },
+                    x: x, y: y, shape: 'petals', color: color, size: { lower95: size_l95, upper95: size_u95, lower68: size_l68, upper68: size_u68 },
                     colorPalette: 'brown, orange, yellow, lightgreen, lightblue', displayName: 'petals', titles: { x: "lon", y: "lat", color: "wheat square", size: "wheat" }
                 })
             });

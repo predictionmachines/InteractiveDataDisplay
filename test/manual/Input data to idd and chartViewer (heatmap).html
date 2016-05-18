@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Input data to idd and chart viewer</title>
+    <link rel="stylesheet" type="text/css" href="../../dist/chartViewer.css" />
+    <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0-beta.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="../../dist/idd.js"></script>
+    <script type="text/javascript" src="../../dist/chartViewer.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var dataSet = {
+                "heatmap": {
+                    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]]
+                },
+                "heatmap with": {
+                    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
+                    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
+                    values: [1, 2, 3, 4, 5, 4, 3, 2, 1]
+                },
+                "heatmap with x, y": {
+                    y: [-4, 0, 4],
+                    x: [-2, 0, 5],
+                    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]]
+                },
+                "heatmap with color palette": {
+                    y: [-4, 0, 4],
+                    x: [-2, 0, 5],
+                    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
+                    colorPalette: "yellow, red",
+                },
+                "heatmap with treatAs": {
+                    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
+                    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
+                    values: [1, 2, 3, 4, 5, 4, 3, 2, 1],
+                    colorPalette: "yellow, red",
+                    treatAs: "discrete"
+                },
+                "heatmap with building color palette": {
+                    y: [-4, 0, 4],
+                    x: [-2, 0, 5],
+                    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
+                    colorPalette: new InteractiveDataDisplay.ColorPalette.parse("yellow, red"),
+                },
+                "heatmap with uncertain data": {
+                    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
+                    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
+                    values: {
+                        median: [1, 2, 3, 4, 5, 4, 3, 2, 1],
+                        lower68: [-3, -1, 1, 1, 4, 2, 1, 0, 0],
+                        upper68: [4, 6, 7, 8, 9, 7, 5, 4, 2]
+                    },
+                    colorPalette: 'brown, orange, yellow, lightgreen, lightblue'
+                },
+                "heatmap with uncertain data and interval": {
+                    x: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
+                    y: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
+                    values: {
+                        median: [1, 2, 3, 4, 5, 4, 3, 2, 1],
+                        lower68: [-3, -1, 1, 1, 4, 2, 1, 0, 0],
+                        upper68: [4, 6, 7, 8, 9, 7, 5, 4, 2]
+                    },
+                    colorPalette: 'brown, orange, yellow, lightgreen, lightblue',
+                    interval: {min: 0, max: 1}
+                }
+            };
+            
+            for (var data in dataSet) {
+                var div = $('<div style="width:1700px; height: 600px">').appendTo(document.body);
+                var title = $('<h2>' + data + '</h2>').appendTo(div);
+                var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px; float: left;"></div>').appendTo(div);
+                var plot = InteractiveDataDisplay.asPlot(chart);
+                var heatmap = plot.heatmap("heatmap", dataSet[data]);
+                var chartViewer = $('<div style="width: 1000px; height: 500px; float: right;"></div>').appendTo(div);
+                ChartViewer.show(chartViewer, {
+                    "heatmap": Plot.heatmap(dataSet[data]),
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <h1 align="center">Input data to idd and chart viewer</h1>
+    </header>
+</body>
+</html>
