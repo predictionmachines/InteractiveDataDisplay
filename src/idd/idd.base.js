@@ -2180,7 +2180,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var sx = ct.plotToScreenX(px);
             var sy = ct.plotToScreenY(py);
 
-            var context = this.getContext(true);
+            var context = this.getContext(false);
             var myImageData = context.getImageData(sx, sy, 1, 1);
             if (myImageData.data[0] === 0 && myImageData.data[1] === 0 && myImageData.data[2] === 0 && myImageData.data[3] === 0)
                 return undefined;
