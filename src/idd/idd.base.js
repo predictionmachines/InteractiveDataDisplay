@@ -2308,7 +2308,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.renderCore = function (plotRect, screenSize) {
             InteractiveDataDisplay.Polyline.prototype.renderCore.call(this, plotRect, screenSize);
 
-            var context = this.getContext(false);
+            var context = this.getContext(true);
             InteractiveDataDisplay.Area.render.call(this, _x, _y_l95, _y_u95, _fill95, plotRect, screenSize, context, 0.5);
             InteractiveDataDisplay.Area.render.call(this, _x, _y_l68, _y_u68, _fill68, plotRect, screenSize, context, 0.5);
             renderLine(_x, _y, _stroke, _thickness, plotRect, screenSize, context);
