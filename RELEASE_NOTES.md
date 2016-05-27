@@ -1,4 +1,4 @@
-##### 1.3.0 (unreleased)
+## 1.3.0 (May 27, 2016)
 
 New features:
  - Export to SVG: figure, numeric axis and polyline can be exported to SVG. Uses SVG.js. See method `Plot.exportToSvg()` and the sample [Vector export](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/samples/Vector%20export.html#L22).
@@ -10,14 +10,14 @@ Fixes:
   
 **Breaking changes in API**:
  - Polyline plot: 
-   - `y` can be uncertain; 
+   - `y` can be uncertain, the plot renders bands for the quantiles (see `samples/Uncertain polyline.html`); 
    - function or trajectory mode determines whether input points will be ordered or not.
  - Heatmap plot:
    - Argument of `draw` now contains property `values` instead of `f`. Values may be uncertain.
    - Introduces new property of `draw` data, `interval` which allows to highlight region containing uncertain data interseting with the interval.
  
 
-## 1.2.1 (April 26, 2016)
+### 1.2.1 (April 26, 2016)
 
  - Updated UI:
    - ChartViewer legend is now on the right and is hidden by default
