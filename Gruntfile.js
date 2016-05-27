@@ -105,7 +105,7 @@
                 ]
             },
 
-            src: ['test/**/*.js'] 
+            src: ['test/*.js'] 
         },
         copy: {
             main: {

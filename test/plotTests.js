@@ -10,6 +10,7 @@ function newPlotNoInitialization(name, plot) {
     var div = document.createElement("div");
     div.setAttribute("data-idd-plot", plot || "plot");
     div.setAttribute("data-idd-name", name);
+    div.setAttribute("style", "width:1000px; height:1000px;");
     return div;
 };
 
@@ -162,25 +163,21 @@ describe('InteractiveDataDisplay.Plot', function () {
         expect(spyChild).not.toHaveBeenCalled();
     });
 
-    //TODO: check whether this is still actual or not
-    /*
-    it('properly handles the case when rendering is requested but plot is removed when it should be rendered', function () {
+    it('properly handles the case when rendering is requested but plot is removed when it should be rendered', function (done) {
         var child = plot.polyline("child", { y: [1, 2, 3] });
 
         var invoked = false;
-        plot.render = function () { invoked = true; };
+        child.render = function () { invoked = true; };
 
-        runs(function () {
-            child.remove();
-            child.requestNextFrame();
-        });
+        child.remove();
+        plot.requestNextFrame();
 
-        waitsFor(function () {
-            return invoked;
+        setTimeout(function () {
+            expect(invoked).toBe(false);
+            done();
         }, "Render is not invoked", 500);
-
     });
-    */
+    
 
     it("doesn't get a removed plot", function () {
         var child = plot.polyline("child", { y: [1, 2, 3] });
