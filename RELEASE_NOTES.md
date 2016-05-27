@@ -4,7 +4,10 @@ New features:
  - Export to SVG: figure, numeric axis and polyline can be exported to SVG. Uses SVG.js. See method `Plot.exportToSvg()` and the sample [Vector export](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/samples/Vector%20export.html#L22).
  - Nice real numbers formatting in tooltips, probes and legend.
  - Tooltips and probes share same content. The content is refactored for the markers and heatmaps.
- 
+
+Fixes:
+ - Legend doesn't stop propagation of mouse and touch events by default so it can be made draggable if needed. 
+  
 **Breaking changes in API**:
  - Polyline plot: 
    - `y` can be uncertain; 
