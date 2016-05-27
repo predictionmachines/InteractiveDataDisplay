@@ -2066,7 +2066,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _y_l95 = y_l95;
 
             //sort
-            var doSort = (!data.treatAs || data.treatAs == "function") && !InteractiveDataDisplay.Utils.isOrderedArray(_x);
+            var doSort = (data.treatAs && data.treatAs == "function") && !InteractiveDataDisplay.Utils.isOrderedArray(_x);
             if (InteractiveDataDisplay.Utils.isArray(data.y)) { // certain values
                 _y = y;
                 if (doSort) {
