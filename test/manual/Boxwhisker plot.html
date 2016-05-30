@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Box&Whisker plot</title>
+    <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0-beta.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="../../dist/idd.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var dataSet = {
+                "Box&Whisker": {
+                    y: {
+                        median: [1,2,3,4,5],
+                        lower95: [0.8, 1.3, 2.7, 3.6, 4.8],
+                        upper95: [1.3, 2.4, 3.5, 4.6, 5.2],
+                        lower68: [0.9, 1.8, 2.9, 3.8, 4.9],
+                        upper68: [1.2, 2.3, 3.37, 4.2, 5.1]
+                    },
+                    shape: 'boxwhisker',
+                    border: 'blue', 
+                    color: 'lightblue', 
+                    size: 15,
+                },
+                "BoxNoWhisker": {
+                    y: {
+                        median: [1, 2, 3, 4, 5],
+                        lower68: [0.9, 1.8, 2.9, 3.8, 4.9],
+                        upper68: [1.2, 2.3, 3.37, 4.2, 5.1]
+                    },
+                    shape: 'boxwhisker',
+                    border: 'blue',
+                    color: 'lightblue',
+                    size: 15,
+                },
+                "Whisker": {
+                    y: {
+                        median: [1, 2, 3, 4, 5],
+                        upper68: [1.2, 2.3, 3.37, 4.2, 5.1],
+                        lower95: [0.8, 1.3, 2.7, 3.6, 4.8],
+                        upper95: [1.3, 2.4, 3.5, 4.6, 5.2],
+                    },
+                    shape: 'boxwhisker',
+                    border: 'blue',
+                    color: 'lightblue',
+                    size: 15,
+                },
+                "NoBoxNoWhisker": {
+                    y: {
+                        median: [1, 2, 3, 4, 5],
+                        upper68: [1.2, 2.3, 3.37, 4.2, 5.1],
+                        upper95: [1.3, 2.4, 3.5, 4.6, 5.2],
+                    },
+                    shape: 'boxwhisker',
+                    border: 'blue',
+                    color: 'lightblue',
+                    size: 15,
+                }
+            };
+            
+            for (var data in dataSet) {
+                var div = $('<div style="width:800px; height: 600px; margin:auto">').appendTo(document.body);
+                var title = $('<h2 align="center">' + data + '</h2>').appendTo(div);
+                var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px; margin:auto"></div>').appendTo(div);
+                var plot = InteractiveDataDisplay.asPlot(chart);
+                var markers = plot.markers("markers", dataSet[data]);
+            }
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <h1 align="center">Box&Whisker plot</h1>
+    </header>
+</body>
+</html>
