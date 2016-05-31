@@ -293,7 +293,6 @@
     width: 20px;
     background-image: url('icons/ic_visibility_off-grey.png');
     background-size: cover;
-    /*z-index: 1000;*/
     cursor: pointer;
 }
 .idd-legend-isselected-false {
@@ -304,7 +303,6 @@
     width: 20px;
     background-image: url('icons/ic_visibility-grey.png');
     background-size: cover;
-    /*z-index: 1000;*/
     cursor: pointer;
 }
 

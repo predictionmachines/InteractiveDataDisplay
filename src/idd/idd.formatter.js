@@ -16,12 +16,16 @@
     };
 
     var average = function (data) {
-        var sum = data.reduce(function (sum, value) {
-            return sum + value;
-        }, 0);
-
-        var avg = sum / data.length;
-        return avg;
+        var sum = 0;
+        var n = 0;
+        for (var i = 0; i < data.length; i++) {
+            if (isNaN(data[i])) continue;
+            else {
+                sum += data[i];
+                ++n;
+            }
+        }
+        return (n != 0) ? sum / n : NaN;
     };
 
     var power10 = function (p) {
