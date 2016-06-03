@@ -37,6 +37,16 @@ if(ko) { //add Knockout bindings. Requires that IDD loaded after Knockout
                 var strokeBinding = allBindings.get('iddStroke');
                 stroke = ko.unwrap(strokeBinding);
             }
+			var shape = undefined;
+			if (allBindings.has('iddShape')) {
+				var shapeBinding = allBindings.get('iddShape');
+				shape = ko.unwrap(shapeBinding);
+			}
+			var color = undefined;
+			if (allBindings.has('iddColor')) {
+				var colorBinding = allBindings.get('iddColor');
+				color = ko.unwrap(colorBinding);
+			}
             var unwrappedX = ko.unwrap(xBindings);
             var plotAttr = element.getAttribute("data-idd-plot");
             if (plotAttr != null) {
@@ -56,10 +66,10 @@ if(ko) { //add Knockout bindings. Requires that IDD loaded after Knockout
                     }
                     element.innerHTML = csvDataToDraw;
 
-                    if (typeof stroke != 'undefined') {
                         //saving stroke color in the data-idd-style attribute: will be picked up by initialization
-                        element.setAttribute("data-idd-style", "stroke: " + stroke + "; thickness: " + lineThickness);
-                    }
+					element.setAttribute("data-idd-style",  (stroke ? "stroke: " + stroke + "; thickness: " + lineThickness + ";": "") +
+															(shape ? "shape: " + shape + ";" : "") + 
+															(color ? "color: " + color + ";" : ""));
                 }
             }
         }
