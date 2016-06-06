@@ -60,6 +60,43 @@
                 dest: 'dist/idd.js',
                 nonull: true
             },
+            dist_ko: {
+                options: {
+                    separator: ';'
+                },
+                src: [ 
+                    "src/idd/wrapper_header_knockout.txt",
+                    "src/idd/mouseWheelPlugin.js",
+                    "src/idd/idd.settings.js",
+                    "src/idd/idd.utils.js",
+                    "src/idd/idd.boundplots.js",
+                    "src/idd/idd.formatter.js",
+                    "src/idd/idd.base.js",
+                    "src/idd/idd.readers.js",
+                    "src/idd/idd.axis.js",
+                    "src/idd/idd.palette.js",
+                    "src/idd/idd.gestures.js",
+                    "src/idd/idd.transforms.js",
+                    "src/idd/idd.animation.js",
+                    "src/idd/idd.bingMapsAnimation.js",
+                    "src/idd/idd.navigation.js",
+                    "src/idd/idd.multithreading.js",
+                    "generated/idd.heatmapworker_embedded.js",
+                    "src/idd/idd.figure.js",
+                    "src/idd/idd.chart.js",
+                    "src/idd/idd.markers.js",
+                    "src/idd/idd.markers.primitives.js",
+                    "src/idd/idd.markers.uncertain.js",
+                    "src/idd/idd.area.js",
+                    "src/idd/idd.heatmap.js",
+                    "src/idd/idd.onscreennavigation.js",
+                    "src/idd/idd.bingmapsplot.js",
+                    "src/idd/idd.ko.js",
+                    "src/idd/wrapper_footer_knockout.txt"
+                ],
+                dest: 'dist/idd_knockout.js',
+                nonull: true
+            },
             dist2: {
                 src: [
                         "src/viewer/MathUtils.js",
@@ -91,7 +128,8 @@
             },
             dist: {
                 files: {
-                    'dist/idd.min.js': ['<%= concat.dist.dest %>']
+                    'dist/idd.min.js': ['<%= concat.dist.dest %>'],
+					'dist/idd_knockout.min.js': ['<%= concat.dist_ko.dest %>']
                 }
             }
         },
@@ -198,6 +236,6 @@
     grunt.loadNpmTasks('grunt-bower-task');;
 
     grunt.registerTask('update-tsd', ['tsd']);
-    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'ts:dist', 'concat:dist2', 'copy','concat:umd', 'concat:umdTs', 'wiredep', 'ts:testGlobal', 'ts:test', 'jasmine']);
+    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'concat:dist_ko', 'uglify', 'ts:dist', 'concat:dist2', 'copy','concat:umd', 'concat:umdTs', 'wiredep', 'ts:testGlobal', 'ts:test', 'jasmine']);
     grunt.registerTask('test', ['bower', 'jasmine']);
 };
