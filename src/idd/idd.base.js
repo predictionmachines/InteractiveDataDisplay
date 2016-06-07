@@ -87,6 +87,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 break;
             case "dom":
                 plot = new InteractiveDataDisplay.DOMPlot(jqDiv, master);
+                plot.order = Number.MAX_SAFE_INTEGER;
                 break;
             case "figure":
                 plot = new InteractiveDataDisplay.Figure(jqDiv, master);

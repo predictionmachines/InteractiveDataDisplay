@@ -293,8 +293,8 @@ InteractiveDataDisplay.Utils =
         },
     
         getMaxOrder: function (p) {
-            var z = p.order != Number.MAX_SAFE_INTEGER ? p.order : 0;
-            if (p.children)
+            var z = p && p.order != Number.MAX_SAFE_INTEGER ? p.order : 0;
+            if (p && p.children)
                 p.children.forEach(function (child) {
                     var order = InteractiveDataDisplay.Utils.getMaxOrder(child);
                     if (order != Number.MAX_SAFE_INTEGER) z = Math.max(z, order);
