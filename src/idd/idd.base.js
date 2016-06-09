@@ -3031,7 +3031,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.renderCore = function (plotRect, screenSize) {
             InteractiveDataDisplay.GridlinesPlot.prototype.renderCore.call(this, plotRect, screenSize);
 
-            initializeAxes();
+            initializeAxes.call(this);
             var ctx = this.getContext(true);
             ctx.strokeStyle = _stroke;
             ctx.fillStyle = _stroke;
@@ -3062,7 +3062,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
         
         this.renderCoreSvg = function (plotRect, screenSize, svg) {
-            initializeAxes();
+            initializeAxes.call(this);
 
             var strokeThickness = parseInt(_thickness.slice(0, -2));
             var style = { width: strokeThickness, color: _stroke };
