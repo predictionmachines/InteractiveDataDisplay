@@ -169,40 +169,40 @@
                 }
             }
             var container = $('#container').addClass("flex-container");
-            $('<h1 align="center">Input data to idd and chart viewer</h1>').appendTo(container);
-            $("<h1 align='center'>Polyline</h1>").appendTo(container);
+            $('<h1 >Input data to idd and chart viewer</h1>').appendTo(container);
+            $("<h1>Polyline</h1>").appendTo(container);
             for (var data in polylineData) {
                 var div = $('<div style="width:600px; height: 600px;">').appendTo(container);
                 var title = $('<h2 align="center">' + data + '</h2>').appendTo(div);
-                if (polylineData[data].description) var description = $('<p align="center">' + polylineData[data].description + '</p>').appendTo(div);
+                if (polylineData[data].description) $('<p align="center">' + polylineData[data].description + '</p>').appendTo(div);
                 var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px;"></div>').appendTo(div);
                 var plot = InteractiveDataDisplay.asPlot(chart);
                 var polyline = plot.polyline("line", polylineData[data]);
             }
 
-            $("<h1 align='center'>Area</h1>").appendTo(container);
+            $("<h1>Area</h1>").appendTo(container);
             var div = $('<div style="width:600px; height: 600px;">').appendTo(container);
-            if (areaData.description) var description = $('<p align="center">' + areaData.description + '</p>').appendTo(div);
+            if (areaData.description) $('<p align="center">' + areaData.description + '</p>').appendTo(div);
             var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px;"></div>').appendTo(div);
             var plot = InteractiveDataDisplay.asPlot(chart);
             var area = plot.area("band", areaData);
             area.opacity = 0.5;
 
-            $("<h1 align='center'>Markers</h1>").appendTo(container);
+            $("<h1>Markers</h1>").appendTo(container);
             for (var data in markersData) {
                 var div = $('<div style="width:600px; height: 600px;">').appendTo(container);
                 var title = $('<h2 align="center">' + data + '</h2>').appendTo(div);
-                if (markersData[data].description) var description = $('<p align="center">' + markersData[data].description + '</p>').appendTo(div);
+                if (markersData[data].description) $('<p align="center">' + markersData[data].description + '</p>').appendTo(div);
                 var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px;"></div>').appendTo(div);
                 var plot = InteractiveDataDisplay.asPlot(chart);
                 var markers = plot.markers("markers", markersData[data]);
             }
 
-            $("<h1 align='center'>Heatmap</h1>").appendTo(container);
+            $("<h1>Heatmap</h1>").appendTo(container);
             for (var data in heatmapData) {
                 var div = $('<div style="width:600px; height: 600px;">').appendTo(container);
                 var title = $('<h2 align="center">' + data + '</h2>').appendTo(div);
-                if (heatmapData[data].description) var description = $('<p align="center">' + heatmapData[data].description + '</p>').appendTo(div);
+                if (heatmapData[data].description) $('<p align="center">' + heatmapData[data].description + '</p>').appendTo(div);
                 var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px;"></div>').appendTo(div);
                 var plot = InteractiveDataDisplay.asPlot(chart);
                 var heatmap = plot.heatmap("heatmap", heatmapData[data]);
