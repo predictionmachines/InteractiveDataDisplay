@@ -12,6 +12,13 @@
     <script src="https://cdn.rawgit.com/Reactive-Extensions/RxJS/v4.0.6/dist/rx.lite.min.js" type="text/javascript"></script>
     <script src="https://cdn.rawgit.com/Reactive-Extensions/rxjs-jquery/v1.1.7/rx.jquery.min.js" type="text/javascript"></script>
     <script src="https://cdn.rawgit.com/predictionmachines/InteractiveDataDisplay/v1.3.0/dist/idd.min.js" type="text/javascript"></script>
+    <style>
+        .flex-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
     <script type="text/javascript">
         $(document).ready(function () {
             var xline = [];
@@ -48,13 +55,15 @@
                         upper68: y_u68
                     },
                     fill95: "lightblue",
-                    fill68: "blue"
+                    fill68: "blue",
+                    description: 'Uncertain data series shown as bands'
                 },
             };
             var areaData = {
                 x: xline,
                 y1: y_l68,
-                y2: y_u68
+                y2: y_u68,
+                description: 'Color band between two scalar grid functions'
             };
 
 
@@ -88,7 +97,8 @@
                     colorPalette: "orange, yellow, green, lightblue",
                     border: "gray",
                     size: size,
-                    sizePalette: new InteractiveDataDisplay.SizePalette(true, { min: 5, max: 30 })
+                    sizePalette: new InteractiveDataDisplay.SizePalette(true, { min: 5, max: 30 }),
+                    description: 'Diamonds with color ans size palettes'
                 },
                 "Bull-eyes": {
                     x: xm,
@@ -100,7 +110,8 @@
                         upper95: color_u95,
                     },
                     size: 15.0,
-                    colorPalette: 'brown, orange, yellow, lightgreen, blue'
+                    colorPalette: 'brown, orange, yellow, lightgreen, blue',
+                    description: 'Uncertain data series shown as bull-eyes'
                 },
                 "Petals": {
                     x: xm,
@@ -111,7 +122,8 @@
                         lower95: size_l95,
                         upper95: size_u95,
                     },
-                    colorPalette: 'brown, orange, yellow, lightgreen, lightblue'
+                    colorPalette: 'brown, orange, yellow, lightgreen, lightblue',
+                    description: 'Uncertain data series shown as petals'
                 },
                 "Boxplot": {
                     y: {
@@ -125,6 +137,7 @@
                     border: 'blue',
                     color: 'lightblue',
                     size: 15,
+                    description: 'Uncertain data series shown as boxplot'
                 }
             };
             var heatmapData = {
@@ -151,40 +164,46 @@
                         upper68: [2, 4, 7, 8, 10, 7, 5, 4, 2]
                     },
                     colorPalette: 'orange, yellow, lightgreen, lightblue',
-                    interval: { min: 0, max: 1 }
+                    interval: { min: 0, max: 1 },
+                    description: 'Uncertain data series shown as highlighted interval'
                 }
             }
-
-            $("<h1 align='center'>Polyline</h1>").appendTo(document.body);
+            var container = $('#container').addClass("flex-container");
+            $('<h1 align="center">Input data to idd and chart viewer</h1>').appendTo(container);
+            $("<h1 align='center'>Polyline</h1>").appendTo(container);
             for (var data in polylineData) {
-                var div = $('<div style="width:800px; height: 600px; margin:auto;">').appendTo(document.body);
+                var div = $('<div style="width:600px; height: 600px;">').appendTo(container);
                 var title = $('<h2 align="center">' + data + '</h2>').appendTo(div);
-                var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px; margin:auto"></div>').appendTo(div);
+                if (polylineData[data].description) var description = $('<p align="center">' + polylineData[data].description + '</p>').appendTo(div);
+                var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px;"></div>').appendTo(div);
                 var plot = InteractiveDataDisplay.asPlot(chart);
                 var polyline = plot.polyline("line", polylineData[data]);
             }
 
-            $("<h1 align='center'>Area</h1>").appendTo(document.body);
-            var div = $('<div style="width:800px; height: 600px; margin:auto;">').appendTo(document.body);
-            var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px; margin:auto"></div>').appendTo(div);
+            $("<h1 align='center'>Area</h1>").appendTo(container);
+            var div = $('<div style="width:600px; height: 600px;">').appendTo(container);
+            if (areaData.description) var description = $('<p align="center">' + areaData.description + '</p>').appendTo(div);
+            var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px;"></div>').appendTo(div);
             var plot = InteractiveDataDisplay.asPlot(chart);
             var area = plot.area("band", areaData);
             area.opacity = 0.5;
 
-            $("<h1 align='center'>Markers</h1>").appendTo(document.body);
+            $("<h1 align='center'>Markers</h1>").appendTo(container);
             for (var data in markersData) {
-                var div = $('<div style="width:800px; height: 600px; margin:auto;">').appendTo(document.body);
+                var div = $('<div style="width:600px; height: 600px;">').appendTo(container);
                 var title = $('<h2 align="center">' + data + '</h2>').appendTo(div);
-                var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px; margin:auto"></div>').appendTo(div);
+                if (markersData[data].description) var description = $('<p align="center">' + markersData[data].description + '</p>').appendTo(div);
+                var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px;"></div>').appendTo(div);
                 var plot = InteractiveDataDisplay.asPlot(chart);
                 var markers = plot.markers("markers", markersData[data]);
             }
 
-            $("<h1 align='center'>Heatmap</h1>").appendTo(document.body);
+            $("<h1 align='center'>Heatmap</h1>").appendTo(container);
             for (var data in heatmapData) {
-                var div = $('<div style="width:800px; height: 600px; margin:auto;">').appendTo(document.body);
+                var div = $('<div style="width:600px; height: 600px;">').appendTo(container);
                 var title = $('<h2 align="center">' + data + '</h2>').appendTo(div);
-                var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px; margin:auto"></div>').appendTo(div);
+                if (heatmapData[data].description) var description = $('<p align="center">' + heatmapData[data].description + '</p>').appendTo(div);
+                var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px;"></div>').appendTo(div);
                 var plot = InteractiveDataDisplay.asPlot(chart);
                 var heatmap = plot.heatmap("heatmap", heatmapData[data]);
             }
@@ -193,7 +212,7 @@
 </head>
 <body>
     <header>
-        <h1 align="center">Input data to idd and chart viewer</h1>
+        <div id="container"></div>
     </header>
 </body>
 </html>
