@@ -89,8 +89,8 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             for (var j = 0; j < m; j++) {
                 var v = fi[j];
                 if (v == v) {
-                    if (v > fmax || isNaN(_fmax)) fmax = v;
-                    if (v < fmin || isNaN(_fmin)) fmin = v;
+                    if (v > fmax || isNaN(fmax)) fmax = v;
+                    if (v < fmin || isNaN(fmin)) fmin = v;
                 }
             }
         }
