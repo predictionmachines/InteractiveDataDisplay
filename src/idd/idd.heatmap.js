@@ -2,10 +2,11 @@
 InteractiveDataDisplay.heatmapBackgroundRenderer = new InteractiveDataDisplay.SharedRenderWorker(
     function () {
         var workerCodeUri;
-        if (typeof InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64 === 'undefined' || /PhantomJS/.test(window.navigator.userAgent)) {
+        if (typeof InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64 === 'undefined' || /PhantomJS/.test(window.navigator.userAgent) || InteractiveDataDisplay.Utils.getIEVersion() > 0) {
+            //Blob doesn't work in IE10 and IE11
             // Build process usually initializes the heatmapBackgroundRendererCodeBase64 with base64 encoded 
             // concatenation of idd.heatmapworker.js and idd.transforms.js.
-            workerCodeUri = "idd.heatmapworker.js";
+            workerCodeUri = InteractiveDataDisplay.HeatmapworkerPath ? InteractiveDataDisplay.HeatmapworkerPath + "idd.heatmapworker.js" : "idd.heatmapworker.js";
         }
         else {
             var workerBlob = new Blob([window.atob(InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64)], { type: 'text/javascript' });
