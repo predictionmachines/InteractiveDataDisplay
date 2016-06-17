@@ -2,7 +2,8 @@
 
 New features:
  - IDD release includes idd.ko.js which is a superset for idd.js with basic support for Knockout. See coming examples in the [Wiki](https://github.com/predictionmachines/InteractiveDataDisplay/wiki).
-
+ - Support of knockout bindings register for arbitrary plots
+ 
 Changes:
  - Box-and-whisker markers are now represented by a single shape `"boxwhisker"` and the actual marker type (either box-and-whisker, box or just whisker) depends on the drawn data. See the [samples](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/test/manual/Boxwhisker%20plot.html).
 
