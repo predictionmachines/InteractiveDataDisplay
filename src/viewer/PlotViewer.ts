@@ -1,6 +1,5 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
-/// <reference path="DraggableDomPlot.ts" />
 /// <reference path="Utils.ts" />
 /// <reference path="onScreenNavigation.ts" />
 declare var InteractiveDataDisplay: any;
@@ -54,7 +53,7 @@ module ChartViewer {
             var probesPlot_div = $("<div></div>")
                 .attr("data-idd-name", "draggableMarkers")
                 .appendTo(iddChart.host);
-            var probesPlot = new DraggableDOMPlot(probesPlot_div, iddChart);
+            var probesPlot = new InteractiveDataDisplay.DOMPlot(probesPlot_div, iddChart);
             probesPlot.order = 9007199254740991;
             iddChart.addChild(probesPlot);
 
