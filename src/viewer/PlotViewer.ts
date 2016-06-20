@@ -2,8 +2,8 @@
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="Utils.ts" />
 /// <reference path="onScreenNavigation.ts" />
-declare var InteractiveDataDisplay: any;
 declare var Microsoft: any;
+
 module ChartViewer {
 
     export type IDDPlot = any;
@@ -187,8 +187,8 @@ module ChartViewer {
             iddDiv.on("visibleRectChanged", function () {
                 var plotRect = iddChart.visibleRect;
 
-                transientViewState.plotXFormatter = MathUtils.getPrintFormat(plotRect.x, plotRect.x + plotRect.width, plotRect.width / 4);
-                transientViewState.plotYFormatter = MathUtils.getPrintFormat(plotRect.y, plotRect.y + plotRect.height, plotRect.height / 4);
+                transientViewState.plotXFormatter = new InteractiveDataDisplay.AdaptiveFormatter(plotRect.x, plotRect.x + plotRect.width);
+                transientViewState.plotYFormatter = new InteractiveDataDisplay.AdaptiveFormatter(plotRect.y, plotRect.y + plotRect.height);
 
                 persistentViewState.plotRect = plotRect;
                 if (persistentViewState.probesViewModel !== undefined) {

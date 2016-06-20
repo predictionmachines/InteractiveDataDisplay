@@ -1,14 +1,9 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-
+declare var InteractiveDataDisplay: any;
 module ChartViewer {   
-
     export type PlotRegistry = {
         [plotKind: string]: IDDPlotFactory;
     }
-
-    //export type IDDPlot = any;
-    export type PlotCardContent = {}
-
     export interface IDDPlotFactory {
         initialize(plotDefinition: PlotInfo, viewState, chart: IDDPlot): IDDPlot[];
         draw(plots: IDDPlot[], plotDefinition: PlotInfo): void;

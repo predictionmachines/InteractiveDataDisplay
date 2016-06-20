@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
-declare var Rx: any;
 declare var InteractiveDataDisplay: any;
+
 module ChartViewer {
     export function createSmallProbe (jqDiv, num?, fill?, scale?) {
         jqDiv.empty();
