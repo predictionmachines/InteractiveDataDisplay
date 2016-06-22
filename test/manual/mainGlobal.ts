@@ -1,10 +1,9 @@
-///<reference path="../../dist/chartViewer.d.ts"/>
-declare var InteractiveDataDisplay: any;
+///<reference path="../../dist/idd.d.ts"/>
 module main {
     export function start() {
         var el = document.getElementById("chart"); 
 
-        ChartViewer.show(el, {
+        InteractiveDataDisplay.show(el, {
             "elem1": { kind: "line3",//Plot.line({
                 x: [1, 2, 3, 4],
                 y: [1, 4, 6, 9],

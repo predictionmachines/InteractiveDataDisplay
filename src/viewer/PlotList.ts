@@ -3,7 +3,7 @@
 /// <reference path="PlotRegistry.ts" />
 /// <reference path="PlotViewer.ts" />
 
-module ChartViewer {
+module InteractiveDataDisplay {
     export function PlotList(rootDiv, plotViewer, persistentViewState, transientViewState) {
         var that = this;
         var _isEditable = true;

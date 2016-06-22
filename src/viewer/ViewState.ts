@@ -1,5 +1,5 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-module ChartViewer {
+module InteractiveDataDisplay {
     export function PersistentViewState() {
         var that = this;
 

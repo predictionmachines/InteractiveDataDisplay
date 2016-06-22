@@ -1,7 +1,7 @@
 /// <reference path="ChartViewerControl.ts" />
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 
-module ChartViewer {
+module InteractiveDataDisplay {
     export interface ViewState {
         [name: string]: any;
     }
@@ -26,6 +26,7 @@ module ChartViewer {
         viewState: ViewState;
         dispose(): void;
     }
+
     export function ProbesVM(initialProbes) {
         var that = this;
 
@@ -274,10 +275,50 @@ module ChartViewer {
         }
     }
     
-    export function show(domElement: HTMLElement, plots: ChartInfo, viewState?: ViewState): ChartViewer.ViewerControl {
+    export function show(domElement: HTMLElement, plots: ChartInfo, viewState?: ViewState): InteractiveDataDisplay.ViewerControl {
         if (viewState) throw "viewState argument is not supported";
         var control = new ChartViewerControl(domElement);
         control.update(plots);
         return control;
+    }
+
+    //necessary functions and classes from idd
+    export declare function NavigationPanel(plot, div, url?);
+    export declare function asPlot(div): any;
+    export declare var CanvasPlot: any;
+    export declare var mercatorTransform: any;
+    export declare var Utils: any;
+    export declare class Area {
+        constructor(div, master);
+    }
+    export declare class Heatmap {
+        constructor(div, master);
+    }
+    export declare class Markers {
+        constructor(div, master);
+    }
+    export declare class Polyline {
+        constructor(div, master);
+    }
+    export declare class BingMapsPlot {
+        constructor(div, master);
+        order;
+    }
+    export declare class DOMPlot {
+        constructor(host, master);
+        order;
+        domElements;
+        master;
+        host;
+        coordinateTransform;
+        add(element, scaleMode, x, y, width, height, originX, originY);
+        remove(element);
+    }
+    export declare class AdaptiveFormatter {
+        constructor(series, segment?);
+    }
+    export declare class Legend {
+        constructor(_plot, _jqdiv, isCompact?);
+        remove();
     }
 }

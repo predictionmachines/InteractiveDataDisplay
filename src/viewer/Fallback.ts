@@ -2,7 +2,7 @@
 /// <reference path="Utils.ts" />
 /// <reference path="PlotRegistry.ts" />
 
-module ChartViewer {
+module InteractiveDataDisplay {
     PlotRegistry["fallback"] = {
         initialize(plotDefinition: PlotInfo, viewState: ViewState, chart: IDDPlot) {
             var div = $("<div></div>")

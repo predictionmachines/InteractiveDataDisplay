@@ -1,6 +1,6 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-declare var InteractiveDataDisplay: any;
-module ChartViewer {   
+/// <reference path="ChartViewer.ts" />
+module InteractiveDataDisplay {   
     export type PlotRegistry = {
         [plotKind: string]: IDDPlotFactory;
     }

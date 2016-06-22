@@ -1,6 +1,6 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-declare var InteractiveDataDisplay: any;
-module ChartViewer {
+/// <reference path="ChartViewer.ts" />
+module InteractiveDataDisplay {
     export type Map = {
         [key: string]: any;
     }
@@ -140,4 +140,6 @@ module ChartViewer {
         //TODO: remove unpresented dataKeys
         return wasUpdated;
     }
+
+    export declare function readCsv(jqPlotDiv);
 }

@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <title>Error bars</title>
-    <link rel="stylesheet" type="text/css" href="../../dist/chartViewer.css" />
     <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../../src/css/IDDTheme.css" />
 
@@ -13,7 +12,6 @@
 
     <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
     <script type="text/javascript" src="../../dist/idd.js"></script>
-    <script type="text/javascript" src="../../dist/chartViewer.js"></script>
     <meta charset="utf-8" />
     <script>
         $(document).ready(function () {
@@ -40,7 +38,7 @@
                     }
                 }
             }
-            ChartViewer.show(document.getElementById("chart"), {
+            InteractiveDataDisplay.show(document.getElementById("chart"), {
                 "errors": Plot.boxplot({ y: { median: y_mean, lower68: y_l68, lower95: y_l95, upper68: y_u68, upper95: y_u95 }, color: "lightblue", border: "blue", titles: { y: "age" } })
             });
         });

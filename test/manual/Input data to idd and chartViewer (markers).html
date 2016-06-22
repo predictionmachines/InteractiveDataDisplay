@@ -111,7 +111,7 @@
                 var markers = plot.markers("markers", dataSet[data]);
 
                 var chartViewer = $('<div style="width: 1000px; height: 500px; float: right;"></div>').appendTo(div);
-                ChartViewer.show(chartViewer, {
+                InteractiveDataDisplay.show(chartViewer, {
                     "markers": Plot.markers(dataSet[data]),
                 });
             }

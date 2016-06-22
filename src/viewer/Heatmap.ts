@@ -2,7 +2,7 @@
 /// <reference path="PlotRegistry.ts" />
 /// <reference path="Utils.ts" />
 
-module ChartViewer {
+module InteractiveDataDisplay {
     PlotRegistry["heatmap"] = {
         initialize(plotDefinition: PlotInfo, viewState, chart: IDDPlot) {
             var div = $("<div></div>")

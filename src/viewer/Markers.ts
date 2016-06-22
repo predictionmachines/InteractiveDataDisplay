@@ -2,7 +2,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="Utils.ts" />
 
-module ChartViewer {
+module InteractiveDataDisplay {
     PlotRegistry["markers"] = {
         initialize(plotDefinition: PlotInfo, viewState: ViewState, chart: IDDPlot) {
             var div = $("<div></div>")

@@ -4,7 +4,7 @@
 /// <reference path="onScreenNavigation.ts" />
 declare var Microsoft: any;
 
-module ChartViewer {
+module InteractiveDataDisplay {
 
     export type IDDPlot = any;
     export type PlotId = string;
@@ -364,7 +364,7 @@ module ChartViewer {
                 function (id: string, oldPlot: PlotViewerItem, newPlot: PlotViewerItem): PlotViewerItem {
                     if (oldPlot.Definition.kind == newPlot.Definition.kind) {
                         if (syncProps(oldPlot.Definition, newPlot.Definition)) // if some properties of new plot are updated                            
-                            ChartViewer.PlotRegistry[oldPlot.Definition.kind].draw(oldPlot.Plots, oldPlot.Definition);
+                            InteractiveDataDisplay.PlotRegistry[oldPlot.Definition.kind].draw(oldPlot.Plots, oldPlot.Definition);
                         return oldPlot;
                     }
                     else { // plot kind is changed

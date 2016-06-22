@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <title>Markers with color uncertain data</title>
-    <link rel="stylesheet" type="text/css" href="../../dist/chartViewer.css" />
     <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../../src/css/IDDTheme.css" />
     <!-- bower:css -->
@@ -14,7 +13,6 @@
     
     <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
     <script type="text/javascript" src="../../dist/idd.js"></script>
-    <script type="text/javascript" src="../../dist/chartViewer.js"></script>
     <meta charset="utf-8" />
     <script>
         $(document).ready(function () {
@@ -43,7 +41,7 @@
                     }
                 }
             }
-            ChartViewer.show($("#chart"), {
+            InteractiveDataDisplay.show($("#chart"), {
                 "markers": Plot.markers({
                     x: x, y: y, shape:'bulleye', color: { median: color_mean, lower95: color_l95, upper95: color_u95, lower68: color_l68, upper68: color_u68 },
                     size: 15.0, colorPalette: 'brown, orange, yellow, lightgreen, blue', titles: { x: "lon", y: "lat", size: "s", color: "wheat" } })
