@@ -1,8 +1,7 @@
 ///<reference path="../../dist/idd.d.ts"/>
 module main {
     export function start() {
-        var el = document.getElementById("chart"); 
-
+        var el = document.getElementById("chart");
         InteractiveDataDisplay.show(el, {
             "elem1": { kind: "line3",//Plot.line({
                 x: [1, 2, 3, 4],

@@ -1,4 +1,5 @@
 declare module InteractiveDataDisplay {
+    //Chart Viewer
     export interface ViewState {
         [name: string]: any;
     }
@@ -27,9 +28,78 @@ declare module InteractiveDataDisplay {
     Each plot definition has at least one property which is type; it determines a rendering method and must be known to the ChartViewer.*/
     function show(domElement: HTMLElement, plots: ChartInfo, viewState?: ViewState): InteractiveDataDisplay.ViewerControl;
 
-    export var SizePalette: any;
-    export var ColorPalette: any;
-    export var Utils: any;
+    //Interactive Data Display
+    export class ColorPalette {
+        constructor(isNormalized, range, palettePoints);
+        static toArray(palette, n);
+        static parse(paletteString);
+        static colorFromString(hexColor);
+        static RGBtoHSL(rgbaColor);
+        static HSLtoRGB(hslaColor);
+
+    }
+    export class SizePalette {
+        constructor(isNormalized, sizeRange, valueRange?);
+
+    }
+    export var palettes: any;
+    export class DataTransform {
+        constructor(dataToPlot, plotToData, domain, type);
+    }
+    export var mercatorTransform: DataTransform;
+    export var logTransform: DataTransform;
+
+    export class Figure {
+        constructor(div, master);
+    }
+    export class Chart {
+        constructor(div, master);
+    }
+    export class Markers {
+        constructor(div, master);
+        static defaults;
+        static shapes;
+    }
+    export var Petal: any;
+    export var BullEye: any;
+    export var BoxWhisker: any;
+    export class Area {
+        constructor(div, master);
+    }
+    export class Heatmap {
+        constructor(div, master);
+    }
+    export class NavigationPanel {
+        constructor(plot, div, url?);
+    }
+    export class BingMapsPlot {
+        constructor(div, master);
+    }
+
+    export module Utils {
+        function requestAnimationFrame(handler, args?);
+        function range(start, end);
+        function getMinMax(array);
+        function makeNotEqual(range);
+        function getAndClearTextContent(jqElement);
+    }
+    export module Binding {
+        function bindPlots(plot1, plot2, filter);
+        function getBoundPlots(plot);
+    }
+    export class AdaptiveFormatter {
+        constructor(series, segment?);
+    }
+    export function register(key, factory);
+    export function readTable(jqPlotDiv);
+    export function readCsv(jqPlotDiv);
+    export function readCsv2d(jqDiv);
+    export function InitializeAxis(div, params?);
+    //asPlot
+    //palettes
+    //register
+
+
 }
 
 declare module Plot {
