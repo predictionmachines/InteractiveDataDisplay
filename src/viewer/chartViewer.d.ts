@@ -29,6 +29,39 @@ declare module InteractiveDataDisplay {
     function show(domElement: HTMLElement, plots: ChartInfo, viewState?: ViewState): InteractiveDataDisplay.ViewerControl;
 
     //Interactive Data Display
+    //settings
+    /**minimum size in pixels of the element to be rendered*/
+    export var MinSizeToShow;
+    /**extra padding in pixels which is added to padding computed by the plots*/
+    export var Padding; 
+    /**max number of iterations in loop of ticks creating*/
+    export var maxTickArrangeIterations;
+    /**length of ordinary tick*/
+    export var tickLength; 
+    /**minimum space (in px) between 2 labels on axis*/
+    export var minLabelSpace;
+    /**minimum space (in px) between 2 ticks on axis*/
+    export var minTickSpace;
+    /**minimum order when labels on logarithmic scale are written with supscript*/
+    export var minLogOrder;
+    /**minimum order when labels on numeric scale are written with supscript*/
+    export var minNumOrder;
+    /**delay(seconds) between mouse stops over an element and the tooltip appears*/
+    export var TooltipDelay; 
+    /**duration(seconds) when tooltip is shown*/
+    export var TooltipDuration;
+    /**browser - dependent prefix for the set of css styles*/
+    export var CssPrefix;
+    export var ZIndexNavigationLayer;
+    export var ZIndexDOMMarkers;
+    export var ZIndexTooltipLayer;
+
+    //readers
+    export function readTable(jqPlotDiv);
+    export function readCsv(jqPlotDiv);
+    export function readCsv2d(jqDiv);
+
+    //palettes
     export class ColorPalette {
         constructor(isNormalized, range, palettePoints);
         static toArray(palette, n);
@@ -43,16 +76,29 @@ declare module InteractiveDataDisplay {
 
     }
     export var palettes: any;
+    //transforms
+    export class CoordinateTransform {
+        constructor(plotRect, screenRect, aspectRatio);
+    }
     export class DataTransform {
         constructor(dataToPlot, plotToData, domain, type);
     }
     export var mercatorTransform: DataTransform;
     export var logTransform: DataTransform;
-
+    //Plots
+    export class Plot {
+        constructor(div, master, myCentralPart?);
+    }
     export class Figure {
         constructor(div, master);
     }
     export class Chart {
+        constructor(div, master);
+    }
+    export class CanvasPlot extends Plot{
+        constructor(div, master);
+    }
+    export class Polyline extends CanvasPlot {
         constructor(div, master);
     }
     export class Markers {
@@ -69,18 +115,72 @@ declare module InteractiveDataDisplay {
     export class Heatmap {
         constructor(div, master);
     }
-    export class NavigationPanel {
-        constructor(plot, div, url?);
+    export class DOMPlot extends Plot {
+        constructor(host, master);
+    }
+    export class GridlinesPlot extends CanvasPlot {
+        constructor(host, master);
     }
     export class BingMapsPlot {
         constructor(div, master);
     }
-
+    //Navigation
+    export class NavigationPanel {
+        constructor(plot, div, url?);
+    }
+    //Legend
+    export class Legend {
+        constructor(_plot, _jqdiv, isCompact?);
+    }
+    type Rect = {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }
+    type MinMax = {
+        min: number;
+        max: number;
+    }
     export module Utils {
+        function applyMask(mask:number[], array, newLength:number);
+        function maskNaN(mask: number[], numArray: number[]);
+        /**Returns true if value is Array or TypedArray*/
+        function isArray(arr): boolean;
+        function isOrderedArray(arr): boolean;
+        function cutArray(arr, len:number);
+        /**Returns intersection of two rectangles {x,y,width,height}, left-bottom corner
+        If no intersection, returns undefined.*/
+        function intersect(rect1:Rect, rect2:Rect):Rect;
+        /**Returns boolean value indicating whether rectOuter includes entire rectInner, or not.
+        Rect is  {x,y,width,height}*/
+        function includes(rectOuter:Rect, rectInner:Rect): boolean;
+        /**Returns boolean value indicating whether rect1 equals rect2, or not.
+        Rect is  {x,y,width,height}*/
+        function equalRect(rect1: Rect, rect2: Rect): boolean;
+        function calcCSWithPadding(plotRect, screenSize, padding, aspectRatio);//??
+        /**Browser-specific function. Should be replaced with the optimal implementation on the page loading.*/
         function requestAnimationFrame(handler, args?);
+        /**Creates and initializes an array with values from start to end with step 1.*/
         function range(start, end);
-        function getMinMax(array);
-        function makeNotEqual(range);
+        /**finalRect should contain units in its values. f.e. "px" or "%"*/
+        function arrangeDiv(div, finalRect);
+        /**Computes minimum rect, containing rect1 and rect 2*/
+        function unionRects(rect1:Rect, rect2:Rect):Rect;
+        /**Parses the attribute data-idd-style of jqElement and adds the properties to the target
+        e.g. data-idd-style="thickness: 5px; lineCap: round; lineJoin: round; stroke: #ff6a00"*/
+        function readStyle(jqElement, target);//??
+        function getDataSourceFunction(jqElem, defaultSource);
+        function makeNonEqual(range: MinMax): MinMax;
+        function getMinMax(array:number[]): MinMax;
+        function getMin(array:number[]): number;
+        function getMax(array:number[]): number;
+        /**Returns structure {minx, maxx, miny, maxy}*/
+        function getMinMaxForPair(arrayx, arrayy);
+        function enumPlots(plot);//???
+        function reorder(p, p_before, isPrev);//??
+        function getMaxOrder(p):number;
+        function getBoundingBoxForArrays(_x, _y, dataToPlotX, dataToPlotY)//??
         function getAndClearTextContent(jqElement);
     }
     export module Binding {
@@ -91,15 +191,18 @@ declare module InteractiveDataDisplay {
         constructor(series, segment?);
     }
     export function register(key, factory);
-    export function readTable(jqPlotDiv);
-    export function readCsv(jqPlotDiv);
-    export function readCsv2d(jqDiv);
+ 
     export function InitializeAxis(div, params?);
-    //asPlot
-    //palettes
-    //register
-
-
+    /**Instantiates a plot for the given DIV element.
+    jqDiv is either ID of a DIV element within the HTML page or jQuery to the element to be initialized as a plot.
+    Returns new InteractiveDataDisplay.Plot instance.*/
+    export function asPlot(div);
+    /**Tries to get IDD plot object from jQuery selector
+    Returns null if selector is null or DOM object is not an IDD master plot*/
+    function tryGetMasterPlot(jqElem);
+    /**Traverses descendants of jQuery selector and invokes updateLayout 
+    for all IDD master plots*/
+    function updateLayouts(jqElem);
 }
 
 declare module Plot {
