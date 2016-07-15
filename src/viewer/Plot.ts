@@ -105,29 +105,29 @@ module Plot {
         titles?: HeatmapTitles;
     }
     export function line(element: LineDefinition) {
-        var plotInfo = <ChartViewer.PlotInfo><any>element;
+        var plotInfo = <InteractiveDataDisplay.PlotInfo><any>element;
         plotInfo.kind = "line";
         return plotInfo;
 
     }
     export function band(element: BandDefinition) {
-        var plotInfo = <ChartViewer.PlotInfo><any>element;
+        var plotInfo = <InteractiveDataDisplay.PlotInfo><any>element;
         plotInfo.kind = "band";
         return plotInfo; 
     }
     export function boxplot(element: BoxPlotDefinition) {
-        var plotInfo = <ChartViewer.PlotInfo><any>element;
+        var plotInfo = <InteractiveDataDisplay.PlotInfo><any>element;
         plotInfo.kind = "markers";
         plotInfo["shape"] = "boxwhisker";
         return plotInfo;
     }
     export function markers(element: MarkersDefinition) {
-        var plotInfo = <ChartViewer.PlotInfo><any>element;
+        var plotInfo = <InteractiveDataDisplay.PlotInfo><any>element;
         plotInfo.kind = "markers";
         return plotInfo;
     }
     export function heatmap(element: HeatmapDefinition) {
-        var plotInfo = <ChartViewer.PlotInfo><any>element;
+        var plotInfo = <InteractiveDataDisplay.PlotInfo><any>element;
         plotInfo.kind = "heatmap";
         return plotInfo;
     }

@@ -1,6 +1,5 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-declare var MathUtils: any;
-module ChartViewer {
+module InteractiveDataDisplay {
     export function PersistentViewState() {
         var that = this;
 
@@ -176,8 +175,8 @@ module ChartViewer {
             configurable: false,
             enumerable: true
         });
-
-        var _plotXFormatter = MathUtils.getPrintFormat(0, 1, 0.25);
+        
+        var _plotXFormatter = new InteractiveDataDisplay.AdaptiveFormatter(0, 1);
         Object.defineProperty(this, "plotXFormatter", {
             get: function () { return _plotXFormatter; },
             set: function (value) {
@@ -189,7 +188,7 @@ module ChartViewer {
             enumerable: true
         });
 
-        var _plotYFormatter = MathUtils.getPrintFormat(0, 1, 0.25);
+        var _plotYFormatter = new InteractiveDataDisplay.AdaptiveFormatter(0, 1);
         Object.defineProperty(this, "plotYFormatter", {
             get: function () { return _plotYFormatter; },
             set: function (value) {

@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8" />
     <title>Dispose test page</title>
-    <link rel="stylesheet" type="text/css" href="../../dist/chartViewer.css" />
     <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../../src/css/IDDTheme.css" />
     <!-- bower:css -->
@@ -17,10 +16,9 @@
     <!-- endbower -->
     <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
     <script type="text/javascript" src="../../dist/idd.js"></script>
-    <script type="text/javascript" src="../../dist/chartViewer.js"></script>
     <script>
         $(function () {
-            var cv = ChartViewer.show($("#chart"), {
+            var cv = InteractiveDataDisplay.show($("#chart"), {
                 "elem1": Plot.line({ x: [1, 2, 3, 4], y: [0, 3, 1, 5], thickness: 3 }),
                 "elem2": Plot.heatmap({ x: [0, 0.1, 0.3, 0.5], y: [0, 4, -1, 2], values: [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6], [4, 5, 6, 7]], colorPalette: 'red, blue' }),
                 "elem3": Plot.markers({ x: [1, 2, 3, 4], y: [3, 1, 0, 4], shape: 'triangle', color: [1, 2, 3, 4], size: [10, 15, 8, 13], colorPalette: "green, blue" })

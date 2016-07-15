@@ -1,11 +1,10 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
-/// <reference path="DraggableDomPlot.ts" />
 /// <reference path="Utils.ts" />
 /// <reference path="onScreenNavigation.ts" />
-declare var InteractiveDataDisplay: any;
 declare var Microsoft: any;
-module ChartViewer {
+
+module InteractiveDataDisplay {
 
     export type IDDPlot = any;
     export type PlotId = string;
@@ -54,7 +53,7 @@ module ChartViewer {
             var probesPlot_div = $("<div></div>")
                 .attr("data-idd-name", "draggableMarkers")
                 .appendTo(iddChart.host);
-            var probesPlot = new DraggableDOMPlot(probesPlot_div, iddChart);
+            var probesPlot = new InteractiveDataDisplay.DOMPlot(probesPlot_div, iddChart);
             probesPlot.order = 9007199254740991;
             iddChart.addChild(probesPlot);
 
@@ -86,7 +85,7 @@ module ChartViewer {
                 var draggable = $("<div></div>");
                 draggable.addClass("dragPoint");
 
-                probesPlot.add(draggable, 'none', x , y, undefined, undefined, 0.5, 1);
+                probesPlot.add(draggable[0], 'none', x, y, undefined, undefined, 0.5, 1);
                 var children = probesPlot.domElements;
                 var addedDragable = children[children.length - 1];
                 addedDragable.id = id;
@@ -188,8 +187,8 @@ module ChartViewer {
             iddDiv.on("visibleRectChanged", function () {
                 var plotRect = iddChart.visibleRect;
 
-                transientViewState.plotXFormatter = MathUtils.getPrintFormat(plotRect.x, plotRect.x + plotRect.width, plotRect.width / 4);
-                transientViewState.plotYFormatter = MathUtils.getPrintFormat(plotRect.y, plotRect.y + plotRect.height, plotRect.height / 4);
+                transientViewState.plotXFormatter = new InteractiveDataDisplay.AdaptiveFormatter(plotRect.x, plotRect.x + plotRect.width);
+                transientViewState.plotYFormatter = new InteractiveDataDisplay.AdaptiveFormatter(plotRect.y, plotRect.y + plotRect.height);
 
                 persistentViewState.plotRect = plotRect;
                 if (persistentViewState.probesViewModel !== undefined) {
@@ -365,7 +364,7 @@ module ChartViewer {
                 function (id: string, oldPlot: PlotViewerItem, newPlot: PlotViewerItem): PlotViewerItem {
                     if (oldPlot.Definition.kind == newPlot.Definition.kind) {
                         if (syncProps(oldPlot.Definition, newPlot.Definition)) // if some properties of new plot are updated                            
-                            ChartViewer.PlotRegistry[oldPlot.Definition.kind].draw(oldPlot.Plots, oldPlot.Definition);
+                            InteractiveDataDisplay.PlotRegistry[oldPlot.Definition.kind].draw(oldPlot.Plots, oldPlot.Definition);
                         return oldPlot;
                     }
                     else { // plot kind is changed

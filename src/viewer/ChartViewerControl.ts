@@ -1,7 +1,7 @@
 ﻿/// <reference path="PlotList.ts" />
 /// <reference path="PlotViewer.ts" />
 /// <reference path="ViewState.ts" />
-module ChartViewer {
+module InteractiveDataDisplay {
     export class ChartViewerControl implements ViewerControl {
         private persistentViewState: any;
         private transientViewState: ViewState;

@@ -1,7 +1,7 @@
 
 
-import Charting = require("../../dist/chartViewer.umd");
-Charting.ChartViewer.show(document.getElementById("chart"), {
+import Charting = require("../../dist/idd.umd");
+Charting.InteractiveDataDisplay.show(document.getElementById("chart"), {
     "elem1": Charting.Plot.line({
         x: [1, 2, 3, 4],
         y: [1, 4, 6, 9],
