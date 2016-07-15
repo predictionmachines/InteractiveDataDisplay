@@ -85,7 +85,7 @@ module InteractiveDataDisplay {
                 var draggable = $("<div></div>");
                 draggable.addClass("dragPoint");
 
-                probesPlot.add(draggable, 'none', x , y, undefined, undefined, 0.5, 1);
+                probesPlot.add(draggable[0], 'none', x, y, undefined, undefined, 0.5, 1);
                 var children = probesPlot.domElements;
                 var addedDragable = children[children.length - 1];
                 addedDragable.id = id;
