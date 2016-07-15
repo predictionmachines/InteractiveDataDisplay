@@ -1,21 +1,5 @@
 ﻿// See http://jsperf.com/rendering-a-frame-in-image-data
-InteractiveDataDisplay.heatmapBackgroundRenderer = new InteractiveDataDisplay.SharedRenderWorker(
-    function () {
-        var workerCodeUri;
-        if (typeof InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64 === 'undefined' || /PhantomJS/.test(window.navigator.userAgent)) {
-            // Build process usually initializes the heatmapBackgroundRendererCodeBase64 with base64 encoded 
-            // concatenation of idd.heatmapworker.js and idd.transforms.js.
-            workerCodeUri = "idd.heatmapworker.js";
-        }
-        else {
-            var workerBlob = new Blob([window.atob(InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64)], { type: 'text/javascript' });
-            workerCodeUri = window.URL.createObjectURL(workerBlob);
-        }
-        return workerCodeUri
-    }(),
-    function (heatmapPlot, completedTask) {
-        heatmapPlot.onRenderTaskCompleted(completedTask);
-    });
+InteractiveDataDisplay.heatmapBackgroundRenderer = undefined;
 
 // Renders a fuction  f(x,y) on a regular grid (x,y) as a heat map using color palette
 InteractiveDataDisplay.Heatmap = function (div, master) {
@@ -38,7 +22,25 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     this.base = InteractiveDataDisplay.CanvasPlot;
     this.base(div, master);
     if (!div) return;
-
+    //create heatmap background renderer
+    if (InteractiveDataDisplay.heatmapBackgroundRenderer == undefined) InteractiveDataDisplay.heatmapBackgroundRenderer = new InteractiveDataDisplay.SharedRenderWorker(
+        function () {
+            var workerCodeUri;
+            if (typeof InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64 === 'undefined' || /PhantomJS/.test(window.navigator.userAgent) || InteractiveDataDisplay.Utils.getIEVersion() > 0) {
+                //Blob doesn't work in IE10 and IE11
+                // Build process usually initializes the heatmapBackgroundRendererCodeBase64 with base64 encoded 
+                // concatenation of idd.heatmapworker.js and idd.transforms.js.
+                workerCodeUri = InteractiveDataDisplay.HeatmapworkerPath ? InteractiveDataDisplay.HeatmapworkerPath + "idd.heatmapworker.js" : "idd.heatmapworker.js";
+            }
+            else {
+                var workerBlob = new Blob([window.atob(InteractiveDataDisplay.heatmapBackgroundRendererCodeBase64)], { type: 'text/javascript' });
+                workerCodeUri = window.URL.createObjectURL(workerBlob);
+            }
+            return workerCodeUri
+        }(),
+        function (heatmapPlot, completedTask) {
+            heatmapPlot.onRenderTaskCompleted(completedTask);
+        });
     // default styles:
     var loadPalette = function (palette) {
         if (palette) {

@@ -155,7 +155,8 @@
                     { src: 'src/css/idd.css', dest: 'dist/idd.css' },
                     { src: "src/css/chartViewer.css", dest: "dist/chartViewer.css" },
                     { src: "src/viewer/chartViewer.d.ts", dest: "dist/chartViewer.d.ts"},
-                    { expand: true, src: "src/icons/*", dest: "dist/icons/", flatten: true }
+                    { expand: true, src: "src/icons/*", dest: "dist/icons/", flatten: true },
+                    { src: 'idd.heatmapworker.js', dest: 'dist/idd.heatmapworker.js'}
                 ]
             },
         },
