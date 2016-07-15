@@ -19,7 +19,7 @@
     <script src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0" type="text/javascript"></script>
     
 </head>
-<body onload="InteractiveDataDisplay.asPlot('chart');">
+<body onload="var chart = InteractiveDataDisplay.asPlot('chart'); chart.yDataTransform = InteractiveDataDisplay.mercatorTransform; InteractiveDataDisplay.asPlot('chart').getAxes('left')[0].dataTransform = InteractiveDataDisplay.mercatorTransform;">
     <div class="wrapper">
         <header>
         <h1>Geographical Heat Map</h1>
