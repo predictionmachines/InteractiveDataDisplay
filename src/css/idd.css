@@ -4,6 +4,7 @@
     background-color: white;
     color: black;
     -ms-touch-action: none;
+    cursor: default;
 }
 
 .idd-plot-dependant
