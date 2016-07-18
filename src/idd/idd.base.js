@@ -917,8 +917,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         
         this.exportContentToSvg = function(plotRect, screenSize, svg) {
             var plots = this.getPlotsSequence();
-            for(var i = 0; i < plots.length; i++){
-                plots[i].renderCoreSvg(plotRect, screenSize, svg);
+            for (var i = 0; i < plots.length; i++) {
+                if (plots[i].isVisible)
+                    plots[i].renderCoreSvg(plotRect, screenSize, svg);
             }
         };
         

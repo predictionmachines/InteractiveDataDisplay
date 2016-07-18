@@ -425,6 +425,52 @@
             refreshColor();
             refreshSize();
             renderShape();
+        },
+
+        renderSvg: function (plotRect, screenSize, svg, data, t) {
+            // Clipping algorithms
+            var code = function (x, y, xmin, xmax, ymin, ymax) {
+                return (x < xmin) << 3 | (x > xmax) << 2 | (y < ymin) << 1 | (y > ymax);
+            };
+
+            var n = data.y.length;
+            if (n == 0) return;
+
+            var dataToScreenX = t.dataToScreenX;
+            var dataToScreenY = t.dataToScreenY;
+
+            // size of the canvas
+            var w_s = screenSize.width;
+            var h_s = screenSize.height;
+            var xmin = 0, xmax = w_s;
+            var ymin = 0, ymax = h_s;
+
+            var x1, y1;
+            var i = 0;
+            var nextValuePoint = function () {
+                var border = data.border == null? 'none': data.border;
+                for (; i < n; i++) {
+                    x1 = dataToScreenX(data.x[i]);
+                    y1 = dataToScreenY(data.y[i]);
+                    c1 = code(x1, y1, xmin, xmax, ymin, ymax);
+                    var color = InteractiveDataDisplay.Utils.isArray(data.color) ? data.color[i] : data.color;
+                    if (c1 == 0) {// point is inside visible rect 
+                        if (data.shape == 1) svg.rect(data.size[i], data.size[i]).translate(x1, y1).fill(color).stroke(border);
+                        else if (data.shape == 2) svg.circle(data.size[i]).translate(x1, y1).fill(color).stroke(border);
+                        else if (data.shape == 3) svg.rect(data.size[i] / Math.sqrt(2), data.size[i] / Math.sqrt(2)).translate(x1, y1).fill(color).stroke(border).rotate(45); //diamond
+                        else if (data.shape == 4) {
+                            var halfSize = data.size[i] / 2;
+                            var halfThirdSize = data.size[i] / 6;
+                            var size = data.size[i];
+                            svg.polyline([[-halfSize, -halfThirdSize], [-halfThirdSize, -halfThirdSize], [-halfThirdSize, -halfSize], [halfThirdSize, -halfSize],
+                                [halfThirdSize, -halfThirdSize], [halfSize, -halfThirdSize], [halfSize, halfThirdSize], [halfThirdSize, halfThirdSize], [halfThirdSize, halfSize],
+                                [-halfThirdSize, halfSize], [-halfThirdSize, halfThirdSize], [-halfSize, halfThirdSize]]).translate(x1, y1).fill(color).stroke(border);//cross
+                        }
+                        else if (data.shape == 5) svg.polyline([[(-0.5) * data.size[i], 0.5 * data.size[i]], [0.5 * data.size[i], 0.5 * data.size[i]], [0, (-0.5) * data.size[i]]]).translate(x1, y1).fill(color).stroke(border);//triangle
+                    }
+                }
+            };
+            nextValuePoint();
         }
     }
     InteractiveDataDisplay.Markers.shapes["box"] = primitiveShape;
