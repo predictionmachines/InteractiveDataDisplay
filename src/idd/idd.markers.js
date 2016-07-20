@@ -186,7 +186,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
     this.renderCoreSvg = function (plotRect, screenSize, svg) {
         if (_shape == undefined || _shape.renderSvg == undefined) return;
         var t = this.getTransform();
-        return _shape.renderSvg(plotRect, screenSize, svg, _data, t);
+        _shape.renderSvg(plotRect, screenSize, svg, _data, t);
     };
     this.findToolTipMarkers = function (xd, yd, xp, yp) {
         if (_shape == undefined || typeof _shape.hitTest == "undefined" || _renderData == undefined) return [];

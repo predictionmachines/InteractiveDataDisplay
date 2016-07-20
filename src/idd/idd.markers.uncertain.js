@@ -291,6 +291,50 @@
         }
         dataRow["index"] = index;
         return dataRow;
+    },
+    renderSvg: function (plotRect, screenSize, svg, data, t) {
+        var n = data.y.length;
+        if (n == 0) return;
+
+        var dataToScreenX = t.dataToScreenX;
+        var dataToScreenY = t.dataToScreenY;
+
+        // size of the canvas
+        var w_s = screenSize.width;
+        var h_s = screenSize.height;
+        var xmin = 0, xmax = w_s;
+        var ymin = 0, ymax = h_s;
+        var x1, y1;
+        var i = 0;
+        var size = data.size[0];
+        var border = data.border == null ? 'none' : data.border;
+        for (; i < n; i++) {
+            x1 = dataToScreenX(data.x[i]);
+            y1 = dataToScreenY(data.y[i]);
+            var maxSize = size / 2;
+            var minSize = maxSize * (1 - (data.upper95[i] - data.lower95[i]) / data.maxDelta);
+            var color = data.color[i];
+
+            c1 = (x1 > w_s || x1 < 0 || y1 > h_s || y1 < 0);
+            if (!c1) {
+                var A, D;
+                var C = Math.random() * Math.PI * 2;
+                A = (maxSize - minSize) / 2;
+                D = (maxSize + minSize) / 2;
+
+                var m = 200;
+                var alpha = Math.PI * 2 / m;
+                var segment = [];
+                for (var j = 0; j < m; j++) {
+                    var phi = alpha * j;
+                    var r = A * Math.sin(6 * phi + C) + D;
+                    segment.push([x1 + r * Math.cos(phi), y1 + r * Math.sin(phi)]);
+                }
+                svg.polyline(segment).fill(color).stroke("black");
+                svg.circle(2).translate(x1 - 1, y1 - 1).fill("gray").stroke({ width: 2, color: "gray" });
+            }
+        }
+        svg.clipWith(svg.rect(w_s, h_s));
     }
 };
 InteractiveDataDisplay.BullEye = {
@@ -628,6 +672,65 @@ InteractiveDataDisplay.BullEye = {
         }
         dataRow["index"] = index;
         return dataRow;
+    },
+    renderSvg: function (plotRect, screenSize, svg, data, t) {
+        var n = data.y.length;
+        if (n == 0) return;
+
+        var dataToScreenX = t.dataToScreenX;
+        var dataToScreenY = t.dataToScreenY;
+
+        // size of the canvas
+        var w_s = screenSize.width;
+        var h_s = screenSize.height;
+        var xmin = 0, xmax = w_s;
+        var ymin = 0, ymax = h_s;
+
+        var x1, y1;
+        var i = 0;
+        var size = data.size[0];
+        var halfSize = 0.5 * size;
+        var quarterSize = 0.5 * halfSize;
+        for (; i < n; i++) {
+            x1 = dataToScreenX(data.x[i]);
+            y1 = dataToScreenY(data.y[i]);
+            c1 = (x1 + halfSize < 0 || x1 - halfSize > w_s || y1 + halfSize < 0 || y1 - halfSize > h_s);
+            var color_u95 = data.individualColors ? data.upper95[i] : data.upper95;
+            var color_l95 = data.individualColors ? data.lower95[i] : data.lower95;
+            if (!c1) {
+                switch (data.bullEyeShape) {
+                    case "box":
+                        svg.rect(size, size).translate(x1 - halfSize, y1 - halfSize).fill(color_u95).stroke({ width: 0.5, color: "black" });
+                        svg.rect(halfSize, halfSize).translate(x1 - quarterSize, y1 - quarterSize).fill(color_l95).stroke({ width: 0.5, color: "black" });
+                        break;
+                    case "circle":
+                        svg.circle(size).translate(x1 - halfSize, y1 - halfSize).fill(color_u95).stroke({ width: 0.5, color: "black" });
+                        svg.circle(halfSize).translate(x1 - quarterSize, y1 - quarterSize).fill(color_l95).stroke({ width: 0.5, color: "black" });
+                        break;
+                    case "diamond":
+                        svg.rect(size / Math.sqrt(2), size / Math.sqrt(2)).translate(x1, y1 - halfSize).fill(color_u95).stroke({ width: 0.5, color: "black" }).rotate(45);
+                        svg.rect(halfSize / Math.sqrt(2), halfSize / Math.sqrt(2)).translate(x1, y1 - quarterSize).fill(color_l95).stroke({ width: 0.5, color: "black" }).rotate(45);
+                        break;
+                    case "cross":
+                        var halfThirdSize = size / 6;
+                        var quarterThirdSize = halfSize / 6;
+                        svg.polyline([[-halfSize, -halfThirdSize], [-halfThirdSize, -halfThirdSize], [-halfThirdSize, -halfSize], [halfThirdSize, -halfSize],
+                                [halfThirdSize, -halfThirdSize], [halfSize, -halfThirdSize], [halfSize, halfThirdSize], [halfThirdSize, halfThirdSize], [halfThirdSize, halfSize],
+                                [-halfThirdSize, halfSize], [-halfThirdSize, halfThirdSize], [-halfSize, halfThirdSize], [-halfSize, -halfThirdSize]]).translate(x1, y1).fill(color_u95).stroke({ width: 0.5, color: "black" });
+                        svg.polyline([[-quarterSize, -quarterThirdSize], [-quarterThirdSize, -quarterThirdSize], [-quarterThirdSize, -quarterSize], [quarterThirdSize, -quarterSize],
+                                [quarterThirdSize, -quarterThirdSize], [quarterSize, -quarterThirdSize], [quarterSize, quarterThirdSize], [quarterThirdSize, quarterThirdSize], [quarterThirdSize, quarterSize],
+                                [-quarterThirdSize, quarterSize], [-quarterThirdSize, quarterThirdSize], [-quarterSize, quarterThirdSize], [-quarterSize, -quarterThirdSize]]).translate(x1, y1).fill(color_l95).stroke({ width: 0.5, color: "black" });
+                        break;
+                    case "triangle":
+                        var r = Math.sqrt(3) / 6 * size;
+                        var hr = Math.sqrt(3) / 6 * halfSize;
+                        svg.polyline([[-halfSize, r], [0, -r * 2], [halfSize, r], [-halfSize, r]]).translate(x1, y1).fill(color_u95).stroke({ width: 0.5, color: "black" });
+                        svg.polyline([[-quarterSize, hr], [0, -hr * 2], [quarterSize, hr], [-quarterSize, hr]]).translate(x1, y1).fill(color_l95).stroke({ width: 0.5, color: "black" });
+                        break;
+                }
+            }
+        }
+        svg.clipWith(svg.rect(w_s, h_s));
     }
 };
 
@@ -954,6 +1057,45 @@ InteractiveDataDisplay.BoxWhisker = {
         }
         dataRow["index"] = index;
         return dataRow;
+    },
+    renderSvg: function (plotRect, screenSize, svg, data, t) {
+        var n = data.y.median.length;
+        if (n == 0) return;
+
+        var dataToScreenX = t.dataToScreenX;
+        var dataToScreenY = t.dataToScreenY;
+
+        // size of the canvas
+        var w_s = screenSize.width;
+        var h_s = screenSize.height;
+        var xmin = 0, xmax = w_s;
+        var ymin = 0, ymax = h_s;
+
+        var x1, y1, u68, l68, u95, l95, mean;
+        var i = 0;
+        var size = data.size[0];
+        var shift = size / 2;
+        var color = data.color;
+        var border = data.border == null ? 'none' : data.border;
+        for (; i < n; i++) {
+            x1 = dataToScreenX(data.x[i]);
+            y1 = dataToScreenY(data.y[i]);
+            u68 = dataToScreenY(data.upper68[i]);
+            l68 = dataToScreenY(data.lower68[i]);
+            u95 = dataToScreenY(data.upper95[i]);
+            l95 = dataToScreenY(data.lower95[i]);
+            mean = dataToScreenY(data.y_mean[i]);
+            c1 = (x1 < 0 || x1 > w_s || y1 < 0 || y1 > h_s);
+            if (!c1) {
+                svg.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).stroke(border);
+                svg.polyline([[x1 - shift, u95], [x1 + shift, u95]]).stroke(border);
+                svg.polyline([[x1, u95], [x1, u68]]).stroke(border);
+                svg.polyline([[x1, l68], [x1, l95]]).stroke(border);
+                svg.polyline([[x1 - shift, l95], [x1 + shift, l95]]).stroke(border);
+                svg.polyline([[x1 - shift, mean], [x1 + shift, mean]]).stroke(border);
+            }
+        }
+        svg.clipWith(svg.rect(w_s, h_s));
     }
 };
 

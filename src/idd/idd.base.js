@@ -918,8 +918,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.exportContentToSvg = function(plotRect, screenSize, svg) {
             var plots = this.getPlotsSequence();
             for (var i = 0; i < plots.length; i++) {
-                if (plots[i].isVisible)
+                if (plots[i].isVisible) {
                     plots[i].renderCoreSvg(plotRect, screenSize, svg);
+                    if (plots[i].getLegendSvg) svg.add(plots[i].getLegendSvg({ width: 100, height: 30 }));
+                }
             }
         };
         
@@ -2315,13 +2317,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             InteractiveDataDisplay.Area.render.call(this, _x, _y_l68, _y_u68, _fill68, plotRect, screenSize, context, 0.5);
             renderLine(_x, _y, _stroke, _thickness, plotRect, screenSize, context);
         };
-        
-        this.renderCoreSvg = function (plotRect, screenSize, svg) {
+        var renderLineSvg = function (plotRect, screenSize, svg) {
             if (_x === undefined || _y == undefined) return;
             var n = _y.length;
             if (n == 0) return;
 
-            var t = this.getTransform();
+            var t = that.getTransform();
             var dataToScreenX = t.dataToScreenX;
             var dataToScreenY = t.dataToScreenY;
 
@@ -2333,9 +2334,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             var x1, x2, y1, y2;
             var i = 0;
-            
+
             var segment;
-            var drawSegment = function() {
+            var drawSegment = function () {
                 svg.polyline(segment).stroke({ color: _stroke, width: _thickness }).fill('none');
             }
             // Looking for non-missing value
@@ -2404,7 +2405,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     }
                 }
                 if (!(c1 & c2)) {
-                    if (c1_ != 0){ // point wasn't visible
+                    if (c1_ != 0) { // point wasn't visible
                         drawSegment();
                         segment = new Array(0);
                         segment.push([x1, y1]);
@@ -2428,6 +2429,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             } else {
                 drawSegment(); // finishing previous segment (it is broken by missing value)
             }
+        }
+        this.renderCoreSvg = function (plotRect, screenSize, svg) {
+            InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y_l95, _y_u95, _fill95, 0.5);
+            InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y_l68, _y_u68, _fill68, 0.5);
+            renderLineSvg(plotRect, screenSize, svg);
         };
 
         // Clipping algorithms
@@ -2626,6 +2632,23 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return { name: nameDiv, legend: { thumbnail: canvas, content: undefined }, onLegendRemove: onLegendRemove };
         };
 
+        this.getLegendSvg = function (legendSettings) {
+            var that = this;
+            var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            var svg = SVG(svgHost).size(legendSettings.width, legendSettings.height);
+            svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5).stroke({ color: "black", opacity: 0.12, width: 5 });
+
+            var isUncertainData95 = _y_u95 != undefined && _y_l95 != undefined;
+            var isUncertainData68 = _y_u68 != undefined && _y_l68 != undefined;
+            if (isUncertainData95) svg.polyline([[0, 0], [0, 10], [10, 20], [20, 20], [20, 10], [10, 0], [0, 0]]).fill(_fill95).opacity(0.5).translate(5, 5);
+            if (isUncertainData68) svg.polyline([[0, 0], [0, 5], [15, 20], [20, 20], [20, 15], [5, 0], [0, 0]]).fill(_fill68).opacity(0.5).translate(5, 5);
+            svg.line(0, 0, 20, 20).stroke({ width: _thickness, color: _stroke }).translate(5, 5);
+            svg.text(that.name).fill("black").translate(45, 0)
+            .font({
+                family: "Segoe UI",
+            });
+            return svg;
+        }
         // Initialization 
         if (initialData && typeof initialData.y != 'undefined')
             this.draw(initialData);
