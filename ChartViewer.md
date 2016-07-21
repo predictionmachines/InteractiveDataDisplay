@@ -128,8 +128,8 @@ The following list shows which plot kinds are supported by the ChartViewer:
 
 * `line` dispays information as straight line segments connecting a series of data points. If a variable determining the position on the vertical axis is uncertain,
  bands corresponding to the quantiles of the uncertain values are displayed instead of line segments.
-* `band` draws a colored band between two scalar grid functions `y1[i]=y1(x[i])` and `y2[i]=y2(x[i])`.
-* `boxplot` draws a colored box plot. The variable determinig the position on vertical axis is uncertain. 
+* `area` draws a colored area between two scalar grid functions `y1[i]=y1(x[i])` and `y2[i]=y2(x[i])`.
+* `boxplot` draws a colored box plot. The variable determining the position on vertical axis is uncertain. 
 * `markers` displays data as a collection of points, each having the value of one variable determining the position on the horizontal axis and the value of the other variable determining the position on the vertical axis. Other variables
 can be bound to marker size and color. Dependent variable, size-bound variable or color-bound variable can be real or uncertain.  
 * `heatmap` displays a graphical representation of data where the individual values contained in a matrix are represented as colors. If the values are uncertain,
@@ -171,18 +171,18 @@ Example:
 		"y(x)": Plot.line({ x: [0,1,2], y: [3,4,2], stroke: 'blue' })
 	});
 
-### Band
+### Area
 
-The plot draws a colored band between two scalar grid functions.
-Use `Plot.band(BandDefinition) : PlotInfo` to a define a band plot.
+The plot draws a colored area between two scalar grid functions.
+Use `Plot.area(AreaDefinition) : PlotInfo` to a define an area plot.
 
-	type BandDefinition = {
+	type AreaDefinition = {
 		x: number[];
 		y1: number[];
 		y2: number[];
 		fill?: Color;
 		displayName?: string;
-		titles?: BandTitles;
+		titles?: AreaTitles;
 	}
 
 The space between lines `y1[i](x[i])` and `y2[i](x[i])` is filled with a solid color; the boundaries are not stroked.
@@ -190,7 +190,7 @@ The space between lines `y1[i](x[i])` and `y2[i](x[i])` is filled with a solid c
 Example:
 
 	ChartViewer.show(chartDiv, {
-		"band": Plot.band({ x: [0,1,2], y1: [3,4,2], y2: [1,2,6], fill: 'gray' })
+		"area": Plot.area({ x: [0,1,2], y1: [3,4,2], y2: [1,2,6], fill: 'gray' })
 	});
 
 

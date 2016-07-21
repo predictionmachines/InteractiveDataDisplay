@@ -19,7 +19,7 @@
             var y = new Array(N);
             var color = new Array(N);
             var size = new Array(N);
-            var sizePalette = new InteractiveDataDisplay.SizePalette(true, { min: 5, max: 30 });
+            var sizePalette = { sizeRange: { min: 10, max: 30 }, valueRange: { min: 0, max: 100 } }; 
             var colorPalette = InteractiveDataDisplay.palettes.grayscale;
             for (var i = 0; i < N; i++) {
                 x[i] = Math.random() * N;

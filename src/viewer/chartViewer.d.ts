@@ -593,7 +593,7 @@ declare module Plot {
         y?: string;
         values?: string;
     };
-    type BandTitles = {
+    type AreaTitles = {
         x?: string;
         y1?: string;
         y2?: string;
@@ -616,13 +616,13 @@ declare module Plot {
         displayName?: string;
         titles?: LineTitles;
     };
-    type BandDefinition = {
+    type AreaDefinition = {
         x?: number[];
         y1: number[];
         y2: number[];
         fill?: Color;
         displayName?: string;
-        titles?: BandTitles;
+        titles?: AreaTitles;
     };
     type BoxPlotDefinition = {
         y: Quantiles;
@@ -659,9 +659,9 @@ declare module Plot {
     /**line draws a grid function y[i] = y(x[i]) where y[i] is either a scalar value or a random variable distribution.
     In former case, a single polyline is drawn; in the latter case, a median polyline along with filled bands for percentiles of the distribution is rendered.*/
     function line(element: LineDefinition): InteractiveDataDisplay.PlotInfo;
-    /**The plot draws a colored band between two scalar grid functions.
+    /**The plot draws a colored area between two scalar grid functions.
     The space between lines y1[i](x[i]) and y2[i](x[i]) is filled with a solid color; the boundaries are not stroked.*/
-    function band(element: BandDefinition): InteractiveDataDisplay.PlotInfo;
+    function area(element: AreaDefinition): InteractiveDataDisplay.PlotInfo;
     /**The plot draws a colored boxplot.*/
     function boxplot(element: BoxPlotDefinition): InteractiveDataDisplay.PlotInfo;
     /**Displays data as a collection of points, each having the value of one variable determining 
