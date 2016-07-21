@@ -293,8 +293,8 @@ InteractiveDataDisplay.Utils =
         },
     
         getMaxOrder: function (p) {
-            var z = p.order != Number.MAX_SAFE_INTEGER ? p.order : 0;
-            if (p.children)
+            var z = p && p.order != Number.MAX_SAFE_INTEGER ? p.order : 0;
+            if (p && p.children)
                 p.children.forEach(function (child) {
                     var order = InteractiveDataDisplay.Utils.getMaxOrder(child);
                     if (order != Number.MAX_SAFE_INTEGER) z = Math.max(z, order);
@@ -326,5 +326,20 @@ InteractiveDataDisplay.Utils =
                 }
             }
             return _bbox;
+        },
+
+        getIEVersion: function () {
+            var sAgent = window.navigator.userAgent;
+            var Idx = sAgent.indexOf("MSIE");
+
+            // If IE, return version number.
+            if (Idx > 0) 
+                return parseInt(sAgent.substring(Idx+ 5, sAgent.indexOf(".", Idx)));
+
+                // If IE 11 then look for Updated user agent string.
+            else if (!!navigator.userAgent.match(/Trident\/7\./)) 
+                return 11;
+            else
+                return 0; //It is not IE
         }
     };

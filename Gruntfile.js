@@ -24,11 +24,94 @@
                 ],
                 dest: 'generated/idd.heatmapworker_embedded.js'                  
             },
+            styles: {
+                options: {
+                    separator: ''
+                },
+                src: [
+                  "src/css/idd.css",
+                  "src/css/chartViewer.css"
+                ],
+                dest: 'dist/idd.css'     
+            },
             dist: {
                 options: {
                     separator: ';'
                 },
                 src: [ 
+                    "src/idd/mouseWheelPlugin.js",
+                    "src/idd/idd.settings.js",
+                    "src/idd/idd.utils.js",
+                    "src/idd/idd.boundplots.js",
+                    "src/idd/idd.formatter.js",
+                    "src/idd/idd.base.js",
+                    "src/idd/idd.readers.js",
+                    "src/idd/idd.axis.js",
+                    "src/idd/idd.palette.js",
+                    "src/idd/idd.gestures.js",
+                    "src/idd/idd.transforms.js",
+                    "src/idd/idd.animation.js",
+                    "src/idd/idd.bingMapsAnimation.js",
+                    "src/idd/idd.navigation.js",
+                    "src/idd/idd.multithreading.js",
+                    "generated/idd.heatmapworker_embedded.js",
+                    "src/idd/idd.figure.js",
+                    "src/idd/idd.chart.js",
+                    "src/idd/idd.markers.js",
+                    "src/idd/idd.markers.primitives.js",
+                    "src/idd/idd.markers.uncertain.js",
+                    "src/idd/idd.area.js",
+                    "src/idd/idd.heatmap.js",
+                    "src/idd/idd.onscreennavigation.js",
+                    "src/idd/idd.bingmapsplot.js",
+                    "src/viewer/chartViewer2.js",
+                ],
+                dest: 'dist/idd.js',
+                nonull: true
+            },
+            dist_ko: {
+                options: {
+                    separator: ';'
+                },
+                src: [ 
+                    "src/idd/wrapper_header_knockout.txt",
+                    "src/idd/mouseWheelPlugin.js",
+                    "src/idd/idd.settings.js",
+                    "src/idd/idd.utils.js",
+                    "src/idd/idd.boundplots.js",
+                    "src/idd/idd.formatter.js",
+                    "src/idd/idd.base.js",
+                    "src/idd/idd.readers.js",
+                    "src/idd/idd.axis.js",
+                    "src/idd/idd.palette.js",
+                    "src/idd/idd.gestures.js",
+                    "src/idd/idd.transforms.js",
+                    "src/idd/idd.animation.js",
+                    "src/idd/idd.bingMapsAnimation.js",
+                    "src/idd/idd.navigation.js",
+                    "src/idd/idd.multithreading.js",
+                    "generated/idd.heatmapworker_embedded.js",
+                    "src/idd/idd.figure.js",
+                    "src/idd/idd.chart.js",
+                    "src/idd/idd.markers.js",
+                    "src/idd/idd.markers.primitives.js",
+                    "src/idd/idd.markers.uncertain.js",
+                    "src/idd/idd.area.js",
+                    "src/idd/idd.heatmap.js",
+                    "src/idd/idd.onscreennavigation.js",
+                    "src/idd/idd.bingmapsplot.js",
+                    "src/idd/idd.ko.js",
+                    "src/idd/idd.ko.markers.js",
+                    "src/idd/idd.ko.polyline.js",
+                    "src/idd/idd.ko.domplot.js",
+                    "src/idd/idd.ko.area.js",
+                    "src/idd/wrapper_footer_knockout.txt"
+                ],
+                dest: 'dist/idd_knockout.js',
+                nonull: true
+            },
+            umd: {
+                src: [
                     "src/idd/wrapper_header.txt",
                     "src/idd/mouseWheelPlugin.js",
                     "src/idd/idd.settings.js",
@@ -55,33 +138,16 @@
                     "src/idd/idd.heatmap.js",
                     "src/idd/idd.onscreennavigation.js",
                     "src/idd/idd.bingmapsplot.js",
+                    "src/viewer/chartViewer2.js",
                     "src/idd/wrapper_footer.txt"
                 ],
-                dest: 'dist/idd.js',
-                nonull: true
-            },
-            dist2: {
-                src: [
-                        "src/viewer/MathUtils.js",
-                        "src/viewer/chartViewer2.js"
-                ],
-                dest: "dist/chartViewer.js",
-                nonull: true
-            },
-            umd: {
-                src: [
-                    "src/viewer/Chart.header.js",
-                    "src/viewer/MathUtils.js",
-                    "src/viewer/chartViewer2.js",
-                    "src/viewer/Chart.footer.js"
-                ],
-                dest: "dist/chartViewer.umd.js",
+                dest: "dist/idd.umd.js",
             },
             umdTs: {
-                dest: "dist/chartViewer.umd.d.ts",
+                dest: "dist/idd.umd.d.ts",
                 src: ["src/viewer/chartViewer.d.ts"],
                 options: {
-                    footer: "export = { ChartViewer, Plot };"
+                    footer: "export = { InteractiveDataDisplay, Plot };"
                 }
             }
         },
@@ -91,7 +157,8 @@
             },
             dist: {
                 files: {
-                    'dist/idd.min.js': ['<%= concat.dist.dest %>']
+                    'dist/idd.min.js': ['<%= concat.dist.dest %>'],
+					'dist/idd_knockout.min.js': ['<%= concat.dist_ko.dest %>']
                 }
             }
         },
@@ -110,9 +177,8 @@
         copy: {
             main: {
                 files: [
-                    { src: 'src/css/idd.css', dest: 'dist/idd.css' },
-                    { src: "src/css/chartViewer.css", dest: "dist/chartViewer.css" },
-                    { src: "src/viewer/chartViewer.d.ts", dest: "dist/chartViewer.d.ts"},
+                    { src: "src/viewer/chartViewer.d.ts", dest: "dist/idd.d.ts" },
+                    { src: "dist/idd.css", dest: "dist/idd.umd.css" },
                     { expand: true, src: "src/icons/*", dest: "dist/icons/", flatten: true }
                 ]
             },
@@ -198,6 +264,6 @@
     grunt.loadNpmTasks('grunt-bower-task');;
 
     grunt.registerTask('update-tsd', ['tsd']);
-    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:dist', 'uglify', 'ts:dist', 'concat:dist2', 'copy','concat:umd', 'concat:umdTs', 'wiredep', 'ts:testGlobal', 'ts:test', 'jasmine']);
+    grunt.registerTask('default', ['bower', 'concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:styles', 'concat:dist_ko', 'ts:dist', 'concat:dist', 'uglify', 'copy', 'concat:umd', 'concat:umdTs', 'wiredep', 'ts:testGlobal', 'ts:test', 'jasmine']);
     grunt.registerTask('test', ['bower', 'jasmine']);
 };

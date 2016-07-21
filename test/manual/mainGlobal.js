@@ -2,7 +2,7 @@ var main;
 (function (main) {
     function start() {
         var el = document.getElementById("chart");
-        ChartViewer.show(el, {
+        InteractiveDataDisplay.show(el, {
             "elem1": { kind: "line3",
                 x: [1, 2, 3, 4],
                 y: [1, 4, 6, 9],

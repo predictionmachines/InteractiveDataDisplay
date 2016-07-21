@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <title>Band</title>
-    <link rel="stylesheet" type="text/css" href="../../dist/chartViewer.css" />
     <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../../src/css/IDDTheme.css" />
     <!-- bower:css -->
@@ -14,7 +13,6 @@
 
     <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
     <script type="text/javascript" src="../../dist/idd.js"></script>
-    <script type="text/javascript" src="../../dist/chartViewer.js"></script>
     
     <meta charset="utf-8" />
     <script>
@@ -32,7 +30,7 @@
                 y1[i] = d == 0 ? k : k * Math.sin(d * k * Math.PI) / (d * k * Math.PI);
                 y2[i] = 0.5 * y1[i];
             }
-            ChartViewer.show(document.getElementById("chart"), {
+            InteractiveDataDisplay.show(document.getElementById("chart"), {
                 "p2": Plot.band({ x: x, y1: y1, y2: y2 })
             });
         });

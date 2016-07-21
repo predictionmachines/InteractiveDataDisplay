@@ -1,6 +1,6 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-declare var InteractiveDataDisplay: any;
-module ChartViewer {
+/// <reference path="ChartViewer.ts" />
+module InteractiveDataDisplay {
     export type Map = {
         [key: string]: any;
     }
@@ -40,10 +40,6 @@ module ChartViewer {
             }
         }
         return output;
-    }
-
-    export function RgbaToString(rgba) {
-        return "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
     }
 
     export function getTitle(def: PlotInfo, seriesName: string) {
@@ -145,121 +141,5 @@ module ChartViewer {
         return wasUpdated;
     }
 
-    export function GetMin(array) {
-        var min = undefined;
-        if (array != undefined) {
-            for (var i = 0; i < array.length; i++) {
-                if (!isNaN(array[i]) && (min === undefined || min > array[i])) {
-                    min = array[i];
-                }
-            }
-        }
-
-        return min;
-    }
-
-    export function GetMax(array) {
-        var max = undefined;
-        if (array != undefined) {
-            for (var i = 0; i < array.length; i++) {
-                if (!isNaN(array[i]) && (max === undefined || max < array[i])) {
-                    max = array[i];
-                }
-            }
-        }
-        return max;
-    }
-
-    export function getFormatter(arr, getRange) {
-        var range = getRange(arr);
-        var formatter = MathUtils.getPrintFormat(range.min, range.max, (range.max - range.min) / 4);
-        return formatter;
-    }
-
-    export function get2dRange(arr) {
-
-        var mins = [], maxes = [];
-        for (var i = 0; i < arr.length; ++i) {
-            mins.push(GetMin(arr[i]));
-            maxes.push(GetMax(arr[i]));
-        }
-        return { min: GetMin(mins), max: GetMax(maxes) };
-    }
-
-    export function round(x, range, isCoords) {
-        var log10 = 1 / Math.log(10);
-        var beta = Math.floor(Math.log(range.max - range.min) * log10) - 2;
-        if (isCoords) beta -= 2;
-        if (beta <= 0) {
-            if (-beta > 15) return parseFloat(x.toFixed(15));
-            return parseFloat(x.toFixed(-beta));
-        }
-        else {
-            var degree = Math.pow(10, beta - 1);
-            return Math.round(x / degree) * degree;
-        }
-    }
-
-    export function getCellContaining(dx, dy, x, y): any {
-        var n = x.length;
-        var m = y.length;
-        if (n == 0 || m == 0) return;
-
-        if (dx < x[0] || dy < y[0] ||
-            dx > x[n - 1] || dy > y[m - 1]) return;
-
-        var i;
-        for (i = 1; i < n; i++) {
-            if (dx <= x[i]) {
-                if (isNaN(x[i - 1])) return NaN;
-                break;
-            }
-        }
-
-        var j;
-        for (j = 1; j < m; j++) {
-            if (dy <= y[j]) {
-                if (isNaN(y[j - 1])) return NaN;
-                break;
-            }
-        }
-        if (i >= n || j >= m) return NaN;
-        return { iLeft: i - 1, jBottom: j - 1 };
-    };
-    export function getArrayValue(xd, yd, x, y, array, mode) {
-        var n = x.length;
-        var m = y.length;
-        if (n == 0 || m == 0) return null;
-
-        var cell = getCellContaining(xd, yd, x, y);
-        if (cell == undefined) return null;
-        if (cell != cell) return NaN;
-
-        var value;
-        if (mode === "gradient") {
-            var flb, flt, frt, frb;
-            flt = array[cell.iLeft][cell.jBottom + 1];
-            flb = array[cell.iLeft][cell.jBottom];
-            frt = array[cell.iLeft + 1][cell.jBottom + 1];
-            frb = array[cell.iLeft + 1][cell.jBottom];
-
-            if (isNaN(flt) || isNaN(flb) || isNaN(frt) || isNaN(frb)) {
-                value = NaN;
-            } else {
-                var y0 = y[cell.jBottom];
-                var y1 = y[cell.jBottom + 1];
-                var kyLeft = (flt - flb) / (y1 - y0);
-                var kyRight = (frt - frb) / (y1 - y0);
-                var fleft = kyLeft * (yd - y0) + flb;
-                var fright = kyRight * (yd - y0) + frb;
-                var x0 = x[cell.iLeft];
-                var x1 = x[cell.iLeft + 1];
-                var kx = (fright - fleft) / (x1 - x0);
-                value = kx * (xd - x0) + fleft;
-            }
-        } else {
-            value = array[cell.iLeft][cell.jBottom];
-        }
-        return value;
-    };
+    export declare function readCsv(jqPlotDiv);
 }

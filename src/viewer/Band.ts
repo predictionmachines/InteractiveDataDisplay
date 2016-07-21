@@ -1,10 +1,8 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="Utils.ts" />
 /// <reference path="PlotRegistry.ts" />
-declare var InteractiveDataDisplay: any;
-declare var Microsoft: any;
 
-module ChartViewer {
+module InteractiveDataDisplay {
     PlotRegistry["band"] = {
         initialize(plotDefinition: PlotInfo, viewState: ViewState, chart: IDDPlot) {
             var div = $("<div></div>")
@@ -20,7 +18,6 @@ module ChartViewer {
             // except it also can sort data series by x.
             var plot = plots[0];
             var bandDef = <Plot.BandDefinition><any>plotDefinition;
-            
             plot.draw(bandDef);
         }
     }

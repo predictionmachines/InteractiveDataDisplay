@@ -1,10 +1,8 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="PlotRegistry.ts" />
 /// <reference path="Utils.ts" />
-declare var InteractiveDataDisplay: any;
-declare var Microsoft: any;
 
-module ChartViewer {
+module InteractiveDataDisplay {
     PlotRegistry["heatmap"] = {
         initialize(plotDefinition: PlotInfo, viewState, chart: IDDPlot) {
             var div = $("<div></div>")

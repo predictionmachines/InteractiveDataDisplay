@@ -111,7 +111,7 @@
                 var markers = plot.polyline("line", dataSet[data]);
 
                 var chartViewer = $('<div style="width: 1000px; height: 500px; float: right;"></div>').appendTo(div);
-                ChartViewer.show(chartViewer, {
+                InteractiveDataDisplay.show(chartViewer, {
                     "line": Plot.line(dataSet[data]),
                 });
             }

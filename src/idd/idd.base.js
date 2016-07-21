@@ -87,6 +87,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 break;
             case "dom":
                 plot = new InteractiveDataDisplay.DOMPlot(jqDiv, master);
+                plot.order = Number.MAX_SAFE_INTEGER;
                 break;
             case "figure":
                 plot = new InteractiveDataDisplay.Figure(jqDiv, master);
@@ -2633,13 +2634,13 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
 
     // Renders set of DOM elements in the data space of this plot
+    var plotClickEvent = jQuery.Event("plotClick");
     InteractiveDataDisplay.DOMPlot = function (host, master) {
         this.base = InteractiveDataDisplay.Plot;
         this.base(host, master);
-
         // array of DOM elements located in the data space of this plot
         var domElements = [];
-
+        var that = this;
         var addElement = function (jqElem, scaleMode, xld, ytd, wd, hd, ox, oy) {
             if (jqElem[0].tagName.toLowerCase() !== "div") throw "DOMPlot supports only DIV elements";
             jqElem._x = xld;
@@ -2649,6 +2650,32 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             jqElem._originX = ox || 0;
             jqElem._originY = oy || 0;
             jqElem._scale = scaleMode || 'element';
+
+            var updateElement = function (elt) {
+                // transformations
+                var screenToPlotX = that.coordinateTransform.screenToPlotX;
+                var screenToPlotY = that.coordinateTransform.screenToPlotY;
+                var plotToDataX = that.xDataTransform && that.xDataTransform.plotToData;
+                var plotToDataY = that.yDataTransform && that.yDataTransform.plotToData;
+                var screenToDataX = plotToDataX ? function (x) { return plotToDataX(screenToPlotX(x)) } : screenToPlotX;
+                var screenToDataY = plotToDataY ? function (y) { return plotToDataY(screenToPlotY(y)) } : screenToPlotY;
+
+                var currentPos = elt.position();
+                elt._left = currentPos.left + elt._originX * elt.width();
+                elt._top = currentPos.top + elt._originY * elt.height();
+                elt._x = screenToDataX(currentPos.left + elt._originX * elt.width());
+                elt._y = screenToDataY(currentPos.top + elt._originY * elt.height());
+            };
+
+            jqElem.on("drag", function (event, ui) {
+                updateElement(jqElem);
+            });
+
+            jqElem.on("dragstop", function (event, ui) {
+                updateElement(jqElem);
+                that.invalidateLocalBounds();
+                that.requestUpdateLayout();
+            });
 
             jqElem.addClass("idd-dom-marker");
             jqElem.css('display', 'none').css('z-index', InteractiveDataDisplay.ZIndexDOMMarkers);
@@ -2884,8 +2911,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // width, height are optional size of the element in the data space
         // returns added DOM element
         this.add = function (element, scaleMode, x, y, width, height, originX, originY) {
-            var el = $(element)
-            if(!this.host[0].contains(element))
+            var el = $(element);
+            if (!this.host[0].contains(element))
                 el.appendTo(this.host);
             addElement(el, scaleMode, x, y, width, height, originX, originY);
             this.invalidateLocalBounds();
@@ -2911,7 +2938,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
                 jqe.remove();
             };
-
             if (element.jquery) {
                 removeJQ(element);
             } else {
@@ -2947,6 +2973,26 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             this.requestUpdateLayout();
         };
 
+        this.enableClickablePanel = false;
+        
+        that.master.centralPart.click(function (e) {
+            if (that.enableClickablePanel) {
+                // transformations
+                var screenToPlotX = that.coordinateTransform.screenToPlotX;
+                var screenToPlotY = that.coordinateTransform.screenToPlotY;
+                var plotToDataX = that.xDataTransform && that.xDataTransform.plotToData;
+                var plotToDataY = that.yDataTransform && that.yDataTransform.plotToData;
+                var screenToDataX = plotToDataX ? function (x) { return plotToDataX(screenToPlotX(x)) } : screenToPlotX;
+                var screenToDataY = plotToDataY ? function (y) { return plotToDataY(screenToPlotY(y)) } : screenToPlotY;
+
+                var origin = InteractiveDataDisplay.Gestures.getXBrowserMouseOrigin(that.master.centralPart, e);
+
+                var x = screenToDataX(origin.x);
+                var y = screenToDataY(origin.y);
+
+                that.host.trigger(plotClickEvent, { x: x, y: y });
+            }
+        });
 
         Object.defineProperty(this, "domElements", { get: function () { return domElements.slice(0); }, configurable: false });
     }
@@ -3030,7 +3076,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.renderCore = function (plotRect, screenSize) {
             InteractiveDataDisplay.GridlinesPlot.prototype.renderCore.call(this, plotRect, screenSize);
 
-            initializeAxes();
+            initializeAxes.call(this);
             var ctx = this.getContext(true);
             ctx.strokeStyle = _stroke;
             ctx.fillStyle = _stroke;
@@ -3061,7 +3107,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
         
         this.renderCoreSvg = function (plotRect, screenSize, svg) {
-            initializeAxes();
+            initializeAxes.call(this);
 
             var strokeThickness = parseInt(_thickness.slice(0, -2));
             var style = { width: strokeThickness, color: _stroke };
