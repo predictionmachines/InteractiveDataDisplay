@@ -15,6 +15,7 @@ New features:
  
 Fixes:
   - Previously markers failed if `colorPalette` was a string defining an absolute palette.
+  - Box-and-whisker markers failed if `y.median` or `x` had `NaN`.
 
  
 Changes:

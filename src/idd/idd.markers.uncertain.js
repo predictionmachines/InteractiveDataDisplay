@@ -642,8 +642,7 @@ InteractiveDataDisplay.BoxWhisker = {
         var n = data.y.median.length;
 
         var mask = new Int8Array(n);
-        InteractiveDataDisplay.Utils.maskNaN(mask, data.y.median);
-        data.y_mean = data.y.median;
+        InteractiveDataDisplay.Utils.maskNaN(mask, data.y.median);        
 
         // x
         if (data.x == undefined)
@@ -712,7 +711,7 @@ InteractiveDataDisplay.BoxWhisker = {
         if (m > 0) { // there are missing values
             m = n - m;
             data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
-            data.y_mean = InteractiveDataDisplay.Utils.applyMask(mask, data.y_mean, m);
+            data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y.median, m);
             data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
             data.upper95 = InteractiveDataDisplay.Utils.applyMask(mask, data.upper95, m);
             data.lower95 = InteractiveDataDisplay.Utils.applyMask(mask, data.lower95, m);
@@ -723,6 +722,7 @@ InteractiveDataDisplay.BoxWhisker = {
             for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
             data.indices = indices;
         } else {
+            data.y = data.y.median;
             data.indices = InteractiveDataDisplay.Utils.range(0, n - 1);
         }
     },
@@ -737,12 +737,11 @@ InteractiveDataDisplay.BoxWhisker = {
         var msize = marker.size;
         var shift = msize / 2;
         var x = transform.dataToScreenX(marker.x);
-        var y = transform.dataToScreenY(marker.y_mean);
         var u68 = transform.dataToScreenY(marker.upper68);
         var l68 = transform.dataToScreenY(marker.lower68);
         var u95 = transform.dataToScreenY(marker.upper95);
         var l95 = transform.dataToScreenY(marker.lower95);
-        var mean = transform.dataToScreenY(marker.y_mean);
+        var mean = transform.dataToScreenY(marker.y);
 
         context.beginPath();
         context.strokeStyle = marker.border === undefined ? "black" : marker.border;

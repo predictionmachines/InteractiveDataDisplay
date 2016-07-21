@@ -132,8 +132,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
             }
             return total_bb;
         } else if (typeof _data.x != "undefined" && typeof _data.y != "undefined") {
-            if (!InteractiveDataDisplay.Utils.isArray(_data.y)) return InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_data.x, _data.y.median, dataToPlotX, dataToPlotY);
-            else return InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_data.x, _data.y, dataToPlotX, dataToPlotY);
+            return InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_data.x, _data.y, dataToPlotX, dataToPlotY);
         } 
         return undefined;
     };
