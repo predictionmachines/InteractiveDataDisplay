@@ -1,6 +1,6 @@
 
 
-##### 1.3.1 (Unpublished)
+##### 1.4.0 (July 21, 2016)
 
 **Breaking changes**: 
  - **Removed separate chartViewer.js (.css, .d.ts)**. Idd.js now includes chartViewer.js (same for umd version). 
