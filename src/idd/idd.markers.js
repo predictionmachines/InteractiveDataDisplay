@@ -280,6 +280,18 @@ InteractiveDataDisplay.Markers = function (div, master) {
         return { name: nameDiv, legend: legendDiv, onLegendRemove: onLegendRemove };  
     };
 
+    this.buildSvgLegend = function (legendSettings, svg) {
+        var that = this;
+        var legendElements = {thumbnail: svg.group(), content: svg.group() };
+        legendSettings.height = 30;
+        if (_shape && typeof _shape.buildSvgLegendElements != "undefined")
+            legendElements = _shape.buildSvgLegendElements(legendSettings, svg, _data, that.getTitle);
+        svg.rect(legendSettings.width, legendSettings.height).fill({ color: "white", opacity: 0.5 });
+        svg.add(legendElements.thumbnail.translate(5, 5).front());
+        svg.add(svg.text(that.name).translate(40, 0));
+        svg.add(legendElements.content.translate(5, 30));
+    }
+
     // Others
     this.onDataTransformChanged = function (arg) {
         this.invalidateLocalBounds();

@@ -156,17 +156,13 @@ InteractiveDataDisplay.Area = function (div, master) {
     this.renderCoreSvg = function (plotRect, screenSize, svg) {
         InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y1, _y2, _fill);
     }
-    this.getLegendSvg = function (legendSettings) {
+    this.buildSvgLegend = function (legendSettings, svg) {
         var that = this;
-        var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        var svg = SVG(svgHost).size(legendSettings.width, legendSettings.height);
-        svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5).stroke({color: "black", opacity: 0.12, width: 5});
-        svg.polyline([[0, 0], [0, 5], [15, 20], [20, 20], [20, 15], [5, 0], [0, 0]]).fill(_fill).opacity(0.5).translate(5, 5);
-        svg.text(that.name).fill("black").translate(45, 0)
-        .font({
-            family: "Segoe UI",
-        });
-        return svg;
+        legendSettings.height = 30;
+        svg.add(svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5));
+        svg.add(svg.polyline([[0, 0], [0, 5], [15, 20], [20, 20], [20, 15], [5, 0], [0, 0]]).fill(_fill).opacity(0.5).translate(5, 5));
+        svg.add(svg.text(that.name).translate(40, 0));
+        svg.front();
     }
 }
 InteractiveDataDisplay.Area.prototype = new InteractiveDataDisplay.CanvasPlot;

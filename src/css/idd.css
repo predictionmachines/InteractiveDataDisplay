@@ -226,6 +226,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: content-box;
+    font-size: 14px;
 }
 .idd-legend-item-compact
 {

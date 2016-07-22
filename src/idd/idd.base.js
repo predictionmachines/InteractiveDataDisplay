@@ -917,21 +917,44 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         
         this.exportContentToSvg = function(plotRect, screenSize, svg) {
             var plots = this.getPlotsSequence();
+            var j = 0;
             for (var i = 0; i < plots.length; i++) {
-                if (plots[i].isVisible) {
-                    plots[i].renderCoreSvg(plotRect, screenSize, svg);
-                    if (plots[i].getLegendSvg) svg.add(plots[i].getLegendSvg({ width: 100, height: 30 }));
-                }
+                if (plots[i].isVisible) plots[i].renderCoreSvg(plotRect, screenSize, svg);
             }
         };
         
+        this.exportLegendToSvg = function () {
+            if (!SVG.supported) throw "SVG is not supported";
+
+            var screenSize = that.screenSize;
+            var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
+
+            var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            var svg = SVG(svgHost).size(150, _host.height());
+            var legend_g = svg.group();
+            var plots = this.getPlotsSequence();
+            var commonSettings = { width: 200, height: 0 };
+            for (var i = plots.length - 1; i >= 0; i--) {
+                var legendSettings = { width: 200, height: 0 };
+                if (plots[i].isVisible) {
+                    var item_g = legend_g.group();
+                    plots[i].buildSvgLegend(legendSettings, item_g);
+                    item_g.translate(0, commonSettings.height);
+                    commonSettings.height += legendSettings.height;
+                }
+            }
+            return svg;
+        };
+
         // Renders this plot to svg using the current coordinate transform and screen size.
         // plotRect     {x,y,width,height}  Rectangle in the plot plane which is visible, (x,y) is left/bottom of the rectangle
         // screenSize   {width,height}      Size of the output region to render inside
         // This method should be implemented by derived plots.
         this.renderCoreSvg = function (plotRect, screenSize, svg) {
         };
-
+        // Renders legend of this plot. This method should be implemented by derived plots.
+        this.buildSvgLegend = function (legendSetting, svg) {
+        };
         // Notifies derived plots that isRendered changed.
         // todo: make an event and bind in the derived plots
         this.onIsRenderedChanged = function () {
@@ -2632,22 +2655,17 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return { name: nameDiv, legend: { thumbnail: canvas, content: undefined }, onLegendRemove: onLegendRemove };
         };
 
-        this.getLegendSvg = function (legendSettings) {
+        this.buildSvgLegend = function (legendSettings, svg) {
             var that = this;
-            var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            var svg = SVG(svgHost).size(legendSettings.width, legendSettings.height);
-            svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5).stroke({ color: "black", opacity: 0.12, width: 5 });
-
+            legendSettings.height = 30;
+            svg.add(svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5));
             var isUncertainData95 = _y_u95 != undefined && _y_l95 != undefined;
             var isUncertainData68 = _y_u68 != undefined && _y_l68 != undefined;
-            if (isUncertainData95) svg.polyline([[0, 0], [0, 10], [10, 20], [20, 20], [20, 10], [10, 0], [0, 0]]).fill(_fill95).opacity(0.5).translate(5, 5);
-            if (isUncertainData68) svg.polyline([[0, 0], [0, 5], [15, 20], [20, 20], [20, 15], [5, 0], [0, 0]]).fill(_fill68).opacity(0.5).translate(5, 5);
-            svg.line(0, 0, 20, 20).stroke({ width: _thickness, color: _stroke }).translate(5, 5);
-            svg.text(that.name).fill("black").translate(45, 0)
-            .font({
-                family: "Segoe UI",
-            });
-            return svg;
+            if (isUncertainData95) svg.add(svg.polyline([[0, 0], [0, 10], [10, 20], [20, 20], [20, 10], [10, 0], [0, 0]]).fill(_fill95).opacity(0.5).translate(5, 5));
+            if (isUncertainData68) svg.add(svg.polyline([[0, 0], [0, 5], [15, 20], [20, 20], [20, 15], [5, 0], [0, 0]]).fill(_fill68).opacity(0.5).translate(5, 5));
+            svg.add(svg.line(0, 0, 20, 20).stroke({ width: _thickness, color: _stroke }).translate(5, 5));
+            svg.add(svg.text(that.name).translate(40, 0));
+            svg.front();
         }
         // Initialization 
         if (initialData && typeof initialData.y != 'undefined')

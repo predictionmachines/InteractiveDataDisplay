@@ -471,6 +471,62 @@
                 svg.clipWith(svg.rect(w_s, h_s));
             };
             nextValuePoint();
+        },
+
+        buildSvgLegendElements: function (legendSettings, svg, data, getTitle) {
+            var thumbnail = svg.group();
+            var content = svg.group();
+            var fontSize = 14;
+            var size = fontSize * 1.5;
+            var x1 = size / 2 + 1;
+            var y1 = x1;
+            var halfSize = size / 2;
+            //thumbnail
+            if (data.individualColors) {
+                border = "#000000";
+                color = "#ffffff";
+            }
+            else {
+                color = data.color;
+                border = "none";
+                if (data.border != null) border = data.border;
+            }
+            switch (data.shape) {     
+                case 1: // box
+                    thumbnail.rect(size, size).translate(x1 - halfSize, y1 - halfSize).fill({color: color, opacity: 1}).stroke(border); 
+                    break;
+                case 2: // circle
+                    thumbnail.circle(size).translate(x1 - halfSize, y1 - halfSize).fill(color).stroke(border);
+                    break;
+                case 3: // diamond
+                    thumbnail.rect(size / Math.sqrt(2), size / Math.sqrt(2)).translate(x1, y1 - halfSize).fill(color).stroke(border).rotate(45);
+                    break;
+                case 4: // cross
+                    var halfThirdSize = size / 6;
+                    thumbnail.polyline([[-halfSize, -halfThirdSize], [-halfThirdSize, -halfThirdSize], [-halfThirdSize, -halfSize], [halfThirdSize, -halfSize],
+                        [halfThirdSize, -halfThirdSize], [halfSize, -halfThirdSize], [halfSize, halfThirdSize], [halfThirdSize, halfThirdSize], [halfThirdSize, halfSize],
+                        [-halfThirdSize, halfSize], [-halfThirdSize, halfThirdSize], [-halfSize, halfThirdSize], [-halfSize, -halfThirdSize]]).translate(x1, y1).fill(color).stroke(border);//cross    
+                    break;
+                case 5: // triangle
+                    var r = Math.sqrt(3) / 6 * size;
+                    thumbnail.polyline([[x1 - halfSize, y1 + r], [x1, y1 - r * 2], [x1 + halfSize, y1 + r], [x1 - halfSize, y1 + r]]).fill(color).stroke(border);//triangle    
+                    break;
+            }
+            //content
+            var shiftsizePalette = 0;
+            if (data.individualColors && data.colorPalette) {
+                var colorText = getTitle("color");
+                content.text(colorText).translate(5, 0);
+                shiftsizePalette = 30;
+                legendSettings.height += 30;
+            };
+            if (data.sizePalette) {
+                var sizeText = getTitle("size");
+                content.add(svg.text(sizeText).translate(5, shiftsizePalette));
+                legendSettings.height += 30;
+            };
+            svg.front();
+            return { thumbnail: thumbnail, content: content };
         }
     }
     InteractiveDataDisplay.Markers.shapes["box"] = primitiveShape;

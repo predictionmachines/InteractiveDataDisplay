@@ -107,6 +107,34 @@
         }
     };
 
+    this.exportToSvg = function (plotRect, screenSize, svg) {
+        if (!SVG.supported) throw "SVG is not supported";
+
+        var screenSize = this.screenSize;
+        var plotRect = this.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
+
+        var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        var svg = SVG(svgHost).size(div.width(), div.height());
+        var chart_g = svg.group();
+        this.exportContentToSvg(plotRect, screenSize, chart_g);
+        var legend_g = svg.group();
+        var shift = leftAxis.width() + this.centralPart.width() + 30;
+
+        var style = window.getComputedStyle(legendDiv[0], null);
+        fontSize = parseFloat(style.getPropertyValue('font-size')); 
+        fontFamily = style.getPropertyValue('font-family');
+        lineHeight = parseFloat(style.getPropertyValue('line-height'));
+
+
+        legend_g.add(this.exportLegendToSvg()).translate(shift, 30)
+            .font({
+                family: fontFamily,
+                size: fontSize
+            });
+        svg.size(div.width() + 200, div.height());
+        return svg;
+    };
+
     setDefaultGestureSource();
 };
 
