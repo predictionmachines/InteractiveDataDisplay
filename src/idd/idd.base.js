@@ -923,26 +923,40 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         };
         
-        this.exportLegendToSvg = function () {
+        this.exportLegendToSvg = function (legendDiv) {
             if (!SVG.supported) throw "SVG is not supported";
 
             var screenSize = that.screenSize;
             var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
 
             var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            var svg = SVG(svgHost).size(150, _host.height());
+            var svg = SVG(svgHost).size(200, _host.height());
             var legend_g = svg.group();
-            var plots = this.getPlotsSequence();
-            var commonSettings = { width: 200, height: 0 };
-            for (var i = plots.length - 1; i >= 0; i--) {
-                var legendSettings = { width: 200, height: 0 };
-                if (plots[i].isVisible) {
-                    var item_g = legend_g.group();
-                    plots[i].buildSvgLegend(legendSettings, item_g);
-                    item_g.translate(0, commonSettings.height);
-                    commonSettings.height += legendSettings.height;
+            var plots = InteractiveDataDisplay.Utils.enumPlots(this);
+            var commonSettings = { width: 170, height: 0 };
+            var j = 0;
+            var lastLine;
+            for (var i = 0; i < plots.length; i++) {
+                var legendSettings = { width: 170, height: 0 };
+                if (plots[i].getLegend() != undefined) {
+                    if (plots[i].isVisible) {
+                        var item_g = legend_g.group();
+                        if (legendDiv) {
+                            legendSettings.legendDiv = legendDiv.children[j];
+                            j++;
+                        }
+                        plots[i].buildSvgLegend(legendSettings, item_g);
+                        item_g.translate(5, commonSettings.height);
+                        legend_g.clipWith(item_g.rect(legendSettings.width, commonSettings.height + 30));
+                        commonSettings.height += legendSettings.height + 10;
+                        lastLine = svg.line(15, commonSettings.height, commonSettings.width, commonSettings.height).stroke({ width: 0.3, color: "black" }).back();
+                        commonSettings.height += 10;
+                    }
+                    else j++;
                 }
             }
+            if (lastLine != undefined) lastLine.remove();
+            legend_g.clipWith(legend_g.rect(180, commonSettings.height + 10));
             return svg;
         };
 
@@ -2661,10 +2675,13 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             svg.add(svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5));
             var isUncertainData95 = _y_u95 != undefined && _y_l95 != undefined;
             var isUncertainData68 = _y_u68 != undefined && _y_l68 != undefined;
-            if (isUncertainData95) svg.add(svg.polyline([[0, 0], [0, 10], [10, 20], [20, 20], [20, 10], [10, 0], [0, 0]]).fill(_fill95).opacity(0.5).translate(5, 5));
-            if (isUncertainData68) svg.add(svg.polyline([[0, 0], [0, 5], [15, 20], [20, 20], [20, 15], [5, 0], [0, 0]]).fill(_fill68).opacity(0.5).translate(5, 5));
-            svg.add(svg.line(0, 0, 20, 20).stroke({ width: _thickness, color: _stroke }).translate(5, 5));
-            svg.add(svg.text(that.name).translate(40, 0));
+            if (isUncertainData95) svg.add(svg.polyline([[0, 0], [0, 9], [9, 18], [18, 18], [18, 9], [9, 0], [0, 0]]).fill(_fill95).opacity(0.5).translate(5, 5));
+            if (isUncertainData68) svg.add(svg.polyline([[0, 0], [0, 4.5], [13.5, 18], [18, 18], [18, 13.5], [4.5, 0], [0, 0]]).fill(_fill68).opacity(0.5).translate(5, 5));
+            svg.add(svg.line(0, 0, 18, 18).stroke({ width: _thickness, color: _stroke }).translate(5, 5));
+            var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
+            fontSize = parseFloat(style.getPropertyValue('font-size'));
+            fontFamily = style.getPropertyValue('font-family');
+            svg.add(svg.text(that.name).font({family: fontFamily, size: fontSize }).translate(40, 0));
             svg.front();
         }
         // Initialization 

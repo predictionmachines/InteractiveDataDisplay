@@ -160,8 +160,11 @@ InteractiveDataDisplay.Area = function (div, master) {
         var that = this;
         legendSettings.height = 30;
         svg.add(svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5));
-        svg.add(svg.polyline([[0, 0], [0, 5], [15, 20], [20, 20], [20, 15], [5, 0], [0, 0]]).fill(_fill).opacity(0.5).translate(5, 5));
-        svg.add(svg.text(that.name).translate(40, 0));
+        svg.add(svg.polyline([[0, 0], [0, 4.5], [13.5, 18], [18, 18], [18, 13.5], [4.5, 0], [0, 0]]).fill(_fill).opacity(0.5).translate(5, 5));
+        var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
+        fontSize = parseFloat(style.getPropertyValue('font-size'));
+        fontFamily = style.getPropertyValue('font-family');
+        svg.add(svg.text(that.name).font({ family: fontFamily, size: fontSize }).translate(40, 0));
         svg.front();
     }
 }

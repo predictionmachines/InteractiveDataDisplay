@@ -294,7 +294,7 @@
                         sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
                         sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
                         sizeDivStyle = sizeDiv[0].style;
-                        var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(sizeDiv);
+                        var paletteDiv = $("<div style='width: 170px; color: rgb(0,0,0)'></div>").appendTo(sizeDiv);
                         sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
                         sizeIsVisible = 2;
                     } else {
@@ -314,7 +314,7 @@
                         colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
                         colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                         colorDivStyle = colorDiv[0].style;
-                        var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(colorDiv);
+                        var paletteDiv = $("<div style='width: 170px; color: rgb(0,0,0); '></div>").appendTo(colorDiv);
                         colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
                         colorIsVisible = 2;
                     } else {
@@ -476,7 +476,7 @@
         buildSvgLegendElements: function (legendSettings, svg, data, getTitle) {
             var thumbnail = svg.group();
             var content = svg.group();
-            var fontSize = 14;
+            var fontSize = 12;
             var size = fontSize * 1.5;
             var x1 = size / 2 + 1;
             var y1 = x1;
@@ -514,16 +514,34 @@
             }
             //content
             var shiftsizePalette = 0;
-            if (data.individualColors && data.colorPalette) {
+            var isContent = legendSettings.legendDiv.children[1];
+            var isColor = data.individualColors && data.colorPalette;
+            var isSize = data.sizePalette;
+            var style = (isContent && legendSettings.legendDiv.children[1].children[0] && legendSettings.legendDiv.children[1].children[0].children[0]) ? window.getComputedStyle(legendSettings.legendDiv.children[1].children[0].children[0], null) : undefined;
+            fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
+            fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+            if (isColor) {
                 var colorText = getTitle("color");
-                content.text(colorText).translate(5, 0);
-                shiftsizePalette = 30;
-                legendSettings.height += 30;
+                content.text(colorText).font({ family: fontFamily, size: fontSize });
+                var colorPalette_g = svg.group();
+                var width = legendSettings.width;
+                var height = 20;
+                InteractiveDataDisplay.SvgColorPaletteViewer(colorPalette_g, data.colorPalette, legendSettings.legendDiv.children[1].children[0].children[1], { width: width, height: height });
+                colorPalette_g.translate(5, 50);
+                shiftsizePalette = 50 + height;
+                legendSettings.height += (50 + height);
             };
             if (data.sizePalette) {
                 var sizeText = getTitle("size");
-                content.add(svg.text(sizeText).translate(5, shiftsizePalette));
-                legendSettings.height += 30;
+                content.add(svg.text(sizeText).font({ family: fontFamily, size: fontSize }).translate(0, shiftsizePalette));
+                var sizePalette_g = svg.group();
+                var width = legendSettings.width;
+                var height = 35;
+                var sizeElement = isColor ? legendSettings.legendDiv.children[1].children[1].children[1] : legendSettings.legendDiv.children[1].children[0].children[1];
+                InteractiveDataDisplay.SvgSizePaletteViewer(sizePalette_g, data.sizePalette, sizeElement, { width: width, height: height });
+                sizePalette_g.translate(5, 50 + shiftsizePalette);
+
+                legendSettings.height += (50 + height);
             };
             svg.front();
             return { thumbnail: thumbnail, content: content };

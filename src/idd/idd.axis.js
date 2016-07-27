@@ -593,7 +593,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
 // supports custom data transform
 InteractiveDataDisplay.NumericAxis = function (div) {
     this.base = InteractiveDataDisplay.TicksRenderer;
-
+    div[0].axis = this;
     this.getCoordinateFromTick = function (x) {
         var delta = this.deltaRange;
         if (isFinite(delta)) {

@@ -119,19 +119,18 @@
         this.exportContentToSvg(plotRect, screenSize, chart_g);
         var legend_g = svg.group();
         var shift = leftAxis.width() + this.centralPart.width() + 30;
-
         var style = window.getComputedStyle(legendDiv[0], null);
         fontSize = parseFloat(style.getPropertyValue('font-size')); 
         fontFamily = style.getPropertyValue('font-family');
         lineHeight = parseFloat(style.getPropertyValue('line-height'));
 
 
-        legend_g.add(this.exportLegendToSvg()).translate(shift, 30)
-            .font({
-                family: fontFamily,
-                size: fontSize
-            });
-        svg.size(div.width() + 200, div.height());
+        legend_g.add(this.exportLegendToSvg(legendDiv[0]))//.font({
+        //family: fontFamily,
+        //size: fontSize
+        //}))
+            .translate(shift, 30);
+        svg.size(div.width() + 200 + shift, div.height());
         return svg;
     };
 

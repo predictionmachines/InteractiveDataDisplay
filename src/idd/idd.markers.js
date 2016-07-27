@@ -286,9 +286,12 @@ InteractiveDataDisplay.Markers = function (div, master) {
         legendSettings.height = 30;
         if (_shape && typeof _shape.buildSvgLegendElements != "undefined")
             legendElements = _shape.buildSvgLegendElements(legendSettings, svg, _data, that.getTitle);
-        svg.rect(legendSettings.width, legendSettings.height).fill({ color: "white", opacity: 0.5 });
-        svg.add(legendElements.thumbnail.translate(5, 5).front());
-        svg.add(svg.text(that.name).translate(40, 0));
+        svg.rect(legendSettings.width, legendSettings.height).fill({ color: "white", opacity: 0 });
+        svg.add(legendElements.thumbnail.translate(5, 5));
+        var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
+        fontSize = parseFloat(style.getPropertyValue('font-size'));
+        fontFamily = style.getPropertyValue('font-family');
+        svg.add(svg.text(that.name).font({ family: fontFamily, size: fontSize }).translate(40, 0));
         svg.add(legendElements.content.translate(5, 30));
     }
 
