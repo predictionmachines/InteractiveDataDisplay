@@ -125,12 +125,8 @@
         lineHeight = parseFloat(style.getPropertyValue('line-height'));
 
 
-        legend_g.add(this.exportLegendToSvg(legendDiv[0]))//.font({
-        //family: fontFamily,
-        //size: fontSize
-        //}))
-            .translate(shift, 30);
-        svg.size(div.width() + 200 + shift, div.height());
+        legend_g.add(this.exportLegendToSvg(legendDiv[0])).translate(shift, 30);
+        svg.size(200 + shift, div.height());
         return svg;
     };
 

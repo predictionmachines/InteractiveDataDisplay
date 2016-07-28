@@ -1098,7 +1098,210 @@ InteractiveDataDisplay.BoxWhisker = {
         svg.clipWith(svg.rect(w_s, h_s));
     }
 };
+InteractiveDataDisplay.Bars = {
+    prepare: function (data) {
+        // y
+        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
+        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
+        var n = data.y.length;
+        var mask = new Int8Array(n);
+        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+        //x
+        if (data.x == undefined)
+            data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+        else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+        else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from lenght of 'y'"
+        else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+        // border
+        if (data.border == undefined || data.border == "none")
+            data.border = null; // no border
+        // shadow
+        if (data.shadow == undefined || data.shadow == "none")
+            data.shadow = null; // no shadow
+
+        if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
+        if (InteractiveDataDisplay.Utils.isArray(data.color)) {
+            if (data.color.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
+            if (n > 0 && typeof (data.color[0]) !== "string") { // color is a data series                 
+                var palette = data.colorPalette;
+                if (palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
+                if (typeof palette == 'string') palette = new InteractiveDataDisplay.ColorPalette.parse(palette);
+                if (palette != undefined && palette.isNormalized) {
+                    var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
+                    r = InteractiveDataDisplay.Utils.makeNonEqual(r);
+                    palette = palette.absolute(r.min, r.max);
+                }
+                data.colorPalette = palette;
+                var colors = new Array(n);
+                for (var i = 0; i < n; i++) {
+                    var color = data.color[i];
+                    if (color != color) // NaN
+                        mask[i] = 1;
+                    else {
+                        var rgba = palette.getRgba(color);                        
+                        colors[i] = "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
+                    }
+                }
+                data.color = colors;
+            }
+            data.individualColors = true;
+        } else data.individualColors = false;
+
+        // Filtering out missing values
+        var m = 0;
+        for (var i = 0; i < n; i++) if (mask[i] === 1) m++;
+        if (m > 0) { // there are missing values
+            m = n - m;
+            data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
+            data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y, m);
+            if (data.individualColors)
+                data.color = InteractiveDataDisplay.Utils.applyMask(mask, data.color, m);
+            var indices = Array(m);
+            for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
+            data.indices = indices;
+        } else {
+            data.indices = InteractiveDataDisplay.Utils.range(0, n - 1);
+        }
+    },
+    draw: function (marker, plotRect, screenSize, transform, context) {
+        var barWidth = 0.5 * marker.barWidth;
+        var xLeft = transform.dataToScreenX(marker.x - barWidth);
+        var xRight = transform.dataToScreenX(marker.x + barWidth);
+        if (xLeft > screenSize.width || xRight < 0) return;
+        var yTop = transform.dataToScreenY(marker.y);
+        var yBottom = transform.dataToScreenY(0);
+        if (yTop > yBottom) {
+            var k = yBottom;
+            yBottom = yTop;
+            yTop = k;
+        }
+        if (yTop > screenSize.height || yBottom < 0) return;
+
+        if (marker.shadow) {
+            context.fillStyle = marker.shadow;
+            context.fillRect(xLeft + 2, yTop + 2, xRight - xLeft, yBottom - yTop);
+        }
+
+        context.fillStyle = marker.color;
+        context.fillRect(xLeft, yTop, xRight - xLeft, yBottom - yTop);
+        if (marker.border) {
+            context.strokeStyle = marker.border;
+            context.strokeRect(xLeft, yTop, xRight - xLeft, yBottom - yTop);
+        }
+    },
+    getBoundingBox: function (marker) {
+        var barWidth = marker.barWidth;
+        var xLeft = marker.x - barWidth / 2;
+        var yBottom = Math.min(0, marker.y);
+        return { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
+    },
+    hitTest: function (marker, transform, ps, pd) {
+        var barWidth = marker.barWidth;
+        var xLeft = marker.x - barWidth / 2;
+        var yBottom = Math.min(0, marker.y);
+        if (pd.x < xLeft || pd.x > xLeft + barWidth) return false;
+        if (pd.y < yBottom || pd.y > yBottom + Math.abs(marker.y)) return false;
+        return true;
+    },
+    //getLegend: function (data, getTitle, legendDiv) {
+
+    //},
+    renderSvg: function (plotRect, screenSize, svg, data, t) {
+        var n = data.y.length;
+        if (n == 0) return;
+
+        var dataToScreenX = t.dataToScreenX;
+        var dataToScreenY = t.dataToScreenY;
+
+        // size of the canvas
+        var w_s = screenSize.width;
+        var h_s = screenSize.height;
+        var xmin = 0, xmax = w_s;
+        var ymin = 0, ymax = h_s;
+
+        var xLeft, xRight, yTop, yBottom, color;
+        var i = 0;
+        var barWidth = data.barWidth;
+        var shift = barWidth / 2;
+        var border = data.border == null ? 'none' : data.border;
+        var shadow = data.shadow == null ? 'none' : data.shadow;
+        for (; i < n; i++) {
+            xLeft = dataToScreenX(data.x[i] - shift);
+            xRight = dataToScreenX(data.x[i] + shift);
+            yTop = dataToScreenY(data.y[i]);
+            yBottom = dataToScreenY(0);
+            if (yTop > yBottom) {
+                var k = yBottom;
+                yBottom = yTop;
+                yTop = k;
+            }
+            color = data.individualColors ? data.color[i]: data.color;
+            c1 = (xRight < 0 || xLeft > w_s || yBottom < 0 || yTop > h_s);
+            if (!c1) {
+                svg.polyline([[xLeft + 2, yBottom + 2], [xLeft + 2, yTop + 2], [xRight + 2, yTop + 2], [xRight + 2, yBottom + 2], [xLeft + 2, yBottom + 2]]).fill(shadow);
+                svg.polyline([[xLeft, yBottom], [xLeft, yTop], [xRight, yTop], [xRight, yBottom], [xLeft, yBottom]]).fill(color).stroke({ width: 1, color: border });
+            }
+        }
+        svg.clipWith(svg.rect(w_s, h_s));
+    },
+    buildSvgLegendElements: function (legendSettings, svg, data, getTitle) {
+        var thumbnail = svg.group();
+        var content = svg.group();
+        var fontSize = 12;
+        var size = fontSize * 1.5;
+        var x1 = size / 3 - 0.5;
+        var x2 = size / 3 * 2;
+        var x3 = size;
+        var y1 = size / 2;
+        var y2 = 0;
+        var y3 = size / 3;
+        var barWidth = size / 3;
+        var shadowSize = 1;
+        //thumbnail
+        if (data.individualColors) {
+            border = "#000000";
+            color = "#ffffff";
+            shadow = "grey";
+        }
+        else {
+            color = data.color;
+            border = "none";
+            if (data.border != null) border = data.border;
+            if (data.shadow != null) shadow = data.shadow;
+        }
+
+        thumbnail.polyline([[shadowSize, size + shadowSize], [shadowSize, y1 + shadowSize], [x1 + shadowSize, y1 + shadowSize], [x1 + shadowSize, size + shadowSize], [shadowSize, size + shadowSize]]).fill(shadow);
+        thumbnail.polyline([[0, size], [0, y1], [x1, y1], [x1, size], [0, size]]).fill(color).stroke({ width: 0.5, color: border });
+        x1 += 1;
+        thumbnail.polyline([[x1 + shadowSize, size + shadowSize], [x1 + shadowSize, y2 + shadowSize], [x2 + shadowSize, y2 + shadowSize], [x2 + shadowSize, size + shadowSize], [x1 + shadowSize, size + shadowSize]]).fill(shadow);
+        thumbnail.polyline([[x1, size], [x1, y2], [x2, y2], [x2, size], [x1, size]]).fill(color).stroke({ width: 0.5, color: border });
+        x2 += 1;
+        thumbnail.polyline([[x2 + shadowSize, size + shadowSize], [x2 + shadowSize, y3 + shadowSize], [x3 + shadowSize, y3 + shadowSize], [x3 + shadowSize, size + shadowSize], [x2 + shadowSize, size + shadowSize]]).fill(shadow);
+        thumbnail.polyline([[x2, size], [x2, y3], [x3, y3], [x3, size], [x2, size]]).fill(color).stroke({ width: 0.5, color: border });
+        
+        //content
+        //var isContent = legendSettings.legendDiv.children[1];
+        //var isColor = data.individualColors && data.colorPalette;
+        //var style = (isContent && legendSettings.legendDiv.children[1].children[0] && legendSettings.legendDiv.children[1].children[0].children[0]) ? window.getComputedStyle(legendSettings.legendDiv.children[1].children[0].children[0], null) : undefined;
+        //fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
+        //fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+        //if (isColor) {
+        //    var colorText = getTitle("color");
+        //    content.text(colorText).font({ family: fontFamily, size: fontSize });
+        //    var colorPalette_g = svg.group();
+        //    var width = legendSettings.width;
+        //    var height = 20;
+        //    InteractiveDataDisplay.SvgColorPaletteViewer(colorPalette_g, data.colorPalette, legendSettings.legendDiv.children[1].children[0].children[1], { width: width, height: height });
+        //    colorPalette_g.translate(5, 50);
+        //    shiftsizePalette = 50 + height;
+        //    legendSettings.height += (50 + height);
+        //};
+        svg.front();
+        return { thumbnail: thumbnail, content: content };
+    }
+};
 
 InteractiveDataDisplay.Markers.shapes["boxwhisker"] = InteractiveDataDisplay.BoxWhisker;
 InteractiveDataDisplay.Markers.shapes["petals"] = InteractiveDataDisplay.Petal;
 InteractiveDataDisplay.Markers.shapes["bulleye"] = InteractiveDataDisplay.BullEye;
+InteractiveDataDisplay.Markers.shapes["bars"] = InteractiveDataDisplay.Bars;
