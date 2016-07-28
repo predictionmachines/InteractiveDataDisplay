@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Band</title>
+    <title>Area</title>
     <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../../src/css/IDDTheme.css" />
     <!-- bower:css -->
@@ -31,7 +31,7 @@
                 y2[i] = 0.5 * y1[i];
             }
             InteractiveDataDisplay.show(document.getElementById("chart"), {
-                "p2": Plot.band({ x: x, y1: y1, y2: y2 })
+                "p2": Plot.area({ x: x, y1: y1, y2: y2 })
             });
         });
     </script>

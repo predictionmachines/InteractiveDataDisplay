@@ -13,7 +13,7 @@ InteractiveDataDisplay.Area = function (div, master) {
 
     var _x = []; // an array of horizontal axis coordinates
     var _y1 = [];
-    var _y2 = []; // arrays of lower and upper limits of the band
+    var _y2 = []; // arrays of lower and upper limits of the area
     var _fill = defaultFill;
 
     // default styles:

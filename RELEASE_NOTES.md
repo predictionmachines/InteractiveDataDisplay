@@ -1,13 +1,26 @@
 
 
-##### 1.3.1 (Unpublished)
+##### 1.4.0 (July 21, 2016)
+
+**Breaking changes**: 
+ - **Removed separate chartViewer.js (.css, .d.ts)**. Idd.js now includes chartViewer.js (same for umd version). 
+ Changed namespace `ChartViewer` to `InteractiveDataDisplay`.
+ - ChartViewer's `"band"` plot is now `"area"` as it is in idd. Corresponding changes are in names: `AreaDefinition`, `Plot.area()`.
+
 New features:
  - IDD release includes idd.ko.js which is a superset for idd.js with basic support for Knockout. See coming examples in the [Wiki](https://github.com/predictionmachines/InteractiveDataDisplay/wiki).
- - Support of knockout bindings register for arbitrary plots
+ - Support of knockout bindings register for arbitrary plots.
+ - The `sizePalette` property of markers definition now can be either object `InteractiveDataDisplay.SizePalette` (as before) or 
+ an object of following structure: `{ sizeRange: {min:Number, max:Number}, valueRange?: {min:Number, max:Number}}`.
+ 
+Fixes:
+  - Previously markers failed if `colorPalette` was a string defining an absolute palette.
+  - Box-and-whisker markers failed if `y.median` or `x` had `NaN`.
+
  
 Changes:
  - Box-and-whisker markers are now represented by a single shape `"boxwhisker"` and the actual marker type (either box-and-whisker, box or just whisker) depends on the drawn data. See the [samples](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/test/manual/Boxwhisker%20plot.html).
- - **remove files chartViewer.js (.css, .d.ts). Concat idd.js and chartViewer.js. Add idd.umd.js. Change namespace ChartViewer on InteractiveDataDisplay.**
+ 
 ## 1.3.0 (May 27, 2016)
 
 New features:

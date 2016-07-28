@@ -759,6 +759,13 @@ InteractiveDataDisplay.SizePalette = function (isNormalized, sizeRange, valueRan
     };
 };
 
+InteractiveDataDisplay.SizePalette.Create = function (source) {
+    if(source instanceof InteractiveDataDisplay.SizePalette) return source;
+    var sizeRange = source.sizeRange;
+    var valueRange = source.valueRange;
+    return new InteractiveDataDisplay.SizePalette(typeof valueRange == "undefined", sizeRange, valueRange);
+}
+
 InteractiveDataDisplay.SizePaletteViewer = function (div, palette, options) {
     var _host = div;
     var _width = _host.width();

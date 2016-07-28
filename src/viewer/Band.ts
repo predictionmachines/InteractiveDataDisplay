@@ -3,7 +3,7 @@
 /// <reference path="PlotRegistry.ts" />
 
 module InteractiveDataDisplay {
-    PlotRegistry["band"] = {
+    PlotRegistry["area"] = {
         initialize(plotDefinition: PlotInfo, viewState: ViewState, chart: IDDPlot) {
             var div = $("<div></div>")
                 .attr("data-idd-name", plotDefinition.displayName)
@@ -17,7 +17,7 @@ module InteractiveDataDisplay {
             // The method actually just passed data from plotDefinition to IDD plot
             // except it also can sort data series by x.
             var plot = plots[0];
-            var bandDef = <Plot.BandDefinition><any>plotDefinition;
+            var bandDef = <Plot.AreaDefinition><any>plotDefinition;
             plot.draw(bandDef);
         }
     }

@@ -52,7 +52,7 @@ module Plot {
     export type LineTitles = { x?: string, y?: string };
     export type MarkersTitles = { x?: string, y?: string, color?: string, size?: string }; 
     export type HeatmapTitles = { x?: string, y?: string, value?: string }; 
-    export type BandTitles = { x?: string, y1?: string, y2?: string }; 
+    export type AreaTitles = { x?: string, y1?: string, y2?: string }; 
     export type BoxPlotTitles = { x?: string, y?: string };
     export type LineDefinition = {
         x?: number[];
@@ -67,13 +67,13 @@ module Plot {
         displayName?: string;
         titles?: LineTitles;
     }
-    export type BandDefinition = {
+    export type AreaDefinition = {
         x?: number[];
         y1: number[];
         y2: number[];
         fill?: Color;
         displayName?: string;
-        titles?: BandTitles;
+        titles?: AreaTitles;
     }
     export type BoxPlotDefinition = {
         y: Quantiles;
@@ -110,9 +110,9 @@ module Plot {
         return plotInfo;
 
     }
-    export function band(element: BandDefinition) {
+    export function area(element: AreaDefinition) {
         var plotInfo = <InteractiveDataDisplay.PlotInfo><any>element;
-        plotInfo.kind = "band";
+        plotInfo.kind = "area";
         return plotInfo; 
     }
     export function boxplot(element: BoxPlotDefinition) {

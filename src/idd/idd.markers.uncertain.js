@@ -33,15 +33,16 @@
         if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
         if (InteractiveDataDisplay.Utils.isArray(data.color)) {
             if (data.color.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
-            if (n > 0 && typeof (data.color[0]) === "number") { // color is a data series                 
+            if (n > 0 && typeof (data.color[0]) !== "string") { // color is a data series                 
                 var palette = data.colorPalette;
                 if (palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
                 if (typeof palette == 'string') palette = new InteractiveDataDisplay.ColorPalette.parse(palette);
                 if (palette != undefined && palette.isNormalized) {
                     var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
                     r = InteractiveDataDisplay.Utils.makeNonEqual(r);
-                    data.colorPalette = palette = palette.absolute(r.min, r.max);
+                    palette = palette.absolute(r.min, r.max);
                 }
+                data.colorPalette = palette;
                 var colors = new Array(n);
                 for (var i = 0; i < n; i++) {
                     var color = data.color[i];
@@ -362,15 +363,16 @@ InteractiveDataDisplay.BullEye = {
         // colors        
         if (InteractiveDataDisplay.Utils.isArray(data.color.lower95) && InteractiveDataDisplay.Utils.isArray(data.color.upper95)) {
             if (data.color.lower95.length != n && data.color.upper95.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
-            if (n > 0 && typeof (data.color.lower95[0]) === "number" && typeof (data.color.upper95[0]) === "number") { // color is a data series                 
+            if (n > 0 && typeof (data.color.lower95[0]) !== "undefined" && typeof (data.color.upper95[0]) !== "string") { // color is a data series                 
                 var palette = data.colorPalette;
                 if (palette == undefined) palette = InteractiveDataDisplay.Markers.defaults.colorPalette;
                 if (typeof palette == 'string') palette = new InteractiveDataDisplay.ColorPalette.parse(palette);
                 if (palette != undefined && palette.isNormalized) {
                     var r = { min: InteractiveDataDisplay.Utils.getMin(data.color.lower95), max: InteractiveDataDisplay.Utils.getMax(data.color.upper95) };
                     r = InteractiveDataDisplay.Utils.makeNonEqual(r);
-                    data.colorPalette = palette = palette.absolute(r.min, r.max);
+                    palette = palette.absolute(r.min, r.max);
                 }
+                data.colorPalette = palette;
                 var colors_u95 = [];
                 var colors_l95 = [];
                 for (var i = 0; i < n; i++){
@@ -399,12 +401,13 @@ InteractiveDataDisplay.BullEye = {
         if (InteractiveDataDisplay.Utils.isArray(data.size)) {
             if (data.size.length != n) throw "Length of the array 'size' is different than length of the array 'y'"
             if (data.sizePalette != undefined) { // 'size' is a data series 
-                var palette = data.sizePalette;
+                var palette = InteractiveDataDisplay.SizePalette.Create(data.sizePalette);
                 if (palette.isNormalized) {
                     var r = InteractiveDataDisplay.Utils.getMinMax(data.size);
                     r = InteractiveDataDisplay.Utils.makeNonEqual(r);
-                    data.sizePalette = palette = new InteractiveDataDisplay.SizePalette(false, palette.sizeRange, r);
+                    palette = new InteractiveDataDisplay.SizePalette(false, palette.sizeRange, r);
                 }
+                data.sizePalette = palette;
                 for (var i = 0; i < n; i++) {
                     var size = data.size[i];
                     if (size != size) // NaN
@@ -586,7 +589,7 @@ InteractiveDataDisplay.BullEye = {
                   } else {
                       sizeTitle.text(szTitleText);
                   }
-                  sizeControl.palette = data.sizePalette;
+                  sizeControl.palette = InteractiveDataDisplay.SizePalette.Create(data.sizePalette);
               }
               halfSize = size / 2;
           };
@@ -742,8 +745,7 @@ InteractiveDataDisplay.BoxWhisker = {
         var n = data.y.median.length;
 
         var mask = new Int8Array(n);
-        InteractiveDataDisplay.Utils.maskNaN(mask, data.y.median);
-        data.y_mean = data.y.median;
+        InteractiveDataDisplay.Utils.maskNaN(mask, data.y.median);        
 
         // x
         if (data.x == undefined)
@@ -812,7 +814,7 @@ InteractiveDataDisplay.BoxWhisker = {
         if (m > 0) { // there are missing values
             m = n - m;
             data.x = InteractiveDataDisplay.Utils.applyMask(mask, data.x, m);
-            data.y_mean = InteractiveDataDisplay.Utils.applyMask(mask, data.y_mean, m);
+            data.y = InteractiveDataDisplay.Utils.applyMask(mask, data.y.median, m);
             data.size = InteractiveDataDisplay.Utils.applyMask(mask, data.size, m);
             data.upper95 = InteractiveDataDisplay.Utils.applyMask(mask, data.upper95, m);
             data.lower95 = InteractiveDataDisplay.Utils.applyMask(mask, data.lower95, m);
@@ -823,6 +825,7 @@ InteractiveDataDisplay.BoxWhisker = {
             for (var i = 0, j = 0; i < n; i++) if (mask[i] === 0) indices[j++] = i;
             data.indices = indices;
         } else {
+            data.y = data.y.median;
             data.indices = InteractiveDataDisplay.Utils.range(0, n - 1);
         }
     },
@@ -837,12 +840,11 @@ InteractiveDataDisplay.BoxWhisker = {
         var msize = marker.size;
         var shift = msize / 2;
         var x = transform.dataToScreenX(marker.x);
-        var y = transform.dataToScreenY(marker.y_mean);
         var u68 = transform.dataToScreenY(marker.upper68);
         var l68 = transform.dataToScreenY(marker.lower68);
         var u95 = transform.dataToScreenY(marker.upper95);
         var l95 = transform.dataToScreenY(marker.lower95);
-        var mean = transform.dataToScreenY(marker.y_mean);
+        var mean = transform.dataToScreenY(marker.y);
 
         context.beginPath();
         context.strokeStyle = marker.border === undefined ? "black" : marker.border;
@@ -937,7 +939,7 @@ InteractiveDataDisplay.BoxWhisker = {
                 } else {
                     sizeTitle.text(szTitleText);
                 }
-                sizeControl.palette = data.sizePalette;
+                sizeControl.palette = InteractiveDataDisplay.SizePalette.Create(data.sizePalette);
             }
             halfSize = size / 2;
         };
