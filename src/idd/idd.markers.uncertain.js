@@ -1061,7 +1061,7 @@ InteractiveDataDisplay.BoxWhisker = {
         return dataRow;
     },
     renderSvg: function (plotRect, screenSize, svg, data, t) {
-        var n = data.y.median.length;
+        var n = data.y.length;
         if (n == 0) return;
 
         var dataToScreenX = t.dataToScreenX;
@@ -1086,7 +1086,7 @@ InteractiveDataDisplay.BoxWhisker = {
             l68 = dataToScreenY(data.lower68[i]);
             u95 = dataToScreenY(data.upper95[i]);
             l95 = dataToScreenY(data.lower95[i]);
-            mean = dataToScreenY(data.y_mean[i]);
+            mean = dataToScreenY(data.y[i]);
             c1 = (x1 < 0 || x1 > w_s || y1 < 0 || y1 > h_s);
             if (!c1) {
                 svg.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).stroke(border);
@@ -1205,9 +1205,120 @@ InteractiveDataDisplay.Bars = {
         if (pd.y < yBottom || pd.y > yBottom + Math.abs(marker.y)) return false;
         return true;
     },
-    //getLegend: function (data, getTitle, legendDiv) {
+    getLegend: function (data, getTitle, legendDiv) {
+        var itemDiv = legendDiv.content;
+        var fontSize = 14;
+        if (document.defaultView && document.defaultView.getComputedStyle) {
+            fontSize = parseFloat(document.defaultView.getComputedStyle(itemDiv[0], null).getPropertyValue("font-size"));
+        }
+        if (isNaN(fontSize) || fontSize == 0) fontSize = 14;
 
-    //},
+        var canvas = legendDiv.thumbnail;
+        var canvasIsVisible = true;
+        var size = fontSize * 1.5;
+        var x1 = size / 3 - 0.5;
+        var x2 = size / 3 * 2;
+        var x3 = size;
+        var y1 = size / 2;
+        var y2 = 0;
+        var y3 = size / 3;
+        var barWidth = size / 3;
+        var shadowSize = 1;
+
+        canvas[0].width = canvas[0].height = size + 2;
+        var canvasStyle = canvas[0].style;
+        var context = canvas.get(0).getContext("2d");
+        var itemIsVisible = 0;
+
+        var color, border, drawBorder, shadow, drawShadow;
+        var colorDiv, colorDivStyle, colorControl;
+        var colorIsVisible = 0;
+
+        var colorTitle;
+        var refreshColor = function () {
+            drawBorder = false;
+            drawShadow = false;
+            if (data.individualColors && data.colorPalette) {
+                var clrTitleText = getTitle("color");
+                if (colorIsVisible == 0) {
+                    colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
+                    colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
+                    colorDivStyle = colorDiv[0].style;
+                    var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(colorDiv);
+                    colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
+                    colorIsVisible = 2;
+                } else {
+                    colorTitle.text(clrTitleText);
+                }
+                colorControl.palette = data.colorPalette;
+                if (colorIsVisible == 1) {
+                    colorDivStyle.display = "block";
+                    colorIsVisible = 2;
+                }
+            }
+            else {
+                if (colorIsVisible == 2) {
+                    colorDivStyle.display = "none";
+                    colorIsVisible = 1;
+                }
+            }
+            if (data.individualColors) {
+                border = "#000000";
+                color = "#ffffff";
+                drawBorder = true;
+                shadow = "grey";
+                drawShadow = true;
+            }
+            else {
+                color = data.color;
+                border = color;
+                shadow = "none";
+                if (data.border != null) {
+                    drawBorder = true;
+                    border = data.border;
+                }
+                if (data.shadow != null) {
+                    drawShadow = true;
+                    shadow = data.shadow;
+                }
+            }
+        };
+
+        var renderShape = function () {
+            var sampleColor = typeof data.color == "string" ? data.color : "lightgray";
+            var sampleBorderColor = typeof data.border == "string" ? data.border : "gray";
+            var sampleShadowColor = typeof data.shadow == "string" ? data.shadow : "gray";
+            var useStroke = sampleBorderColor !== "none";
+
+            context.clearRect(0, 0, size, size);
+            if (sampleShadowColor) {
+                context.fillStyle = sampleShadowColor;
+                context.fillRect(0 + shadowSize, y1 + shadowSize, x1, size - y1);
+                x1 += 1;
+                context.fillRect(x1 + shadowSize, y2 + shadowSize, x2 - x1, size - y2);
+                x2 += 1;
+                context.fillRect(x2 + shadowSize, y3 + shadowSize, x3 - x2, size - y3);
+            }
+
+            context.strokeStyle = sampleBorderColor !== undefined ? sampleBorderColor : "black";
+            context.fillStyle = sampleColor !== undefined ? sampleColor : "black";
+
+
+            context.fillStyle = sampleColor;
+            context.fillRect(0, y1, x1, size - y1);
+            context.fillRect(x1, y2, x2 - x1, size - y2);
+            context.fillRect(x2, y3, x3 - x2, size - y3);
+            if (useStroke) {
+                context.strokeStyle = sampleBorderColor;
+                context.strokeRect(0, y1, x1, size - y1);
+                context.strokeRect(x1, y2, x2 - x1, size - y2);
+                context.strokeRect(x2, y3, x3 - x2, size - y3);
+            }
+        };
+
+        refreshColor();
+        renderShape();
+    },
     renderSvg: function (plotRect, screenSize, svg, data, t) {
         var n = data.y.length;
         if (n == 0) return;
@@ -1262,7 +1373,7 @@ InteractiveDataDisplay.Bars = {
         //thumbnail
         if (data.individualColors) {
             border = "#000000";
-            color = "#ffffff";
+            color = "lightgrey";
             shadow = "grey";
         }
         else {
@@ -1273,31 +1384,31 @@ InteractiveDataDisplay.Bars = {
         }
 
         thumbnail.polyline([[shadowSize, size + shadowSize], [shadowSize, y1 + shadowSize], [x1 + shadowSize, y1 + shadowSize], [x1 + shadowSize, size + shadowSize], [shadowSize, size + shadowSize]]).fill(shadow);
-        thumbnail.polyline([[0, size], [0, y1], [x1, y1], [x1, size], [0, size]]).fill(color).stroke({ width: 0.5, color: border });
+        thumbnail.polyline([[0, size], [0, y1], [x1, y1], [x1, size], [0, size]]).fill(color).stroke({ width: 0.2, color: border });
         x1 += 1;
         thumbnail.polyline([[x1 + shadowSize, size + shadowSize], [x1 + shadowSize, y2 + shadowSize], [x2 + shadowSize, y2 + shadowSize], [x2 + shadowSize, size + shadowSize], [x1 + shadowSize, size + shadowSize]]).fill(shadow);
-        thumbnail.polyline([[x1, size], [x1, y2], [x2, y2], [x2, size], [x1, size]]).fill(color).stroke({ width: 0.5, color: border });
+        thumbnail.polyline([[x1, size], [x1, y2], [x2, y2], [x2, size], [x1, size]]).fill(color).stroke({ width: 0.2, color: border });
         x2 += 1;
         thumbnail.polyline([[x2 + shadowSize, size + shadowSize], [x2 + shadowSize, y3 + shadowSize], [x3 + shadowSize, y3 + shadowSize], [x3 + shadowSize, size + shadowSize], [x2 + shadowSize, size + shadowSize]]).fill(shadow);
-        thumbnail.polyline([[x2, size], [x2, y3], [x3, y3], [x3, size], [x2, size]]).fill(color).stroke({ width: 0.5, color: border });
+        thumbnail.polyline([[x2, size], [x2, y3], [x3, y3], [x3, size], [x2, size]]).fill(color).stroke({ width: 0.2, color: border });
         
         //content
-        //var isContent = legendSettings.legendDiv.children[1];
-        //var isColor = data.individualColors && data.colorPalette;
-        //var style = (isContent && legendSettings.legendDiv.children[1].children[0] && legendSettings.legendDiv.children[1].children[0].children[0]) ? window.getComputedStyle(legendSettings.legendDiv.children[1].children[0].children[0], null) : undefined;
-        //fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
-        //fontFamily = style ? style.getPropertyValue('font-family') : undefined;
-        //if (isColor) {
-        //    var colorText = getTitle("color");
-        //    content.text(colorText).font({ family: fontFamily, size: fontSize });
-        //    var colorPalette_g = svg.group();
-        //    var width = legendSettings.width;
-        //    var height = 20;
-        //    InteractiveDataDisplay.SvgColorPaletteViewer(colorPalette_g, data.colorPalette, legendSettings.legendDiv.children[1].children[0].children[1], { width: width, height: height });
-        //    colorPalette_g.translate(5, 50);
-        //    shiftsizePalette = 50 + height;
-        //    legendSettings.height += (50 + height);
-        //};
+        var isContent = legendSettings.legendDiv.children[1];
+        var isColor = data.individualColors && data.colorPalette;
+        var style = (isContent && legendSettings.legendDiv.children[1].children[0] && legendSettings.legendDiv.children[1].children[0].children[0]) ? window.getComputedStyle(legendSettings.legendDiv.children[1].children[0].children[0], null) : undefined;
+        fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
+        fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+        if (isColor) {
+            var colorText = getTitle("color");
+            content.text(colorText).font({ family: fontFamily, size: fontSize });
+            var colorPalette_g = svg.group();
+            var width = legendSettings.width;
+            var height = 20;
+            InteractiveDataDisplay.SvgColorPaletteViewer(colorPalette_g, data.colorPalette, legendSettings.legendDiv.children[1].children[0].children[1], { width: width, height: height });
+            colorPalette_g.translate(5, 50);
+            shiftsizePalette = 50 + height;
+            legendSettings.height += (50 + height);
+        };
         svg.front();
         return { thumbnail: thumbnail, content: content };
     }

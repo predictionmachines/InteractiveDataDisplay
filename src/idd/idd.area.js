@@ -246,10 +246,7 @@ InteractiveDataDisplay.Area.renderSvg = function (plotRect, screenSize, svg, _x,
     var curInd = undefined;
     for (var i = 0; i < n; i++) {
         if (isNaN(_x[i]) || isNaN(_y1[i]) || isNaN(_y2[i])) {
-            if (curInd === undefined) {
-                curInd = i;
-            }
-            else {
+            if (curInd !== undefined) {
                 polygons.push([curInd, i]);
                 curInd = undefined;
             }
@@ -269,13 +266,15 @@ InteractiveDataDisplay.Area.renderSvg = function (plotRect, screenSize, svg, _x,
     var nPoly = polygons.length;
     for (var i = 0; i < nPoly; i++) {
         var curPoly = polygons[i];
+        segment = [];
         segment.push([dataToScreenX(_x[curPoly[0]]), dataToScreenY(_y1[curPoly[0]])]);
-        for (var j = curPoly[0] + 1; j <= curPoly[1]; j++) {
+        for (var j = curPoly[0] + 1; j < curPoly[1]; j++) {
             segment.push([dataToScreenX(_x[j]), dataToScreenY(_y1[j])]);
         }
-        for (var j = curPoly[1]; j >= curPoly[0]; j--) {
+        for (var j = curPoly[1] - 1; j >= curPoly[0]; j--) {
             segment.push([dataToScreenX(_x[j]), dataToScreenY(_y2[j])]);
         }
+        segment.push([dataToScreenX(_x[curPoly[0]]), dataToScreenY(_y1[curPoly[0]])]);
         svg.polyline(segment).fill(_fill).opacity(globalAlpha);
     }
     svg.clipWith(svg.rect(w_s, h_s));

@@ -30,6 +30,7 @@
         help.attr('href', url);
     }
     else help = $('<a href="https://github.com/predictionmachines/InteractiveDataDisplay/wiki/UI-Guidelines" style="display:block" target="_blank"></div>').addClass("idd-onscreennavigation-help").appendTo(div);
+    var exportSVG = $("<div></div>").addClass("idd-onscreennavigation-exportsvg").appendTo(div);
     var lockNavigation = $("<div></div>").addClass("idd-onscreennavigation-navigationlockpressed").appendTo(div);
     var ZoomAndPanDiv = $("<div style='overflow: hidden; height: 0px'></div>").appendTo(div);
     var pannerDiv = $("<div></div>").addClass("idd-onscreennavigation-panner").appendTo(ZoomAndPanDiv);
@@ -43,6 +44,12 @@
         return function () {
             obs = undefined;
         };
+    });
+
+    exportSVG.click(function () {
+        var svg = plot.exportToSvg();
+        var blob = new Blob([svg.svg()]);
+        saveAs(blob, "chart.svg");
     });
     var LogScaleSwitcher = function (plot) {
         var prevState = undefined;
