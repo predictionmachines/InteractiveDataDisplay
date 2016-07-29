@@ -47,9 +47,12 @@
     });
 
     exportSVG.click(function () {
-        var svg = plot.exportToSvg();
-        var blob = new Blob([svg.svg()]);
-        saveAs(blob, "chart.svg");
+        try {
+            var isFileSaverSupported = !!new Blob;
+            var svg = plot.exportToSvg();
+            var blob = new Blob([svg.svg()]);
+            saveAs(blob, "chart.svg");
+        } catch (e) { throw e.message; }
     });
     var LogScaleSwitcher = function (plot) {
         var prevState = undefined;
