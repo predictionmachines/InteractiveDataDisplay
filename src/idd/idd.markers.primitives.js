@@ -433,6 +433,7 @@
             var n = data.y.length;
             if (n == 0) return;
 
+            var marker_g = svg.group();
             var dataToScreenX = t.dataToScreenX;
             var dataToScreenY = t.dataToScreenY;
 
@@ -454,23 +455,23 @@
                     c1 = ((x1 - halfSize) > w_s || (x1 + halfSize) < 0 || (y1 - halfSize) > h_s || (y1 + halfSize) < 0);
                     var color = data.individualColors ? data.color[i] : data.color;
                     if (!c1) {// point is inside visible rect
-                        if (data.shape == 1) svg.rect(data.size[i], data.size[i]).translate(x1 - halfSize, y1 - halfSize).fill(color).stroke(border);
-                        else if (data.shape == 2) svg.circle(data.size[i]).translate(x1 - halfSize, y1 - halfSize).fill(color).stroke(border);
-                        else if (data.shape == 3) svg.rect(data.size[i] / Math.sqrt(2), data.size[i] / Math.sqrt(2)).translate(x1, y1 - halfSize).fill(color).stroke(border).rotate(45); //diamond
+                        if (data.shape == 1) marker_g.rect(data.size[i], data.size[i]).translate(x1 - halfSize, y1 - halfSize).fill(color).style({ stroke: border });
+                        else if (data.shape == 2) marker_g.circle(data.size[i]).translate(x1 - halfSize, y1 - halfSize).style({fill: color, stroke:border});
+                        else if (data.shape == 3) marker_g.rect(data.size[i] / Math.sqrt(2), data.size[i] / Math.sqrt(2)).translate(x1, y1 - halfSize).style({fill:color, stroke:border}).rotate(45); //diamond
                         else if (data.shape == 4) {
                             var halfThirdSize = size / 6;
-                            svg.polyline([[-halfSize, -halfThirdSize], [-halfThirdSize, -halfThirdSize], [-halfThirdSize, -halfSize], [halfThirdSize, -halfSize],
+                            marker_g.polyline([[-halfSize, -halfThirdSize], [-halfThirdSize, -halfThirdSize], [-halfThirdSize, -halfSize], [halfThirdSize, -halfSize],
                                 [halfThirdSize, -halfThirdSize], [halfSize, -halfThirdSize], [halfSize, halfThirdSize], [halfThirdSize, halfThirdSize], [halfThirdSize, halfSize],
-                                [-halfThirdSize, halfSize], [-halfThirdSize, halfThirdSize], [-halfSize, halfThirdSize], [-halfSize, -halfThirdSize]]).translate(x1, y1).fill(color).stroke(border);//cross
+                                [-halfThirdSize, halfSize], [-halfThirdSize, halfThirdSize], [-halfSize, halfThirdSize], [-halfSize, -halfThirdSize]]).translate(x1, y1).style({ fill: color, stroke: border });//cross
                         }
                         else if (data.shape == 5) {
                             var r = Math.sqrt(3) / 6 * size;
-                            svg.polyline([[x1 - halfSize, y1 + r], [x1, y1 - r * 2], [x1 + halfSize, y1 + r], [x1 - halfSize, y1 + r]]).fill(color).stroke(border);//triangle
+                            marker_g.polyline([[x1 - halfSize, y1 + r], [x1, y1 - r * 2], [x1 + halfSize, y1 + r], [x1 - halfSize, y1 + r]]).style({ fill: color, stroke: border });//triangle
                         }
     
                     }
                 }
-                svg.clipWith(svg.rect(w_s, h_s));
+                marker_g.clipWith(marker_g.rect(w_s, h_s));
             };
             nextValuePoint();
         },

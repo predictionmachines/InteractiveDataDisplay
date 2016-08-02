@@ -297,6 +297,7 @@
         var n = data.y.length;
         if (n == 0) return;
 
+        var petal_g = svg.group();
         var dataToScreenX = t.dataToScreenX;
         var dataToScreenY = t.dataToScreenY;
 
@@ -331,11 +332,11 @@
                     var r = A * Math.sin(6 * phi + C) + D;
                     segment.push([x1 + r * Math.cos(phi), y1 + r * Math.sin(phi)]);
                 }
-                svg.polyline(segment).fill(color).stroke("black");
-                svg.circle(2).translate(x1 - 1, y1 - 1).fill("gray").stroke({ width: 2, color: "gray" });
+                petal_g.polyline(segment).fill(color).stroke("black");
+                petal_g.circle(2).translate(x1 - 1, y1 - 1).fill("gray").stroke({ width: 2, color: "gray" });
             }
         }
-        svg.clipWith(svg.rect(w_s, h_s));
+        petal_g.clipWith(petal_g.rect(w_s, h_s));
     }
 };
 InteractiveDataDisplay.BullEye = {
@@ -680,6 +681,7 @@ InteractiveDataDisplay.BullEye = {
         var n = data.y.length;
         if (n == 0) return;
 
+        var bulleye_g = svg.group();
         var dataToScreenX = t.dataToScreenX;
         var dataToScreenY = t.dataToScreenY;
 
@@ -703,40 +705,39 @@ InteractiveDataDisplay.BullEye = {
             if (!c1) {
                 switch (data.bullEyeShape) {
                     case "box":
-                        svg.rect(size, size).translate(x1 - halfSize, y1 - halfSize).fill(color_u95).stroke({ width: 0.5, color: "black" });
-                        svg.rect(halfSize, halfSize).translate(x1 - quarterSize, y1 - quarterSize).fill(color_l95).stroke({ width: 0.5, color: "black" });
+                        bulleye_g.rect(size, size).translate(x1 - halfSize, y1 - halfSize).fill(color_u95).stroke({ width: 0.5, color: "black" });
+                        bulleye_g.rect(halfSize, halfSize).translate(x1 - quarterSize, y1 - quarterSize).fill(color_l95).stroke({ width: 0.5, color: "black" });
                         break;
                     case "circle":
-                        svg.circle(size).translate(x1 - halfSize, y1 - halfSize).fill(color_u95).stroke({ width: 0.5, color: "black" });
-                        svg.circle(halfSize).translate(x1 - quarterSize, y1 - quarterSize).fill(color_l95).stroke({ width: 0.5, color: "black" });
+                        bulleye_g.circle(size).translate(x1 - halfSize, y1 - halfSize).fill(color_u95).stroke({ width: 0.5, color: "black" });
+                        bulleye_g.circle(halfSize).translate(x1 - quarterSize, y1 - quarterSize).fill(color_l95).stroke({ width: 0.5, color: "black" });
                         break;
                     case "diamond":
-                        svg.rect(size / Math.sqrt(2), size / Math.sqrt(2)).translate(x1, y1 - halfSize).fill(color_u95).stroke({ width: 0.5, color: "black" }).rotate(45);
-                        svg.rect(halfSize / Math.sqrt(2), halfSize / Math.sqrt(2)).translate(x1, y1 - quarterSize).fill(color_l95).stroke({ width: 0.5, color: "black" }).rotate(45);
+                        bulleye_g.rect(size / Math.sqrt(2), size / Math.sqrt(2)).translate(x1, y1 - halfSize).fill(color_u95).stroke({ width: 0.5, color: "black" }).rotate(45);
+                        bulleye_g.rect(halfSize / Math.sqrt(2), halfSize / Math.sqrt(2)).translate(x1, y1 - quarterSize).fill(color_l95).stroke({ width: 0.5, color: "black" }).rotate(45);
                         break;
                     case "cross":
                         var halfThirdSize = size / 6;
                         var quarterThirdSize = halfSize / 6;
-                        svg.polyline([[-halfSize, -halfThirdSize], [-halfThirdSize, -halfThirdSize], [-halfThirdSize, -halfSize], [halfThirdSize, -halfSize],
+                        bulleye_g.polyline([[-halfSize, -halfThirdSize], [-halfThirdSize, -halfThirdSize], [-halfThirdSize, -halfSize], [halfThirdSize, -halfSize],
                                 [halfThirdSize, -halfThirdSize], [halfSize, -halfThirdSize], [halfSize, halfThirdSize], [halfThirdSize, halfThirdSize], [halfThirdSize, halfSize],
                                 [-halfThirdSize, halfSize], [-halfThirdSize, halfThirdSize], [-halfSize, halfThirdSize], [-halfSize, -halfThirdSize]]).translate(x1, y1).fill(color_u95).stroke({ width: 0.5, color: "black" });
-                        svg.polyline([[-quarterSize, -quarterThirdSize], [-quarterThirdSize, -quarterThirdSize], [-quarterThirdSize, -quarterSize], [quarterThirdSize, -quarterSize],
+                        bulleye_g.polyline([[-quarterSize, -quarterThirdSize], [-quarterThirdSize, -quarterThirdSize], [-quarterThirdSize, -quarterSize], [quarterThirdSize, -quarterSize],
                                 [quarterThirdSize, -quarterThirdSize], [quarterSize, -quarterThirdSize], [quarterSize, quarterThirdSize], [quarterThirdSize, quarterThirdSize], [quarterThirdSize, quarterSize],
                                 [-quarterThirdSize, quarterSize], [-quarterThirdSize, quarterThirdSize], [-quarterSize, quarterThirdSize], [-quarterSize, -quarterThirdSize]]).translate(x1, y1).fill(color_l95).stroke({ width: 0.5, color: "black" });
                         break;
                     case "triangle":
                         var r = Math.sqrt(3) / 6 * size;
                         var hr = Math.sqrt(3) / 6 * halfSize;
-                        svg.polyline([[-halfSize, r], [0, -r * 2], [halfSize, r], [-halfSize, r]]).translate(x1, y1).fill(color_u95).stroke({ width: 0.5, color: "black" });
-                        svg.polyline([[-quarterSize, hr], [0, -hr * 2], [quarterSize, hr], [-quarterSize, hr]]).translate(x1, y1).fill(color_l95).stroke({ width: 0.5, color: "black" });
+                        bulleye_g.polyline([[-halfSize, r], [0, -r * 2], [halfSize, r], [-halfSize, r]]).translate(x1, y1).fill(color_u95).stroke({ width: 0.5, color: "black" });
+                        bulleye_g.polyline([[-quarterSize, hr], [0, -hr * 2], [quarterSize, hr], [-quarterSize, hr]]).translate(x1, y1).fill(color_l95).stroke({ width: 0.5, color: "black" });
                         break;
                 }
             }
         }
-        svg.clipWith(svg.rect(w_s, h_s));
+        bulleye_g.clipWith(bulleye_g.rect(w_s, h_s));
     }
 };
-
 InteractiveDataDisplay.BoxWhisker = {
     prepare: function (data) {
         // y
@@ -1064,6 +1065,7 @@ InteractiveDataDisplay.BoxWhisker = {
         var n = data.y.length;
         if (n == 0) return;
 
+        var bx_g = svg.group();
         var dataToScreenX = t.dataToScreenX;
         var dataToScreenY = t.dataToScreenY;
 
@@ -1089,15 +1091,15 @@ InteractiveDataDisplay.BoxWhisker = {
             mean = dataToScreenY(data.y[i]);
             c1 = (x1 < 0 || x1 > w_s || y1 < 0 || y1 > h_s);
             if (!c1) {
-                svg.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).stroke(border);
-                svg.polyline([[x1 - shift, u95], [x1 + shift, u95]]).stroke(border);
-                svg.polyline([[x1, u95], [x1, u68]]).stroke(border);
-                svg.polyline([[x1, l68], [x1, l95]]).stroke(border);
-                svg.polyline([[x1 - shift, l95], [x1 + shift, l95]]).stroke(border);
-                svg.polyline([[x1 - shift, mean], [x1 + shift, mean]]).stroke(border);
+                bx_g.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).stroke(border);
+                bx_g.polyline([[x1 - shift, u95], [x1 + shift, u95]]).stroke(border);
+                bx_g.polyline([[x1, u95], [x1, u68]]).stroke(border);
+                bx_g.polyline([[x1, l68], [x1, l95]]).stroke(border);
+                bx_g.polyline([[x1 - shift, l95], [x1 + shift, l95]]).stroke(border);
+                bx_g.polyline([[x1 - shift, mean], [x1 + shift, mean]]).stroke(border);
             }
         }
-        svg.clipWith(svg.rect(w_s, h_s));
+        bx_g.clipWith(bx_g.rect(w_s, h_s));
     }
 };
 InteractiveDataDisplay.Bars = {
@@ -1323,6 +1325,7 @@ InteractiveDataDisplay.Bars = {
         var n = data.y.length;
         if (n == 0) return;
 
+        var bars_g = svg.group();
         var dataToScreenX = t.dataToScreenX;
         var dataToScreenY = t.dataToScreenY;
 
@@ -1351,11 +1354,11 @@ InteractiveDataDisplay.Bars = {
             color = data.individualColors ? data.color[i]: data.color;
             c1 = (xRight < 0 || xLeft > w_s || yBottom < 0 || yTop > h_s);
             if (!c1) {
-                svg.polyline([[xLeft + 2, yBottom + 2], [xLeft + 2, yTop + 2], [xRight + 2, yTop + 2], [xRight + 2, yBottom + 2], [xLeft + 2, yBottom + 2]]).fill(shadow);
-                svg.polyline([[xLeft, yBottom], [xLeft, yTop], [xRight, yTop], [xRight, yBottom], [xLeft, yBottom]]).fill(color).stroke({ width: 1, color: border });
+                bars_g.polyline([[xLeft + 2, yBottom + 2], [xLeft + 2, yTop + 2], [xRight + 2, yTop + 2], [xRight + 2, yBottom + 2], [xLeft + 2, yBottom + 2]]).fill(shadow);
+                bars_g.polyline([[xLeft, yBottom], [xLeft, yTop], [xRight, yTop], [xRight, yBottom], [xLeft, yBottom]]).fill(color).stroke({ width: 1, color: border });
             }
         }
-        svg.clipWith(svg.rect(w_s, h_s));
+        bars_g.clipWith(bars_g.rect(w_s, h_s));
     },
     buildSvgLegendElements: function (legendSettings, svg, data, getTitle) {
         var thumbnail = svg.group();
@@ -1396,8 +1399,8 @@ InteractiveDataDisplay.Bars = {
         var isContent = legendSettings.legendDiv.children[1];
         var isColor = data.individualColors && data.colorPalette;
         var style = (isContent && legendSettings.legendDiv.children[1].children[0] && legendSettings.legendDiv.children[1].children[0].children[0]) ? window.getComputedStyle(legendSettings.legendDiv.children[1].children[0].children[0], null) : undefined;
-        fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
-        fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+        var fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
+        var fontFamily = style ? style.getPropertyValue('font-family') : undefined;
         if (isColor) {
             var colorText = getTitle("color");
             content.text(colorText).font({ family: fontFamily, size: fontSize });

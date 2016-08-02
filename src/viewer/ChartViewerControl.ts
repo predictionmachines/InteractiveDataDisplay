@@ -1,6 +1,7 @@
 ﻿/// <reference path="PlotList.ts" />
 /// <reference path="PlotViewer.ts" />
 /// <reference path="ViewState.ts" />
+declare var SVG: any;
 module InteractiveDataDisplay {
     export class ChartViewerControl implements ViewerControl {
         private persistentViewState: any;
@@ -52,6 +53,25 @@ module InteractiveDataDisplay {
             var plotListDiv = controlDiv.find(".plotlist");
             this.plotList = new PlotList(plotListDiv, this.plotViewer, this.persistentViewState, this.transientViewState);
             this.plotList.isEditable = false;
+
+            this.plotViewer.iddChart.exportToSvg = function (plotRect, screenSize, svg) {
+                if (!SVG.supported) throw "SVG is not supported";
+                var screenSize = this.screenSize;
+                var plotRect = this.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
+
+                var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                var svg = SVG(svgHost).size(this.host.width(), this.host.height());
+                var chart_g = svg.group();
+                this.exportContentToSvg(plotRect, screenSize, chart_g);
+                var legend_g = svg.group();
+                var shift = this.host.width();
+             
+                if (isLeftpanelShown) {
+                    legend_g.add(this.exportLegendToSvg(this.legend.div[0])).translate(shift, 30);
+                    svg.size(200 + shift, this.host.height());
+                }
+                return svg;
+            };
             var hideShowLegend = navigationDiv[0].children[0].firstChild.firstChild; 
             $(hideShowLegend).click(function () {
                 if (isLeftpanelShown) {
@@ -69,7 +89,7 @@ module InteractiveDataDisplay {
 
             leftpanel.hide();
             rightpanel.width(controlDiv.width() - leftPanelContainer.width() - this.rightPanelExtraShift - this.navigationPanelShift);
-            
+
             $(window).resize(function () { that.updateLayout(); });
             this.updateLayout();
         }

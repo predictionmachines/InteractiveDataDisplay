@@ -162,8 +162,8 @@ InteractiveDataDisplay.Area = function (div, master) {
         svg.add(svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5));
         svg.add(svg.polyline([[0, 0], [0, 4.5], [13.5, 18], [18, 18], [18, 13.5], [4.5, 0], [0, 0]]).fill(_fill).opacity(0.5).translate(5, 5));
         var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
-        fontSize = parseFloat(style.getPropertyValue('font-size'));
-        fontFamily = style.getPropertyValue('font-family');
+        var fontSize = parseFloat(style.getPropertyValue('font-size'));
+        var fontFamily = style.getPropertyValue('font-family');
         svg.add(svg.text(that.name).font({ family: fontFamily, size: fontSize }).translate(40, 0));
         svg.front();
     }
@@ -231,11 +231,11 @@ InteractiveDataDisplay.Area.renderSvg = function (plotRect, screenSize, svg, _x,
     if (_x === undefined || _y1 == undefined || _y2 == undefined) return;
     var n = _y1.length;
     if (n == 0) return;
-
+    
     var t = this.getTransform();
     var dataToScreenX = t.dataToScreenX;
     var dataToScreenY = t.dataToScreenY;
-
+    var area_g = svg.group();
     // size of the canvas
     var w_s = screenSize.width;
     var h_s = screenSize.height;
@@ -247,7 +247,7 @@ InteractiveDataDisplay.Area.renderSvg = function (plotRect, screenSize, svg, _x,
     for (var i = 0; i < n; i++) {
         if (isNaN(_x[i]) || isNaN(_y1[i]) || isNaN(_y2[i])) {
             if (curInd !== undefined) {
-                polygons.push([curInd, i]);
+                polygons.push([curInd, i - 1]);
                 curInd = undefined;
             }
         } else {
@@ -268,14 +268,14 @@ InteractiveDataDisplay.Area.renderSvg = function (plotRect, screenSize, svg, _x,
         var curPoly = polygons[i];
         segment = [];
         segment.push([dataToScreenX(_x[curPoly[0]]), dataToScreenY(_y1[curPoly[0]])]);
-        for (var j = curPoly[0] + 1; j < curPoly[1]; j++) {
+        for (var j = curPoly[0] + 1; j <= curPoly[1]; j++) {
             segment.push([dataToScreenX(_x[j]), dataToScreenY(_y1[j])]);
         }
-        for (var j = curPoly[1] - 1; j >= curPoly[0]; j--) {
+        for (var j = curPoly[1]; j >= curPoly[0]; j--) {
             segment.push([dataToScreenX(_x[j]), dataToScreenY(_y2[j])]);
         }
         segment.push([dataToScreenX(_x[curPoly[0]]), dataToScreenY(_y1[curPoly[0]])]);
-        svg.polyline(segment).fill(_fill).opacity(globalAlpha);
+        area_g.polyline(segment).fill(_fill).opacity(globalAlpha);
     }
-    svg.clipWith(svg.rect(w_s, h_s));
+    area_g.clipWith(area_g.rect(w_s, h_s));
 }
