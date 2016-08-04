@@ -2374,7 +2374,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             var segment;
             var drawSegment = function () {
-                svg.polyline(segment).style({ fill: "none", stroke: _stroke, "stroke-width": _thickness }); //stroke({ color: _stroke, width: _thickness }).fill('none');
+                svg.polyline(segment).style({ fill: "none", stroke: _stroke, "stroke-width": _thickness });
             }
             // Looking for non-missing value
             var nextValuePoint = function () {

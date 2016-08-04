@@ -118,10 +118,10 @@
         var chart_g = svg.group();
         this.exportContentToSvg(plotRect, screenSize, chart_g);
         var legend_g = svg.group();
-        var shift = leftAxis.width() + this.centralPart.width() + 30;
+        var shift = div.width() + 20;
 
         if (_legend.isVisible) {
-            legend_g.add(this.exportLegendToSvg(legendDiv[0])).translate(shift, 30);
+            legend_g.add(this.exportLegendToSvg(legendDiv[0])).translate(shift, 20);
             svg.size(200 + shift, div.height());
         }
         return svg;
