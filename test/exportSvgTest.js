@@ -82,7 +82,7 @@ describe('idd.js exportToSvg', function () {
         for (var i = 0; i < 6; i++) 
             expect(children[i].node.nodeName).toBe("polyline");
     });
-    it('axis export and gridlines', function () {
+    it('chart export', function () {
         var svg = chart.exportToSvg();
         expect(svg.width()).toBe(divWidth + 220);
         expect(svg.height()).toBe(divHeight);
@@ -93,6 +93,8 @@ describe('idd.js exportToSvg', function () {
         //legend group
         var group2 = svg.get(2);
         expect(group2.node.nodeName).toBe("g");
+        expect(group2.children().length).toBe(1);
+        expect(group2.get(0).node.nodeName).toBe("svg");
     });
     it("legend export", function () {
         var line = chart.polyline("p1", { x: [1, 2, 3], y: [1, 2, 3] });
