@@ -90,6 +90,10 @@ describe('idd.js exportToSvg', function () {
         //chart group
         var group1 = svg.get(1);
         expect(group1.node.nodeName).toBe("g");
+        var children = group1.children();
+        expect(children.length).toBe(5);
+        for (var i = 0; i < 5; i++)
+            expect(children[i].node.nodeName).toBe("g");
         //legend group
         var group2 = svg.get(2);
         expect(group2.node.nodeName).toBe("g");
