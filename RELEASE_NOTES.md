@@ -1,4 +1,7 @@
-
+New features:
+ - Export to SVG: chart, area, markers, polyline with uncertainty can be exported to SVG, legend can also be exported to SVG except uncertain marker shapes.
+ - New marker shape `"bars"`
+ - Navigation panel is updated, it allows to download SVG. Uses FileSaver.js.   
 
 ##### 1.4.0 (July 21, 2016)
 
