@@ -3,7 +3,7 @@ New features:
  - New marker shape `"bars"`
  - Navigation panel is updated, it allows to download SVG. Uses FileSaver.js.   
 
-## 1.4.0 (July 21, 2016)
+#### 1.4.0 (July 21, 2016)
 
 **Breaking changes**: 
  - **Removed separate chartViewer.js (.css, .d.ts)**. Idd.js now includes chartViewer.js (same for umd version). 
