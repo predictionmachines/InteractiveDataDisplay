@@ -67,7 +67,7 @@ InteractiveDataDisplay.Area = function (div, master) {
     this.getLocalPadding = function () {
         return { left: 0, right: 0, top: 0, bottom: 0 };
     };
-    
+
     this.renderCore = function (plotRect, screenSize) {
         InteractiveDataDisplay.Area.prototype.renderCore.call(this, plotRect, screenSize);
         var context = that.getContext(true);
@@ -153,8 +153,21 @@ InteractiveDataDisplay.Area = function (div, master) {
     if (initialData && initialData.x && initialData.y1 && initialData.y2)
         this.draw(initialData);
 
+    this.renderCoreSvg = function (plotRect, screenSize, svg) {
+        InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y1, _y2, _fill);
+    }
+    this.buildSvgLegend = function (legendSettings, svg) {
+        var that = this;
+        legendSettings.height = 30;
+        svg.add(svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5));
+        svg.add(svg.polyline([[0, 0], [0, 4.5], [13.5, 18], [18, 18], [18, 13.5], [4.5, 0], [0, 0]]).fill(_fill).opacity(0.5).translate(5, 5));
+        var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
+        var fontSize = parseFloat(style.getPropertyValue('font-size'));
+        var fontFamily = style.getPropertyValue('font-family');
+        svg.add(svg.text(that.name).font({ family: fontFamily, size: fontSize }).translate(40, 0));
+        svg.front();
+    }
 }
-
 InteractiveDataDisplay.Area.prototype = new InteractiveDataDisplay.CanvasPlot;
 InteractiveDataDisplay.Area.render = function (_x, _y1, _y2, _fill, plotRect, screenSize, context, globalAlpha) {
     if (_x === undefined || _y1 == undefined || _y2 == undefined)
@@ -214,3 +227,55 @@ InteractiveDataDisplay.Area.render = function (_x, _y1, _y2, _fill, plotRect, sc
         context.fill();
     }
 };
+InteractiveDataDisplay.Area.renderSvg = function (plotRect, screenSize, svg, _x, _y1, _y2, _fill, globalAlpha) {
+    if (_x === undefined || _y1 == undefined || _y2 == undefined) return;
+    var n = _y1.length;
+    if (n == 0) return;
+    
+    var t = this.getTransform();
+    var dataToScreenX = t.dataToScreenX;
+    var dataToScreenY = t.dataToScreenY;
+    var area_g = svg.group();
+    // size of the canvas
+    var w_s = screenSize.width;
+    var h_s = screenSize.height;
+    var xmin = 0, xmax = w_s;
+    var ymin = 0, ymax = h_s;
+
+    var polygons = [];
+    var curInd = undefined;
+    for (var i = 0; i < n; i++) {
+        if (isNaN(_x[i]) || isNaN(_y1[i]) || isNaN(_y2[i])) {
+            if (curInd !== undefined) {
+                polygons.push([curInd, i - 1]);
+                curInd = undefined;
+            }
+        } else {
+            if (curInd === undefined) {
+                curInd = i;
+            }
+            else {
+                if (i === n - 1) {
+                    polygons.push([curInd, i]);
+                    curInd = undefined;
+                }
+            }
+        }
+    }
+    var segment = [];
+    var nPoly = polygons.length;
+    for (var i = 0; i < nPoly; i++) {
+        var curPoly = polygons[i];
+        segment = [];
+        segment.push([dataToScreenX(_x[curPoly[0]]), dataToScreenY(_y1[curPoly[0]])]);
+        for (var j = curPoly[0] + 1; j <= curPoly[1]; j++) {
+            segment.push([dataToScreenX(_x[j]), dataToScreenY(_y1[j])]);
+        }
+        for (var j = curPoly[1]; j >= curPoly[0]; j--) {
+            segment.push([dataToScreenX(_x[j]), dataToScreenY(_y2[j])]);
+        }
+        segment.push([dataToScreenX(_x[curPoly[0]]), dataToScreenY(_y1[curPoly[0]])]);
+        area_g.polyline(segment).fill(_fill).opacity(globalAlpha);
+    }
+    area_g.clipWith(area_g.rect(w_s, h_s));
+}

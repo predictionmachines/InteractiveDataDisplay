@@ -182,6 +182,11 @@ InteractiveDataDisplay.Markers = function (div, master) {
         }
     };
 
+    this.renderCoreSvg = function (plotRect, screenSize, svg) {
+        if (_shape == undefined || _shape.renderSvg == undefined) return;
+        var t = this.getTransform();
+        _shape.renderSvg(plotRect, screenSize, svg, _data, t);
+    };
     this.findToolTipMarkers = function (xd, yd, xp, yp) {
         if (_shape == undefined || typeof _shape.hitTest == "undefined" || _renderData == undefined) return [];
         var that = this;
@@ -273,6 +278,21 @@ InteractiveDataDisplay.Markers = function (div, master) {
         };
         return { name: nameDiv, legend: legendDiv, onLegendRemove: onLegendRemove };  
     };
+
+    this.buildSvgLegend = function (legendSettings, svg) {
+        var that = this;
+        var legendElements = {thumbnail: svg.group(), content: svg.group() };
+        legendSettings.height = 30;
+        if (_shape && typeof _shape.buildSvgLegendElements != "undefined")
+            legendElements = _shape.buildSvgLegendElements(legendSettings, svg, _data, that.getTitle);
+        svg.rect(legendSettings.width, legendSettings.height).fill({ color: "white", opacity: 0 });
+        svg.add(legendElements.thumbnail.translate(5, 5));
+        var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
+        var fontSize = parseFloat(style.getPropertyValue('font-size'));
+        var fontFamily = style.getPropertyValue('font-family');
+        svg.add(svg.text(that.name).font({ family: fontFamily, size: fontSize }).translate(40, 0));
+        svg.add(legendElements.content.translate(5, 30));
+    }
 
     // Others
     this.onDataTransformChanged = function (arg) {

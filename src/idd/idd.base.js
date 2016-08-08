@@ -917,18 +917,58 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         
         this.exportContentToSvg = function(plotRect, screenSize, svg) {
             var plots = this.getPlotsSequence();
-            for(var i = 0; i < plots.length; i++){
-                plots[i].renderCoreSvg(plotRect, screenSize, svg);
+            var j = 0;
+            for (var i = 0; i < plots.length; i++) {
+                if (plots[i].isVisible) plots[i].renderCoreSvg(plotRect, screenSize, svg);
             }
         };
         
+        this.exportLegendToSvg = function (legendDiv) {
+            if (!SVG.supported) throw "SVG is not supported";
+
+            var screenSize = that.screenSize;
+            var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
+
+            var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            var svg = SVG(svgHost).size(200, _host.height());
+            var legend_g = svg.group();
+            var plots = InteractiveDataDisplay.Utils.enumPlots(this);
+            var commonSettings = { width: 170, height: 0 };
+            var j = 0;
+            var lastLine;
+            for (var i = 0; i < plots.length; i++) {
+                var legendSettings = { width: 170, height: 0 };
+                if (plots[i].getLegend() != undefined) {
+                    if (plots[i].isVisible) {
+                        var item_g = legend_g.group();
+                        if (legendDiv) {
+                            legendSettings.legendDiv = legendDiv.children[j];
+                            j++;
+                        }
+                        plots[i].buildSvgLegend(legendSettings, item_g);
+                        item_g.translate(5, commonSettings.height);
+                        legend_g.clipWith(item_g.rect(legendSettings.width, commonSettings.height + 30));
+                        commonSettings.height += legendSettings.height + 10;
+                        lastLine = svg.line(15, commonSettings.height, commonSettings.width, commonSettings.height).stroke({ width: 0.3, color: "black" }).back();
+                        commonSettings.height += 10;
+                    }
+                    else j++;
+                }
+            }
+            if (lastLine != undefined) lastLine.remove();
+            legend_g.clipWith(legend_g.rect(180, commonSettings.height + 10));
+            return svg;
+        };
+
         // Renders this plot to svg using the current coordinate transform and screen size.
         // plotRect     {x,y,width,height}  Rectangle in the plot plane which is visible, (x,y) is left/bottom of the rectangle
         // screenSize   {width,height}      Size of the output region to render inside
         // This method should be implemented by derived plots.
         this.renderCoreSvg = function (plotRect, screenSize, svg) {
         };
-
+        // Renders legend of this plot. This method should be implemented by derived plots.
+        this.buildSvgLegend = function (legendSetting, svg) {
+        };
         // Notifies derived plots that isRendered changed.
         // todo: make an event and bind in the derived plots
         this.onIsRenderedChanged = function () {
@@ -2314,13 +2354,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             InteractiveDataDisplay.Area.render.call(this, _x, _y_l68, _y_u68, _fill68, plotRect, screenSize, context, 0.5);
             renderLine(_x, _y, _stroke, _thickness, plotRect, screenSize, context);
         };
-        
-        this.renderCoreSvg = function (plotRect, screenSize, svg) {
+        var renderLineSvg = function (plotRect, screenSize, svg) {
             if (_x === undefined || _y == undefined) return;
             var n = _y.length;
             if (n == 0) return;
 
-            var t = this.getTransform();
+            var t = that.getTransform();
             var dataToScreenX = t.dataToScreenX;
             var dataToScreenY = t.dataToScreenY;
 
@@ -2332,10 +2371,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             var x1, x2, y1, y2;
             var i = 0;
-            
+
             var segment;
-            var drawSegment = function() {
-                svg.polyline(segment).stroke({ color: _stroke, width: _thickness }).fill('none');
+            var drawSegment = function () {
+                svg.polyline(segment).style({ fill: "none", stroke: _stroke, "stroke-width": _thickness });
             }
             // Looking for non-missing value
             var nextValuePoint = function () {
@@ -2403,7 +2442,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     }
                 }
                 if (!(c1 & c2)) {
-                    if (c1_ != 0){ // point wasn't visible
+                    if (c1_ != 0) { // point wasn't visible
                         drawSegment();
                         segment = new Array(0);
                         segment.push([x1, y1]);
@@ -2427,6 +2466,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             } else {
                 drawSegment(); // finishing previous segment (it is broken by missing value)
             }
+        }
+        this.renderCoreSvg = function (plotRect, screenSize, svg) {
+            InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y_l95, _y_u95, _fill95, 0.5);
+            InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y_l68, _y_u68, _fill68, 0.5);
+            renderLineSvg(plotRect, screenSize, svg);
         };
 
         // Clipping algorithms
@@ -2625,6 +2669,21 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return { name: nameDiv, legend: { thumbnail: canvas, content: undefined }, onLegendRemove: onLegendRemove };
         };
 
+        this.buildSvgLegend = function (legendSettings, svg) {
+            var that = this;
+            legendSettings.height = 30;
+            svg.add(svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5));
+            var isUncertainData95 = _y_u95 != undefined && _y_l95 != undefined;
+            var isUncertainData68 = _y_u68 != undefined && _y_l68 != undefined;
+            if (isUncertainData95) svg.add(svg.polyline([[0, 0], [0, 9], [9, 18], [18, 18], [18, 9], [9, 0], [0, 0]]).fill(_fill95).opacity(0.5).translate(5, 5));
+            if (isUncertainData68) svg.add(svg.polyline([[0, 0], [0, 4.5], [13.5, 18], [18, 18], [18, 13.5], [4.5, 0], [0, 0]]).fill(_fill68).opacity(0.5).translate(5, 5));
+            svg.add(svg.line(0, 0, 18, 18).stroke({ width: _thickness, color: _stroke }).translate(5, 5));
+            var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
+            var fontSize = parseFloat(style.getPropertyValue('font-size'));
+            var fontFamily = style.getPropertyValue('font-family');
+            svg.add(svg.text(that.name).font({family: fontFamily, size: fontSize }).translate(40, 0));
+            svg.front();
+        }
         // Initialization 
         if (initialData && typeof initialData.y != 'undefined')
             this.draw(initialData);

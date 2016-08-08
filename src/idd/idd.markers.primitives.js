@@ -296,7 +296,7 @@
                         sizeDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
                         sizeTitle = $("<div class='idd-legend-item-property'></div>").text(szTitleText).appendTo(sizeDiv);
                         sizeDivStyle = sizeDiv[0].style;
-                        var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(sizeDiv);
+                        var paletteDiv = $("<div style='width: 170px; color: rgb(0,0,0)'></div>").appendTo(sizeDiv);
                         sizeControl = new InteractiveDataDisplay.SizePaletteViewer(paletteDiv);
                         sizeIsVisible = 2;
                     } else {
@@ -316,7 +316,7 @@
                         colorDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px'></div>").appendTo(itemDiv);
                         colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                         colorDivStyle = colorDiv[0].style;
-                        var paletteDiv = $("<div style='width: 170px;'></div>").appendTo(colorDiv);
+                        var paletteDiv = $("<div style='width: 170px; color: rgb(0,0,0); '></div>").appendTo(colorDiv);
                         colorControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv);
                         colorIsVisible = 2;
                     } else {
@@ -427,6 +427,127 @@
             refreshColor();
             refreshSize();
             renderShape();
+        },
+
+        renderSvg: function (plotRect, screenSize, svg, data, t) {
+            var n = data.y.length;
+            if (n == 0) return;
+
+            var marker_g = svg.group();
+            var dataToScreenX = t.dataToScreenX;
+            var dataToScreenY = t.dataToScreenY;
+
+            // size of the canvas
+            var w_s = screenSize.width;
+            var h_s = screenSize.height;
+            var xmin = 0, xmax = w_s;
+            var ymin = 0, ymax = h_s;
+
+            var x1, y1;
+            var i = 0;
+            var nextValuePoint = function () {
+                var border = data.border == null? 'none': data.border;
+                for (; i < n; i++) {
+                    x1 = dataToScreenX(data.x[i]);
+                    y1 = dataToScreenY(data.y[i]);
+                    var size = data.size[i];
+                    var halfSize = size / 2;
+                    c1 = ((x1 - halfSize) > w_s || (x1 + halfSize) < 0 || (y1 - halfSize) > h_s || (y1 + halfSize) < 0);
+                    var color = data.individualColors ? data.color[i] : data.color;
+                    if (!c1) {// point is inside visible rect
+                        if (data.shape == 1) marker_g.rect(data.size[i], data.size[i]).translate(x1 - halfSize, y1 - halfSize).fill(color).style({ stroke: border });
+                        else if (data.shape == 2) marker_g.circle(data.size[i]).translate(x1 - halfSize, y1 - halfSize).style({fill: color, stroke:border});
+                        else if (data.shape == 3) marker_g.rect(data.size[i] / Math.sqrt(2), data.size[i] / Math.sqrt(2)).translate(x1, y1 - halfSize).style({fill:color, stroke:border}).rotate(45); //diamond
+                        else if (data.shape == 4) {
+                            var halfThirdSize = size / 6;
+                            marker_g.polyline([[-halfSize, -halfThirdSize], [-halfThirdSize, -halfThirdSize], [-halfThirdSize, -halfSize], [halfThirdSize, -halfSize],
+                                [halfThirdSize, -halfThirdSize], [halfSize, -halfThirdSize], [halfSize, halfThirdSize], [halfThirdSize, halfThirdSize], [halfThirdSize, halfSize],
+                                [-halfThirdSize, halfSize], [-halfThirdSize, halfThirdSize], [-halfSize, halfThirdSize], [-halfSize, -halfThirdSize]]).translate(x1, y1).style({ fill: color, stroke: border });//cross
+                        }
+                        else if (data.shape == 5) {
+                            var r = Math.sqrt(3) / 6 * size;
+                            marker_g.polyline([[x1 - halfSize, y1 + r], [x1, y1 - r * 2], [x1 + halfSize, y1 + r], [x1 - halfSize, y1 + r]]).style({ fill: color, stroke: border });//triangle
+                        }
+    
+                    }
+                }
+                marker_g.clipWith(marker_g.rect(w_s, h_s));
+            };
+            nextValuePoint();
+        },
+
+        buildSvgLegendElements: function (legendSettings, svg, data, getTitle) {
+            var thumbnail = svg.group();
+            var content = svg.group();
+            var fontSize = 12;
+            var size = fontSize * 1.5;
+            var x1 = size / 2 + 1;
+            var y1 = x1;
+            var halfSize = size / 2;
+            //thumbnail
+            if (data.individualColors) {
+                border = "#000000";
+                color = "#ffffff";
+            }
+            else {
+                color = data.color;
+                border = "none";
+                if (data.border != null) border = data.border;
+            }
+            switch (data.shape) {     
+                case 1: // box
+                    thumbnail.rect(size, size).translate(x1 - halfSize, y1 - halfSize).fill({color: color, opacity: 1}).stroke(border); 
+                    break;
+                case 2: // circle
+                    thumbnail.circle(size).translate(x1 - halfSize, y1 - halfSize).fill(color).stroke(border);
+                    break;
+                case 3: // diamond
+                    thumbnail.rect(size / Math.sqrt(2), size / Math.sqrt(2)).translate(x1, y1 - halfSize).fill(color).stroke(border).rotate(45);
+                    break;
+                case 4: // cross
+                    var halfThirdSize = size / 6;
+                    thumbnail.polyline([[-halfSize, -halfThirdSize], [-halfThirdSize, -halfThirdSize], [-halfThirdSize, -halfSize], [halfThirdSize, -halfSize],
+                        [halfThirdSize, -halfThirdSize], [halfSize, -halfThirdSize], [halfSize, halfThirdSize], [halfThirdSize, halfThirdSize], [halfThirdSize, halfSize],
+                        [-halfThirdSize, halfSize], [-halfThirdSize, halfThirdSize], [-halfSize, halfThirdSize], [-halfSize, -halfThirdSize]]).translate(x1, y1).fill(color).stroke(border);//cross    
+                    break;
+                case 5: // triangle
+                    var r = Math.sqrt(3) / 6 * size;
+                    thumbnail.polyline([[x1 - halfSize, y1 + r], [x1, y1 - r * 2], [x1 + halfSize, y1 + r], [x1 - halfSize, y1 + r]]).fill(color).stroke(border);//triangle    
+                    break;
+            }
+            //content
+            var shiftsizePalette = 0;
+            var isContent = legendSettings.legendDiv.children[1];
+            var isColor = data.individualColors && data.colorPalette;
+            var isSize = data.sizePalette;
+            var style = (isContent && legendSettings.legendDiv.children[1].children[0] && legendSettings.legendDiv.children[1].children[0].children[0]) ? window.getComputedStyle(legendSettings.legendDiv.children[1].children[0].children[0], null) : undefined;
+            fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
+            fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+            if (isColor) {
+                var colorText = getTitle("color");
+                content.text(colorText).font({ family: fontFamily, size: fontSize });
+                var colorPalette_g = svg.group();
+                var width = legendSettings.width;
+                var height = 20;
+                InteractiveDataDisplay.SvgColorPaletteViewer(colorPalette_g, data.colorPalette, legendSettings.legendDiv.children[1].children[0].children[1], { width: width, height: height });
+                colorPalette_g.translate(5, 50);
+                shiftsizePalette = 50 + height;
+                legendSettings.height += (50 + height);
+            };
+            if (data.sizePalette) {
+                var sizeText = getTitle("size");
+                content.add(svg.text(sizeText).font({ family: fontFamily, size: fontSize }).translate(0, shiftsizePalette));
+                var sizePalette_g = svg.group();
+                var width = legendSettings.width;
+                var height = 35;
+                var sizeElement = isColor ? legendSettings.legendDiv.children[1].children[1].children[1] : legendSettings.legendDiv.children[1].children[0].children[1];
+                InteractiveDataDisplay.SvgSizePaletteViewer(sizePalette_g, data.sizePalette, sizeElement, { width: width, height: height });
+                sizePalette_g.translate(5, 50 + shiftsizePalette);
+
+                legendSettings.height += (50 + height);
+            };
+            svg.front();
+            return { thumbnail: thumbnail, content: content };
         }
     }
     InteractiveDataDisplay.Markers.shapes["box"] = primitiveShape;

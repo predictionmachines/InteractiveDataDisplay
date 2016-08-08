@@ -600,7 +600,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     var _axis = null;
 
     function addAxis() {
-        _axisDiv = $("<div data-idd-placement='bottom' style='width: " + _width + "px'></div>");
+        _axisDiv = $("<div data-idd-placement='bottom' style='width: " + _width + "px; color: rgb(0,0,0)'></div>");
         _host[0].appendChild(_axisDiv[0]);
         _axis = new InteractiveDataDisplay.NumericAxis(_axisDiv);
         if (_palette && !_palette.isNormalized) // Take axis values from fixed palette
@@ -678,7 +678,54 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     if (_palette)
         renderPalette();
 };
+InteractiveDataDisplay.SvgColorPaletteViewer = function (svg, palette, elementDiv, options) {
+    var _width = 170;
+    var _height = 20;
+    var _axisVisible = true;
+    var _palette = palette;
+    var _dataRange = undefined;
 
+    // Get initial settings from options
+    if (options !== undefined) {
+        if (options.height !== undefined)
+            _height = options.height;
+        if (options.width !== undefined)
+            _width = options.width;
+        if (options.axisVisible !== undefined)
+            _axisVisible = options.axisVisible;
+    }
+    var _axis = null;
+    var _axis_g = svg.group();
+    function addAxis() {
+        var _axis = elementDiv.children[1];
+        _axis.axis.renderToSvg(_axis_g);
+        _axis_g.translate(0, _height + 0.5);
+    }
+
+    function removeAxis() {
+        _axis = null;
+    }
+
+    if (_axisVisible)
+        addAxis();
+
+    var renderPalette = function () {
+        var color;
+        var alpha = (_palette.range.max - _palette.range.min) / _width;
+        var gradient = svg.gradient("linear", function (stop) {
+            var x = _palette.range.min;
+            for (var i = 0; i < _width; i++) {
+                color = _palette.getRgba(x);
+                stop.at(i / _width, "rgba(" + color.r + "," + color.g + "," + color.b + "," + color.a + ")");
+                x += alpha;
+            }
+        });
+        svg.rect(_width, _height).fill(gradient);
+    };
+
+    if (_palette)
+        renderPalette();
+};
 //-----------------------------------------------------------------------------
 // Size palette
 
@@ -742,7 +789,7 @@ InteractiveDataDisplay.SizePaletteViewer = function (div, palette, options) {
     var _axis = null;
     var _axisDiv = null;
     function addAxis() {
-        _axisDiv = $("<div data-idd-placement='bottom' style='width: " + _width + "px; margin-top: -1px'></div>");
+        _axisDiv = $("<div data-idd-placement='bottom' style='width: " + _width + "px; margin-top: -1px; color: rgb(0,0,0)'></div>");
         _axis = new InteractiveDataDisplay.NumericAxis(_axisDiv);
         _host[0].appendChild(_axisDiv[0]);
 
@@ -842,6 +889,62 @@ InteractiveDataDisplay.SizePaletteViewer = function (div, palette, options) {
         _ctx.closePath();
         _ctx.fill();
         _ctx.stroke();
+    };
+
+    renderPalette();
+};
+
+InteractiveDataDisplay.SvgSizePaletteViewer = function (svg, palette, elementDiv, options) {
+    var _width = 170;
+    var _height = 75;
+    var _axisVisible = true;
+    var _palette = palette;
+
+    if (options !== undefined) {
+        if (options.axisVisible !== undefined)
+            _axisVisible = options.axisVisible;
+        if (options.width !== undefined)
+            _width = options.width;
+        if (options.height !== undefined)
+            _height = options.height;
+    }
+
+    var _axis = null;
+    function addAxis() {
+        var _axis = elementDiv.children[1];
+        var _axis_g = svg.group();
+        _axis.axis.renderToSvg(_axis_g);
+        _axis_g.translate(0, _height);
+    }
+    function removeAxis() {
+        _axis = null;
+    }
+
+    if (_axisVisible)
+        addAxis();
+
+    var renderPalette = function () {
+        var minHeight = 0;
+        var maxHeight = _height;
+        if (_palette.sizeRange) {
+            minHeight = _palette.sizeRange.min;
+            maxHeight = _palette.sizeRange.max;
+        }
+        var middle = _height * _width / Math.max(maxHeight, minHeight);
+
+        var points = [];
+        if (minHeight != 0) points.push([0, Math.max(0, _height - minHeight)]);
+        else points.push([0, _height]);//0
+        if (middle < _width) {
+            points.push([middle, 0]);//1
+            if (minHeight <= maxHeight) points.push([_width, 0]);//2
+            else points.push([_width, Math.max(0, _height - maxHeight)]);// 2
+        }
+        else {
+            points.push([_width, Math.max(0, _height - maxHeight)]);// 1
+            points.push([_width, Math.max(0, _height - maxHeight)]);
+        }
+        svg.polyline([[0, _height], points[0], points[1], points[2], [_width, _height], [0, _height]]).fill("lightgray").stroke("black");
     };
 
     renderPalette();

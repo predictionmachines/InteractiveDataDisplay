@@ -168,6 +168,7 @@
                 vendor: [
                     "ext/jquery/dist/jquery.js",
                     "ext/rxjs/dist/rx.lite.js",
+                    "ext/svg.js/dist/svg.js",
                     "<%= concat.dist.dest %>"
                 ]
             },
