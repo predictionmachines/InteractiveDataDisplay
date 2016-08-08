@@ -1,9 +1,11 @@
-New features:
- - Export to SVG: chart, area, markers, polyline with uncertainty can be exported to SVG, legend can also be exported to SVG except uncertain marker shapes.
- - New marker shape `"bars"`
- - Navigation panel is updated, it allows to download SVG. Uses FileSaver.js.   
+## 1.4.1 (August 8, 2016)
 
-#### 1.4.0 (July 21, 2016)
+New features:
+ - Export to SVG: chart, area, markers, polyline with uncertainty can be exported to SVG; legend also can be exported to SVG except uncertain marker shapes.
+ - New marker shape `"bars"`.
+ - Navigation panel is updated, it allows to download the plot as SVG file (uses FileSaver.js).   
+
+### 1.4.0 (July 21, 2016)
 
 **Breaking changes**: 
  - **Removed separate chartViewer.js (.css, .d.ts)**. Idd.js now includes chartViewer.js (same for umd version). 
