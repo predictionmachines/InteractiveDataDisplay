@@ -164,7 +164,8 @@ InteractiveDataDisplay.Area = function (div, master) {
         var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
         var fontSize = parseFloat(style.getPropertyValue('font-size'));
         var fontFamily = style.getPropertyValue('font-family');
-        svg.add(svg.text(that.name).font({ family: fontFamily, size: fontSize }).translate(40, 0));
+        var fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
+        svg.add(svg.text(that.name).font({ family: fontFamily, size: fontSize, weight: fontWeight }).translate(40, 0));
         svg.front();
     }
 }
