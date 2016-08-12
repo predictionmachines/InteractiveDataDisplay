@@ -1529,6 +1529,21 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return plot;
         };
 
+        this.labels = function (name, data) {
+            var plot = this.get(name);
+            if (!plot) {
+                var div = $("<div></div>")
+                    .attr("data-idd-name", name)
+                    .appendTo(this.host);
+                plot = new InteractiveDataDisplay.LabelPlot(div, this.master);
+                this.addChild(plot);
+            }
+            if (data !== undefined) {
+                plot.draw(data);
+            }
+            return plot;
+        }
+
         //------------------------------------------------------------------------------
         //Navigation
         if (_isMaster) {
