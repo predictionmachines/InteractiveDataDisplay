@@ -7,22 +7,30 @@
     var _text = [];
     var _x = [];
     var _y = [];
-
-    this.draw = function (data) {
-        var n = data.length;
-        var text = [];
-        var x = [];
-        var y = [];
+    this.getData = function () {
+        var data = [];
+        var n = _text.length;
         for (var i = 0; i < n; i++) {
-            text.push(data[i].text);
-            x.push(data[i].position.x);
-            y.push(data[i].position.y);
-        }  
+            data.push({ text: _text[i], position: { x: _x[i], y: _y[i] } });
+        }
+        return data;
+    }
+    this.draw = function (data) {
+        if (data) {
+            var n = data.length;
+            var text = [];
+            var x = [];
+            var y = [];
+            for (var i = 0; i < n; i++) {
+                text.push(data[i].text);
+                x.push(data[i].position.x);
+                y.push(data[i].position.y);
+            }
 
-        _text = text;
-        _x = x;
-        _y = y;
-       
+            _text = text;
+            _x = x;
+            _y = y;
+        }
         this.invalidateLocalBounds();
         this.requestNextFrameOrUpdate();
         this.fireAppearanceChanged();
@@ -32,21 +40,25 @@
         var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
         var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
 
-        var xrange = InteractiveDataDisplay.Utils.getMinMax(_x);
-        var yrange = InteractiveDataDisplay.Utils.getMinMax(_y);
-        var xmin = xrange.min - 0.2;
-        var xmax = xrange.max + 0.2;
-        var ymin = yrange.min;
-        var ymax = yrange.max;
-        if (dataToPlotX) {
-            xmin = dataToPlotX(xmin);
-            xmax = dataToPlotX(xmax);
+        if (_x.length > 0 && _y.length > 0) {
+            var xrange = InteractiveDataDisplay.Utils.getMinMax(_x);
+            var yrange = InteractiveDataDisplay.Utils.getMinMax(_y);
+            var xmin = xrange.min - 0.2;
+            var xmax = xrange.max + 0.2;
+            var ymin = yrange.min;
+            var ymax = yrange.max;
+            if (dataToPlotX) {
+                xmin = dataToPlotX(xmin);
+                xmax = dataToPlotX(xmax);
+            }
+            if (dataToPlotY) {
+                ymin = dataToPlotY(ymin);
+                ymax = dataToPlotY(ymax);
+            }
+            return { x: xmin, y: ymin, width: xmax - xmin, height: ymax - ymin };
         }
-        if (dataToPlotY) {
-            ymin = dataToPlotY(ymin);
-            ymax = dataToPlotY(ymax);
-        }
-        return { x: xmin, y: ymin, width: xmax - xmin, height:ymax - ymin };
+        
+        return undefined;
     };
     // Returns 4 margins in the screen coordinate system
     this.getLocalPadding = function () {
