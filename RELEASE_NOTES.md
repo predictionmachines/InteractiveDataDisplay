@@ -1,6 +1,11 @@
+## 1.4.1 (August 8, 2016)
 
+New features:
+ - Export to SVG: chart, area, markers, polyline with uncertainty can be exported to SVG; legend also can be exported to SVG except uncertain marker shapes.
+ - New marker shape `"bars"`.
+ - Navigation panel is updated, it allows to download the plot as SVG file (uses FileSaver.js).   
 
-##### 1.4.0 (July 21, 2016)
+### 1.4.0 (July 21, 2016)
 
 **Breaking changes**: 
  - **Removed separate chartViewer.js (.css, .d.ts)**. Idd.js now includes chartViewer.js (same for umd version). 
@@ -21,7 +26,7 @@ Fixes:
 Changes:
  - Box-and-whisker markers are now represented by a single shape `"boxwhisker"` and the actual marker type (either box-and-whisker, box or just whisker) depends on the drawn data. See the [samples](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/test/manual/Boxwhisker%20plot.html).
  
-## 1.3.0 (May 27, 2016)
+### 1.3.0 (May 27, 2016)
 
 New features:
  - Export to SVG: figure, numeric axis and polyline can be exported to SVG. Uses SVG.js. See method `Plot.exportToSvg()` and the sample [Vector export](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/samples/Vector%20export.html#L22).
