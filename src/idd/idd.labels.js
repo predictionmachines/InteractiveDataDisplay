@@ -7,6 +7,12 @@
     var _text = [];
     var _x = [];
     var _y = [];
+
+    var size_p = {
+        x: 120,
+        y: 25
+    };
+    var shift = [];
     this.getData = function () {
         var data = [];
         var n = _text.length;
@@ -25,6 +31,7 @@
                 text.push(data[i].text);
                 x.push(data[i].position.x);
                 y.push(data[i].position.y);
+                shift.push(0);
             }
 
             _text = text;
@@ -75,15 +82,7 @@
         var dataToScreenX = t.dataToScreenX;
         var dataToScreenY = t.dataToScreenY;
         for (var i = 0; i < n; i++) {
-            var p; // screen coordinates of the el's left-top
-            var size_p; // screen size of the element
-
-            size_p = {
-                x: 150,
-                y: 25
-            };
-
-            p = { // screen coordinates 
+            var p = { // screen coordinates 
                 x: dataToScreenX(_x[i]), // left
                 y: dataToScreenY(_y[i]) // top
             };
@@ -93,19 +92,17 @@
             var fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
             var left = p.x - 0.5 * size_p.x;
             var top = p.y + size_p.y;
-            var text = _text[i];
-            var textWidth = context.measureText(_text[i]).width;
-            if (textWidth > size_p.x) {
-                while (textWidth > size_p.x) {
-                    text = text.substring(0, text.length - 1);
-                    textWidth = context.measureText(text).width;
-                }
-            }
             context.fillStyle = "black";
             context.font = fontWeight + " " + fontSize + "px " + fontFamily;
             context.textALign = 'center';
-            context.fillText(text, left, top);
-            
+            var text = _text[i];
+            var textWidth = context.measureText(text).width;
+            while (textWidth > size_p.x) {
+                text = text.substring(0, text.length - 1);
+                textWidth = context.measureText(text).width;
+            }
+            shift[i] = (size_p.x - textWidth) / 2;
+            context.fillText(text, left + shift[i], top);
         }
     };
     this.renderCoreSvg = function (plotRect, screenSize, svg) {
@@ -128,15 +125,7 @@
                 var fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
                 var fontFamily = style ? style.getPropertyValue('font-family') : undefined;
                 var fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
-                var p; // screen coordinates of the el's left-top
-                var size_p; // screen size of the element
-
-                size_p = {
-                    x: 150,
-                    y: 25
-                };
-
-                p = { // screen coordinates 
+                var p = { // screen coordinates 
                     x: dataToScreenX(_x[i]), // left
                     y: dataToScreenY(_y[i]) // top
                 };
@@ -147,7 +136,9 @@
                 var elem_g = labels_g.group();
                 elem_g.size(size_p.x, size_p.y);
                 var text = elem_g.text(_text[i]).font({ family: fontFamily, size: fontSize, weight: fontWeight });
-                elem_g.translate(left, top);
+                
+               
+                elem_g.translate(left + shift[i], top);
                 elem_g.clipWith(elem_g.rect(size_p.x, size_p.y));
             }
             labels_g.clipWith(labels_g.rect(w_s, h_s));
