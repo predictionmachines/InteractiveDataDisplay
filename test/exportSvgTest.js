@@ -108,7 +108,7 @@ describe('idd.js exportToSvg', function () {
         expect(legendsvg.height()).toBe(divHeight);
         expect(legendsvg.node.nodeName).toBe("svg");
         expect(legendsvg.children().length).toBe(3);
-        expect(legendsvg.get(0).node.nodeName).toBe("line");
         expect(legendsvg.get(2).node.nodeName).toBe("g");
+        expect(legendsvg.get(0).node.nodeName).toBe("line");
     });
 });

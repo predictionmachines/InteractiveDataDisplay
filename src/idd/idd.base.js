@@ -89,6 +89,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 plot = new InteractiveDataDisplay.DOMPlot(jqDiv, master);
                 plot.order = Number.MAX_SAFE_INTEGER;
                 break;
+            case "label":
+                plot = new InteractiveDataDisplay.LabelPlot(jqDiv, master);
+                plot.order = Number.MAX_SAFE_INTEGER;
+                break;
             case "figure":
                 plot = new InteractiveDataDisplay.Figure(jqDiv, master);
                 break;
@@ -949,7 +953,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                         item_g.translate(5, commonSettings.height);
                         legend_g.clipWith(item_g.rect(legendSettings.width, commonSettings.height + 30));
                         commonSettings.height += legendSettings.height + 10;
-                        lastLine = svg.line(15, commonSettings.height, commonSettings.width, commonSettings.height).stroke({ width: 0.3, color: "black" }).back();
+                        lastLine = svg.line(15, commonSettings.height, commonSettings.width, commonSettings.height).stroke({ width: 0.3, color: "gray" }).back();
                         commonSettings.height += 10;
                     }
                     else j++;
@@ -1524,6 +1528,21 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
             return plot;
         };
+
+        this.labels = function (name, data) {
+            var plot = this.get(name);
+            if (!plot) {
+                var div = $("<div></div>")
+                    .attr("data-idd-name", name)
+                    .appendTo(this.host);
+                plot = new InteractiveDataDisplay.LabelPlot(div, this.master);
+                this.addChild(plot);
+            }
+            if (data !== undefined) {
+                plot.draw(data);
+            }
+            return plot;
+        }
 
         //------------------------------------------------------------------------------
         //Navigation
@@ -2681,7 +2700,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
             var fontSize = parseFloat(style.getPropertyValue('font-size'));
             var fontFamily = style.getPropertyValue('font-family');
-            svg.add(svg.text(that.name).font({family: fontFamily, size: fontSize }).translate(40, 0));
+            var fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
+            svg.add(svg.text(that.name).font({family: fontFamily, size: fontSize, weight: fontWeight }).translate(40, 0));
             svg.front();
         }
         // Initialization 

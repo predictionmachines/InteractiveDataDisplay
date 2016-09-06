@@ -1401,9 +1401,10 @@ InteractiveDataDisplay.Bars = {
         var style = (isContent && legendSettings.legendDiv.children[1].children[0] && legendSettings.legendDiv.children[1].children[0].children[0]) ? window.getComputedStyle(legendSettings.legendDiv.children[1].children[0].children[0], null) : undefined;
         var fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
         var fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+        var fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
         if (isColor) {
             var colorText = getTitle("color");
-            content.text(colorText).font({ family: fontFamily, size: fontSize });
+            content.text(colorText).font({ family: fontFamily, size: fontSize, weight: fontWeight });
             var colorPalette_g = svg.group();
             var width = legendSettings.width;
             var height = 20;
