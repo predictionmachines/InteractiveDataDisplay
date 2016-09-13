@@ -566,13 +566,55 @@ InteractiveDataDisplay.Figure = function (div, master) {
     this.exportContentToSvg = function(plotRect, screenSize, svg) {
         var left_g = svg.group();
         var leftLine = 0;
+
+        var exportTextToSvg = function (div, svg) {
+            var style = window.getComputedStyle(div, null);
+            var parentStyle = window.getComputedStyle(div.parentElement, null);
+            var transform = style ? style.getPropertyValue('transform') : undefined;
+            if (transform == "none") transform = parentStyle ? parentStyle.getPropertyValue('transform') : undefined;
+            var transformOrigin = style ? style.getPropertyValue('transform-origin') : undefined;
+            if (transformOrigin == "none") transformOrigin = parentStyle ? parentStyle.getPropertyValue('transform-origin') : undefined;
+            var fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
+            var fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+            var fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
+            var textAlign = style ? style.getPropertyValue('text-align') : undefined;
+            if (textAlign == 'center') textAlign = 'middle';
+            if (textAlign == 'left') textAlign = 'start';
+            if (textAlign == 'right') textAlign = 'end';
+            var text = svg.text($(div).text()).font({ family: fontFamily, size: fontSize, weight: fontWeight, anchor: textAlign });
+            var width = $(div.parentElement).width();
+            var height = $(div.parentElement).height();
+            if (textAlign == 'middle') text.translate(width / 2, height / 2);
+            if (textAlign == "end") text.translate(width, 0);
+            if (transform !== undefined && transform !== "none") {
+                text.attr({ transform: transform });
+            }
+        };
+        var exportSpanElements = function (element, svg) {
+            for (var i = 0; i < element.children.length; i++) {
+                if (element.children[i].tagName !== undefined && element.children[i].tagName.toLowerCase() == "span") {
+                    exportTextToSvg(element.children[i], svg);
+                } else if (element.children[i] instanceof jQuery && element.children[i].is('span')) {
+                    exportTextToSvg(element.children[i][0], svg);
+                }
+                exportSpanElements(element.children[i], svg);
+            }
+        };
+
         for(var i = leftChildren.length; --i>=0; ){
             var child = leftChildren[i];
             var child_g = left_g.group();
             child_g.translate(leftLine, 0);
             leftLine += child.width();
-            if(child.content && child.content.axis){                
-                child.content.axis.renderToSvg(child_g);
+            if (child.content) {
+                if (child.content.axis) {
+                    child.content.axis.renderToSvg(child_g);
+                }
+                else if (child.content.tagName !== undefined && child.content.tagName.toLowerCase() == "span") {
+                    exportTextToSvg(child.content, child_g);
+                } else if (child.content instanceof jQuery && child.content.is('span')) {
+                    exportTextToSvg(child.content[0], child_g);
+                } else exportSpanElements(child.content[0], child_g);
             }
         }
         
@@ -583,8 +625,15 @@ InteractiveDataDisplay.Figure = function (div, master) {
             var child_g = top_g.group();
             child_g.translate(leftLine, topLine);
             topLine += child.height();
-            if(child.content && child.content.axis){                
-                child.content.axis.renderToSvg(child_g);
+            if (child.content) {
+                if (child.content.axis) {
+                    child.content.axis.renderToSvg(child_g);
+                }
+                else if (child.content.tagName !== undefined && child.content.tagName.toLowerCase() == "span") {
+                    exportTextToSvg(child.content, child_g);
+                } else if (child.content instanceof jQuery && child.content.is('span')) {
+                    exportTextToSvg(child.content[0], child_g);
+                } else exportSpanElements(child.content[0], child_g);
             }
         }
         left_g.translate(0, topLine);
@@ -596,8 +645,15 @@ InteractiveDataDisplay.Figure = function (div, master) {
             var child_g = bottom_g.group();
             child_g.translate(leftLine, bottomLine);
             bottomLine += child.height();
-            if(child.content && child.content.axis){                
-                child.content.axis.renderToSvg(child_g);
+            if (child.content) {
+                if (child.content.axis) {
+                    child.content.axis.renderToSvg(child_g);
+                }
+                else if (child.content.tagName !== undefined && child.content.tagName.toLowerCase() == "span") {
+                    exportTextToSvg(child.content, child_g);
+                } else if (child.content instanceof jQuery && child.content.is('span')) {
+                    exportTextToSvg(child.content[0], child_g);
+                } else exportSpanElements(child.content[0], child_g);
             }
         }
         
@@ -608,8 +664,15 @@ InteractiveDataDisplay.Figure = function (div, master) {
             var child_g = right_g.group();
             child_g.translate(rightLine, topLine);
             rightLine += child.width();
-            if(child.content && child.content.axis){                
-                child.content.axis.renderToSvg(child_g);
+            if (child.content) {
+                if (child.content.axis) {
+                    child.content.axis.renderToSvg(child_g);
+                }
+                else if (child.content.tagName !== undefined && child.content.tagName.toLowerCase() == "span") {
+                    exportTextToSvg(child.content, child_g);
+                } else if (child.content instanceof jQuery && child.content.is('span')) {
+                    exportTextToSvg(child.content[0], child_g);
+                } else exportSpanElements(child.content[0], child_g);
             }
         }
         
