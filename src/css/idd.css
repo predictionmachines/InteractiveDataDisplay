@@ -114,22 +114,21 @@
     background-color: #365C95;
 }
 
-.idd-verticalTitle
-{
+.idd-verticalTitle {
+    width: 20px;
+    max-width: 20px;
+    white-space: nowrap;
+    text-align: center;
+    -ms-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+    display: table-cell;
+    vertical-align: middle;
     font-size: smaller;
-    height: 100%; 
-    transform: rotate(270deg);
-    transform-origin: 50% 50%; 
-    -ms-transform: rotate(270deg);
-    -ms-transform-origin: 50% 50%; 
-    -transform: rotate(270deg);
-    -transform-origin: 50% 50%;
-    -moz-transform: rotate(270deg);
-    -moz-transform-origin: 50% 50%;
-    -webkit-transform: rotate(270deg);
-    -webkit-transform-origin: 50% 50%;
+    padding-bottom: 15px;
 }
-
 .unselectable
 {
     -moz-user-select: -moz-none;

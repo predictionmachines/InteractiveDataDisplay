@@ -564,16 +564,10 @@ InteractiveDataDisplay.Figure = function (div, master) {
     };
     
     this.exportContentToSvg = function(plotRect, screenSize, svg) {
-        var left_g = svg.group();
-        var leftLine = 0;
-
         var exportTextToSvg = function (div, svg) {
-            var style = window.getComputedStyle(div, null);
-            var parentStyle = window.getComputedStyle(div.parentElement, null);
+            var style = div instanceof jQuery ? window.getComputedStyle(div[0], null) : window.getComputedStyle(div, null);
             var transform = style ? style.getPropertyValue('transform') : undefined;
-            if (transform == "none") transform = parentStyle ? parentStyle.getPropertyValue('transform') : undefined;
             var transformOrigin = style ? style.getPropertyValue('transform-origin') : undefined;
-            if (transformOrigin == "none") transformOrigin = parentStyle ? parentStyle.getPropertyValue('transform-origin') : undefined;
             var fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
             var fontFamily = style ? style.getPropertyValue('font-family') : undefined;
             var fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
@@ -581,26 +575,29 @@ InteractiveDataDisplay.Figure = function (div, master) {
             if (textAlign == 'center') textAlign = 'middle';
             if (textAlign == 'left') textAlign = 'start';
             if (textAlign == 'right') textAlign = 'end';
-            var text = svg.text($(div).text()).font({ family: fontFamily, size: fontSize, weight: fontWeight, anchor: textAlign });
-            var width = $(div.parentElement).width();
-            var height = $(div.parentElement).height();
-            if (textAlign == 'middle') text.translate(width / 2, height / 2);
+
+            var width = $(div).width();
+            var height = $(div).height();
+
+            var content = $(div).text().trim();
+            var text = svg.text(content).font({ family: fontFamily, size: fontSize, weight: fontWeight, anchor: textAlign });
+
+            if (textAlign == 'middle') text.translate(width / 2, 0);
             if (textAlign == "end") text.translate(width, 0);
-            if (transform !== undefined && transform !== "none") {
+
+            if (transform != "none" && transform != undefined) {
                 text.attr({ transform: transform });
-            }
-        };
-        var exportSpanElements = function (element, svg) {
-            for (var i = 0; i < element.children.length; i++) {
-                if (element.children[i].tagName !== undefined && element.children[i].tagName.toLowerCase() == "span") {
-                    exportTextToSvg(element.children[i], svg);
-                } else if (element.children[i] instanceof jQuery && element.children[i].is('span')) {
-                    exportTextToSvg(element.children[i][0], svg);
+                if (transformOrigin != undefined && transformOrigin != "none") {
+                    var position = transformOrigin.split(' ');
+                    position[0] = parseFloat(position[0].substring(0, position[0].length - 2));
+                    position[1] = parseFloat(position[1].substring(0, position[1].length - 2));
+                    text.translate(-position[0] * 0.9, height - position[1]);
                 }
-                exportSpanElements(element.children[i], svg);
             }
         };
 
+        var left_g = svg.group();
+        var leftLine = 0;
         for(var i = leftChildren.length; --i>=0; ){
             var child = leftChildren[i];
             var child_g = left_g.group();
@@ -610,11 +607,13 @@ InteractiveDataDisplay.Figure = function (div, master) {
                 if (child.content.axis) {
                     child.content.axis.renderToSvg(child_g);
                 }
-                else if (child.content.tagName !== undefined && child.content.tagName.toLowerCase() == "span") {
-                    exportTextToSvg(child.content, child_g);
-                } else if (child.content instanceof jQuery && child.content.is('span')) {
-                    exportTextToSvg(child.content[0], child_g);
-                } else exportSpanElements(child.content[0], child_g);
+                else {
+                    var isText = true;
+                    $(child.content).contents().each(function () {
+                        if (this.nodeType != 3) isText = false;
+                    });
+                    if (isText) exportTextToSvg(child.content, child_g);
+                }
             }
         }
         
@@ -628,12 +627,13 @@ InteractiveDataDisplay.Figure = function (div, master) {
             if (child.content) {
                 if (child.content.axis) {
                     child.content.axis.renderToSvg(child_g);
+                } else {
+                    var isText = true;
+                    $(child.content).contents().each(function () {
+                        if (this.nodeType != 3) isText = false;
+                    });
+                    if (isText) exportTextToSvg(child.content, child_g);
                 }
-                else if (child.content.tagName !== undefined && child.content.tagName.toLowerCase() == "span") {
-                    exportTextToSvg(child.content, child_g);
-                } else if (child.content instanceof jQuery && child.content.is('span')) {
-                    exportTextToSvg(child.content[0], child_g);
-                } else exportSpanElements(child.content[0], child_g);
             }
         }
         left_g.translate(0, topLine);
@@ -648,12 +648,13 @@ InteractiveDataDisplay.Figure = function (div, master) {
             if (child.content) {
                 if (child.content.axis) {
                     child.content.axis.renderToSvg(child_g);
+                } else {
+                    var isText = true;
+                    $(child.content).contents().each(function () {
+                        if (this.nodeType != 3) isText = false;
+                    });
+                    if (isText) exportTextToSvg(child.content, child_g);
                 }
-                else if (child.content.tagName !== undefined && child.content.tagName.toLowerCase() == "span") {
-                    exportTextToSvg(child.content, child_g);
-                } else if (child.content instanceof jQuery && child.content.is('span')) {
-                    exportTextToSvg(child.content[0], child_g);
-                } else exportSpanElements(child.content[0], child_g);
             }
         }
         
@@ -667,19 +668,21 @@ InteractiveDataDisplay.Figure = function (div, master) {
             if (child.content) {
                 if (child.content.axis) {
                     child.content.axis.renderToSvg(child_g);
+                } else {
+                    var isText = true;
+                    $(child.content).contents().each(function () {
+                        if (this.nodeType != 3) isText = false;
+                    });
+                    if (isText) exportTextToSvg(child.content, child_g);
                 }
-                else if (child.content.tagName !== undefined && child.content.tagName.toLowerCase() == "span") {
-                    exportTextToSvg(child.content, child_g);
-                } else if (child.content instanceof jQuery && child.content.is('span')) {
-                    exportTextToSvg(child.content[0], child_g);
-                } else exportSpanElements(child.content[0], child_g);
             }
         }
-        
+      
         var plots_g = svg.group();
         plots_g
             .viewbox(0, 0, screenSize.width, screenSize.height)
             .translate(leftLine, topLine);
+
         InteractiveDataDisplay.Figure.prototype.exportContentToSvg.call(this, plotRect, screenSize, plots_g);
     };    
 
