@@ -567,7 +567,7 @@ InteractiveDataDisplay.Figure = function (div, master) {
         var exportTextToSvg = function (div, svg) {
             var style = div instanceof jQuery ? window.getComputedStyle(div[0], null) : window.getComputedStyle(div, null);
             var transform = style ? style.getPropertyValue('transform') : undefined;
-            var transformOrigin = style ? style.getPropertyValue('transform-origin') : undefined;
+            var paddingBottom = style ? style.getPropertyValue('padding-bottom') : undefined;
             var fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
             var fontFamily = style ? style.getPropertyValue('font-family') : undefined;
             var fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
@@ -575,7 +575,6 @@ InteractiveDataDisplay.Figure = function (div, master) {
             if (textAlign == 'center') textAlign = 'middle';
             if (textAlign == 'left') textAlign = 'start';
             if (textAlign == 'right') textAlign = 'end';
-
             var width = $(div).width();
             var height = $(div).height();
 
@@ -583,16 +582,12 @@ InteractiveDataDisplay.Figure = function (div, master) {
             var text = svg.text(content).font({ family: fontFamily, size: fontSize, weight: fontWeight, anchor: textAlign });
 
             if (textAlign == 'middle') text.translate(width / 2, 0);
-            if (textAlign == "end") text.translate(width, 0);
-
+            else if (textAlign == "end") text.translate(width, 0);
             if (transform != "none" && transform != undefined) {
+                if (paddingBottom != undefined) paddingBottom = parseFloat(paddingBottom.substring(0, paddingBottom.length - 2));
+                else paddingBottom = 0;
                 text.attr({ transform: transform });
-                if (transformOrigin != undefined && transformOrigin != "none") {
-                    var position = transformOrigin.split(' ');
-                    position[0] = parseFloat(position[0].substring(0, position[0].length - 2));
-                    position[1] = parseFloat(position[1].substring(0, position[1].length - 2));
-                    text.translate(-position[0] * 0.9, height - position[1]);
-                }
+                text.translate(-paddingBottom, height / 2);
             }
         };
 

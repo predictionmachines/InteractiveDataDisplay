@@ -59,6 +59,8 @@
 {
     text-align: center;
     font-size: smaller;
+    margin-bottom: 10px;
+
 }
 /*ToolTips*/
 .idd-tooltip
@@ -127,7 +129,8 @@
     display: table-cell;
     vertical-align: middle;
     font-size: smaller;
-    padding-bottom: 15px;
+    padding-bottom: 7px;
+    
 }
 .unselectable
 {
