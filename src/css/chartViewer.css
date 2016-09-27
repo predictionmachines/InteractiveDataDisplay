@@ -237,21 +237,6 @@
 .dsv-onscreennavigation-probepull:hover {
     background-image: url('icons/ic_place_black.png');
 }
-.dsv-leftaxistitle {
-    width: 20px;
-    max-width: 20px;
-    white-space: nowrap;
-    text-align: center;
-    -ms-transform: rotate(-90deg);
-    -moz-transform: rotate(-90deg);
-    -o-transform: rotate(-90deg);
-    -webkit-transform: rotate(-90deg);
-    transform: rotate(-90deg);
-    display: table-cell;
-    vertical-align: middle;
-    font-size: larger;
-    padding-bottom: 15px;
-}
 
 .plotcard-error {
     color: red;

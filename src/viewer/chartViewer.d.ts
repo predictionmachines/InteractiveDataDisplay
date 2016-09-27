@@ -640,7 +640,7 @@ declare module Plot {
         color?: Color | number[] | Quantiles;
         colorPalette?: ColorPalette;
         size?: number | number[] | Quantiles;
-        sizePalette?: Object;
+        sizePalette?: InteractiveDataDisplay.SizePalette;
         border?: Color;
         displayName?: string;
         titles?: MarkersTitles;

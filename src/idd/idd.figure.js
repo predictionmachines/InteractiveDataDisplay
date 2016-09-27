@@ -564,6 +564,33 @@ InteractiveDataDisplay.Figure = function (div, master) {
     };
     
     this.exportContentToSvg = function(plotRect, screenSize, svg) {
+        var exportTextToSvg = function (div, svg) {
+            var style = div instanceof jQuery ? window.getComputedStyle(div[0], null) : window.getComputedStyle(div, null);
+            var transform = style ? style.getPropertyValue('transform') : undefined;
+            var paddingBottom = style ? style.getPropertyValue('padding-bottom') : undefined;
+            var fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
+            var fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+            var fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
+            var textAlign = style ? style.getPropertyValue('text-align') : undefined;
+            if (textAlign == 'center') textAlign = 'middle';
+            if (textAlign == 'left') textAlign = 'start';
+            if (textAlign == 'right') textAlign = 'end';
+            var width = $(div).width();
+            var height = $(div).height();
+
+            var content = $(div).text().trim();
+            var text = svg.text(content).font({ family: fontFamily, size: fontSize, weight: fontWeight, anchor: textAlign });
+
+            if (textAlign == 'middle') text.translate(width / 2, 0);
+            else if (textAlign == "end") text.translate(width, 0);
+            if (transform != "none" && transform != undefined) {
+                if (paddingBottom != undefined) paddingBottom = parseFloat(paddingBottom.substring(0, paddingBottom.length - 2));
+                else paddingBottom = 0;
+                text.attr({ transform: transform });
+                text.translate(-paddingBottom, height / 2);
+            }
+        };
+
         var left_g = svg.group();
         var leftLine = 0;
         for(var i = leftChildren.length; --i>=0; ){
@@ -571,8 +598,17 @@ InteractiveDataDisplay.Figure = function (div, master) {
             var child_g = left_g.group();
             child_g.translate(leftLine, 0);
             leftLine += child.width();
-            if(child.content && child.content.axis){                
-                child.content.axis.renderToSvg(child_g);
+            if (child.content) {
+                if (child.content.axis) {
+                    child.content.axis.renderToSvg(child_g);
+                }
+                else {
+                    var isText = true;
+                    $(child.content).contents().each(function () {
+                        if (this.nodeType != 3) isText = false;
+                    });
+                    if (isText) exportTextToSvg(child.content, child_g);
+                }
             }
         }
         
@@ -583,8 +619,16 @@ InteractiveDataDisplay.Figure = function (div, master) {
             var child_g = top_g.group();
             child_g.translate(leftLine, topLine);
             topLine += child.height();
-            if(child.content && child.content.axis){                
-                child.content.axis.renderToSvg(child_g);
+            if (child.content) {
+                if (child.content.axis) {
+                    child.content.axis.renderToSvg(child_g);
+                } else {
+                    var isText = true;
+                    $(child.content).contents().each(function () {
+                        if (this.nodeType != 3) isText = false;
+                    });
+                    if (isText) exportTextToSvg(child.content, child_g);
+                }
             }
         }
         left_g.translate(0, topLine);
@@ -596,8 +640,16 @@ InteractiveDataDisplay.Figure = function (div, master) {
             var child_g = bottom_g.group();
             child_g.translate(leftLine, bottomLine);
             bottomLine += child.height();
-            if(child.content && child.content.axis){                
-                child.content.axis.renderToSvg(child_g);
+            if (child.content) {
+                if (child.content.axis) {
+                    child.content.axis.renderToSvg(child_g);
+                } else {
+                    var isText = true;
+                    $(child.content).contents().each(function () {
+                        if (this.nodeType != 3) isText = false;
+                    });
+                    if (isText) exportTextToSvg(child.content, child_g);
+                }
             }
         }
         
@@ -608,15 +660,24 @@ InteractiveDataDisplay.Figure = function (div, master) {
             var child_g = right_g.group();
             child_g.translate(rightLine, topLine);
             rightLine += child.width();
-            if(child.content && child.content.axis){                
-                child.content.axis.renderToSvg(child_g);
+            if (child.content) {
+                if (child.content.axis) {
+                    child.content.axis.renderToSvg(child_g);
+                } else {
+                    var isText = true;
+                    $(child.content).contents().each(function () {
+                        if (this.nodeType != 3) isText = false;
+                    });
+                    if (isText) exportTextToSvg(child.content, child_g);
+                }
             }
         }
-        
+      
         var plots_g = svg.group();
         plots_g
             .viewbox(0, 0, screenSize.width, screenSize.height)
             .translate(leftLine, topLine);
+
         InteractiveDataDisplay.Figure.prototype.exportContentToSvg.call(this, plotRect, screenSize, plots_g);
     };    
 
