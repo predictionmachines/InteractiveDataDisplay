@@ -302,7 +302,7 @@ module InteractiveDataDisplay {
             if (yAxisStr !== "") {
                 if (this.yAxisTitle === undefined) {
                     this.yAxisTitle =
-                        $(this.iddChart.addDiv('<div class="dsv-leftaxistitle"></div>', "left"));
+                        $(this.iddChart.addDiv('<div class="idd-verticalTitle" style="font-size: larger;"></div>', "left"));
                 }
                 this.yAxisTitle.text(yAxisStr);
             } else {

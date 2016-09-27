@@ -114,7 +114,7 @@
         var plotRect = this.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
 
         var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        var svg = SVG(svgHost).size(div.width(), div.height());
+        var svg = SVG(svgHost).size(div.width(), div.height());      
         var chart_g = svg.group();
         this.exportContentToSvg(plotRect, screenSize, chart_g);
         var legend_g = svg.group();
