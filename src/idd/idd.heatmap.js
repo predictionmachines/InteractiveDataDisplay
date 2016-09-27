@@ -598,7 +598,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             height: Math.ceil(ct.plotToScreenHeight(visibleRect.height))
         };
         var image = _innerCanvas.toDataURL("image/png");
-        var svgimage = imageData_g.image(image, _imageData.width, _imageData.height);
+        var svgimage = imageData_g.image(image, _imageData.width, _imageData.height).opacity(_opacity);
         svgimage.clipWith(imageData_g.rect(visibleRect_s.width, visibleRect_s.height));
         imageData_g.translate(visibleRect_s.left, visibleRect_s.top);
 
