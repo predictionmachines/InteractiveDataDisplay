@@ -283,7 +283,7 @@ InteractiveDataDisplay.Utils =
             var plots = p.master ? InteractiveDataDisplay.Utils.enumPlots(p.master) : InteractiveDataDisplay.Utils.enumPlots(p);
             p.order = isPrev ? (p_before.order): (p_before.order + 1);
             var shift = function (masterPlot,p) {
-                if (masterPlot.order >= p.order && masterPlot != p && masterPlot.order < Number.MAX_SAFE_INTEGER) masterPlot.order += 1;
+                if (masterPlot.order >= p.order && masterPlot != p && masterPlot.order < InteractiveDataDisplay.MaxInteger) masterPlot.order += 1;
                 if (masterPlot.children)
                     masterPlot.children.forEach(function (child) {
                         shift(child, p);
@@ -293,11 +293,11 @@ InteractiveDataDisplay.Utils =
         },
     
         getMaxOrder: function (p) {
-            var z = p && p.order != Number.MAX_SAFE_INTEGER ? p.order : 0;
+            var z = p && p.order != InteractiveDataDisplay.MaxInteger ? p.order : 0;
             if (p && p.children)
                 p.children.forEach(function (child) {
                     var order = InteractiveDataDisplay.Utils.getMaxOrder(child);
-                    if (order != Number.MAX_SAFE_INTEGER) z = Math.max(z, order);
+                    if (order != InteractiveDataDisplay.MaxInteger) z = Math.max(z, order);
                 });
             return z;
         },

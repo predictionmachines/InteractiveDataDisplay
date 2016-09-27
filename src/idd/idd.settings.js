@@ -13,6 +13,7 @@
     ZIndexNavigationLayer: 1000,
     ZIndexDOMMarkers: 1500,
     ZIndexTooltipLayer: 2000,
+    MaxInteger: 9007199254740991,
     HeatmapworkerPath: undefined,// prefix for idd.heatmapworker.js for using in IE10 and IE11
     factory: {} // table of values (key: string, plot-factory: jqDiv x master plot -> plot)
 };

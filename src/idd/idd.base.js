@@ -80,18 +80,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         switch (plotType) {
             case "plot":
                 plot = new InteractiveDataDisplay.Plot(jqDiv, master);
-                plot.order = Number.MAX_SAFE_INTEGER;
+                plot.order = InteractiveDataDisplay.MaxInteger;
                 break;
             case "polyline":
                 plot = new InteractiveDataDisplay.Polyline(jqDiv, master);
                 break;
             case "dom":
                 plot = new InteractiveDataDisplay.DOMPlot(jqDiv, master);
-                plot.order = Number.MAX_SAFE_INTEGER;
+                plot.order = InteractiveDataDisplay.MaxInteger;
                 break;
             case "label":
                 plot = new InteractiveDataDisplay.LabelPlot(jqDiv, master);
-                plot.order = Number.MAX_SAFE_INTEGER;
+                plot.order = InteractiveDataDisplay.MaxInteger;
                 break;
             case "figure":
                 plot = new InteractiveDataDisplay.Figure(jqDiv, master);
@@ -551,8 +551,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (childPlot.master && (childPlot.master !== childPlot && childPlot.master !== this.master)) throw "Given child plot already added to another plot";
             if (childPlot.master !== this.master)
                 childPlot.onAddedTo(this.master); // changing master 
-            childPlot.order = childPlot.order == Number.MAX_SAFE_INTEGER ? childPlot.order : (InteractiveDataDisplay.Utils.getMaxOrder(this.master) + 1);
-            if (childPlot.order < Number.MAX_SAFE_INTEGER) childPlot.host.css("z-index", childPlot.order);
+            childPlot.order = childPlot.order == InteractiveDataDisplay.MaxInteger ? childPlot.order : (InteractiveDataDisplay.Utils.getMaxOrder(this.master) + 1);
+            if (childPlot.order < InteractiveDataDisplay.MaxInteger) childPlot.host.css("z-index", childPlot.order);
             _children.push(childPlot);
             if (this.master._sharedCanvas) {
                 this.master._sharedCanvas.remove();
@@ -920,9 +920,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
         
         this.exportContentToSvg = function(plotRect, screenSize, svg) {
-            var plots = this.getPlotsSequence();
-            var j = 0;
-            for (var i = 0; i < plots.length; i++) {
+            var plots = InteractiveDataDisplay.Utils.enumPlots(this); //this.getPlotsSequence();
+            for (var i = plots.length - 1; i >= 0; i--) {
                 if (plots[i].isVisible) plots[i].renderCoreSvg(plotRect, screenSize, svg);
             }
         };
@@ -1593,7 +1592,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (!_isFlatRenderingOn) {
                 var plots = InteractiveDataDisplay.Utils.enumPlots(_master);
                 for (var i = 0; i < plots.length; i++) {
-                    if (plots[i].order < Number.MAX_SAFE_INTEGER) plots[i].host.css('z-index', plots[i].order);
+                    if (plots[i].order < InteractiveDataDisplay.MaxInteger) plots[i].host.css('z-index', plots[i].order);
                 }
             }
             if (elem) this.fireOrderChanged();

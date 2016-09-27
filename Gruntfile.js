@@ -183,7 +183,8 @@
                 files: [
                     { src: "src/viewer/chartViewer.d.ts", dest: "dist/idd.d.ts" },
                     { src: "dist/idd.css", dest: "dist/idd.umd.css" },
-                    { expand: true, src: "src/icons/*", dest: "dist/icons/", flatten: true }
+                    { expand: true, src: "src/icons/*", dest: "dist/icons/", flatten: true },
+                    { src: 'idd.heatmapworker.js', dest: 'dist/idd.heatmapworker.js' }
                 ]
             },
         },

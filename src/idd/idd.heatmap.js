@@ -577,7 +577,33 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             //}
         }
     };
+    this.renderCoreSvg = function (plotRect, screenSize, svg) {
+        var imageData_g = svg.group();
+        if (_x == undefined || _y == undefined || _f == undefined)
+            return;
+        var w_s = screenSize.width;
+        var h_s = screenSize.height;
+        var ct = this.coordinateTransform;
+        var plotToScreenX = ct.plotToScreenX;
+        var plotToScreenY = ct.plotToScreenY;
+        var bb = this.getLocalBounds();
+        // this is a rectangle which we should fill:
+        var visibleRect = InteractiveDataDisplay.Utils.intersect(bb, plotRect);
+        if (!visibleRect) return;
 
+        var visibleRect_s = {
+            left: Math.floor(plotToScreenX(visibleRect.x)),
+            width: Math.ceil(ct.plotToScreenWidth(visibleRect.width)),
+            top: Math.floor(plotToScreenY(visibleRect.y + visibleRect.height)),
+            height: Math.ceil(ct.plotToScreenHeight(visibleRect.height))
+        };
+        var image = _innerCanvas.toDataURL("image/png");
+        var svgimage = imageData_g.image(image, _imageData.width, _imageData.height).opacity(_opacity);
+        svgimage.clipWith(imageData_g.rect(visibleRect_s.width, visibleRect_s.height));
+        imageData_g.translate(visibleRect_s.left, visibleRect_s.top);
+
+        //imageData_g.clipWith(imageData_g.rect(w_s, h_s));
+    }
     this.onIsRenderedChanged = function () {
         if (!this.isRendered) {
             InteractiveDataDisplay.heatmapBackgroundRenderer.cancelPending(this);
@@ -850,6 +876,49 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         return { name: nameDiv, legend: { thumbnail: canvas, content: infoDiv }, onLegendRemove: onLegendRemove };
     };
 
+    this.buildSvgLegend = function (legendSettings, svg) {
+        var that = this;
+        legendSettings.height = 30;
+        svg.add(svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5));
+        var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
+        var fontSize = parseFloat(style.getPropertyValue('font-size'));
+        var fontFamily = style.getPropertyValue('font-family');
+        var fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
+        svg.add(svg.text(that.name).font({ family: fontFamily, size: fontSize, weight: fontWeight }).translate(40, 0));
+        //content
+        var isContent = legendSettings.legendDiv.children[1];
+        style = (isContent && legendSettings.legendDiv.children[1].children[0] && legendSettings.legendDiv.children[1].children[0].children[0]) ? window.getComputedStyle(legendSettings.legendDiv.children[1].children[0].children[0], null) : undefined;
+        fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
+        fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+        fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
+        var content = svg.group();
+        var colorText = that.getTitle("values");
+        content.text(colorText).font({ family: fontFamily, size: fontSize, weight: fontWeight });
+        content.translate(5, 30);
+        var colorPalette_g = svg.group();
+        var width = legendSettings.width;
+        var height = 20;
+        InteractiveDataDisplay.SvgColorPaletteViewer(colorPalette_g, _palette, legendSettings.legendDiv.children[1].children[0].children[1], { width: width, height: height });
+        colorPalette_g.translate(5, 50);
+        legendSettings.height += (50 + height);
+     
+        if (_interval) {
+            style = (isContent && legendSettings.legendDiv.children[1].children[1] && legendSettings.legendDiv.children[1].children[1]) ? window.getComputedStyle(legendSettings.legendDiv.children[1].children[1], null) : undefined;
+            fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
+            fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+            fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
+
+            var interval_g = svg.group();
+            var text = $(legendSettings.legendDiv.children[1].children[1]).text();
+            interval_g.add(interval_g.text(text).font({ family: fontFamily, size: fontSize, weight: fontWeight }));
+            var width = legendSettings.width;
+            var height = 25;
+            interval_g.translate(5, 100);
+            legendSettings.height += (50 + height);
+        };
+        
+        svg.front();
+    }
     // Initialization 
     if (initialData && typeof initialData.values != 'undefined')
         this.draw(initialData);
