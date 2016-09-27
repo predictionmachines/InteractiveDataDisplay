@@ -2,6 +2,7 @@
 
 New features:
  - Label plot draws text labels and allows SVG exporting.
+ - Export heatmap to SVG.
 
 ## 1.4.1 (August 8, 2016)
 
