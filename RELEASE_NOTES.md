@@ -2,6 +2,7 @@
 
 New features:
  - Label plot draws text labels and allows SVG exporting.
+ - Export heatmap to SVG.
  - Knockout bindings for the heatmap plot when using `idd_knockout.js`. See `samples/Dynamic Gradient Heatmap with Knockout.html`.
 
 ## 1.4.1 (August 8, 2016)
