@@ -106,6 +106,7 @@
                     "src/idd/idd.ko.polyline.js",
                     "src/idd/idd.ko.domplot.js",
                     "src/idd/idd.ko.area.js",
+                    "src/idd/idd.ko.heatmap.js",
                     "src/idd/wrapper_footer_knockout.txt"
                 ],
                 dest: 'dist/idd_knockout.js',
