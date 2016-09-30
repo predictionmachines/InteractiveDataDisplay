@@ -214,6 +214,9 @@
     padding-left: 16px;
     box-sizing: content-box;
 }
+.idd-legend-item-info:empty {
+    display:none;
+}
 /*elements for compact legend*/
 .idd-legend-compact
 {
