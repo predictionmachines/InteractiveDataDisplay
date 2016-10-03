@@ -21,12 +21,12 @@
 			else
 				labelstext = ko.unwrap(allBindings.get('iddLabelsText'));			
 
-			if(x.length != y.length)
-				throw new Error("LabelPlotKO: The length of iddX and iddY series differs");
-			
-			if(x.length != labelstext.length)
-				throw new Error("LabelPlotKO: The length of iddLabelsText series differes from the length iddX and iddY length");
-
+			if((x.length != y.length) || (x.length != labelstext.length)) {
+				//updating the plot only in case of all properties have the same array length
+				//in other words, dropping the updates as long as the dataseries are not aligned				
+				return;
+			}
+						
 			for(var i=0;i<x.length;i++) {
 				data.push({
 					text: labelstext[i],
