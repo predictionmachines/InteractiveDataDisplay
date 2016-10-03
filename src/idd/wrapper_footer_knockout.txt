@@ -1,13 +1,14 @@
-﻿}
+﻿return InteractiveDataDisplay;
+}
 (function () {
     if (window.define) {
         define(['jquery', 'rx', 'knockout'],
             function ($, Rx, ko) {
-                IDD($, Rx, ko);
+                var InteractiveDataDisplay = IDD($, Rx, ko);
                 return InteractiveDataDisplay;
             });
     } else {
-        IDD($, Rx, ko);
+        var InteractiveDataDisplay = IDD($, Rx, ko);
         window.InteractiveDataDisplay = InteractiveDataDisplay;
     }
 }());

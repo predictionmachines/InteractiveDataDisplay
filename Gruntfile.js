@@ -1,5 +1,46 @@
 ﻿module.exports = function (grunt) {
 
+	//the following files are to be included in every bundle
+	coreSrcFiles = [
+		"src/idd/mouseWheelPlugin.js",
+		"src/idd/idd.settings.js",
+        "src/idd/idd.utils.js",
+        "src/idd/idd.boundplots.js",
+        "src/idd/idd.formatter.js",
+        "src/idd/idd.base.js",
+        "src/idd/idd.readers.js",
+        "src/idd/idd.axis.js",
+        "src/idd/idd.palette.js",
+        "src/idd/idd.gestures.js",
+        "src/idd/idd.transforms.js",
+        "src/idd/idd.animation.js",
+        "src/idd/idd.bingMapsAnimation.js",
+        "src/idd/idd.navigation.js",
+        "src/idd/idd.multithreading.js",
+        "generated/idd.heatmapworker_embedded.js",
+        "src/idd/idd.figure.js",
+        "src/idd/idd.chart.js",
+        "src/idd/idd.labels.js",
+        "src/idd/idd.markers.js",
+        "src/idd/idd.markers.primitives.js",
+        "src/idd/idd.markers.uncertain.js",
+        "src/idd/idd.area.js",
+        "src/idd/idd.heatmap.js",
+        "src/idd/idd.onscreennavigation.js",
+        "src/idd/idd.bingmapsplot.js",
+        "src/viewer/chartViewer2.js"];
+
+	//the following files are to be included only in Knockout bundle
+	knockoutBindingsFiles = [
+		"src/idd/idd.ko.js",
+        "src/idd/idd.ko.markers.js",
+        "src/idd/idd.ko.polyline.js",
+        "src/idd/idd.ko.domplot.js",
+        "src/idd/idd.ko.area.js",
+        "src/idd/idd.ko.heatmap.js",
+		"src/idd/idd.ko.labels.js"
+	]
+
     grunt.initConfig({
         concat: {
             heatmap_worker: { // Concatenate idd.heatmapworker.js и idd.transforms.js for tests
@@ -38,35 +79,7 @@
                 options: {
                     separator: ';'
                 },
-                src: [ 
-                    "src/idd/mouseWheelPlugin.js",
-                    "src/idd/idd.settings.js",
-                    "src/idd/idd.utils.js",
-                    "src/idd/idd.boundplots.js",
-                    "src/idd/idd.formatter.js",
-                    "src/idd/idd.base.js",
-                    "src/idd/idd.readers.js",
-                    "src/idd/idd.axis.js",
-                    "src/idd/idd.palette.js",
-                    "src/idd/idd.gestures.js",
-                    "src/idd/idd.transforms.js",
-                    "src/idd/idd.animation.js",
-                    "src/idd/idd.bingMapsAnimation.js",
-                    "src/idd/idd.navigation.js",
-                    "src/idd/idd.multithreading.js",
-                    "generated/idd.heatmapworker_embedded.js",
-                    "src/idd/idd.figure.js",
-                    "src/idd/idd.chart.js",
-                    "src/idd/idd.labels.js",
-                    "src/idd/idd.markers.js",
-                    "src/idd/idd.markers.primitives.js",
-                    "src/idd/idd.markers.uncertain.js",
-                    "src/idd/idd.area.js",
-                    "src/idd/idd.heatmap.js",
-                    "src/idd/idd.onscreennavigation.js",
-                    "src/idd/idd.bingmapsplot.js",
-                    "src/viewer/chartViewer2.js",
-                ],
+                src: coreSrcFiles,
                 dest: 'dist/idd.js',
                 nonull: true
             },
@@ -74,76 +87,17 @@
                 options: {
                     separator: ';'
                 },
-                src: [ 
-                    "src/idd/wrapper_header_knockout.txt",
-                    "src/idd/mouseWheelPlugin.js",
-                    "src/idd/idd.settings.js",
-                    "src/idd/idd.utils.js",
-                    "src/idd/idd.boundplots.js",
-                    "src/idd/idd.formatter.js",
-                    "src/idd/idd.base.js",
-                    "src/idd/idd.readers.js",
-                    "src/idd/idd.axis.js",
-                    "src/idd/idd.palette.js",
-                    "src/idd/idd.gestures.js",
-                    "src/idd/idd.transforms.js",
-                    "src/idd/idd.animation.js",
-                    "src/idd/idd.bingMapsAnimation.js",
-                    "src/idd/idd.navigation.js",
-                    "src/idd/idd.multithreading.js",
-                    "generated/idd.heatmapworker_embedded.js",
-                    "src/idd/idd.figure.js",
-                    "src/idd/idd.chart.js",
-                    "src/idd/idd.markers.js",
-                    "src/idd/idd.markers.primitives.js",
-                    "src/idd/idd.markers.uncertain.js",
-                    "src/idd/idd.area.js",
-                    "src/idd/idd.heatmap.js",
-                    "src/idd/idd.onscreennavigation.js",
-                    "src/idd/idd.bingmapsplot.js",
-                    "src/idd/idd.ko.js",
-                    "src/idd/idd.ko.markers.js",
-                    "src/idd/idd.ko.polyline.js",
-                    "src/idd/idd.ko.domplot.js",
-                    "src/idd/idd.ko.area.js",
-                    "src/idd/idd.ko.heatmap.js",
-                    "src/idd/wrapper_footer_knockout.txt"
-                ],
+                src: ["src/idd/wrapper_header_knockout.txt"]
+					.concat(coreSrcFiles)
+					.concat(knockoutBindingsFiles)
+					.concat(["src/idd/wrapper_footer_knockout.txt"]),
                 dest: 'dist/idd_knockout.js',
                 nonull: true
             },
             umd: {
-                src: [
-                    "src/idd/wrapper_header.txt",
-                    "src/idd/mouseWheelPlugin.js",
-                    "src/idd/idd.settings.js",
-                    "src/idd/idd.utils.js",
-                    "src/idd/idd.boundplots.js",
-                    "src/idd/idd.formatter.js",
-                    "src/idd/idd.base.js",
-                    "src/idd/idd.readers.js",
-                    "src/idd/idd.axis.js",
-                    "src/idd/idd.palette.js",
-                    "src/idd/idd.gestures.js",
-                    "src/idd/idd.transforms.js",
-                    "src/idd/idd.animation.js",
-                    "src/idd/idd.bingMapsAnimation.js",
-                    "src/idd/idd.navigation.js",
-                    "src/idd/idd.multithreading.js",
-                    "generated/idd.heatmapworker_embedded.js",
-                    "src/idd/idd.figure.js",
-                    "src/idd/idd.chart.js",
-                    "src/idd/idd.labels.js",
-                    "src/idd/idd.markers.js",
-                    "src/idd/idd.markers.primitives.js",
-                    "src/idd/idd.markers.uncertain.js",
-                    "src/idd/idd.area.js",
-                    "src/idd/idd.heatmap.js",
-                    "src/idd/idd.onscreennavigation.js",
-                    "src/idd/idd.bingmapsplot.js",
-                    "src/viewer/chartViewer2.js",
-                    "src/idd/wrapper_footer.txt"
-                ],
+                src: ["src/idd/wrapper_header.txt"]
+					.concat(coreSrcFiles)
+					.concat(["src/idd/wrapper_footer.txt"]),
                 dest: "dist/idd.umd.js",
             },
             umdTs: {
