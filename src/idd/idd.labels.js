@@ -7,6 +7,7 @@
     var _text = [];
     var _x = [];
     var _y = [];
+    var _placement = [];
 
     var size_p = {
         x: 120,
@@ -17,7 +18,8 @@
         var data = [];
         var n = _text.length;
         for (var i = 0; i < n; i++) {
-            data.push({ text: _text[i], position: { x: _x[i], y: _y[i] } });
+            data.push({
+                text: _text[i], position: { x: _x[i], y: _y[i] }, placement: _placement[i] });
         }
         return data;
     }
@@ -27,16 +29,20 @@
             var text = [];
             var x = [];
             var y = [];
+            var placement = [];
             for (var i = 0; i < n; i++) {
                 text.push(data[i].text);
                 x.push(data[i].position.x);
                 y.push(data[i].position.y);
+                if (data[i].placement) placement.push(data[i].placement)
+                else placement.push('center');
                 shift.push(0);
             }
 
             _text = text;
             _x = x;
             _y = y;
+            _placement = placement;
         }
         this.invalidateLocalBounds();
         this.requestNextFrameOrUpdate();
@@ -86,12 +92,33 @@
                 x: dataToScreenX(_x[i]), // left
                 y: dataToScreenY(_y[i]) // top
             };
+            if (_placement[i] == 'left') {
+                p = { // screen coordinates 
+                    x: dataToScreenX(_x[i]) - size_p.x, // left
+                    y: dataToScreenY(_y[i]) // top
+                }
+            } else if (_placement[i] == 'right') {
+                p = { // screen coordinates 
+                    x: dataToScreenX(_x[i]) + size_p.x, // left
+                    y: dataToScreenY(_y[i]) // top
+                }
+            } else if (_placement[i] == 'top') {
+                p = { // screen coordinates 
+                    x: dataToScreenX(_x[i]), // left
+                    y: dataToScreenY(_y[i]) - size_p.y // top
+                }
+            } else if (_placement[i] == 'bottom') {
+                p = { // screen coordinates 
+                    x: dataToScreenX(_x[i]), // left
+                    y: dataToScreenY(_y[i]) + size_p.y // top
+                }
+            };
             var style = window.getComputedStyle(document.body, null);
             var fontSize = style ? parseFloat(style.getPropertyValue('font-size')) : undefined;
             var fontFamily = style ? style.getPropertyValue('font-family') : undefined;
             var fontWeight = style ? style.getPropertyValue('font-weight') : undefined;
             var left = p.x - 0.5 * size_p.x;
-            var top = p.y + size_p.y;
+            var top = p.y;
             context.fillStyle = "black";
             context.font = fontWeight + " " + fontSize + "px " + fontFamily;
             context.textALign = 'center';
@@ -129,9 +156,30 @@
                     x: dataToScreenX(_x[i]), // left
                     y: dataToScreenY(_y[i]) // top
                 };
+                if (_placement[i] == 'left') {
+                    p = { // screen coordinates 
+                        x: dataToScreenX(_x[i]) - size_p.x, // left
+                        y: dataToScreenY(_y[i]) // top
+                    }
+                } else if (_placement[i] == 'right') {
+                    p = { // screen coordinates 
+                        x: dataToScreenX(_x[i]) + size_p.x, // left
+                        y: dataToScreenY(_y[i]) // top
+                    }
+                } else if (_placement[i] == 'top') {
+                    p = { // screen coordinates 
+                        x: dataToScreenX(_x[i]), // left
+                        y: dataToScreenY(_y[i]) - size_p.y // top
+                    }
+                } else if (_placement[i] == 'bottom') {
+                    p = { // screen coordinates 
+                        x: dataToScreenX(_x[i]), // left
+                        y: dataToScreenY(_y[i]) + size_p.y // top
+                    }
+                };
 
                 var left = p.x - 0.5 * size_p.x;
-                var top = p.y;
+                var top = p.y - 0.9 * size_p.y;
 
                 var elem_g = labels_g.group();
                 elem_g.size(size_p.x, size_p.y);
