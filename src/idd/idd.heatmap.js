@@ -601,8 +601,6 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         var svgimage = imageData_g.image(image, _imageData.width, _imageData.height).opacity(_opacity);
         svgimage.clipWith(imageData_g.rect(visibleRect_s.width, visibleRect_s.height));
         imageData_g.translate(visibleRect_s.left, visibleRect_s.top);
-
-        //imageData_g.clipWith(imageData_g.rect(w_s, h_s));
     }
     this.onIsRenderedChanged = function () {
         if (!this.isRendered) {
