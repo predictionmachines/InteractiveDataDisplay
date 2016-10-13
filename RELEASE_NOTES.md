@@ -1,4 +1,4 @@
-#### 1.4.2 (Unreleased)
+#### 1.4.2 (October 13, 2016)
 
 New features:
  - Label plot draws text labels and allows SVG exporting.
