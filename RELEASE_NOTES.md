@@ -1,3 +1,9 @@
+#### 1.4.3 (October 19, 2016)
+
+Fixes:
+ - UMD version of IDD now properly requires svg.js using alias `svg` and FileSaver.js using alias `filesaver`. 
+ Previous version doesn't allow to export SVG when loaded as UMD/CommonJs module.
+
 #### 1.4.2 (October 13, 2016)
 
 New features:
