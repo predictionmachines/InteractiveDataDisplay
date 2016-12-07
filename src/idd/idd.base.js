@@ -2990,7 +2990,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // returns added DOM element
         this.add = function (element, scaleMode, x, y, width, height, originX, originY) {
             var el = $(element);
-            if (!this.host[0].contains(element))
+            var elem = element;
+            if (element instanceof jQuery && element.is('div')) {
+                elem = element[0];
+            }
+            if (!this.host[0].contains(elem))
                 el.appendTo(this.host);
             addElement(el, scaleMode, x, y, width, height, originX, originY);
             this.invalidateLocalBounds();
