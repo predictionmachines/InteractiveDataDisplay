@@ -1,3 +1,6 @@
+ - UMD version of IDD now requires jquery.mousewheel.js.
+ - Add rect constraint.
+
 #### 1.4.3 (October 19, 2016)
 
 Fixes:
