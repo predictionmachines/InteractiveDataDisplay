@@ -2,7 +2,7 @@
     (function(factory) {
 		//Define as an AMD Module if possible
 		if (typeof window.define === 'function' && window.define.amd) {
-			define(['jquery', 'rx', 'svg', 'filesaver', 'css!idd-css', 'jquery-ui', 'jquery-mouswheel'],
+			define(['jquery', 'rx', 'svg', 'filesaver', 'css!idd-css', 'jquery-ui'],
 				function ($, Rx, SVG, filesaver) {
 					var expr = factory($, Rx, SVG, filesaver);
 					return {"InteractiveDataDisplay": expr.InteractiveDataDisplay, "Plot": expr.Plot};
