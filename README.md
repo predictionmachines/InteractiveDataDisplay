@@ -1,5 +1,7 @@
 Interactive Data Display
 ------------------------
+[![Build Status](https://travis-ci.org/itislab/InteractiveDataDisplay.svg?branch=master)](https://travis-ci.org/itislab/InteractiveDataDisplay)
+------------------------
 
 [![Build Status](https://travis-ci.org/predictionmachines/InteractiveDataDisplay.svg?branch=master)](https://travis-ci.org/predictionmachines/InteractiveDataDisplay) [![Gitter](https://badges.gitter.im/interactivedatadisplay/Lobby.svg)](https://gitter.im/interactivedatadisplay/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
