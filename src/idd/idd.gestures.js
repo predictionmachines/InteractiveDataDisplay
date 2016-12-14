@@ -274,12 +274,8 @@ InteractiveDataDisplay.Gestures.GesturesPool = function () {
                 newGesture.target = dom;
                 dom.gesture = newGesture;
             }
-            try {
-                dom.gesture.addPointer(e.pointerId);
-            }
-            catch (e) {
-                console.log("Error while trying to navigate: " + e);
-            }
+
+            dom.gesture.addPointer(e.pointerId);
         }, false);
     };
 };
