@@ -475,6 +475,24 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         );
 
+        var _visibleRectConstraint = undefined;
+        Object.defineProperty(this, "visibleRectConstraint", {
+            get: function () { return _isMaster ? _visibleRectConstraint : _master.visibleRectConstraint; },
+            set: function (value) {
+                if (_isMaster) {
+                    if (_visibleRectConstraint !== value) {
+                        _visibleRectConstraint = value;
+                        //if (_visibleRectConstraint !== undefined) {
+                        //    _plot.updateLayout();
+                        //}
+                    }
+                } else {
+                    _master.visibleRectConstraint = value;
+                }
+
+            },
+            configurable: false
+        });
 
         this.selfMapRefresh = function () {
             if (!_isMaster) {
@@ -989,6 +1007,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (bounds.x != bounds.x || bounds.y != bounds.y || bounds.width != bounds.width || bounds.height != bounds.height)
                     bounds = { x: 0, width: 1, y: 0, height: 1 }; // todo: this is an exceptional situation which should be properly handled
                 _plotRect = bounds;
+
+                if (_visibleRectConstraint !== undefined) {
+                    _plotRect = _visibleRectConstraint(_plotRect);
+                }
+
                 var padding = aggregated.isDefault ? { left: 0, top: 0, bottom: 0, right: 0 } : _master.aggregatePadding();
                 _coordinateTransform = InteractiveDataDisplay.Utils.calcCSWithPadding(_plotRect, screenSize, padding, _master.aspectRatio);
 
@@ -1031,6 +1054,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                         bottom: paddingY !== undefined ? paddingY.bottom : 0,
                         right: paddingX !== undefined ? paddingX.right : 0
                     }
+                }
+
+                if (_visibleRectConstraint !== undefined) {
+                    _plotRect = _visibleRectConstraint(_plotRect);
                 }
 
                 if (padding !== undefined) {
@@ -2990,7 +3017,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // returns added DOM element
         this.add = function (element, scaleMode, x, y, width, height, originX, originY) {
             var el = $(element);
-            if (!this.host[0].contains(element))
+            var elem = element;
+            if (element instanceof jQuery && element.is('div')) {
+                elem = element[0];
+            }
+            if (!this.host[0].contains(elem))
                 el.appendTo(this.host);
             addElement(el, scaleMode, x, y, width, height, originX, originY);
             this.invalidateLocalBounds();
