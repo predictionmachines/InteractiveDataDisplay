@@ -160,6 +160,14 @@ InteractiveDataDisplay.Utils =
             }
         },
 
+        missingValuesNaNProcessing: function (values){
+            return values.map(function(value){
+                if (value==null)
+			return NaN;
+		return value;
+	    });
+        },
+
         getDataSourceFunction: function (jqElem, defaultSource) {
             var source = jqElem.attr("data-idd-datasource");
             if (source)

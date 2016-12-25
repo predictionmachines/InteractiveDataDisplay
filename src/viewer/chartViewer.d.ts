@@ -503,6 +503,8 @@ declare module InteractiveDataDisplay {
         /**Parses the attribute data-idd-style of jqElement and adds the properties to the target
         e.g. data-idd-style="thickness: 5px; lineCap: round; lineJoin: round; stroke: #ff6a00"*/
         function readStyle(jqElement, target);//??
+        /*Returns array similar to original but all 'null' are replaced by 'NaN' in it*/
+        function missingValuesNaNProcessing(values);
         function getDataSourceFunction(jqElem, defaultSource);
         function makeNonEqual(range: MinMax): MinMax;
         function getMinMax(array:number[]): MinMax;
