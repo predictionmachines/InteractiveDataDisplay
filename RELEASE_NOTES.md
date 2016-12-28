@@ -1,14 +1,13 @@
 
 ## 1.5.0 (December 28, 2016)
 **Breaking changes**:
- - **UMD version of IDD now requires jquery.mousewheel.js.** Remove MouseWeelPlugin.js.
-
-Changes:
- - Remove non-existent files from bower.json 
+ - **IDD now requires `jquery.mousewheel.js`.** 
  
 Fixes:
  - Previously function `add` from `InteractiveDataDisplay.DOMPlot` (see `idd.base.js`) failed if `element` had type jQuery Object.
  - Previously function `getInnerText(x)` from `idd.axis.js` failed if `x` was `undefined`.
+ - `bower.json` was incorrect.
+ - Fixed bug in mouse wheel behaviour.
  
 ### 1.4.3 (October 19, 2016)
 
