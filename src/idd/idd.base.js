@@ -1041,8 +1041,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
                 outputRect = _coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
 
-                if (_constraint !== undefined && finalPath === true && plotScreenSizeChanged === true) {
-                    outputRect = _constraint(outputRect, screenSize);
+                if (_constraint !== undefined && finalPath === true) {
+                    outputRect = _constraint(outputRect, screenSize, plotScreenSizeChanged);
                     _coordinateTransform = new InteractiveDataDisplay.CoordinateTransform(outputRect, { left: 0, top: 0, width: _width, height: _height }, _master.aspectRatio);
                 }
 
@@ -2990,7 +2990,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // returns added DOM element
         this.add = function (element, scaleMode, x, y, width, height, originX, originY) {
             var el = $(element);
-            if (!this.host[0].contains(element))
+            if (!this.host[0].contains(el[0]))
                 el.appendTo(this.host);
             addElement(el, scaleMode, x, y, width, height, originX, originY);
             this.invalidateLocalBounds();
