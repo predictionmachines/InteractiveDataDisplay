@@ -1,6 +1,15 @@
- - UMD version of IDD now requires jquery.mousewheel.js.    
 
+### 1.5.0 (December 28, 2016)
+**Breaking changes**:
+ - **UMD version of IDD now requires jquery.mousewheel.js.** Remove MouseWeelPlugin.js.
 
+Changes:
+ - Remove non-existent files from bower.json 
+ 
+Fixes:
+ - Previously function `add` from `InteractiveDataDisplay.DOMPlot` (see file `idd.base.js`) failed if `element` had type jQuery Object.
+ - Previously function `getInnerText(x)` from `idd.axis.js` failed if `x` was `undefined`.
+ 
 #### 1.4.3 (October 19, 2016)
 
 Fixes:
@@ -10,7 +19,38 @@ Fixes:
 #### 1.4.2 (October 13, 2016)
 
 New features:
- - Label plot draws text labels and allows SVG exporting.
+ - Label plot draws text labels andor the heatmap plot when using `idd_knockout.js`. See `samples/Dynamic Gradient Heatmap with Knockout.html`.
+ - Knockout bindings for label plot.
+
+## 1.4.1 (August 8, 2016)
+
+New features:
+ - Export to SVG: chart, area, markers, polyline with uncertainty can be exported to SVG; legend also can be exported to SVG except uncertain marker shapes.
+ - New marker shape `"bars"`.
+ - Navigation panel is updated, it allows to download the plot as SVG file (uses FileSaver.js).   
+
+### 1.4.0 (July 21, 2016)
+
+**Breaking changes**: 
+ - **Removed separate chartViewer.js (.css, .d.ts)**. Idd.js now includes chartViewer.js (same for umd version). 
+ Changed namespace `ChartViewer` to `InteractiveDataDisplay`.
+ - ChartViewer's `"band"` plot is now `"area"` as it is in idd. Corresponding changes are in names: `AreaDefinition`, `Plot.area()`.
+
+New features:
+ - IDD release includes idd.ko.js which is a superset for idd.js with basic support for Knockout. See coming examples in the [Wiki](https://github.com/predictionmachines/InteractiveDataDisplay/wiki).
+ - Support of knockout bindings register for arbitrary plots.
+ - The `sizePalette` property of markers definition now can be either object `InteractiveDataDisplay.SizePalette` (as before) or 
+ an object of following structure: `{ sizeRange: {min:Number, max:Number}, valueRange?: {min:Number, max:Number}}`.
+ 
+Fixes:
+  - Previously markers failed if `colorPalette` was a string defining an absolute palette.
+  - Box-and-whisker markers failed if `y.median` or `x` had `NaN`.
+
+ 
+Changes:
+ - Box-and-whisker markers are now represented by a single shape `"boxwhisker"` and the actual marker type (either box-and-whisker, box or just whisker) depends on the drawn data. See the [samples](https://github.com/predictionmachines/InteractiveDataDisplay/blob/master/test/manual/Boxwhisker%20plot.html).
+ 
+ allows SVG exporting.
  - Export to SVG text labels from left, right, top and bottom around Plot (include axis titles and title of plot).
  - Export heatmap to SVG.
  - Knockout bindings for the heatmap plot when using `idd_knockout.js`. See `samples/Dynamic Gradient Heatmap with Knockout.html`.
