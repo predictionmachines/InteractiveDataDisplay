@@ -7,7 +7,7 @@ Changes:
  - Remove non-existent files from bower.json 
  
 Fixes:
- - Previously function `add` from `InteractiveDataDisplay.DOMPlot` (see file `idd.base.js`) failed if `element` had type jQuery Object.
+ - Previously function `add` from `InteractiveDataDisplay.DOMPlot` (see `idd.base.js`) failed if `element` had type jQuery Object.
  - Previously function `getInnerText(x)` from `idd.axis.js` failed if `x` was `undefined`.
  
 #### 1.4.3 (October 19, 2016)
