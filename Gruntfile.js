@@ -2,6 +2,7 @@
 
 	//the following files are to be included in every bundle
 	coreSrcFiles = [
+		"src/idd/mouseWheelPlugin.js",
 		"src/idd/idd.settings.js",
         "src/idd/idd.utils.js",
         "src/idd/idd.boundplots.js",
@@ -125,7 +126,6 @@
                     "ext/jquery/dist/jquery.js",
                     "ext/rxjs/dist/rx.lite.js",
                     "ext/svg.js/dist/svg.js",
-                    "ext/jquery-mousewheel/jquery.mousewheel.js",
                     "<%= concat.dist.dest %>"
                 ]
             },

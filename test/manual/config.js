@@ -8,8 +8,7 @@ requirejs.config({
         "jquery-ui": "../../ext/jqueryui/jquery-ui",
         "rx": "../../ext/rxjs/dist/rx.all",
         "svg": "../../ext/svg.js/dist/svg.min",
-        "filesaver": "../../ext/FileSaver.js/FileSaver.min",
-        "jquery-mousewheel": "../../ext/jquery-mousewheel/jquery.mousewheel.min"
+        "filesaver": "../../ext/FileSaver.js/FileSaver.min" 
     }
 });
 
