@@ -135,16 +135,19 @@ InteractiveDataDisplay.BingMapsPlot = function (div, master) {
             }
         };
 
-        this.constraint = function (plotRect, screenSize) {
-            var mapWidth = _map.getWidth();
-            var mapHeight = _map.getHeight();
+        this.constraint = function (plotRect, screenSize, isPlotScreenChanged) {
+            if (isPlotScreenChanged) {
+                var mapWidth = _map.getWidth();
+                var mapHeight = _map.getHeight();
 
-            if (mapWidth <= 1 || mapHeight <= 1)
-                return plotRect;
+                if (mapWidth <= 1 || mapHeight <= 1)
+                    return plotRect;
 
-            bingMapsAnimation.setMapView(plotRect, screenSize);
-            mapRect = InteractiveDataDisplay.Utils.getPlotRectForMap(_map);
-            return mapRect;
+                bingMapsAnimation.setMapView(plotRect, screenSize);
+                mapRect = InteractiveDataDisplay.Utils.getPlotRectForMap(_map);
+                return mapRect;
+            }
+            return plotRect;
         }
 
         this.arrange = function (finalRect) {
