@@ -163,7 +163,14 @@ InteractiveDataDisplay.Utils =
         getDataSourceFunction: function (jqElem, defaultSource) {
             var source = jqElem.attr("data-idd-datasource");
             if (source)
-                return eval(source);
+                return function(){
+                    return JSON.parse(source, function (key, value) {
+                        if (value === null) {
+                            return NaN;
+                        }
+                        return value;
+                    });
+                };
             return defaultSource;
         },
 
