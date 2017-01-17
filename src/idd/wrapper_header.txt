@@ -1,17 +1,18 @@
-﻿(function(window, undefined) {
-    (function(factory) {
-		//Define as an AMD Module if possible
-		if (typeof window.define === 'function' && window.define.amd) {
-			define(['jquery', 'rx', 'svg', 'filesaver', 'css!idd-css', 'jquery-ui', 'jquery-mousewheel'], 
+﻿(function(root, factory) {
+	'use strict';
+	//Define as an AMD Module if possible
+	if (typeof define === 'function' && define.amd) {
+		//AMD
+		define(['jquery', 'rx', 'svg', 'filesaver', 'css!idd-css', 'jquery-ui', 'jquery-mousewheel'], 
 				function ($, Rx, SVG, filesaver) {
-					var expr = factory($, Rx, SVG, filesaver);
+					var expr = factory(root, $, Rx, SVG, filesaver);
 					return {"InteractiveDataDisplay": expr.InteractiveDataDisplay, "Plot": expr.Plot};
 				});
-		} else if (typeof window.exports == 'object') {
+		} else if (typeof exports == 'object') {
 			//Node, CommonJS-like
-			module.exports = factory(require('jquery'), require('underscore'), require('svg'));
-		} else  if (window.jQuery) {
+			var filesaver = require('filesaver.js');
+			module.exports = factory(root, require('jquery'), require('rx'), require('svg.js'), filesaver.saveAs);
+		} else {
 			console.error("idd.umd.js cannot be used without RequireJS or CommonJS");
 		}
-	})
-	(function($, Rx, SVG, saveAs){ // factory, returns "{InteractiveDataDisplay, Plot}"
+	})( typeof window !== "undefined" ? window : this, function(window, $, Rx, SVG, saveAs) {

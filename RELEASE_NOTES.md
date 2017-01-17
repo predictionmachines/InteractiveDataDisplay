@@ -1,28 +1,27 @@
 
-### 1.5.0 (December 28, 2016)
+## 1.5.0 (December 28, 2016)
 **Breaking changes**:
- - **UMD version of IDD now requires jquery.mousewheel.js.** Remove MouseWeelPlugin.js.
-
-Changes:
- - Remove non-existent files from bower.json 
+ - **IDD now requires `jquery.mousewheel.js`.** 
  
 Fixes:
- - Previously function `add` from `InteractiveDataDisplay.DOMPlot` (see file `idd.base.js`) failed if `element` had type jQuery Object.
+ - Previously function `add` from `InteractiveDataDisplay.DOMPlot` (see `idd.base.js`) failed if `element` had type jQuery Object.
  - Previously function `getInnerText(x)` from `idd.axis.js` failed if `x` was `undefined`.
+ - `bower.json` was incorrect.
+ - Fixed bug in mouse wheel behaviour.
  
-#### 1.4.3 (October 19, 2016)
+### 1.4.3 (October 19, 2016)
 
 Fixes:
  - UMD version of IDD now properly requires svg.js using alias `svg` and FileSaver.js using alias `filesaver`. 
  Previous version doesn't allow to export SVG when loaded as UMD/CommonJs module.
 
-#### 1.4.2 (October 13, 2016)
+### 1.4.2 (October 13, 2016)
 
 New features:
  - Label plot draws text labels andor the heatmap plot when using `idd_knockout.js`. See `samples/Dynamic Gradient Heatmap with Knockout.html`.
  - Knockout bindings for label plot.
 
-## 1.4.1 (August 8, 2016)
+### 1.4.1 (August 8, 2016)
 
 New features:
  - Export to SVG: chart, area, markers, polyline with uncertainty can be exported to SVG; legend also can be exported to SVG except uncertain marker shapes.
