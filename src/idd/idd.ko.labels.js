@@ -44,8 +44,7 @@
 				}
 				else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
 					//storing the data in data-idd-datasource attribute as JSON string. it will be used by IDD during IDD-initializing of the dom element		
-					var evalstr = "(function(){return " + JSON.stringify(data) + "})";
-					element.setAttribute("data-idd-datasource", evalstr);
+					element.setAttribute("data-idd-datasource", JSON.stringify(data));
 				}
 			}
 		}
