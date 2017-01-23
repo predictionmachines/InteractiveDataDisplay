@@ -4,18 +4,18 @@
 	if (typeof define === 'function' && define.amd) {
 		//AMD
 		define(['jquery', 'rx', 'svg', 'filesaver', 'css!idd-css', 'jquery-ui', 'jquery-mousewheel'], 
-				function ($, Rx, SVG, filesaver, $) {
+				function ($, Rx, SVG, filesaver) {
 					var expr = factory(root, $, Rx, SVG, filesaver);
 					return {"InteractiveDataDisplay": expr.InteractiveDataDisplay, "Plot": expr.Plot};
 				});
 		} else if (typeof exports == 'object') {
 			//Node, CommonJS-like
-			var $ = require('jquery');
+			var $ = root.jQuery = require('jquery');
 		    require('jquery-mousewheel')($);
 		    require('jqueryui');
 			var filesaver = require('filesaver.js');
-			module.exports = factory(root, $, require('rx'), require('svg.js'), filesaver.saveAs, $);
+			module.exports = factory(root, $, require('rx'), require('svg.js'), filesaver.saveAs);
 		} else {
 			console.error("idd.umd.js cannot be used without RequireJS or CommonJS");
 		}
-	})( typeof window !== "undefined" ? window : this, function(window, $, Rx, SVG, saveAs, jQuery) {
+	})( typeof window !== "undefined" ? window : this, function(window, $, Rx, SVG, saveAs) {

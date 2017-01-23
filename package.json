@@ -11,7 +11,7 @@
     "chart",
     "plot"
   ],
-  "main": "/dist/idd.js",
+  "main": "/dist/idd.umd.js",
   "dependencies": {
     "jquery": "~3.1.1",
     "rx": "~4.1.0",
