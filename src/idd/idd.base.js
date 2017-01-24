@@ -235,8 +235,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return;
 
         if (div && (navigator.userAgent.match(/(iPhone|iPod|iPad)/) || navigator.userAgent.match(/Android/))) {
-            div.bind('touchstart', function (e) { e.preventDefault(); });
-            div.bind('touchmove', function (e) { e.preventDefault(); });
+            div.bind('touchstart', function (e) { e.preventDefault(); }, {passive:true});
+            div.bind('touchmove', function (e) { e.preventDefault(); }, { passive: true });
         }
 
         var _isMaster = master === undefined && div !== undefined;

@@ -115,7 +115,7 @@ InteractiveDataDisplay.Gestures.createPinSubject = function (vc) {
 InteractiveDataDisplay.Gestures.createZoomSubject = function (vc) {
 
     vc.mousewheel(function (objEvent, intDelta) {
-        objEvent.preventDefault();
+        //objEvent.preventDefault();
         var event = jQuery.Event("xbrowserwheel");
         event.delta = intDelta;
         event.origin = InteractiveDataDisplay.Gestures.getXBrowserMouseOrigin(vc, objEvent);
@@ -162,7 +162,7 @@ InteractiveDataDisplay.Gestures.createTouchPanSubject = function (vc) {
         }).where(function (g) {
             return g.left.scale === g.right.scale;
         }).select(function (g) {
-            return new InteractiveDataDisplay.Gestures.PanGesture(g.left.pageX - g.right.pageX, g.left.pageY - g.right.pageY, "Touch");
+            return new InteractiveDataDisplay.Gestures.PanGesture(g.left.touches[0].pageX - g.right.touches[0].pageX, g.left.touches[0].pageY - g.right.touches[0].pageY, "Touch");
         });
     });
 
