@@ -1,4 +1,6 @@
-
+New features:
+ -  Installation of `idd` as npm package. 
+ 
 ## 1.5.0 (December 28, 2016)
 **Breaking changes**:
  - **IDD now requires `jquery.mousewheel.js`.** 

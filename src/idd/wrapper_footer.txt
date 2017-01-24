@@ -1,3 +1,2 @@
 ﻿return {"InteractiveDataDisplay" : InteractiveDataDisplay, "Plot" : Plot};
 }); // end of the factory function
-}(window))

@@ -702,10 +702,10 @@ InteractiveDataDisplay.TickSource = function () {
     };
 
     // function to get div's innerText
-    this.getInnerText = function (x) {  
-        if (x)  
-            return x.toString();  
-        return undefined;  
+    this.getInnerText = function (x) {
+        if (x)
+            return x.toString();
+        return undefined;
     };
 
     // make all not used divs invisible (final step)
