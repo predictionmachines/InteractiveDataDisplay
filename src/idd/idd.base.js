@@ -996,7 +996,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 outputRect = _coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
 
                 if (_constraint !== undefined && finalPath === true) {
-                    outputRect = _constraint(outputRect, screenSize);
+                    outputRect = _constraint(outputRect, screenSize, true);
                     _coordinateTransform = new InteractiveDataDisplay.CoordinateTransform(outputRect, { left: 0, top: 0, width: _width, height: _height }, _master.aspectRatio);
                 }
             }

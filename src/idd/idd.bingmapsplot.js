@@ -136,7 +136,7 @@ InteractiveDataDisplay.BingMapsPlot = function (div, master) {
         };
 
         this.constraint = function (plotRect, screenSize, isPlotScreenChanged) {
-            if (isPlotScreenChanged) {
+            if (isPlotScreenChanged === true) {
                 var mapWidth = _map.getWidth();
                 var mapHeight = _map.getHeight();
 
