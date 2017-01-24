@@ -173,7 +173,7 @@ InteractiveDataDisplay.NavigationUtils = {};
 InteractiveDataDisplay.NavigationUtils.SuppressDefaultMultitouch = function () {
     if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {
         // Suppress the default iOS elastic pan/zoom actions.
-        document.addEventListener('touchmove', function (e) { e.preventDefault(); });
+        document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
     }
     if (navigator.userAgent.indexOf('Mac') != -1) {
         // Disable Mac OS Scrolling Bounce Effect

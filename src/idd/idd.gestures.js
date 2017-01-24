@@ -113,13 +113,13 @@ InteractiveDataDisplay.Gestures.createPinSubject = function (vc) {
 
 //Subject that converts input mouse events into Zoom gestures 
 InteractiveDataDisplay.Gestures.createZoomSubject = function (vc) {
-
     vc.mousewheel(function (objEvent, intDelta) {
-        //objEvent.preventDefault();
+        objEvent.preventDefault();
         var event = jQuery.Event("xbrowserwheel");
         event.delta = intDelta;
         event.origin = InteractiveDataDisplay.Gestures.getXBrowserMouseOrigin(vc, objEvent);
         vc.trigger(event);
+        
     });
 
     var mouseWheel = Rx.Observable.fromEvent(vc, "xbrowserwheel");
@@ -160,9 +160,9 @@ InteractiveDataDisplay.Gestures.createTouchPanSubject = function (vc) {
         return touchMove.takeUntil(touchEnd.merge(touchCancel)).skip(1).zip(touchMove, function (left, right) {
             return { "left": left.originalEvent, "right": right.originalEvent };
         }).where(function (g) {
-            return g.left.scale === g.right.scale;
+            return (g.left.targetTouches.length == 1 && g.right.targetTouches.length == 1 && g.left.changedTouches.length == 1 && g.right.changedTouches.length == 1)
         }).select(function (g) {
-            return new InteractiveDataDisplay.Gestures.PanGesture(g.left.touches[0].pageX - g.right.touches[0].pageX, g.left.touches[0].pageY - g.right.touches[0].pageY, "Touch");
+            return new InteractiveDataDisplay.Gestures.PanGesture(g.left.targetTouches[0].pageX - g.right.targetTouches[0].pageX, g.left.targetTouches[0].pageY - g.right.targetTouches[0].pageY, "Touch");
         });
     });
 
@@ -182,19 +182,27 @@ InteractiveDataDisplay.Gestures.createTouchPinSubject = function (vc) {
 InteractiveDataDisplay.Gestures.createTouchZoomSubject = function (vc) {
     var _doc = $(document);
 
-    var gestureStart = Rx.Observable.fromEvent(vc, "gesturestart");
-    var gestureChange = Rx.Observable.fromEvent(vc, "gesturechange");
-    var gestureEnd = Rx.Observable.fromEvent(_doc, "gestureend");
+    var gestureStart = Rx.Observable.fromEvent(vc, "touchstart");
+    var gestureChange = Rx.Observable.fromEvent(vc, "touchmove");
+    var gestureEnd = Rx.Observable.fromEvent(_doc, "touchend");
     var touchCancel = Rx.Observable.fromEvent(_doc, "touchcancel");
 
     var gestures = gestureStart.selectMany(function (o) {
         return gestureChange.takeUntil(gestureEnd.merge(touchCancel)).skip(1).zip(gestureChange, function (left, right) {
             return { "left": left.originalEvent, "right": right.originalEvent };
         }).where(function (g) {
-            return g.left.scale !== g.right.scale && g.right.scale !== 0;
+            return (g.left.targetTouches.length == 2 && g.right.targetTouches.length == 2);
         }).select(function (g) {
-            var delta = g.left.scale / g.right.scale;
-            return new InteractiveDataDisplay.Gestures.ZoomGesture(o.originalEvent.layerX, o.originalEvent.layerY, 1 / delta, "Touch");
+            var start_dist = Math.sqrt((g.left.targetTouches[0].pageX - g.left.targetTouches[1].pageX) * (g.left.targetTouches[0].pageX - g.left.targetTouches[1].pageX) +
+            (g.left.targetTouches[0].pageY - g.left.targetTouches[1].pageY) * (g.left.targetTouches[0].pageY - g.left.targetTouches[1].pageY));
+            var end_dist = Math.sqrt((g.right.targetTouches[0].pageX - g.right.targetTouches[1].pageX) * (g.right.targetTouches[0].pageX - g.right.targetTouches[1].pageX) +
+            (g.right.targetTouches[0].pageY - g.right.targetTouches[1].pageY) * (g.right.targetTouches[0].pageY - g.right.targetTouches[1].pageY));
+            var delta = start_dist / end_dist;
+            var center = {
+                x: Math.abs(g.right.targetTouches[1].pageX - g.right.targetTouches[0].pageX),
+                y: Math.abs(g.right.targetTouches[1].pageY - g.right.targetTouches[0].pageY)
+            };
+            return new InteractiveDataDisplay.Gestures.ZoomGesture(center.x, center.y, 1 / delta, "Touch");
         });
     });
 
