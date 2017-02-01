@@ -581,8 +581,10 @@ InteractiveDataDisplay.Figure = function (div, master) {
             var content = $(div).text().trim();
             var text = svg.text(content).font({ family: fontFamily, size: fontSize, weight: fontWeight, anchor: textAlign });
 
-            if (textAlign == 'middle') text.translate(width / 2, 0);
-            else if (textAlign == "end") text.translate(width, 0);
+            if (textAlign == 'middle') text.translate(width / 2, -height / 2);
+            else if (textAlign == "end") text.translate(width, -height / 2);
+            else text.translate(0, -height / 2);
+
             if (transform != "none" && transform != undefined) {
                 if (paddingBottom != undefined) paddingBottom = parseFloat(paddingBottom.substring(0, paddingBottom.length - 2));
                 else paddingBottom = 0;
