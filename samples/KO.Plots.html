@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Axes and navigation</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">
+		var x_values = [1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0] 
+		var y_values = [2.0,3.0,1.0,3.0,4.0,3.0,1.0,1.0,2.3,2.0]
+		var sd_values = [0.2,0.3,0.5,1.1,4.5,0.1,0.4,0.3,0.5,0.1]
+		
+		var ub_68 = y_values.map(function(elem,i) { return elem + sd_values[i] });
+		var lb_68 = y_values.map(function(elem,i) { return elem - sd_values[i] });
+		var ub_95 = y_values.map(function(elem,i) { return elem + sd_values[i]*2 });
+		var lb_95 = y_values.map(function(elem,i) { return elem - sd_values[i]*2 });
+		
+        var vm = {
+			X : ko.observable(x_values),
+			Y : ko.observable(y_values),
+			ub_68: ub_68,
+			lb_68: lb_68,
+			ub_95: ub_95,
+			lb_95: lb_95,			
+			IsLineEnabled: ko.observable(true),
+			IsBandEnabled: ko.observable(true),
+			IsMarkersEnabled: ko.observable(true)
+		}
+		
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+            ko.applyBindings(vm)
+        });
+    </script>
+</head>
+<body>
+    <div style="display: inline-block">
+    <div id="chart" data-idd-plot="chart" style="width: 500px; height: 300px; float:left">
+		<!-- ko if: IsMarkersEnabled -->
+		<div
+            data-idd-plot="markers"
+            data-idd-name="Circles"
+            data-bind="iddX: X,iddY: Y"
+            data-idd-style="shape:circle; size:15; color:blue;"></div>
+		<!-- /ko -->
+		<!-- ko if: IsBandEnabled -->
+		<div 
+            data-idd-plot="polyline"
+            data-idd-name="Band"
+            data-bind="
+                iddX: X,
+                iddYMedian: Y,
+                iddLower68: lb_68,
+                iddUpper68: ub_68,
+                iddLower95: lb_95,
+                iddUpper95: ub_95
+                "></div>
+		<!-- /ko -->
+		<!-- ko if: IsLineEnabled -->
+		<div
+            data-idd-plot="polyline"
+            data-idd-name="Line"
+            data-bind="iddX: X,iddY: Y"
+            data-idd-style="stroke:red; thickness:5; lineJoin:round; lineCap:round"></div>
+		<!-- /ko -->
+	</div>
+    <div style="float: right; margin: 2em">
+        <p>Line:<input type="checkbox" data-bind="checked: IsLineEnabled" /></p>
+        <p>Band:<input type="checkbox" data-bind="checked: IsBandEnabled" /></p>
+        <p>Markers:<input type="checkbox" data-bind="checked: IsMarkersEnabled" /></select>
+        </p>
+    </div>
+    </div>
+</body>
+</html>
