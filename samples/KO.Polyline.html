@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
-    <title>Markers with Knockout</title>
+    <title>Polyline with Knockout</title>
     <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
 
@@ -14,23 +14,23 @@
     <script src="../dist/idd_knockout.js"></script>
 
     <script type="text/javascript">
-		var x_values = [1.0,2.0,3.0] 
-		var y_values = [2.0,3.0,1.0]
+		var x_values = [1.0,2.0,3.0,4.0,5.0] 
+		var y_values = [2.0,1.0,5.0,1.0,2.0]
 		
         var vm = {
 			X : ko.observable(x_values),
 			Y : ko.observable(y_values),
 
-            ActiveColour : ko.observable("Green"),
-            ActiveBorderColour: ko.observable("Blue"),
+            ActiveColour : ko.observable("Green"),            
             ColoursToChoose: ["Red","Green","Blue","Black"],
 
-            MarkerSize: ko.observable(15),
+            Thickness: ko.observable(10),
 
-            MarkerShape: ko.observable("circle"),
-            ShapesToChoose: ["box","circle","diamond","cross","triangle"],
+            LineCap: ko.observable("round"),
+            LineCapsToChoose: ["butt","round","square"],
 
-            MarkersName : "Knockout controlled markers"
+            LineJoin: ko.observable("round"),
+            LineJoinsToChoose: ["bevel", "round", "miter"]
 		}
 		
         $(document).ready(function () {
@@ -43,29 +43,29 @@
 <body>
     <div style="display: inline-block">
     <div id="chart" data-idd-plot="chart" style="width: 400px; height: 250px; float:left">
-		<div data-idd-plot="markers"
+		<div data-idd-plot="polyline"
+             data-idd-name="Line 1"
              data-bind="
 				iddX: X,
 				iddY: Y,
-				iddColor: ActiveColour,
-                iddBorder: ActiveBorderColour,
-                iddSize: MarkerSize,
-				iddShape: MarkerShape,
-				iddPlotName: MarkersName">
+				iddStroke: ActiveColour,
+                iddThickness: Thickness,
+                iddLineCap: LineCap,
+                iddLineJoin: LineJoin">				
         </div>
 	</div>
     <div style="float: right; margin: 2em">
-        <p>Inner colour:
+        <p>Colour:
             <select data-bind="options: ColoursToChoose, value: ActiveColour"></select>
+        </p>        
+        <p>Thickness:
+            <input data-bind="value: Thickness" type="number" min="5" max="30">
         </p>
-        <p>Border colour:
-            <select data-bind="options: ColoursToChoose, value: ActiveBorderColour"></select>
+        <p>Line join:
+            <select data-bind="options: LineJoinsToChoose, value: LineJoin"></select>
         </p>
-        <p>Size:
-            <input data-bind="value: MarkerSize" type="number" min="5" max="45">
-        </p>
-        <p>Shape:
-            <select data-bind="options: ShapesToChoose, value: MarkerShape"></select>
+        <p>Line cap:
+            <select data-bind="options: LineCapsToChoose, value: LineCap"></select>
         </p>
     </div>
     </div>
