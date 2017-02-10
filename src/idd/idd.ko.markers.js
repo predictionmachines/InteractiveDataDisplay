@@ -26,11 +26,13 @@
                 data.color = ko.unwrap(allBindings.get('iddColor'));
 			if (allBindings.has('iddColorPalette'))
                 data.colorPalette = ko.unwrap(allBindings.get('iddColorPalette'));
-			if (allBindings.has('iddBarWidth')) 
+			if (allBindings.has('iddBarWidth'))
                 data.barWidth = ko.unwrap(allBindings.get('iddBarWidth'));
-			if (allBindings.has('iddShadow')) 
+			if (allBindings.has('iddShadow'))
                 data.shadow = ko.unwrap(allBindings.get('iddShadow'));
-            if (allBindings.has('iddCustomShape')) 
+			if (allBindings.has('iddLabelPlacement'))
+                data.placement = ko.unwrap(allBindings.get('iddLabelPlacement'));
+            if (allBindings.has('iddCustomShape'))
                 customShape = ko.unwrap(allBindings.get('iddCustomShape'));
             
             var plotAttr = element.getAttribute("data-idd-plot");
@@ -48,6 +50,6 @@
             }
         }
 
-        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("markers", updateMarkers, ['iddX', 'iddY', 'iddShape', 'iddSize', 'iddBorder', 'iddColor','iddColorPalette','iddBarWidth', 'iddShadow','iddCustomShape'])
+        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("markers", updateMarkers, ['iddX', 'iddY', 'iddShape', 'iddSize', 'iddBorder', 'iddColor','iddColorPalette','iddBarWidth', 'iddShadow','iddCustomShape','iddLabelPlacement'])
     }
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))
