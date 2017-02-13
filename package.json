@@ -1,9 +1,26 @@
 {
-  "name": "idd",
-  "version": "1.3.0",
+  "name": "interactive-data-display",
+  "version": "1.5.0",
   "license": "Apache-2.0",
-  "private": true,
-  "main": "Gruntfile.js",
+  "homepage": "https://github.com/predictionmachines/InteractiveDataDisplay/wiki",
+  "description": "A JavaScript visualization library for dynamic data",
+  "keywords": [
+    "visualization",
+    "animation",
+    "canvas",
+    "chart",
+    "plot"
+  ],
+  "main": "/dist/idd.js",
+  "dependencies": {
+    "jquery": "~3.1.1",
+    "rx": "~4.1.0",
+    "modernizr": "~3.3.1",
+    "jqueryui": "~1.11.1",
+    "svg.js": "~2.3.6",
+    "filesaver.js": "~0.2.0",
+    "jquery-mousewheel": "~3.1.13"
+  },
   "devDependencies": {
     "bower": "^1.7.6",
     "grunt": "^0.4.5",
@@ -16,8 +33,8 @@
     "grunt-ts": "^5.2.0",
     "grunt-tsd": "^0.1.0",
     "grunt-wiredep": "^2.0.0"
-  },
+  }, 
   "scripts": {
-	"test": "grunt default test --verbose"
+    "test": "grunt default test --verbose"
   }
 }

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Axes and navigation</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">
+		var x_values = [1.0,2.0,3.0] 
+		var y_values = [2.0,3.0,1.0]
+		
+        var vm = {
+			X : ko.observable(x_values),
+			Y : ko.observable(y_values),
+
+            ActiveColour : ko.observable("Green"),
+            ActiveBorderColour: ko.observable("Blue"),
+            ColoursToChoose: ["Red","Green","Blue","Black"],
+
+            MarkerSize: ko.observable(15),
+
+            MarkerShape: ko.observable("circle"),
+            ShapesToChoose: ["box","circle","diamond","cross","triangle"],
+
+            MarkersName : "Knockout controlled markers"
+		}
+		
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+			
+            ko.applyBindings(vm)
+        });
+    </script>
+</head>
+<body>
+    <div style="display: inline-block">
+    <div id="chart" data-idd-plot="chart" style="width: 400px; height: 250px; float:left">
+		<div data-idd-plot="markers"
+             data-bind="
+				iddX: X,
+				iddY: Y,
+				iddColor: ActiveColour,
+                iddBorder: ActiveBorderColour,
+                iddSize: MarkerSize,
+				iddShape: MarkerShape,
+				iddPlotName: MarkersName">
+        </div>
+	</div>
+    <div style="float: right; margin: 2em">
+        <p>Inner colour:
+            <select data-bind="options: ColoursToChoose, value: ActiveColour"></select>
+        </p>
+        <p>Border colour:
+            <select data-bind="options: ColoursToChoose, value: ActiveBorderColour"></select>
+        </p>
+        <p>Size:
+            <input data-bind="value: MarkerSize" type="number" min="5" max="45">
+        </p>
+        <p>Shape:
+            <select data-bind="options: ShapesToChoose, value: MarkerShape"></select>
+        </p>
+    </div>
+    </div>
+</body>
+</html>

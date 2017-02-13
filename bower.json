@@ -12,7 +12,8 @@
     "./dist/idd.umd.css",
     "./dist/idd.d.ts",
     "./dist/idd.umd.d.ts",
-    "./dist/idd-knockout.js"
+    "./dist/idd-knockout.js",
+    "./dist/idd.heatmapworker.js"
   ],
   "moduleType": [
     "globals",
