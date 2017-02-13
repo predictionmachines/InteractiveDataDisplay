@@ -7,6 +7,8 @@
             var data = {};
             if (allBindings.has('iddShape')) 
                 data.shape = ko.unwrap(allBindings.get('iddShape'));
+                if (allBindings.has('iddX'))
+                    data.x = ko.unwrap(allBindings.get('iddX'));            
             if(data.shape == "boxwhisker") {
                 if (allBindings.has('iddSize')) {                     
                     data.size = ko.unwrap(allBindings.get('iddSize'));
@@ -39,17 +41,35 @@
                     data.y.lower95 = ko.unwrap(allBindings.get('iddLower95'));
                 }                
             } else if (data.shape == "petals") {
-
-            } else if (data.shape == "petals") {
-                
+                if (!(allBindings.has('iddY') && allBindings.has('iddUpper95') && allBindings.has('iddLower95')))
+                    throw new Error("Please define iddY, iddLower95, iddUpper95 bindings for \"petals\" marker shape");
+                else {
+                    data.y = ko.unwrap(allBindings.get('iddY'));
+                    data.size = {};
+                    data.size.upper95 = ko.unwrap(allBindings.get('iddUpper95'));
+                    data.size.lower95 = ko.unwrap(allBindings.get('iddLower95'));
+                }    
+            } else if (data.shape == "bulleye") {
+                if (!(allBindings.has('iddY') && allBindings.has('iddUpper95') && allBindings.has('iddLower95')))
+                    throw new Error("Please define iddY, iddLower95, iddUpper95 bindings for \"petals\" marker shape");
+                else {
+                    if (allBindings.has('iddSize')) {                     
+                        data.size = ko.unwrap(allBindings.get('iddSize'));
+                        if(data.size.constructor === Array) {
+                            console.warn("Ignoring markers (bulleye) iddSize binding. It must be number, not an array!");
+                            delete data.size;
+                        }
+                    }                    
+                    data.y = ko.unwrap(allBindings.get('iddY'));
+                    data.color = {};
+                    data.color.upper95 = ko.unwrap(allBindings.get('iddUpper95'));
+                    data.color.median = ko.unwrap(allBindings.get('iddMedian'));
+                    data.color.lower95 = ko.unwrap(allBindings.get('iddLower95'));
+                }   
             } else {
                 if (allBindings.has('iddY'))
                     data.y = ko.unwrap(allBindings.get('iddY'));
-            
-                if (allBindings.has('iddX'))
-                    data.x = ko.unwrap(allBindings.get('iddX'));
-            
-
+                        
                 if (data.x && data.y && data.x.length !== data.y.length)
                     return;
             
@@ -87,6 +107,6 @@
             }
         }
 
-        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("markers", updateMarkers, ['iddX', 'iddY', 'iddShape', 'iddSize', 'iddBorder', 'iddColor','iddColorPalette','iddBarWidth', 'iddShadow','iddCustomShape','iddLabelPlacement'])
+        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("markers", updateMarkers, ['iddX', 'iddY','iddYMedian','iddMedian','iddLower68','iddUpper68','iddLower95','iddUpper95', 'iddShape', 'iddSize', 'iddBorder', 'iddColor','iddColorPalette','iddBarWidth', 'iddShadow','iddCustomShape','iddLabelPlacement'])
     }
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))
