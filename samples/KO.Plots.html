@@ -32,7 +32,15 @@
 			lb_95: lb_95,			
 			IsLineEnabled: ko.observable(true),
 			IsBandEnabled: ko.observable(true),
-			IsMarkersEnabled: ko.observable(true)
+			IsMarkersEnabled: ko.observable(true),
+            markersShape: "circle",
+            markersSize: 15,
+            markersColor: "blue",
+            lineStroke: "red",
+            lineThickness: 5,
+            lineJoin: "round",
+            lineCap: "round"
+
 		}
 		
         $(document).ready(function () {
@@ -48,8 +56,7 @@
 		<div
             data-idd-plot="markers"
             data-idd-name="Circles"
-            data-bind="iddX: X,iddY: Y"
-            data-idd-style="shape:circle; size:15; color:blue;"></div>
+            data-bind="iddX: X,iddY: Y, iddShape: markersShape, iddSize: markersSize, iddColor: markersColor"></div>
 		<!-- /ko -->
 		<!-- ko if: IsBandEnabled -->
 		<div 
@@ -68,8 +75,7 @@
 		<div
             data-idd-plot="polyline"
             data-idd-name="Line"
-            data-bind="iddX: X,iddY: Y"
-            data-idd-style="stroke:red; thickness:5; lineJoin:round; lineCap:round"></div>
+            data-bind="iddX: X, iddY: Y, iddStroke: lineStroke, iddThickness: lineThickness, iddLineJoin: lineJoin, iddLineCap: lineCap"></div>
 		<!-- /ko -->
 	</div>
     <div style="float: right; margin: 2em">
