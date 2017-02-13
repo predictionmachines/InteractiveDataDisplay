@@ -1,4 +1,5 @@
-
+ - Fixed bug with pan and zoom using touch events.
+ 
 ## 1.5.0 (December 28, 2016)
 **Breaking changes**:
  - **IDD now requires `jquery.mousewheel.js`.** 
