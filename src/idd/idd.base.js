@@ -234,9 +234,13 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         if (div && (div.hasClass("idd-plot-master") || div.hasClass("idd-plot-dependant")))
             return;
 
-        if (div && (navigator.userAgent.match(/(iPhone|iPod|iPad)/) || navigator.userAgent.match(/Android/))) {
-            div.bind('touchstart', function (e) { e.preventDefault(); });
-            div.bind('touchmove', function (e) { e.preventDefault(); });
+        if (div) { 
+            div[0].addEventListener('touchstart', function (e) {
+                e.preventDefault();
+            }, false);
+            div[0].addEventListener('touchmove', function (e) {
+                e.preventDefault();
+            }, false);
         }
 
         var _isMaster = master === undefined && div !== undefined;
