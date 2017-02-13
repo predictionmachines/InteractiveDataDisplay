@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Uncertainty markers with Knockout</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">
+        function ViewModel() {
+            this.Lower95_delta= ko.observable(2);
+            this.Lower68_delta= ko.observable(3);
+            this.Upper68_delta= ko.observable(1);
+            this.Upper95_delta= ko.observable(1);
+            
+            this.BoxShape= "boxwhisker";
+            this.BoxSize = 15;
+            this.BoxColor = "lightblue";
+            this.BoxBorder = "blue";
+
+			this.X = [1.0,2.0,3.0];
+            this.Median = [5.0, 10.0, 0.0];
+            this.Lower95= ko.computed( //shifting median array by the scalar value extracted from Lower95_delta
+                function() {
+                    var delta = parseFloat(this.Lower95_delta()) + parseFloat(this.Lower68_delta());
+                    var res = this.Median.map(function(v) { return v-delta});
+                    return res;
+                });
+                    
+            this.Lower68= ko.computed( //shifting median array by the scalar value extracted from Lower68_delta
+                function() {
+                    var delta = parseFloat(this.Lower68_delta());
+                    var res =  this.Median.map(function(v) {
+                        return v-delta});
+                    return res;
+                    });                    
+            this.Upper68= ko.computed( //shifting median array by the scalar value extracted from Upper68_delta
+                function() {
+                    var delta = parseFloat(this.Upper68_delta());
+                    var res = this.Median.map(function(v) {
+                        return v+delta});
+                    return res;
+                    });
+                    
+            this.Upper95= ko.computed( //shifting median array by the scalar value extracted from Upper95_delta
+                function() {
+                    var delta = parseFloat(this.Upper95_delta()) + parseFloat(this.Upper68_delta());
+                    var res = this.Median.map(function(v) {
+                        return v+delta});
+                    return res;
+                    });
+                    
+		};
+		
+        $(document).ready(function () {
+            var chart1 = InteractiveDataDisplay.asPlot($("#chart1"));
+
+            var vm = ViewModel();		
+            ko.applyBindings(vm)
+        });
+    </script>
+</head>
+<body>
+    <div style="display: inline-block">
+    <div id="chart1" data-idd-plot="chart" style="width: 400px; height: 250px; float:left">
+		<div data-idd-plot="markers"
+             data-bind="
+				iddX:X,
+				iddYMedian: Median,
+                iddLower95: Lower95,
+                iddLower68: Lower68,
+                iddUpper68: Upper68,
+                iddUpper95: Upper95,
+                iddShape: BoxShape,
+                iddColor: BoxColor,
+                iddBorder: BoxBorder,
+                iddSize: BoxSize
+                ">
+        </div>
+	</div>
+    <!--<div id="chart" data-idd-plot="chart" style="width: 400px; height: 250px; float:left">
+		<div data-idd-plot="markers"
+             data-bind="
+				iddX: X,
+				iddY: Y,
+				iddColor: ActiveColour,
+                iddBorder: ActiveBorderColour,
+                iddSize: MarkerSize,
+				iddShape: MarkerShape,
+				iddPlotName: MarkersName">
+        </div>
+	</div>
+    <div id="chart" data-idd-plot="chart" style="width: 400px; height: 250px; float:left">
+		<div data-idd-plot="markers"
+             data-bind="
+				iddX: X,
+				iddY: Y,
+				iddColor: ActiveColour,
+                iddBorder: ActiveBorderColour,
+                iddSize: MarkerSize,
+				iddShape: MarkerShape,
+				iddPlotName: MarkersName">
+        </div>
+	</div>-->
+    <div style="float: right; margin: 2em">
+        <p>Upper 95 margin: <input data-bind="value: Upper95_delta" type="number" min="0" max="5"></p>
+        <p>Upper 68 margin: <input data-bind="value: Upper68_delta" type="number" min="0" max="5"></p>
+        <p>Lower 68 margin: <input data-bind="value: Lower68_delta" type="number" min="0" max="5"></p>
+        <p>Lower 95 margin: <input data-bind="value: Lower95_delta" type="number" min="0" max="5"></p>        
+    </div>
+    </div>
+</body>
+</html>

@@ -4,37 +4,74 @@
         console.log("Knockout was no found, please load Knockout first");
     } else { 
         var updateMarkers = function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-            var data = {};		
-            if (allBindings.has('iddY'))
-                data.y = ko.unwrap(allBindings.get('iddY'));
-            
-            if (allBindings.has('iddX'))
-                data.x = ko.unwrap(allBindings.get('iddX'));
-            
-
-            if (data.x && data.y && data.x.length !== data.y.length)
-                return;
-            
-            var customShape;
+            var data = {};
             if (allBindings.has('iddShape')) 
                 data.shape = ko.unwrap(allBindings.get('iddShape'));
-            if (allBindings.has('iddSize')) 
-                data.size = ko.unwrap(allBindings.get('iddSize'));
-            if (allBindings.has('iddBorder'))
-                data.border = ko.unwrap(allBindings.get('iddBorder'));
-            if (allBindings.has('iddColor'))
-                data.color = ko.unwrap(allBindings.get('iddColor'));
-			if (allBindings.has('iddColorPalette'))
-                data.colorPalette = ko.unwrap(allBindings.get('iddColorPalette'));
-			if (allBindings.has('iddBarWidth'))
-                data.barWidth = ko.unwrap(allBindings.get('iddBarWidth'));
-			if (allBindings.has('iddShadow'))
-                data.shadow = ko.unwrap(allBindings.get('iddShadow'));
-			if (allBindings.has('iddLabelPlacement'))
-                data.placement = ko.unwrap(allBindings.get('iddLabelPlacement'));
-            if (allBindings.has('iddCustomShape'))
-                customShape = ko.unwrap(allBindings.get('iddCustomShape'));
+            if(data.shape == "boxwhisker") {
+                if (allBindings.has('iddSize')) {                     
+                    data.size = ko.unwrap(allBindings.get('iddSize'));
+                    if(data.size.constructor === Array) {
+                        console.warn("Ignoring markers (boxwhisker) iddSize binding. It must be number, not an array!");
+                        delete data.size;
+                    }
+                }
+                if (allBindings.has('iddColor')) {
+                    data.color = ko.unwrap(allBindings.get('iddColor'));
+                    if(data.color.constructor === Array) {
+                        console.warn("Ignoring markers (boxwhisker) iddColor binding. It must be string, not an array!");
+                        delete data.color;
+                    }
+                }
+                if (allBindings.has('iddBorder')) {
+                    data.border = ko.unwrap(allBindings.get('iddBorder'));
+                    if(data.border.constructor === Array) {
+                        console.warn("Ignoring markers (boxwhisker) iddBorder binding. It must be string, not an array!");
+                        delete data.border;
+                    }
+                }
+                if (!(allBindings.has('iddYMedian') && allBindings.has('iddLower68') && allBindings.has('iddLower68') && allBindings.has('iddUpper95') && allBindings.has('iddLower95')))
+                    throw new Error("Please define iddYMedian, iddLower68, iddLower68, iddLower95, iddUpper95 bindings for \"boxwhisker\" marker shape");
+                else {
+                    data.y = {median: ko.unwrap(allBindings.get('iddYMedian'))};
+                    data.y.lower68 = ko.unwrap(allBindings.get('iddLower68'));
+                    data.y.upper68 = ko.unwrap(allBindings.get('iddUpper68'));
+                    data.y.upper95 = ko.unwrap(allBindings.get('iddUpper95'));
+                    data.y.lower95 = ko.unwrap(allBindings.get('iddLower95'));
+                }                
+            } else if (data.shape == "petals") {
+
+            } else if (data.shape == "petals") {
+                
+            } else {
+                if (allBindings.has('iddY'))
+                    data.y = ko.unwrap(allBindings.get('iddY'));
             
+                if (allBindings.has('iddX'))
+                    data.x = ko.unwrap(allBindings.get('iddX'));
+            
+
+                if (data.x && data.y && data.x.length !== data.y.length)
+                    return;
+            
+                var customShape;
+            
+                if (allBindings.has('iddSize')) 
+                    data.size = ko.unwrap(allBindings.get('iddSize'));
+                if (allBindings.has('iddBorder'))
+                    data.border = ko.unwrap(allBindings.get('iddBorder'));
+                if (allBindings.has('iddColor'))
+                    data.color = ko.unwrap(allBindings.get('iddColor'));
+    			if (allBindings.has('iddColorPalette'))
+                    data.colorPalette = ko.unwrap(allBindings.get('iddColorPalette'));
+    			if (allBindings.has('iddBarWidth'))
+                    data.barWidth = ko.unwrap(allBindings.get('iddBarWidth'));
+    			if (allBindings.has('iddShadow'))
+                    data.shadow = ko.unwrap(allBindings.get('iddShadow'));
+    			if (allBindings.has('iddLabelPlacement'))
+                    data.placement = ko.unwrap(allBindings.get('iddLabelPlacement'));
+                if (allBindings.has('iddCustomShape'))
+                    customShape = ko.unwrap(allBindings.get('iddCustomShape'));
+            }
             var plotAttr = element.getAttribute("data-idd-plot");
             if (plotAttr != null) {
                 if (typeof element.plot != 'undefined') {
