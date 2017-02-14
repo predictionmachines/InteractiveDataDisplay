@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Label plot with Knockout</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">		 		    
+        function ViewModel() {            
+            this.Phase = ko.observable(0)
+			this.X = [];
+            
+            for (var i=0;i<10;i++) {                
+                this.X[i] = i-5;                  
+            }
+
+            this.Y = ko.computed(function() {
+                var phase = this.Phase();
+                var y = [];
+                for (var i=0;i<this.X.length;i++) {
+                    var x = this.X[i];
+                    y[i] = Math.sin(x+phase)/5*Math.PI;;
+                }
+                return y;
+            },this);
+            
+            this.Words = ["The","quick","brown", "fox", "jumps", "over", "the", "lazy", "dog","!!!"]              			
+		}
+		
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+            var vm = new ViewModel();		
+            ko.applyBindings(vm);
+
+            var phase = 0;
+            var startTime = Date.now();
+            function tick() {
+                var now = Date.now();
+                vm.Phase((now - startTime)/2000.0*Math.PI);
+                setTimeout(tick, 0);
+            }
+            setTimeout(tick, 0);
+        });
+    </script>
+</head>
+<body>
+    <div style="display: inline-block">
+    <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
+		<div data-idd-plot="label"
+             data-bind="
+				iddX: X,
+				iddY: Y,
+                iddLabelsText: Words
+				">
+        </div>
+	</div>    
+    </div>
+</body>
+</html>

@@ -45,27 +45,19 @@
             this.OpacityPercent = ko.observable(100);
             this.Opacity = ko.computed(function() {
                 return parseFloat(this.OpacityPercent())/100.0;
-            });
-
-            this.Threshold = ko.observable(5);
-            this.Interval = ko.computed(function() {
-                return {
-                    min: 0,
-                    max: parseFloat(this.Threshold())
-                };
-            });              
+            },this);          
 			
             this.ColourFrom = ko.observable("Blue");
             this.ColourTo = ko.observable("Red");
             this.ColourPallete = ko.computed(function() {
                 return this.ColourFrom()+","+this.ColourTo();
-            });             
+            },this);             
             this.ColoursToChoose = ["Red","Green","Blue","Black"];            
 		}
 		
         $(document).ready(function () {
             var chart = InteractiveDataDisplay.asPlot($("#chart"));
-            var vm = ViewModel();		
+            var vm = new ViewModel();		
             ko.applyBindings(vm)
         });
     </script>
