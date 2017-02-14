@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Area with Knockout</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">		 		
+        function factorial(n) {
+            if(n == 0) {
+                return 1
+            } else {
+                return n * factorial(n - 1);
+            }
+        }
+
+		function poisson_pmf(lambda,k) {
+            return Math.pow(lambda,k)*Math.exp(-lambda)/factorial(k)
+        }
+
+        function ViewModel() {
+			this.X = [];
+            this.Y1 = [];
+            ;
+            for (var i=0;i<20;i++) {
+                this.X[i] = i;
+                this.Y1[i] = 0.0; //lower area bound is constant
+            }
+
+            this.Lambda = ko.observable(6)   ;              
+			
+            this.Y2 = ko.computed(function() {
+                var x = this.X;
+                var lambda = this.Lambda();
+                var y = [];
+                for (var i=0;i<20;i++)
+                    y[i] = poisson_pmf(lambda,x[i])
+                return y;
+            });
+
+            this.ActiveColour = ko.observable("Grey");            
+            this.ColoursToChoose = ["Red","Green","Blue","Black","Grey"];
+
+            this.AreaName = "Poisson distribution PMF";
+		}
+		
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+            var vm = ViewModel();		
+            ko.applyBindings(vm)
+        });
+    </script>
+</head>
+<body>
+    <div style="display: inline-block">
+    <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
+		<div data-idd-plot="area"
+             data-bind="
+				iddX: X,
+				iddY1: Y1,
+                iddY2: Y2,
+				iddFill: ActiveColour,
+                iddPlotName: AreaName">
+        </div>
+	</div>
+    <div style="float: right; margin: 2em">
+        <p>Inner colour:
+            <select data-bind="options: ColoursToChoose, value: ActiveColour"></select>
+        </p>
+        <p>Poisson lambda:
+            <input data-bind="value: Lambda" type="number" min="1" max="12">
+        </p>        
+    </div>
+    </div>
+</body>
+</html>
