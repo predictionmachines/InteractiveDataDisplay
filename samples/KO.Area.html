@@ -44,7 +44,7 @@
                 for (var i=0;i<20;i++)
                     y[i] = poisson_pmf(lambda,x[i])
                 return y;
-            });
+            },this);
 
             this.ActiveColour = ko.observable("Grey");            
             this.ColoursToChoose = ["Red","Green","Blue","Black","Grey"];
@@ -54,7 +54,7 @@
 		
         $(document).ready(function () {
             var chart = InteractiveDataDisplay.asPlot($("#chart"));
-            var vm = ViewModel();		
+            var vm = new ViewModel();		
             ko.applyBindings(vm)
         });
     </script>
