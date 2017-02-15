@@ -72,15 +72,18 @@
                         
                 if (data.x && data.y && data.x.length !== data.y.length)
                     return;
+
+                if (allBindings.has('iddColor'))
+                    data.color = ko.unwrap(allBindings.get('iddColor'));
+
+                if (data.y && data.color && Array.isArray(data.color) && data.color.length != data.y.length)
+                    return;
             
-                var customShape;
-            
+                var customShape;            
                 if (allBindings.has('iddSize')) 
                     data.size = ko.unwrap(allBindings.get('iddSize'));
                 if (allBindings.has('iddBorder'))
                     data.border = ko.unwrap(allBindings.get('iddBorder'));
-                if (allBindings.has('iddColor'))
-                    data.color = ko.unwrap(allBindings.get('iddColor'));
     			if (allBindings.has('iddColorPalette'))
                     data.colorPalette = ko.unwrap(allBindings.get('iddColorPalette'));
     			if (allBindings.has('iddBarWidth'))

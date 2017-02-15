@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Bar chart</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+    <script src="../dist/idd.js"></script>
+
+    <script type="text/javascript">
+        var N = 20;
+
+        $(document).ready(function () {
+            var bars = InteractiveDataDisplay.asPlot("chart").get("bars");
+            var x = new Array(N);
+            var y = new Array(N);
+            var color = new Array(N);
+
+            var colorPalette = InteractiveDataDisplay.ColorPalette.parse("#69D2E7,#A7DBD8,#E0E4CC,#F38630,#FA6900");
+
+            var pos = 0;
+            for (var i = 0; i < N; i++) {
+                x[i] = pos;
+                y[i] = Math.random() * N - N / 2;
+                if (i%2 == 0){
+                    pos += 1;
+                    color[i] = "orange";
+                }
+                else {
+                    pos += 5;
+                    color[i] = "blue";
+                }
+            }
+            bars.draw({ x: x, y: y, color: "orange", border:'grey', barWidth: 0.9, shadow: 'grey', shape: "bars" });
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div data-idd-name="bars" data-idd-plot="markers">
+        </div>
+    </div>
+</body>
+</html>
