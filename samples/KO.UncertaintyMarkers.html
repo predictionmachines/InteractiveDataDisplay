@@ -37,32 +37,32 @@
             this.Lower95= ko.computed(
                 function() {
                     var delta = parseFloat(this.Lower95_delta()) + parseFloat(this.Lower68_delta());
-                    return [ConfInt[0], this.Median[1] - delta];                
-                });
+                    return [this.ConfInt[0], this.Median[1] - delta];                
+                },this);
                     
             this.Lower68= ko.computed(
                 function() {
                     var delta = parseFloat(this.Lower68_delta());
-                    return [ConfInt[1], this.Median[1] - delta];
-                    });                    
+                    return [this.ConfInt[1], this.Median[1] - delta];
+                    },this);                    
             this.Upper68= ko.computed(
                 function() {
                     var delta = parseFloat(this.Upper68_delta());
-                    return [ConfInt[2], this.Median[1] + delta];
-                    });
+                    return [this.ConfInt[2], this.Median[1] + delta];
+                    },this);
                     
             this.Upper95= ko.computed(
                 function() {
                     var delta = parseFloat(this.Upper95_delta()) + parseFloat(this.Upper68_delta());
-                    return [ConfInt[3], this.Median[1] + delta];
-                    });
+                    return [this.ConfInt[3], this.Median[1] + delta];
+                    },this);
                     
 		};
 		
         $(document).ready(function () {
             InteractiveDataDisplay.asPlot($("#chart"));
 
-            var vm = ViewModel();		
+            var vm = new ViewModel();		
             ko.applyBindings(vm)
         });
     </script>
