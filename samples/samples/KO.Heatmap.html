@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Heatmap with Knockout</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">		 		
+        function gaussian(x,b,c) {
+            return Math.exp(-(x-b)*(x-b)/(2*c*c))
+        }
+		
+        function ViewModel() {
+            var N = 20;
+            var M = 20;
+
+            var x_c = 5;
+            var x_sd = 4;
+            var y_c = 3;
+            var y_sd = 8;
+
+			this.X = [];
+            this.Y = [];
+            this.Data = []            
+
+            for (var i=0; i<N; i++) {
+                this.X[i] = i;
+                this.Data[i] = [];
+                for(var j=0; j<M; j++) {
+                    if(i==0) {
+                        this.Y[j]=j;
+                    }
+                    this.Data[i][j] = 10.0 *gaussian(i,x_c,x_sd) * gaussian(j,y_c,y_sd);
+                }                                
+            }
+
+            this.OpacityPercent = ko.observable(100);
+            this.Opacity = ko.computed(function() {
+                return parseFloat(this.OpacityPercent())/100.0;
+            },this);          
+			
+            this.ColourFrom = ko.observable("Blue");
+            this.ColourTo = ko.observable("Red");
+            this.ColourPallete = ko.computed(function() {
+                return this.ColourFrom()+","+this.ColourTo();
+            },this);             
+            this.ColoursToChoose = ["Red","Green","Blue","Black"];            
+		}
+		
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+            var vm = new ViewModel();		
+            ko.applyBindings(vm)
+        });
+    </script>
+</head>
+<body>
+    <div style="display: inline-block">
+    <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
+		<div data-idd-plot="heatmap"
+             data-bind="
+				iddX: X,
+				iddY: Y,
+                iddValues: Data,
+				iddColorPalette: ColourPallete,
+                iddOpacity: Opacity
+                ">
+        </div>
+	</div>
+    <div style="float: right; margin: 2em">
+        <p>From colour:
+            <select data-bind="options: ColoursToChoose, value: ColourFrom"></select>
+        </p>
+        <p>To colour:
+            <select data-bind="options: ColoursToChoose, value: ColourTo"></select>
+        </p>
+        <p>Opacity (%):
+            <input data-bind="value: OpacityPercent" type="number" min="0" max="100">
+        </p>                
+    </div>
+    </div>
+</body>
+</html>

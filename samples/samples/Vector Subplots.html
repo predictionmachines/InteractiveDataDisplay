@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Draw a polyline in HTML</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+    <script src="../ext/svg.js/dist/svg.js"></script>
+    <script src="../dist/idd.js"></script>
+
+    <script type="text/javascript">
+        
+    
+    
+        $(document).ready(function () {
+            var topd1 = InteractiveDataDisplay.asPlot($("#top-d1"));
+            var topd2 = InteractiveDataDisplay.asPlot($("#top-d2"));
+            var topd3 = InteractiveDataDisplay.asPlot($("#top-d3"));
+            topd1.addAxis("bottom", "labels", { labels: ["D1"], ticks: [0] });
+            topd2.addAxis("bottom", "labels", { labels: ["D2"], ticks: [0] });
+            topd3.addAxis("bottom", "labels", { labels: ["D3"], ticks: [0] });
+            
+            InteractiveDataDisplay.Binding.bindPlots(topd1, topd2, "v");
+            InteractiveDataDisplay.Binding.bindPlots(topd1, topd3, "v");
+            
+            var tope1 = InteractiveDataDisplay.asPlot($("#top-e1"));
+            var tope2 = InteractiveDataDisplay.asPlot($("#top-e2"));
+            var tope3 = InteractiveDataDisplay.asPlot($("#top-e3"));
+            tope1.addAxis("bottom", "labels", { labels: ["D1"], ticks: [0] });
+            tope2.addAxis("bottom", "labels", { labels: ["D2"], ticks: [0] });
+            tope3.addAxis("bottom", "labels", { labels: ["D3"], ticks: [0] });
+            
+            
+            InteractiveDataDisplay.Binding.bindPlots(tope1, tope2, "v");
+            InteractiveDataDisplay.Binding.bindPlots(tope1, tope3, "v");
+            
+            var chartb1 = InteractiveDataDisplay.asPlot($("#chart-b1"));
+            var chartb2 = InteractiveDataDisplay.asPlot($("#chart-b2"));
+            
+            var n = 1000;
+            var x = Array(n);
+            var yb1 = Array(n);
+            var yb2 = Array(n);
+            var yb3 = Array(n);
+            for(var i = 0; i < n; i++){
+                x[i] = i / 100;
+                yb1[i] = Math.sin(x[i]);
+                yb2[i] = Math.cos(x[i]);
+                yb3[i] = yb1[i] * yb2[i];
+            }
+            chartb1.polyline("pb1", { x: x, y: yb1 });
+            chartb2.polyline("pb2", { x: x, y: yb2, stroke: "orange" });
+            
+            InteractiveDataDisplay.Binding.bindPlots(chartb1, chartb2, "vh");
+            
+            
+            topd1.polyline("topd1", { y: x, x: yb1, treatAs: "trajectory" });
+            topd2.polyline("topd2", { y: x, x: yb2, treatAs: "trajectory", stroke: "orange" });
+            topd3.polyline("topd2", { y: x, x: yb3, treatAs: "trajectory", stroke: "green" });
+               
+            tope1.polyline("topd1", { y: x, x: yb1, treatAs: "trajectory" });
+            tope2.polyline("topd2", { y: x, x: yb2, treatAs: "trajectory", stroke: "orange" });
+            tope3.polyline("topd2", { y: x, x: yb3, treatAs: "trajectory", stroke: "green" });
+        });
+        
+        var toSvg = function(lines) {
+            var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            var svg = SVG(svgHost);
+            
+            var top = 0;
+            var left = 0;
+            var height = 0;
+            var width = 0;
+            
+            for(var j = 0; j < lines.length; j++){
+                var line = lines[j];
+                for(var i = 0; i < line.length; i++){
+                    var item = line[i];
+                    var itemSvg = item.exportToSvg();
+                    var group = svg.group().translate(left, top);
+                    group.add(itemSvg);    
+                    left += itemSvg.width();
+                    height = Math.max(height, itemSvg.height());
+                }           
+                width = Math.max(width, left);
+                top += height;
+                left = 0;
+            }
+            
+            svg.size(width, top);
+            
+            return svg;
+        }
+        
+        var exportSvg = function(){
+            var topd1 = InteractiveDataDisplay.asPlot($("#top-d1"));
+            var topd2 = InteractiveDataDisplay.asPlot($("#top-d2"));
+            var topd3 = InteractiveDataDisplay.asPlot($("#top-d3"));
+            var tope1 = InteractiveDataDisplay.asPlot($("#top-e1"));
+            var tope2 = InteractiveDataDisplay.asPlot($("#top-e2"));
+            var tope3 = InteractiveDataDisplay.asPlot($("#top-e3"));
+            var chartb1 = InteractiveDataDisplay.asPlot($("#chart-b1"));
+            var chartb2 = InteractiveDataDisplay.asPlot($("#chart-b2"));
+            
+            var layout = 
+                [ [ topd1, topd2, topd3, tope1, tope2, tope3], 
+                  [ chartb1 ],
+                  [ chartb2 ] ]
+            var svg = toSvg(layout);
+            
+            
+            $("#chart_svg").html(svg.svg());   
+            $("#output").text(svg.svg());         
+        };
+    </script>
+</head>
+<body>
+    
+    <div id="chart_svg" style="width: 800px; height: 850px; margin-bottom: 5px;" onclick="exportSvg()">
+    </div>
+    
+    <div id="top-d1" data-idd-plot="figure" style="width: 130px; height: 250px; display:inline-block; float:left">
+        <div id="axisr" data-idd-axis="numeric" data-idd-placement="left"></div>
+    </div>
+    <div id="top-d2" data-idd-plot="figure" style="width: 130px; height: 250px; display:inline-block; float:left">
+    </div>
+    <div id="top-d3" data-idd-plot="figure" style="width: 130px; height: 250px; display:inline-block; float:left">
+    </div>
+    
+    <div id="top-e1" data-idd-plot="figure" style="width: 130px; height: 250px; display:inline-block; float:left">
+        <div id="axisr2" data-idd-axis="numeric" data-idd-placement="left"></div>
+    </div>
+    <div id="top-e2" data-idd-plot="figure" style="width: 130px; height: 250px; display:inline-block; float:left">
+    </div>
+    <div id="top-e3" data-idd-plot="figure" style="width: 130px; height: 250px; display:inline-block">
+    </div>
+    
+    
+    
+    <div id="chart-b1" data-idd-plot="chart" style="width: 800px; height: 300px; margin-bottom:5px" >
+    </div>  
+    <div id="chart-b2" data-idd-plot="chart" style="width: 800px; height: 300px;" >
+    </div>
+    <div id="output"> </div>
+</body>
+</html>
+
+
+

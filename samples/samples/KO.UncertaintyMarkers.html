@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Uncertainty markers with Knockout</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">
+        function ViewModel() {
+            this.Lower95_delta= ko.observable(2);
+            this.Lower68_delta= ko.observable(3);
+            this.Upper68_delta= ko.observable(1);
+            this.Upper95_delta= ko.observable(1);
+            
+            this.BoxShape= "boxwhisker";
+            this.PetalsShape = "petals";
+            this.BullEyeShape = "bulleye";
+            this.BoxSize = 15;
+            this.BoxColor = "lightblue";
+            this.BoxBorder = "blue";
+
+			this.X_Boxs = [1.0, 1.0];
+            this.X_Petals = [5.0, 5.0];
+            this.X_BullEye = [10.0, 10.0];
+            
+            this.Median = [0.0, 15.0];
+            this.ConfInt = [-4,-2,2,4];
+            
+            this.Lower95= ko.computed(
+                function() {
+                    var delta = parseFloat(this.Lower95_delta()) + parseFloat(this.Lower68_delta());
+                    return [this.ConfInt[0], this.Median[1] - delta];                
+                },this);
+                    
+            this.Lower68= ko.computed(
+                function() {
+                    var delta = parseFloat(this.Lower68_delta());
+                    return [this.ConfInt[1], this.Median[1] - delta];
+                    },this);                    
+            this.Upper68= ko.computed(
+                function() {
+                    var delta = parseFloat(this.Upper68_delta());
+                    return [this.ConfInt[2], this.Median[1] + delta];
+                    },this);
+                    
+            this.Upper95= ko.computed(
+                function() {
+                    var delta = parseFloat(this.Upper95_delta()) + parseFloat(this.Upper68_delta());
+                    return [this.ConfInt[3], this.Median[1] + delta];
+                    },this);
+                    
+		};
+		
+        $(document).ready(function () {
+            InteractiveDataDisplay.asPlot($("#chart"));
+
+            var vm = new ViewModel();		
+            ko.applyBindings(vm)
+        });
+    </script>
+</head>
+<body>
+    <div style="display: inline-block">
+    <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
+		<div data-idd-plot="markers"
+             data-bind="
+				iddX:X_Boxs,
+				iddYMedian: Median,
+                iddLower95: Lower95,
+                iddLower68: Lower68,
+                iddUpper68: Upper68,
+                iddUpper95: Upper95,
+                iddShape: BoxShape,                
+                iddSize: BoxSize
+                ">
+        </div>
+        <div data-idd-plot="markers"
+             data-bind="
+				iddX: X_Petals,
+				iddY: Median,
+                iddLower95: Lower95,
+                iddLower68: Lower68,
+                iddUpper68: Upper68,
+                iddUpper95: Upper95,
+                iddShape: PetalsShape">
+        </div>
+        <div data-idd-plot="markers"
+             data-bind="
+				iddX: X_BullEye,
+				iddY: Median,
+                iddLower95: Lower95,
+                iddMedian: Median,
+                iddUpper95: Upper95,
+                iddShape: BullEyeShape">
+        </div>
+	</div>
+    <div style="float: right; margin: 2em">
+        <p>Upper 95 margin: <input data-bind="value: Upper95_delta" type="number" min="0" max="5"></p>
+        <p>Upper 68 margin: <input data-bind="value: Upper68_delta" type="number" min="0" max="5"></p>
+        <p>Lower 68 margin: <input data-bind="value: Lower68_delta" type="number" min="0" max="5"></p>
+        <p>Lower 95 margin: <input data-bind="value: Lower95_delta" type="number" min="0" max="5"></p>        
+    </div>
+    </div>
+</body>
+</html>

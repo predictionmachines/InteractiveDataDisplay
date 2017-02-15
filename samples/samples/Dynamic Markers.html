@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Dynamic Markers</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+    <script src="../dist/idd.js"></script>
+
+     <script type="text/javascript">
+         var N = 1000;
+         var phase = 0;
+
+         $(document).ready(function () {
+             InteractiveDataDisplay.asPlot("chart");
+             run();
+         });
+
+         function run() {
+             var x = new Array(N);
+             var y = new Array(N);
+             for (var i = 0; i < N; i++) {
+                 x[i] = i * Math.PI / 50;
+                 y[i] = Math.cos(i * Math.PI / 50 + phase);
+             }
+             phase += 0.1;
+             InteractiveDataDisplay.asPlot("chart").markers("sin", { y: y, x: x, size: 5 });
+
+             setTimeout(run, 1000 / 60);
+         };
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Markers Sample</div>
+    </div>
+</body>
+</html>
+

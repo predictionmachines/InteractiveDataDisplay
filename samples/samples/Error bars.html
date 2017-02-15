@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Error bars sample</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+    <script src="../dist/idd.js"></script>
+
+    <script type="text/javascript">
+        var errorBar = {
+            // marker.error by default puts this above and below y
+            draw: function (marker, plotRect, screenSize, transform, context) {
+                var shift = 4; // pixels
+                var errorBarLength = marker.error;
+                var x = transform.dataToScreenX(marker.x);
+                if (x + shift < 0 || x - shift > screenSize.width) return;
+                var yTop = transform.dataToScreenY(marker.y + errorBarLength);
+                var yBottom = transform.dataToScreenY(marker.y - errorBarLength);
+                if (yTop > yBottom) {
+                    var k = yTop;
+                    yTop = yBottom;
+                    yBottom = k;
+                }
+                if (yTop > screenSize.height || yBottom < 0) return;
+
+                context.strokeStyle = marker.color;
+                context.beginPath();
+                context.moveTo(x - shift, yTop);
+                context.lineTo(x + shift, yTop);
+                context.moveTo(x - shift, yBottom);
+                context.lineTo(x + shift, yBottom);
+                context.moveTo(x, yBottom);
+                context.lineTo(x, yTop);
+                context.stroke();
+            },
+
+            getBoundingBox: function (marker) {
+                var errorBarLength = marker.error;
+                var yTop = marker.y + errorBarLength;
+                var yBottom = marker.y - errorBarLength;
+                return { x: marker.x, y: Math.min(yTop, yBottom), width: 0.0, height: Math.abs(yTop - yBottom) };
+            },
+
+            hitTest: function (marker, transform, ps, pd) {
+                var errorBarLength = marker.error;
+                var yTop = marker.y + errorBarLength;
+                var yBottom = marker.y - errorBarLength;
+                if (pd.y < yBottom || pd.y > yTop) return false;
+                var x = transform.dataToScreenX(marker.x);
+                if (ps.x < x - 1 || ps.x > x + 2) return false;
+                return true;
+            },
+
+            getPadding: function (data) {
+                var padding = 4;
+                return { left: padding, right: padding, top: padding, bottom: padding };
+            }
+        };
+    
+        $(document).ready(function () {
+            InteractiveDataDisplay.Markers.shapes["errorBar"] = errorBar;
+            InteractiveDataDisplay.asPlot("chart");
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div data-idd-placement="top" class="idd-title">Two-stimulus discriminated approach task</div>
+        <div data-idd-placement="bottom" class="idd-horizontalTitle">Session</div>
+        <div data-idd-placement="left" class="idd-verticalTitle" style="width: 20px">
+            <div style="position: absolute; top: 50%; margin-top: -0.5em; height: 10em; width: 100px;">
+                Difference score
+            </div>
+        </div>
+        <div data-idd-name="sham" data-idd-plot="polyline" data-idd-style="stroke:blue">
+            x   y
+            1   0
+            2   0.666666667
+            3   -0.333333333
+            4   1.583333333
+            5   -0.25
+            6   1.75
+            7   1
+            8   4.083333333
+            9   4.666666667
+            10  3.333333333
+            11  4.5
+            12  4.416666667
+        </div>
+        <div data-idd-name="ACCX" data-idd-plot="polyline" data-idd-style="stroke:orange">
+            x   y
+            1   -0.2
+            2   -0.3
+            3   -0.2
+            4   1
+            5   -0.3
+            6   -0.8
+            7   -1.1
+            8   0.2
+            9   1.6
+            10  3.3
+            11  5.3
+            12  3.9
+        </div>
+        <div data-idd-name="SEM_sham" data-idd-plot="markers" data-idd-style="color:rgb(0,0,150); shape: errorBar;">
+            x   y   error
+            1   0   0.788170109
+            2   0.666666667 0.481999204
+            3   -0.333333333    0.721250317
+            4   1.583333333 0.583333333
+            5   -0.25   0.76993703
+            6   1.75    0.641081
+            7   1   0.843872746
+            8   4.083333333 1.040529683
+            9   4.666666667 0.699927846
+            10  3.333333333 1.024941486
+            11  4.5 0.722998805
+            12  4.416666667 0.633153882
+        </div>
+        <div data-idd-name="SEM_accx" data-idd-plot="markers" data-idd-style="color:brown; shape: errorBar;">
+            x   y     error
+            1   -0.2  0.4163332
+            2   -0.3  0.366666667
+            3   -0.2  0.533333333
+            4   1     0.471404521
+            5   -0.3  0.51747249
+            6   -0.8  0.489897949
+            7   -1.1  0.795124029
+            8   0.2   0.646357314
+            9   1.6   0.561743318
+            10  3.3   1.000555401
+            11  5.3   1.085766498
+            12  3.9   0.70632067
+        </div>
+        <div data-idd-name="sham" data-idd-plot="markers" data-idd-style="border:blue; shape:triangle; color:white; size:15;">
+            x   y
+            1   0
+            2   0.666666667
+            3   -0.333333333
+            4   1.583333333
+            5   -0.25
+            6   1.75
+            7   1
+            8   4.083333333
+            9   4.666666667
+            10  3.333333333
+            11  4.5
+            12  4.416666667
+        </div>
+        <div data-idd-name="ACCX" data-idd-plot="markers" data-idd-style="color: orange; border: grey; size: 15; shape:circle;">
+            x   y
+            1   -0.2
+            2   -0.3
+            3   -0.2
+            4   1
+            5   -0.3
+            6   -0.8
+            7   -1.1
+            8   0.2
+            9   1.6
+            10  3.3
+            11  5.3
+            12  3.9
+        </div>
+    </div>
+    <a href="http://egret.psychol.cam.ac.uk/statistics/R/graphs1.html" target="_blank">Original data and visualization</a>
+</body>
+</html>
