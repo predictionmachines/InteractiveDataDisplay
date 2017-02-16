@@ -2,13 +2,13 @@
 }
 (function () {
     if (window.define) {
-        define(['jquery', 'rx', 'knockout'],
-            function ($, Rx, ko) {
-                var InteractiveDataDisplay = IDD($, Rx, ko);
+        define(['jquery', 'rx', 'knockout', 'svg', 'filesaver', 'jqueryui', 'jquery-mousewheel'],
+            function ($, Rx, ko, SVG, filesaver) {
+                var InteractiveDataDisplay = IDD($, Rx, ko, SVG, filesaver);
                 return InteractiveDataDisplay;
             });
     } else {
-        var InteractiveDataDisplay = IDD($, Rx, ko);
+        var InteractiveDataDisplay = IDD($, Rx, ko, SVG, filesaver.saveAs);
         window.InteractiveDataDisplay = InteractiveDataDisplay;
     }
 }());
