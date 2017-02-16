@@ -5,10 +5,16 @@
     } else { 
         var updateMarkers = function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             var data = {};
+            if (allBindings.has('iddX'))
+                data.x = ko.unwrap(allBindings.get('iddX'));            
+            else
+                throw new Error("Please define iddX binding for marker plot");
+
+            var N = data.x.length;
+
             if (allBindings.has('iddShape')) 
                 data.shape = ko.unwrap(allBindings.get('iddShape'));
-                if (allBindings.has('iddX'))
-                    data.x = ko.unwrap(allBindings.get('iddX'));            
+            
             if(data.shape == "boxwhisker") {
                 if (allBindings.has('iddSize')) {                     
                     data.size = ko.unwrap(allBindings.get('iddSize'));
@@ -31,27 +37,39 @@
                         delete data.border;
                     }
                 }
-                if (!(allBindings.has('iddYMedian') && allBindings.has('iddLower68') && allBindings.has('iddLower68') && allBindings.has('iddUpper95') && allBindings.has('iddLower95')))
-                    throw new Error("Please define iddYMedian, iddLower68, iddLower68, iddLower95, iddUpper95 bindings for \"boxwhisker\" marker shape");
-                else {
+                if (!allBindings.has('iddYMedian'))
+                    throw new Error("Please define iddYMedian binding for \"boxwhisker\" marker shape");
+                else {                                        
                     data.y = {median: ko.unwrap(allBindings.get('iddYMedian'))};
-                    data.y.lower68 = ko.unwrap(allBindings.get('iddLower68'));
-                    data.y.upper68 = ko.unwrap(allBindings.get('iddUpper68'));
-                    data.y.upper95 = ko.unwrap(allBindings.get('iddUpper95'));
-                    data.y.lower95 = ko.unwrap(allBindings.get('iddLower95'));
+                    if(data.y.median.length != N)
+                        return;                    
+                    if(allBindings.has('iddLower68') && allBindings.has('iddLower68')) {
+                        data.y.lower68 = ko.unwrap(allBindings.get('iddLower68'));
+                        data.y.upper68 = ko.unwrap(allBindings.get('iddUpper68'));
+                        if((data.y.lower68.length != N) || (data.y.upper68.length != N))
+                            return;
+                    }
+                    if(allBindings.has('iddUpper95') && allBindings.has('iddLower95')) {
+                        data.y.upper95 = ko.unwrap(allBindings.get('iddUpper95'));
+                        data.y.lower95 = ko.unwrap(allBindings.get('iddLower95'));
+                        if((data.y.lower95.length != N) || (data.y.upper95.length != N))
+                            return;
+                    }                    
                 }                
             } else if (data.shape == "petals") {
                 if (!(allBindings.has('iddY') && allBindings.has('iddUpper95') && allBindings.has('iddLower95')))
                     throw new Error("Please define iddY, iddLower95, iddUpper95 bindings for \"petals\" marker shape");
-                else {
+                else {                    
                     data.y = ko.unwrap(allBindings.get('iddY'));
                     data.size = {};
                     data.size.upper95 = ko.unwrap(allBindings.get('iddUpper95'));
                     data.size.lower95 = ko.unwrap(allBindings.get('iddLower95'));
+                    if((data.size.lower95.length != N) || (data.size.upper95.length != N) || (data.y.length != N))
+                        return;
                 }    
             } else if (data.shape == "bulleye") {
                 if (!(allBindings.has('iddY') && allBindings.has('iddUpper95') && allBindings.has('iddLower95')))
-                    throw new Error("Please define iddY, iddLower95, iddUpper95 bindings for \"petals\" marker shape");
+                    throw new Error("Please define iddY, iddLower95, iddUpper95 bindings for \"bulleye\" marker shape");
                 else {
                     if (allBindings.has('iddSize')) {                     
                         data.size = ko.unwrap(allBindings.get('iddSize'));
@@ -62,14 +80,14 @@
                     }                    
                     data.y = ko.unwrap(allBindings.get('iddY'));
                     data.color = {};
-                    data.color.upper95 = ko.unwrap(allBindings.get('iddUpper95'));
-                    data.color.median = ko.unwrap(allBindings.get('iddMedian'));
+                    data.color.upper95 = ko.unwrap(allBindings.get('iddUpper95'));                    
                     data.color.lower95 = ko.unwrap(allBindings.get('iddLower95'));
+                    if((data.color.lower95.length != N) || (data.color.upper95.length != N) || (data.y.length != N))
+                        return;
                 }   
             } else {
                 if (allBindings.has('iddY'))
-                    data.y = ko.unwrap(allBindings.get('iddY'));
-                        
+                    data.y = ko.unwrap(allBindings.get('iddY'));                        
                 if (data.x && data.y && data.x.length !== data.y.length)
                     return;
             
