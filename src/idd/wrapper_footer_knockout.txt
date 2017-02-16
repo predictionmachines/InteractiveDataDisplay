@@ -8,7 +8,7 @@
                 return InteractiveDataDisplay;
             });
     } else {
-        var InteractiveDataDisplay = IDD($, Rx, ko, SVG, filesaver.saveAs);
+        var InteractiveDataDisplay = IDD($, Rx, ko, SVG, saveAs);
         window.InteractiveDataDisplay = InteractiveDataDisplay;
     }
 }());

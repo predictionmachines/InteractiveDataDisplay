@@ -1,2 +1,2 @@
-﻿function IDD($, Rx, ko) {
+﻿function IDD($, Rx, ko, SVG, saveAs) {
 	if (Number.MAX_SAFE_INTEGER == undefined) Number.MAX_SAFE_INTEGER = 9007199254740991;
