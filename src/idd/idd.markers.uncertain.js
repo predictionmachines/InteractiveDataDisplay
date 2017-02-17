@@ -897,9 +897,10 @@ InteractiveDataDisplay.BoxWhisker = {
     },
     getBoundingBox: function (marker) {
         var size = marker.size;
+        var xLeft = marker.x;
         var yBottom = marker.lower95 ? marker.lower95 : (marker.lower68 ? marker.lower68 : marker.y);
         var yTop = marker.upper95 ? marker.upper95 : (marker.upper68 ? marker.upper68 : marker.y);
-        return { x: marker.x - size / 2, y: yBottom, width: size, height: Math.abs(yTop - yBottom) };
+        return { x: xLeft, y: yBottom, width: 0, height: Math.abs(yTop - yBottom) };
     },
     getPadding: function (data) {
         var padding = 0;

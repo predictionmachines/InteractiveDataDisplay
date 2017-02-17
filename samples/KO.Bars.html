@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
-    <title>Label plot with Knockout</title>
+    <title>Bar chart with Knockout</title>
     <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
 
@@ -11,59 +11,49 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
     <script src="../dist/idd_knockout.js"></script>
 
     <script type="text/javascript">		 		    
         function ViewModel() {            
-            this.Phase = ko.observable(0)
-			this.X = [];
-            
-            for (var i=0;i<10;i++) {                
-                this.X[i] = i-5;                  
-            }
+            this.A_Height = ko.observable(1);
+            this.B_Height = ko.observable(6);
+            this.C_Height = ko.observable(3);
 
-            this.Y = ko.computed(function() {
-                var phase = this.Phase();
-                var y = [];
-                for (var i=0;i<this.X.length;i++) {
-                    var x = this.X[i];
-                    y[i] = Math.sin(x+phase)/5*Math.PI;;
-                }
-                return y;
-            },this);
-            
-            this.Words = ["The","quick","brown", "fox", "jumps", "over", "the", "lazy", "dog","!!!"]              			
+            this.BarHeights = ko.computed(function() {
+                return [this.A_Height(),this.B_Height(),this.C_Height()];
+            },this);            
 		}
 		
         $(document).ready(function () {
             var chart = InteractiveDataDisplay.asPlot($("#chart"));
             var vm = new ViewModel();		
             ko.applyBindings(vm);
-
-            var phase = 0;
-            var startTime = Date.now();
-            function tick() {
-                var now = Date.now();
-                vm.Phase((now - startTime)/2000.0*Math.PI);
-                setTimeout(tick, 0);
-            }
-            setTimeout(tick, 0);
         });
     </script>
 </head>
 <body>
     <div style="display: inline-block">
     <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
-		<div data-idd-plot="label"
+		<div data-idd-plot="markers"
              data-bind="
-				iddX: X,
-				iddY: Y,
-                iddLabelsText: Words
+				iddX: [1,2,3],
+				iddY: BarHeights,
+                iddColor: ['red','blue','green'],                
+                iddBarWidth: 0.9,
+                iddShadow: 'grey',
+                iddShape: 'bars',
+                iddPlotName: 'Bars'
 				">
         </div>
-	</div>    
+	</div>
+    <div style="float: right; margin: 2em">
+        <p>Height 1:<input data-bind="value: A_Height" type="number" min="1" max="20"></p>
+        <p>Height 2:<input data-bind="value: B_Height" type="number" min="1" max="20"></p>
+        <p>Height 3:<input data-bind="value: C_Height" type="number" min="1" max="20"></p>
+        </p>        
+    </div>
     </div>
 </body>
 </html>
