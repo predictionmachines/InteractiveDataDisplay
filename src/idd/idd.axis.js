@@ -683,13 +683,14 @@ InteractiveDataDisplay.TickSource = function () {
                 isUsedPool[i] = true;
                 styles[i].display = "block";
                 inners[i] = inner;
-                var div = divPool[i][0];
-                div.innerHTML = inner;
-                divPool[i]._size = { width: div.offsetWidth, height: div.offsetHeight };
+                var $div = divPool[i];
+                $div.text(inner);
+                var div = $div[0];
+                $div._size = { width: div.offsetWidth, height: div.offsetHeight };
                 return divPool[i];
             }
             else {
-                var div = $("<div>" + inner + "</div>");
+                var div = $("<div></div>").text(inner);
                 isUsedPool[len] = true;
                 divPool[len] = div;
                 inners[len] = inner;

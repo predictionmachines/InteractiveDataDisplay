@@ -1,6 +1,13 @@
+#### 1.5.1 (unpublished)
+
 New features:
- -  Installation of `idd` as npm package. 
- - Fixed bug with pan and zoom using touch events.
+ - Deployment of `idd` as an npm package. 
+ - IDD LnockoutJs interfaces allows creating a labelled axis using binding `iddBottomAxisLabels`.
+
+Bug fixes: 
+  - Fixed bug with pan and zoom using touch events.
+  - Labelled axis now escapes label text so it can contain `<`, `>` etc.
+  - KnockoutJs for Markers now allows passing an array of string colors as value for the parameter `color`.
  
 ## 1.5.0 (December 28, 2016)
 **Breaking changes**:

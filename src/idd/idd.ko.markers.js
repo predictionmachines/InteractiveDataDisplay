@@ -94,7 +94,7 @@
                 if (allBindings.has('iddColor'))
                     data.color = ko.unwrap(allBindings.get('iddColor'));
 
-                if (data.y && data.color && Array.isArray(data.color) && data.color.length != data.y.length)
+                if (data.y && data.color && Array.isArray(data.color) && data.color.length !== data.y.length)
                     return;
             
                 var customShape;            

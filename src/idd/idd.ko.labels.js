@@ -50,5 +50,47 @@
 		}
 
 		InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("label", updateLabels, ['iddX', 'iddY', 'iddLabelsText'])
+
+		ko.bindingHandlers.iddBottomAxisLabels = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var v = ko.unwrap(value);
+
+                var plotAttr = element.getAttribute("data-idd-plot");
+                if (plotAttr != null) {
+                    if (typeof element.plot != 'undefined') {
+                        if(typeof element.plot.addAxis != 'undefined'){
+                            // Removing previously added bottom axis
+                            var axes = element.plot.getAxes("bottom");
+                            if(axes !== undefined)
+                                for(var i = 0; i < axes.length; i++){
+                                    var attr = axes[i].host.data("iddBottomAxisLabels");
+                                    if(attr == "true"){
+                                        axes[i].remove();
+                                    }
+                                }
+
+                            var axisElement = element.plot.addAxis("bottom", "labels", { labels: v.labels, ticks: v.ticks });
+                            axisElement.data("iddBottomAxisLabels", "true");
+
+                            if(typeof v.attachGrid != 'undefined' && v.attachGrid){
+                                var plots = element.plot.getPlotsSequence();
+                                for(var i = 0; i < plots.length; i++){
+                                    var p = plots[i];
+                                    if(p instanceof InteractiveDataDisplay.GridlinesPlot){
+                                        p.xAxis = axisElement.axis;
+                                        break;
+                                    }
+                                }
+                            }
+                        }else{
+                            throw "The target for the iddBottomAxisLabels binding must be figure or derived."
+                        }
+                    }
+                    else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)                        
+                    }
+                }
+            }
+        };
 	}
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))
