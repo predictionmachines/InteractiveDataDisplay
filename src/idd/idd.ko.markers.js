@@ -37,6 +37,9 @@
                         delete data.border;
                     }
                 }
+                if (allBindings.has('iddThickness')) {
+                    data.thickness = ko.unwrap(allBindings.get('iddThickness'));
+                }
                 if (!allBindings.has('iddYMedian'))
                     throw new Error("Please define iddYMedian binding for \"boxwhisker\" marker shape");
                 else {                                        
@@ -128,6 +131,6 @@
             }
         }
 
-        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("markers", updateMarkers, ['iddX', 'iddY','iddYMedian','iddMedian','iddLower68','iddUpper68','iddLower95','iddUpper95', 'iddShape', 'iddSize', 'iddBorder', 'iddColor','iddColorPalette','iddBarWidth', 'iddShadow','iddCustomShape','iddLabelPlacement'])
+        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("markers", updateMarkers, ['iddX', 'iddY','iddYMedian','iddMedian','iddLower68','iddUpper68','iddLower95','iddUpper95', 'iddShape', 'iddSize', 'iddBorder', 'iddThickness', 'iddColor','iddColorPalette','iddBarWidth', 'iddShadow','iddCustomShape','iddLabelPlacement'])
     }
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))

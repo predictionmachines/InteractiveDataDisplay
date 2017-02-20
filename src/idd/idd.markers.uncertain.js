@@ -758,7 +758,8 @@ InteractiveDataDisplay.BoxWhisker = {
         // border
         if (data.border == undefined || data.border == "none")
             data.border = null; // no border
-
+        if (data.thickness == undefined || data.thickness == "none")
+            data.thickness = 2;
         // colors        
         if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
 
@@ -849,10 +850,10 @@ InteractiveDataDisplay.BoxWhisker = {
 
         context.beginPath();
         context.strokeStyle = marker.border === undefined ? "black" : marker.border;
-
+        context.lineWidth = marker.thickness;
         if (marker.color) context.fillRect(x - shift, l68, msize, u68 - l68);
         context.strokeRect(x - shift, l68, msize, u68 - l68);
-       
+
         context.moveTo(x - shift, u95);
         context.lineTo(x + shift, u95);
 
@@ -868,6 +869,7 @@ InteractiveDataDisplay.BoxWhisker = {
         context.lineTo(x + shift, mean);
        
         context.stroke();
+        
 
         if (marker.y_min !== undefined) {
             context.beginPath();
@@ -1088,6 +1090,7 @@ InteractiveDataDisplay.BoxWhisker = {
         var shift = size / 2;
         var color = data.color;
         var border = data.border == null ? 'none' : data.border;
+        var thickness = data.thickness;
         for (; i < n; i++) {
             x1 = dataToScreenX(data.x[i]);
             y1 = dataToScreenY(data.y[i]);
@@ -1098,12 +1101,12 @@ InteractiveDataDisplay.BoxWhisker = {
             mean = dataToScreenY(data.y[i]);
             c1 = (x1 < 0 || x1 > w_s || y1 < 0 || y1 > h_s);
             if (!c1) {
-                bx_g.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).stroke(border);
-                bx_g.polyline([[x1 - shift, u95], [x1 + shift, u95]]).stroke(border);
-                bx_g.polyline([[x1, u95], [x1, u68]]).stroke(border);
-                bx_g.polyline([[x1, l68], [x1, l95]]).stroke(border);
-                bx_g.polyline([[x1 - shift, l95], [x1 + shift, l95]]).stroke(border);
-                bx_g.polyline([[x1 - shift, mean], [x1 + shift, mean]]).stroke(border);
+                bx_g.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).style({ fill: color, stroke: border, "stroke-width": thickness });
+                bx_g.polyline([[x1 - shift, u95], [x1 + shift, u95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                bx_g.polyline([[x1, u95], [x1, u68]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                bx_g.polyline([[x1, l68], [x1, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                bx_g.polyline([[x1 - shift, l95], [x1 + shift, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                bx_g.polyline([[x1 - shift, mean], [x1 + shift, mean]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
             }
         }
         bx_g.clipWith(bx_g.rect(w_s, h_s));

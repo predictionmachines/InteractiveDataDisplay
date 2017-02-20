@@ -460,9 +460,16 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         var len = _ticks.length;
         var fontSize, fontFamily;
         if(len > 0){
-            var style = window.getComputedStyle(_ticks[0].label[0], null);
-            fontSize = parseFloat(style.getPropertyValue('font-size')); 
-            fontFamily = style.getPropertyValue('font-family');
+            var firstLabel = undefined;
+            for (i = 0 ; i < _ticks.length; i++) {
+                if (_ticks[i] && _ticks[i].label) {
+                    firstLabel = _ticks[i].label[0];
+                    break;
+                }
+            }
+            var style = window.getComputedStyle(firstLabel, null);
+            fontSize = style ? parseFloat(style.getPropertyValue('font-size')): undefined; 
+            fontFamily = style ? style.getPropertyValue('font-family') : undeifned;
         }
         for (var i = 0; i < len; i++) {
             x = ticksInfo[i].position;
