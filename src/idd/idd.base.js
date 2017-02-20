@@ -1441,7 +1441,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         // fires the ChildrenChanged event
         this.fireChildrenChanged = function (propertyParams) {
-            this.master.host.trigger(InteractiveDataDisplay.Event.childrenChanged, propertyParams);
+            this.host.trigger(InteractiveDataDisplay.Event.childrenChanged, propertyParams);
         };
 
         // fires the VisibleRect event
@@ -1617,7 +1617,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     var _plotLegends = [];
     //Legend with hide/show function
     InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact) {
-
+        // Inner legends for this legend.
         var plotLegends = [];
         var divStyle = _jqdiv[0].style;
 

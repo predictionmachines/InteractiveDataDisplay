@@ -18,3 +18,5 @@
 !src/viewer/Chart.header.js
 !src/viewer/Chart.footer.js
 .baseDir.*
+debug.log
+_SpecRunner.html
