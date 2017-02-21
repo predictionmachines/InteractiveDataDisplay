@@ -1134,7 +1134,6 @@ InteractiveDataDisplay.Bars = {
         // shadow
         if (data.shadow == undefined || data.shadow == "none")
             data.shadow = null; // no shadow
-
         if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
         if (InteractiveDataDisplay.Utils.isArray(data.color)) {
             if (data.color.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
@@ -1385,6 +1384,7 @@ InteractiveDataDisplay.Bars = {
         var y3 = size / 3;
         var barWidth = size / 3;
         var shadowSize = 1;
+        var shadow = 'none';
         //thumbnail
         if (data.individualColors) {
             border = "#000000";
