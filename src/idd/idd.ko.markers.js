@@ -111,6 +111,8 @@
                     data.barWidth = ko.unwrap(allBindings.get('iddBarWidth'));
     			if (allBindings.has('iddShadow'))
                     data.shadow = ko.unwrap(allBindings.get('iddShadow'));
+    			if (allBindings.has('iddOrientation'))
+    			    data.orientation = ko.unwrap(allBindings.get('iddOrientation'));
     			if (allBindings.has('iddLabelPlacement'))
                     data.placement = ko.unwrap(allBindings.get('iddLabelPlacement'));
                 if (allBindings.has('iddCustomShape'))
@@ -131,6 +133,6 @@
             }
         }
 
-        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("markers", updateMarkers, ['iddX', 'iddY','iddYMedian','iddMedian','iddLower68','iddUpper68','iddLower95','iddUpper95', 'iddShape', 'iddSize', 'iddBorder', 'iddThickness', 'iddColor','iddColorPalette','iddBarWidth', 'iddShadow','iddCustomShape','iddLabelPlacement'])
+        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("markers", updateMarkers, ['iddX', 'iddY','iddYMedian','iddMedian','iddLower68','iddUpper68','iddLower95','iddUpper95', 'iddShape', 'iddSize', 'iddBorder', 'iddThickness', 'iddColor','iddColorPalette','iddBarWidth', 'iddShadow', 'iddOrientation', 'iddCustomShape','iddLabelPlacement'])
     }
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))
