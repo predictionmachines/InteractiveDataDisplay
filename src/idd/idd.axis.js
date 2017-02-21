@@ -469,7 +469,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             }
             var style = window.getComputedStyle(firstLabel, null);
             fontSize = style ? parseFloat(style.getPropertyValue('font-size')): undefined; 
-            fontFamily = style ? style.getPropertyValue('font-family') : undeifned;
+            fontFamily = style ? style.getPropertyValue('font-family') : undefined;
         }
         for (var i = 0; i < len; i++) {
             x = ticksInfo[i].position;
@@ -1076,7 +1076,8 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var rotateLabels = params && params.rotate ? params.rotate : false;
     
     this.renderToSvg = function (tick, svg) {
-        return svg.text(tick.text);
+        var text = tick.text ? tick.text : "";
+        return svg.text(text);
     }
 
     this.getTicks = function (_range) {
