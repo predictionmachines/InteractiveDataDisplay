@@ -2,7 +2,7 @@
 
 New features:
  - Deployment of `idd` as an npm package. 
- - IDD LnockoutJs interfaces allows creating a labelled axis using binding `iddBottomAxisLabels`.
+ - IDD KnockoutJs interfaces allows creating a labelled axis using binding `iddBottomAxisLabels`.
  - Box-and-whiskers plot (a kind of markers plot) allows to specify line thickness.
 
 Bug fixes: 
