@@ -1094,18 +1094,20 @@ InteractiveDataDisplay.BoxWhisker = {
         for (; i < n; i++) {
             x1 = dataToScreenX(data.x[i]);
             y1 = dataToScreenY(data.y[i]);
-            u68 = dataToScreenY(data.upper68[i]);
-            l68 = dataToScreenY(data.lower68[i]);
-            u95 = dataToScreenY(data.upper95[i]);
-            l95 = dataToScreenY(data.lower95[i]);
+            u68 = data.upper68 ? dataToScreenY(data.upper68[i]) : undefined;
+            l68 = data.lower68 ? dataToScreenY(data.lower68[i]) : undefined;
+            u95 = data.upper95 ? dataToScreenY(data.upper95[i]) : undefined;
+            l95 = data.lower95 ? dataToScreenY(data.lower95[i]) : undefined;
             mean = dataToScreenY(data.y[i]);
             c1 = (x1 < 0 || x1 > w_s || y1 < 0 || y1 > h_s);
             if (!c1) {
-                bx_g.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).style({ fill: color, stroke: border, "stroke-width": thickness });
-                bx_g.polyline([[x1 - shift, u95], [x1 + shift, u95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
-                bx_g.polyline([[x1, u95], [x1, u68]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
-                bx_g.polyline([[x1, l68], [x1, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
-                bx_g.polyline([[x1 - shift, l95], [x1 + shift, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                if (u95 != undefined && l95 != undefined) {
+                    bx_g.polyline([[x1 - shift, u95], [x1 + shift, u95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                    bx_g.polyline([[x1, u95], [x1, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                    //bx_g.polyline([[x1, l68], [x1, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                    bx_g.polyline([[x1 - shift, l95], [x1 + shift, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                }
+                if (u68 != undefined && l68 != undefined) bx_g.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).style({ fill: color, stroke: border, "stroke-width": thickness });
                 bx_g.polyline([[x1 - shift, mean], [x1 + shift, mean]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
             }
         }
