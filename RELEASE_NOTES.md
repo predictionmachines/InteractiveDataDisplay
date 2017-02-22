@@ -4,12 +4,15 @@ New features:
  - Deployment of `idd` as an npm package. 
  - IDD KnockoutJs interfaces allows creating a labelled axis using binding `iddBottomAxisLabels`.
  - Box-and-whiskers plot (a kind of markers plot) allows to specify line thickness.
+ - `Plot` instances expose an integer ID through property `Plot.instanceId` which is assigned automatically during construction of the plot and is unique during the window lifetime.
+ This simplifies debugging of plots.
 
 Bug fixes: 
   - Fixed bug with pan and zoom using touch events.
   - Labelled axis now escapes label text so it can contain `<`, `>` etc.
   - KnockoutJs for Markers now allows passing an array of string colors as value for the parameter `color`.
   - Fixed `Plot.fireChildrenChanged`: now it raises event for the plot whose children are changed, not for a master plot.
+  - Fixed bug with legend update on target plot change.
   - Fixed processing of the attribute `data-idd-datasource`.  
   - Fixed export of labelled axis to svg.
  

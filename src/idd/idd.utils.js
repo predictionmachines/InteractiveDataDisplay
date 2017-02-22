@@ -163,11 +163,11 @@ InteractiveDataDisplay.Utils =
         getDataSourceFunction: function (jqElem, defaultSource) {
             var source = jqElem.attr("data-idd-datasource");
             if(source == "InteractiveDataDisplay.readTable")
-                InteractiveDataDisplay.readTable(jqElem)
+                return InteractiveDataDisplay.readTable;
             else if(source == "InteractiveDataDisplay.readCsv")
-                InteractiveDataDisplay.readCsv(jqElem)
+                return InteractiveDataDisplay.readCsv;
             else if(source == "InteractiveDataDisplay.readCsv2d")
-                InteractiveDataDisplay.readCsv2d(jqElem)
+                return InteractiveDataDisplay.readCsv2d;
             else if (source)
                 return function(){
                     return JSON.parse(source, function (key, value) {

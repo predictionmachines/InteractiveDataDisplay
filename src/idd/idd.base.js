@@ -229,6 +229,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     InteractiveDataDisplay.Event.plotRemoved = jQuery.Event("plotRemoved");
     InteractiveDataDisplay.Event.orderChanged = jQuery.Event("orderChanged");
 
+    var _plotCounter = 0;
+
     InteractiveDataDisplay.Plot = function (div, master, myCentralPart) {
 
         if (div && (div.hasClass("idd-plot-master") || div.hasClass("idd-plot-dependant")))
@@ -301,8 +303,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _constraint = undefined;
 
         var that = this;
+        var _plotInstanceId = _plotCounter++;
 
         // Plot properties
+        Object.defineProperty(this, "instanceId", { get: function () { return _plotInstanceId; }, configurable: false });
         Object.defineProperty(this, "isMaster", { get: function () { return _isMaster; }, configurable: false });
         // Indicates whether the last frame included rendering of this plot or not.
         Object.defineProperty(this, "isRendered", { get: function () { return _isRendered; }, configurable: false });
@@ -1619,6 +1623,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact) {
         // Inner legends for this legend.
         var plotLegends = [];
+        var plotSubs = [];
         var divStyle = _jqdiv[0].style;
 
         var _isVisible = true;
@@ -1673,16 +1678,43 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             });
         }
         
+        var subscribeToChanges = function(plot) {
+            plot.host.bind("visibleChanged", visibleChangedHandler);
+            plot.host.bind("childrenChanged", childrenChangedHandler);
+            plotSubs.push(plot);
+        };
+
+        var unsubscribeFromChanges = function(plot) {
+            plot.host.unbind("visibleChanged", visibleChangedHandler);
+            plot.host.unbind("childrenChanged", childrenChangedHandler);
+            for(var i = 0; i < plotSubs.length; i++){
+                if(plotSubs[i] === plot){
+                    plotSubs.splice(i, 1);
+                }
+            }            
+        };
+
+        var unsubscribeAll = function(){
+            for(var i = 0; i < plotSubs.length; i++){
+                var plot = plotSubs[i];
+                plot.host.unbind("visibleChanged", visibleChangedHandler);
+                plot.host.unbind("childrenChanged", childrenChangedHandler);
+            }  
+            plotSubs = [];
+        }
+
         var createLegend = function () {
             _jqdiv.empty();
             for (var i = 0, len = plotLegends.length; i < len; i++) {
                 removeLegend(plotLegends[i]);
             }
-            _plot.host.unbind('childrenChanged', childrenChangedHandler);
+            unsubscribeAll();
             plotLegends = [];
             var plots = InteractiveDataDisplay.Utils.enumPlots(_plot);
             for (var i = 0; i < plots.length; i++) {
-                createLegendForPlot(plots[plots.length - i - 1]);
+                var p = plots[plots.length - i - 1];
+                subscribeToChanges(p);
+                createLegendForPlot(p);
             }
             if (_jqdiv[0].hasChildNodes() && _isVisible) {
                 divStyle.display = "block";
@@ -1713,9 +1745,20 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
             }
         };
+
+        var containsLegendFor = function(plot){
+            for (var i = 0, len = plotSubs.length; i < len; i++)
+                if (plotSubs[i] === plot) return true;
+            return false;
+        }
+
         var childrenChangedHandler = function (event, params) {
 
             if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
+                if(containsLegendFor(params.plot)) {
+                    return;    
+                }
+                subscribeToChanges(params.plot);
                 createLegendForPlot(params.plot);
             }
             else if (params.type === "remove") {
@@ -1723,8 +1766,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     var legend = plotLegends[i];
                     plotLegends.splice(i, 1);
                     removeLegend(legend);
-                    legend.plot.host.unbind("childrenChanged", childrenChangedHandler);
-                    legend.plot.host.unbind("visibleChanged", visibleChangedHandler);
                     if (legend.onLegendRemove) legend.onLegendRemove();
                     legend[0].innerHTML = "";
                     if (isCompact) legend.removeClass("idd-legend-item-compact");
@@ -1745,7 +1786,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     if (plotLegends[i].plot === params.plot) {
                         removeLegendItem(i);
                         break;
-                    }
+                    }                
+                unsubscribeFromChanges(params.plot);
             }
             else {
                 _jqdiv[0].innerHTML = "";
@@ -1753,14 +1795,13 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 len = plotLegends.length;
                 for (i = 0; i < len; i++) {
                     removeLegend(plotLegends[i]);
-                    plotLegends[i].plot.host.unbind("childrenChanged", childrenChangedHandler);
                     if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
                     plotLegends[i][0].innerHTML = "";
                     if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
                     else plotLegends[i].removeClass("idd-legend-item");
                 }
-                plotLegends = [];
-              
+                unsubscribeAll();                
+                plotLegends = [];              
                 createLegend();
             }
         };
@@ -1784,9 +1825,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         }; 
         var createLegendForPlot = function (plot) {
             var legend = plot.getLegend();
-            //change getLegend
-            plot.host.bind("visibleChanged", visibleChangedHandler);
-            plot.host.bind("childrenChanged", childrenChangedHandler);
             if (legend) {
                 var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<li class='idd-legend-item'></li>");
                 if (!isCompact) div.data("plot", plot);
@@ -1809,6 +1847,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 div.plot.updateOrder();
             }
         };
+
         this.remove = function () {
             for (var i = 0, len = plotLegends.length; i < len; i++) {
                 removeLegend(plotLegends[i]);
@@ -1818,6 +1857,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 else plotLegends[i].removeClass("idd-legend-item");
             }
             plotLegends = [];
+            unsubscribeAll();
             var removeLegendForPlot = function (plot) {
                 plot.host.unbind("visibleChanged", visibleChangedHandler);
                 var childDivs = plot.children;
@@ -1832,11 +1872,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _jqdiv.removeClass("unselectable");
             _plot.host.unbind("plotRemoved", plotRemovedHandler);
             _plot.host.unbind("orderChanged", orderChangedHandler);
-            _plot.host.unbind("childrenChanged", childrenChangedHandler);
         };
         _plot.host.bind("plotRemoved", plotRemovedHandler);
         _plot.host.bind("orderChanged", orderChangedHandler);
-        _plot.host.bind("childrenChanged", childrenChangedHandler);
         createLegend();
         _jqdiv.dblclick(function (event) {
             event.stopImmediatePropagation();
