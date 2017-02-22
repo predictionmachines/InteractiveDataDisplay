@@ -17,6 +17,7 @@ Bug fixes:
   - Fixed export of labelled axis to svg.
  
 ## 1.5.0 (December 28, 2016)
+
 **Breaking changes**:
  - **IDD now requires `jquery.mousewheel.js`.** 
  
