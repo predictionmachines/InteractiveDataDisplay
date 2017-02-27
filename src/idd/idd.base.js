@@ -262,6 +262,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _width, _height;
         var _name = "";
         var _order = 0;
+        var _padding = InteractiveDataDisplay.Padding;
         // Contains user-readable titles for data series of a plot. They should be used in tooltips and legends.
         var _titles = {};
         // The flag is set in setVisibleRegion when it is called at me as a bound plot to notify that another plot is changed his visible.
@@ -414,7 +415,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             },
             configurable: false
         });
-
+        Object.defineProperty(this, "padding", {
+            get: function () { return _isMaster ? _padding : _master.padding; },
+            set: function (value) {
+                if (_isMaster) {
+                    _padding = value;
+                    this.updateLayout();
+                }
+                else
+                    _master.padding = value;
+            },
+            configurable: false
+        });
         Object.defineProperty(this, "visibleRect", {
             get: function () {
                 if (_isMaster) {
@@ -767,10 +779,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     bottom: Math.max(padding.bottom, plotPadding.bottom)
                 };
             }
-            padding.left = padding.left + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
-            padding.right = padding.right + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
-            padding.top = padding.top + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
-            padding.bottom = padding.bottom + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
+            padding.left = padding.left + this.padding || this.padding;
+            padding.right = padding.right + this.padding || this.padding;
+            padding.top = padding.top + this.padding || this.padding;
+            padding.bottom = padding.bottom + this.padding || this.padding;
             return padding;
         };
 
