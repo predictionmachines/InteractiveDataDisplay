@@ -1116,25 +1116,48 @@ InteractiveDataDisplay.BoxWhisker = {
 };
 InteractiveDataDisplay.Bars = {
     prepare: function (data) {
-        // y
-        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
-        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
-        var n = data.y.length;
-        var mask = new Int8Array(n);
-        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
-        //x
-        if (data.x == undefined)
-            data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
-        else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
-        else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from lenght of 'y'"
-        else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+        var n, mask;
+        // x
+        if (data.orientation == "h") {
+            if (data.x == undefined || data.x == null) throw "The mandatory property 'x' is undefined or null";
+            if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+            n = data.x.length;
+            mask = new Int8Array(n);
+            InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+            //x
+            if (data.y == undefined)
+                data.y = InteractiveDataDisplay.Utils.range(0, n - 1);
+            else if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'x' must be an array of numbers";
+            else if (data.y.length != n) throw "Length of the array which is a value of the property 'x' differs from length of 'y'"
+            else InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+        }
+        else {
+            if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
+            if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
+            n = data.y.length;
+            mask = new Int8Array(n);
+            InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+            //x
+            if (data.x == undefined)
+                data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+            else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+            else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from length of 'y'"
+            else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+        }
+        //var mask = new Int8Array(n);
+        //InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+        ////x
+        //if (data.x == undefined)
+        //    data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+        //else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+        //else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from length of 'y'"
+        //else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
         // border
         if (data.border == undefined || data.border == "none")
             data.border = null; // no border
         // shadow
         if (data.shadow == undefined || data.shadow == "none")
             data.shadow = null; // no shadow
-
         if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
         if (InteractiveDataDisplay.Utils.isArray(data.color)) {
             if (data.color.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
@@ -1181,18 +1204,32 @@ InteractiveDataDisplay.Bars = {
     },
     draw: function (marker, plotRect, screenSize, transform, context) {
         var barWidth = 0.5 * marker.barWidth;
-        var xLeft = transform.dataToScreenX(marker.x - barWidth);
-        var xRight = transform.dataToScreenX(marker.x + barWidth);
-        if (xLeft > screenSize.width || xRight < 0) return;
-        var yTop = transform.dataToScreenY(marker.y);
-        var yBottom = transform.dataToScreenY(0);
-        if (yTop > yBottom) {
-            var k = yBottom;
-            yBottom = yTop;
-            yTop = k;
+        var xLeft, xRight, yTop, yBottom;
+        if (marker.orientation == "h") {
+            xLeft = transform.dataToScreenX(0);
+            xRight = transform.dataToScreenX(marker.x);
+            if (xLeft > xRight) {
+                var k = xRight;
+                xRight = xLeft;
+                xLeft = k;
+            }
+            if (xLeft > screenSize.width || xRight < 0) return;
+            yTop = transform.dataToScreenY(marker.y + barWidth);
+            yBottom = transform.dataToScreenY(marker.y - barWidth);
+            if (yTop > screenSize.height || yBottom < 0) return;
+        } else {
+            xLeft = transform.dataToScreenX(marker.x - barWidth);
+            xRight = transform.dataToScreenX(marker.x + barWidth);
+            if (xLeft > screenSize.width || xRight < 0) return;
+            yTop = transform.dataToScreenY(marker.y);
+            yBottom = transform.dataToScreenY(0);
+            if (yTop > yBottom) {
+                var k = yBottom;
+                yBottom = yTop;
+                yTop = k;
+            }
+            if (yTop > screenSize.height || yBottom < 0) return;
         }
-        if (yTop > screenSize.height || yBottom < 0) return;
-
         if (marker.shadow) {
             context.fillStyle = marker.shadow;
             context.fillRect(xLeft + 2, yTop + 2, xRight - xLeft, yBottom - yTop);
@@ -1207,14 +1244,20 @@ InteractiveDataDisplay.Bars = {
     },
     getBoundingBox: function (marker) {
         var barWidth = marker.barWidth;
-        var xLeft = marker.x - barWidth / 2;
-        var yBottom = Math.min(0, marker.y);
-        return { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
+        var xLeft = marker.orientation == "h"? Math.min(0, marker.x) : marker.x - barWidth / 2;
+        var yBottom = marker.orientation == "h" ? marker.y - barWidth / 2 : Math.min(0, marker.y);
+        
+        return marker.orientation == "h" ? {x: xLeft, y: yBottom, width: Math.abs(marker.x), height: barWidth} : { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
     },
     hitTest: function (marker, transform, ps, pd) {
         var barWidth = marker.barWidth;
-        var xLeft = marker.x - barWidth / 2;
-        var yBottom = Math.min(0, marker.y);
+        var xLeft = marker.orientation == "h"? Math.min(0, marker.x) : marker.x - barWidth / 2;
+        var yBottom = marker.orientation == "h" ? marker.y - barWidth / 2 : Math.min(0, marker.y);
+        if (marker.orientation == "h") {
+            if (pd.x < xLeft || pd.x > xLeft  + Math.abs(marker.x)) return false;
+            if (pd.y < yBottom || pd.y > yBottom + barWidth) return false;
+            return true;
+        }
         if (pd.x < xLeft || pd.x > xLeft + barWidth) return false;
         if (pd.y < yBottom || pd.y > yBottom + Math.abs(marker.y)) return false;
         return true;
@@ -1354,16 +1397,28 @@ InteractiveDataDisplay.Bars = {
         var border = data.border == null ? 'none' : data.border;
         var shadow = data.shadow == null ? 'none' : data.shadow;
         for (; i < n; i++) {
-            xLeft = dataToScreenX(data.x[i] - shift);
-            xRight = dataToScreenX(data.x[i] + shift);
-            yTop = dataToScreenY(data.y[i]);
-            yBottom = dataToScreenY(0);
-            if (yTop > yBottom) {
-                var k = yBottom;
-                yBottom = yTop;
-                yTop = k;
+            if (data.orientation == "h") {
+                xLeft = dataToScreenX(0);
+                xRight = dataToScreenX(data.x[i]);
+                yTop = dataToScreenY(data.y[i] + shift);
+                yBottom = dataToScreenY(data.y[i] - shift);
+                if (xLeft > xRight) {
+                    var k = xRight;
+                    xRight = xLeft;
+                    xLeft = k;
+                }
+            } else {
+                xLeft = dataToScreenX(data.x[i] - shift);
+                xRight = dataToScreenX(data.x[i] + shift);
+                yTop = dataToScreenY(data.y[i]);
+                yBottom = dataToScreenY(0);
+                if (yTop > yBottom) {
+                    var k = yBottom;
+                    yBottom = yTop;
+                    yTop = k;
+                }
             }
-            color = data.individualColors ? data.color[i]: data.color;
+            color = data.individualColors ? data.color[i] : data.color;
             c1 = (xRight < 0 || xLeft > w_s || yBottom < 0 || yTop > h_s);
             if (!c1) {
                 bars_g.polyline([[xLeft + 2, yBottom + 2], [xLeft + 2, yTop + 2], [xRight + 2, yTop + 2], [xRight + 2, yBottom + 2], [xLeft + 2, yBottom + 2]]).fill(shadow);
@@ -1385,6 +1440,7 @@ InteractiveDataDisplay.Bars = {
         var y3 = size / 3;
         var barWidth = size / 3;
         var shadowSize = 1;
+        var shadow = 'none';
         //thumbnail
         if (data.individualColors) {
             border = "#000000";
