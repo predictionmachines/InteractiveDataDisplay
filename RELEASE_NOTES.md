@@ -4,6 +4,8 @@ New features:
  - Deployment of `idd` as an npm package. 
  - IDD KnockoutJs interfaces allows creating a labelled axis using binding `iddBottomAxisLabels`.
  - Box-and-whiskers plot (a kind of markers plot) allows to specify line thickness.
+ - Plot has new property `padding` which allows to specify padding which is added to the bounding box of the plot in fit-to-view.
+ - Bar plot allows to specify orientation, either horizontal or vertical.
  - `Plot` instances expose an integer ID through property `Plot.instanceId` which is assigned automatically during construction of the plot and is unique during the window lifetime.
  This simplifies debugging of plots.
 
