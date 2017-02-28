@@ -6,6 +6,7 @@ New features:
  - Box-and-whiskers plot (a kind of markers plot) allows to specify line thickness.
  - Plot has new property `padding` which allows to specify padding which is added to the bounding box of the plot in fit-to-view.
  - Bar plot allows to specify orientation, either horizontal or vertical.
+ - New event `Plot.frameRendered` which occurs when master plot rendered a frame.
  - `Plot` instances expose an integer ID through property `Plot.instanceId` which is assigned automatically during construction of the plot and is unique during the window lifetime.
  This simplifies debugging of plots.
 

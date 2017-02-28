@@ -228,6 +228,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     InteractiveDataDisplay.Event.isVisibleChanged = jQuery.Event("visibleChanged");
     InteractiveDataDisplay.Event.plotRemoved = jQuery.Event("plotRemoved");
     InteractiveDataDisplay.Event.orderChanged = jQuery.Event("orderChanged");
+    // Occurs when master plot has rendered a frame. It is fired only for the master plot.    
+    InteractiveDataDisplay.Event.frameRendered = jQuery.Event("frameRendered");
 
     var _plotCounter = 0;
 
@@ -807,7 +809,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 that.isAnimationFrameRequested = false;
 
                 renderAll = true;
-                that.updateLayout();
+                that.updateLayout(); // this eventually fires the frameRendered event
             } else {
                 that.isAnimationFrameRequested = false;
 
@@ -815,9 +817,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height }); // (x,y) is left/top            
                 // rectangle in the plot plane which is visible, (x,y) is left/bottom (i.e. less) of the rectangle
 
-                updatePlotsOutputRec(renderAll, _master, plotRect, screenSize);
+                updatePlotsOutputRec(renderAll, _master, plotRect, screenSize);  
+                that.fireFrameRendered();
             }
-            renderAll = false;
+            renderAll = false;          
 
             if (_updateTooltip) _updateTooltip();
         };
@@ -1458,6 +1461,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // fires the ChildrenChanged event
         this.fireChildrenChanged = function (propertyParams) {
             this.host.trigger(InteractiveDataDisplay.Event.childrenChanged, propertyParams);
+        };
+
+        this.fireFrameRendered = function (propertyParams) {
+            this.host.trigger(InteractiveDataDisplay.Event.frameRendered, propertyParams);
         };
 
         // fires the VisibleRect event
