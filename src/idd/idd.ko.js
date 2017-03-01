@@ -45,6 +45,19 @@
                     }
                 }
             }
-        };        
+        };
+        ko.bindingHandlers.iddPlotTitles = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var unwrappedData = ko.unwrap(value);
+
+                var plotAttr = element.getAttribute("data-idd-plot");
+                if (plotAttr != null) {
+                    if (typeof element.plot != 'undefined') {
+                        element.plot.setTitles(unwrappedData);
+                    }
+                }
+            }
+        };
     }
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))
