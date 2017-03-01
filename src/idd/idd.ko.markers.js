@@ -100,7 +100,8 @@
                 if (data.y && data.color && Array.isArray(data.color) && data.color.length !== data.y.length)
                     return;
             
-                var customShape;            
+                var customShape;
+                var titles = undefined;
                 if (allBindings.has('iddSize')) 
                     data.size = ko.unwrap(allBindings.get('iddSize'));
                 if (allBindings.has('iddBorder'))
@@ -117,6 +118,8 @@
                     data.placement = ko.unwrap(allBindings.get('iddLabelPlacement'));
                 if (allBindings.has('iddCustomShape'))
                     customShape = ko.unwrap(allBindings.get('iddCustomShape'));
+                if (allBindings.has('iddPlotTitles'))
+                    titles = ko.unwrap(allBindings.get('iddPlotTitles'));
             }
             var plotAttr = element.getAttribute("data-idd-plot");
             if (plotAttr != null) {
@@ -124,7 +127,7 @@
                     if (customShape)
                         for (var prop in customShape)
                             data[prop] = ko.unwrap(customShape[prop]);
-                    element.plot.draw(data);
+                    element.plot.draw(data, titles);
                 }
                 else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
                     //storing the data in data-idd-datasource attribute as JSON string. it will be used by IDD during IDD-initializing of the dom element	 	

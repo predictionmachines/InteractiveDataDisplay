@@ -24,18 +24,20 @@
 				N < 2 || M < 2)
 				return;
 
-
+			var titles = undefined;
 			if (allBindings.has('iddInterval'))
 				data.interval = ko.unwrap(allBindings.get('iddInterval'));
 			if (allBindings.has('iddColorPalette'))
 				data.colorPalette = ko.unwrap(allBindings.get('iddColorPalette'));
 			if (allBindings.has('iddOpacity'))
-				data.opacity = ko.unwrap(allBindings.get('iddOpacity'));
+			    data.opacity = ko.unwrap(allBindings.get('iddOpacity'));
+			if (allBindings.has('iddPlotTitles'))
+			    titles = ko.unwrap(allBindings.get('iddPlotTitles'));
 
 			var plotAttr = element.getAttribute("data-idd-plot");
 			if (plotAttr != null) {
 				if (typeof element.plot != 'undefined') {
-					element.plot.draw(data);
+					element.plot.draw(data, titles);
 				}
 				else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
 					//storing the data in data-idd-datasource attribute as JSON string. it will be used by IDD during IDD-initializing of the dom element		
