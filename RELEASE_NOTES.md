@@ -3,7 +3,7 @@
 New features:
  - Deployment of `idd` as an npm package. 
  - IDD Knockout Js extended:
-      - New binding `iddBottomAxisLabels` allows creating a labelled axis.
+      - New binding [`iddAxisSettings`](https://github.com/predictionmachines/InteractiveDataDisplay/wiki/KnockoutJS%3A-Axis) allows creating a labelled axis.
       - New binding `iddPlotTitles` to provide titles for each of a plot properties.
  - Box-and-whiskers plot (a kind of markers plot) allows to specify line thickness.
  - Plot has new property `padding` which allows to specify padding which is added to the bounding box of the plot in fit-to-view.
@@ -12,7 +12,7 @@ New features:
  - The event `Plot.appearanceChanged` now fires asynchronously and thus multiple events of this kind can be accumulated into a single event and corresponding legend update occurs just once. This significantly reduces load caused by legend update in case
  of intensive data update.
  - `Plot` instances expose an integer ID through property `Plot.instanceId` which is assigned automatically during construction of the plot and is unique during the window lifetime.
- This simplifies debugging of plots.
+ This simplifies debugging of plots. 
 
 Bug fixes: 
   - Fixed bug with pan and zoom using touch events.
