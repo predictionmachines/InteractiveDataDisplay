@@ -59,5 +59,46 @@
                 }
             }
         };
+        ko.bindingHandlers.iddAxisSettings = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var v = ko.unwrap(value);
+
+                var plotAttr = element.getAttribute("data-idd-axis");
+                if (plotAttr != null && v.type) {
+                    var placement = element.getAttribute("data-idd-placement");
+                    if (typeof element.axis != 'undefined') {
+                        var div = $(element).closest('div[data-idd-plot]');
+                        if (plotAttr != v.type) {
+                            var axisElement = div[0].plot.addAxis(placement, v.type, { labels: v.labels ? v.labels : [], ticks: v.ticks ? v.ticks : [], rotate: v.rotate }, element);
+                            var bindData = $(element).attr("data-bind");
+                            axisElement.attr("data-bind", bindData);
+                            element.axis.remove();
+                            element = axisElement;
+                        }
+                        else if (plotAttr == "labels") {
+                                element.axis.updateLabels({ labels: v.labels, ticks: v.ticks, rotate: v.rotate });
+                        }
+                        if (typeof v.attachGrid != 'undefined' && v.attachGrid && typeof div[0].plot != 'undefined') {
+                           var plots = div[0].plot.getPlotsSequence();
+                           for (var i = 0; i < plots.length; i++) {
+                               var p = plots[i];
+                               if (p instanceof InteractiveDataDisplay.GridlinesPlot) {
+                                   if (placement == "bottom") {
+                                       p.xAxis = element.axis;
+                                       p.updateLayout();
+                                   }
+                                   else if (placement == "left") {
+                                       p.yAxis = element.axis;
+                                       p.updateLayout();
+                                   }
+                                   break;
+                               }
+                           }
+                        }
+                    }
+                }
+            }
+        };
     }
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))

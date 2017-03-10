@@ -2,15 +2,20 @@
     
     if (div.hasClass("idd-axis"))
         throw "The div element already is initialized as an axis";
-
     var axisType = div.attr("data-idd-axis");
     switch (axisType) {
         case "numeric":
-            return new InteractiveDataDisplay.NumericAxis(div);
+            div.axis = new InteractiveDataDisplay.NumericAxis(div);
+            div[0].axis = div.axis;
+            return div.axis;
         case "log":
-            return new InteractiveDataDisplay.LogarithmicAxis(div);
+            div.axis = new InteractiveDataDisplay.LogarithmicAxis(div);
+            div[0].axis = div.axis;
+            return div.axis;
         case "labels":
-            return new InteractiveDataDisplay.LabelledAxis(div, params);
+            div.axis = new InteractiveDataDisplay.LabelledAxis(div, params);
+            div[0].axis = div.axis;
+            return div.axis;
     }
 };
 
@@ -128,7 +133,16 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
 
     Object.defineProperty(this, "host", { get: function () { return _host; }, configurable: false });
     Object.defineProperty(this, "mode", { get: function () { return _mode; }, configurable: false });
-    Object.defineProperty(this, "tickSource", { get: function () { return _tickSource; }, configurable: false });
+    Object.defineProperty(this, "tickSource",
+        {
+            get: function () { return _tickSource; },
+            set: function (value) {
+                _tickSource = value;
+                labelsDiv.empty();
+                render();
+            },
+            configurable: false
+        });
     Object.defineProperty(this, "range", { get: function () { return _range; }, configurable: false });
     Object.defineProperty(this, "ticks", { get: function () { return _ticks; }, configurable: false });
 
@@ -654,10 +668,15 @@ InteractiveDataDisplay.LabelledAxis = function (div, params) {
         else return this.axisSize / 2;
     };
 
+    this.updateLabels = function (params) {
+        this.tickSource = new InteractiveDataDisplay.LabelledTickSource(params);
+    };
+
     if (params && params.rotate)
         this.rotateLabels = true;
 
     this.base(div, new InteractiveDataDisplay.LabelledTickSource(params));
+    return this;
 }
 InteractiveDataDisplay.LabelledAxis.prototype = new InteractiveDataDisplay.TicksRenderer;
 
