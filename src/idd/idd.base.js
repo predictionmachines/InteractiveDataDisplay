@@ -1453,9 +1453,17 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return getrec(p, this.master);
         };
 
+        var appearanceChanged = false;
+
         // fires the AppearanceChanged event
         this.fireAppearanceChanged = function (propertyName) {
-            this.host.trigger(InteractiveDataDisplay.Event.appearanceChanged, propertyName);
+            if(!appearanceChanged){
+                appearanceChanged = true;
+                setTimeout(function() {
+                    that.host.trigger(InteractiveDataDisplay.Event.appearanceChanged, propertyName);
+                    appearanceChanged = false;
+                }, 20);
+            }
         };
 
         // fires the ChildrenChanged event

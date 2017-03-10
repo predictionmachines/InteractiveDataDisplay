@@ -9,6 +9,8 @@ New features:
  - Plot has new property `padding` which allows to specify padding which is added to the bounding box of the plot in fit-to-view.
  - Bar plot allows to specify orientation, either horizontal or vertical.
  - New event `Plot.frameRendered` which occurs when master plot rendered a frame.
+ - The event `Plot.appearanceChanged` now fires asynchronously and thus multiple events of this kind can be accumulated into a single event and corresponding legend update occurs just once. This significantly reduces load caused by legend update in case
+ of intensive data update.
  - `Plot` instances expose an integer ID through property `Plot.instanceId` which is assigned automatically during construction of the plot and is unique during the window lifetime.
  This simplifies debugging of plots.
 
