@@ -86,11 +86,11 @@
                                if (p instanceof InteractiveDataDisplay.GridlinesPlot) {
                                    if (placement == "bottom") {
                                        p.xAxis = element.axis;
-                                       p.updateLayout();
+                                       p.requestUpdateLayout();
                                    }
                                    else if (placement == "left") {
                                        p.yAxis = element.axis;
-                                       p.updateLayout();
+                                       p.requestUpdateLayout();
                                    }
                                    break;
                                }
