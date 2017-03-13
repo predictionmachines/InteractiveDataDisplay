@@ -11,6 +11,7 @@ New features:
  - New event `Plot.frameRendered` which occurs when master plot rendered a frame.
  - The event `Plot.appearanceChanged` now fires asynchronously and thus multiple events of this kind can be accumulated into a single event and corresponding legend update occurs just once. This significantly reduces load caused by legend update in case
  of intensive data update.
+ - New property `Axis.FontSize` to set tick labels font size for particular axis instance.
  - `Plot` instances expose an integer ID through property `Plot.instanceId` which is assigned automatically during construction of the plot and is unique during the window lifetime.
  This simplifies debugging of plots. 
 
