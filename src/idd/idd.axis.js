@@ -696,6 +696,8 @@ InteractiveDataDisplay.LabelledAxis = function (div, params) {
 
     if (params && params.rotate)
         this.rotateLabels = true;
+    if (params && params.rotateAngle)
+        this.rotateAngle = params.rotateAngle;
 
     this.base(div, new InteractiveDataDisplay.LabelledTickSource(params));
     return this;
@@ -1126,7 +1128,8 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var delta = _ticks.length - _labels.length;
 
     var rotateLabels = params && params.rotate ? params.rotate : false;
-    
+    var rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
+
     this.renderToSvg = function (tick, svg) {
         var text = tick.text ? tick.text : "";
         return svg.text(text);
@@ -1197,6 +1200,13 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
                     var div = that.getDiv(_labels[m]);
                     if (rotateLabels) {
                         div.addClass('idd-verticalText');
+                    };
+                    if (rotateAngle) {
+                        div.css("-webkit-transform", 'rotate(' + rotateAngle + 'deg)');
+                        div.css("-moz-transform", 'rotate(' + rotateAngle + 'deg)');
+                        div.css("-ms-transform", 'rotate(' + rotateAngle + 'deg)');
+                        div.css("-o-transform", 'rotate(' + rotateAngle + 'deg)');
+                        div.css("transform", 'rotate(' + rotateAngle + 'deg)');
                     }
                     ticks[l] = { position: value, label: div, text: _labels[m] };
                     l++;
@@ -1236,6 +1246,14 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
                         if (rotateLabels) {
                             div.addClass('idd-verticalText');
                             div.css("transform", "rotate(-90deg) scale(" + scale + ", " + scale + ")");
+                        }
+                        if (rotateAngle) {
+                            div.css("-webkit-transform", 'rotate(' + rotateAngle + 'deg)');
+                            div.css("-moz-transform", 'rotate(' + rotateAngle + 'deg)');
+                            div.css("-ms-transform", 'rotate(' + rotateAngle + 'deg)');
+                            div.css("-o-transform", 'rotate(' + rotateAngle + 'deg)');
+                            div.css("transform", 'rotate(' + rotateAngle + 'deg)');
+                            div.css("transform", "rotate(-" + rotateAngle + ") scale(" + scale + ", " + scale + ")");
                         }
                         ticks[l] = { position: v, label: div, invisible: true, text: _labels[m1-1] };
                         l++;
