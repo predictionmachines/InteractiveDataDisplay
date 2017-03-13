@@ -115,20 +115,25 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     ctx.strokeStyle = strokeStyle;
     ctx.fillStyle = strokeStyle;
     ctx.lineWidth = 1;
-    var fontSize = 12;
-    if (_host) {
+
+    var fontSize = 12;        
+    var customFontSize = false;
+    var fontFamily = "";
+
+    if (_host) {       
         if (_host[0].currentStyle) {
             fontSize = _host[0].currentStyle["font-size"];
-            ctx.font = fontSize + _host[0].currentStyle["font-family"];
+            fontFamily = _host[0].currentStyle["font-family"];
         }
         else if (document.defaultView && document.defaultView.getComputedStyle) {
             fontSize = document.defaultView.getComputedStyle(_host[0], null).getPropertyValue("font-size");
-            ctx.font = fontSize + document.defaultView.getComputedStyle(_host[0], null).getPropertyValue("font-family");
+            fontFamily = document.defaultView.getComputedStyle(_host[0], null).getPropertyValue("font-family");
         }
         else if (_host[0].style) {
             fontSize = _host[0].style["font-size"];
-            ctx.font = fontSize + _host[0].style["font-family"];
+            fontFamily = _host[0].style["font-family"];
         }
+        ctx.font = fontSize + fontFamily;        
     }
 
     Object.defineProperty(this, "host", { get: function () { return _host; }, configurable: false });
@@ -149,6 +154,16 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     Object.defineProperty(this, "DesiredSize", { get: function () { return { width: _width, height: _height }; }, configurable: false });
     Object.defineProperty(this, "axisSize", { get: function () { return _size; }, configurable: false });
     Object.defineProperty(this, "deltaRange", { get: function () { return _deltaRange; }, configurable: false });
+    Object.defineProperty(this, "FontSize", { 
+        get: function () { return _defaultFontSize; }, 
+        set: function (newFontSize) {
+            customFontSize = true;
+            fontSize = newFontSize + "px";
+            ctx.font = fontSize + fontFamily;  
+            _tickSource.invalidate();
+            that.update();
+        },
+        configurable: false });
 
     this.sizeChanged = true;
 
@@ -472,7 +487,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         // if range is single point - render only label in the middle of axis
         var x, shift;
         var len = _ticks.length;
-        var fontSize, fontFamily;
+        var _fontSize, fontFamily;
         if(len > 0){
             var firstLabel = undefined;
             for (i = 0 ; i < _ticks.length; i++) {
@@ -482,8 +497,12 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
             }
             var style = window.getComputedStyle(firstLabel, null);
-            fontSize = style ? parseFloat(style.getPropertyValue('font-size')): undefined; 
             fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+            if(customFontSize){
+                _fontSize = fontSize;
+            }else{
+                _fontSize = style ? parseFloat(style.getPropertyValue('font-size')): undefined; 
+            }
         }
         for (var i = 0; i < len; i++) {
             x = ticksInfo[i].position;
@@ -508,7 +527,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                         .translate(x - shift, textShift)
                         .font({
                             family: fontFamily,
-                            size: fontSize
+                            size: _fontSize
                         });
             }
             else { // vertical (left and right)
@@ -535,7 +554,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                         .translate(leftShift + textShift, x-shift)
                         .font({
                             family: fontFamily,
-                            size: fontSize
+                            size: _fontSize
                         });
                 }
             }
@@ -573,6 +592,9 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 labelsDiv[0].appendChild(labelDiv);
                 label.addClass('idd-axis-label');
                 label._size = { width: labelDiv.offsetWidth, height: labelDiv.offsetHeight };
+                if(customFontSize){
+                    label.css("fontSize", fontSize);
+                }
             }
         }
     };
@@ -733,6 +755,17 @@ InteractiveDataDisplay.TickSource = function () {
         if (x)
             return x.toString();
         return undefined;
+    };
+
+    this.invalidate = function() {
+        for(var i = 0; i < divPool.length; i++){
+            divPool[i].remove();
+        }
+        isUsedPool = [];
+        divPool = [];
+        inners = [];
+        styles = [];
+        len = 0;
     };
 
     // make all not used divs invisible (final step)
