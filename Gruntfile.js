@@ -10,6 +10,7 @@
         "src/idd/idd.readers.js",
         "src/idd/idd.axis.js",
         "src/idd/idd.palette.js",
+        "src/idd/idd.paletteEditor.js",
         "src/idd/idd.gestures.js",
         "src/idd/idd.transforms.js",
         "src/idd/idd.animation.js",
