@@ -2,6 +2,7 @@
 
 New features:
  - Deployment of `idd` as an npm package. 
+ - Palette editor `InteractiveDataDisplay.ColorPaletteEditor`.
  - IDD Knockout Js extended:
       - New binding [`iddAxisSettings`](https://github.com/predictionmachines/InteractiveDataDisplay/wiki/KnockoutJS%3A-Axis) allows creating a labelled axis.
       - New binding `iddPlotTitles` to provide titles for each of a plot properties.
