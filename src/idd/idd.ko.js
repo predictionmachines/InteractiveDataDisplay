@@ -79,6 +79,7 @@
                         else if (plotAttr == "labels") {
                                 element.axis.updateLabels({ labels: v.labels, ticks: v.ticks, rotate: v.rotate });
                         }
+                        if (v.fontSize) element.axis.FontSize = v.fontSize;
                         if (typeof v.attachGrid != 'undefined' && v.attachGrid && typeof div[0].plot != 'undefined') {
                            var plots = div[0].plot.getPlotsSequence();
                            for (var i = 0; i < plots.length; i++) {
