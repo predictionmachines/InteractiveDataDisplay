@@ -81,13 +81,16 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     var _size;
     var _deltaRange;
     var _canvasHeight;
+    var _rotateAngle;
 
     // checks if size of host element changed and refreshes size of canvas and labels' div
     this.updateSize = function () {
         var prevSize = _size;
         if (div) {
-            _width = div.outerWidth(false);
-            _height = div.outerHeight(false);
+            var divWidth = div.outerWidth(false);
+            var divHeight = div.outerHeight(false);
+            _width = _rotateAngle ? divWidth * Math.abs(Math.cos(_rotateAngle)) + divHeight * Math.abs(Math.sin(_rotateAngle)) : divWidth;
+            _height = _rotateAngle ? divWidth * Math.abs(Math.sin(_rotateAngle)) + divHeight * Math.abs(Math.cos(_rotateAngle)) : divHeight;
         }
         if (isHorizontal) {
             _size = _width;
@@ -163,8 +166,17 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             _tickSource.invalidate();
             that.update();
         },
-        configurable: false });
-
+        configurable: false
+    });
+    Object.defineProperty(this, "rotateAngle", {
+        get: function () { return _rotateAngle; },
+        set: function (value) {
+            _rotateAngle = value * Math.PI / 180;
+            _tickSource.invalidate();
+            that.update();
+        },
+        configurable: false
+    });
     this.sizeChanged = true;
 
     // transform data <-> plot: is applied before converting into screen coordinates
@@ -190,12 +202,18 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             var tick = ticks[i];
             if (tick.label) {
                 size = tick.label._size;
-                width = size.width;
-                height = size.height;
-                if (width == 0)
-                    width = ctx.measureText(_tickSource.getInnerText(tick.position)).width;
-                if (height == 0)
-                    height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
+                width = _rotateAngle ? size.width * Math.abs(Math.cos(_rotateAngle)) + size.height * Math.abs(Math.sin(_rotateAngle)) : size.width;
+                height = _rotateAngle ? size.width * Math.abs(Math.sin(_rotateAngle)) + size.height * Math.abs(Math.cos(_rotateAngle)) : size.height;
+                if (width == 0) {
+                    var textWidth = ctx.measureText(_tickSource.getInnerText(tick.position)).width;
+                    var textHeight = height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
+                    width = _rotateAngle ? textWidth * Math.abs(Math.cos(_rotateAngle)) + textHeight * Math.abs(Math.sin(_rotateAngle)) : textWidth;
+                }
+                if (height == 0) {
+                    var textWidth = ctx.measureText(_tickSource.getInnerText(tick.position)).width;
+                    var textHeight = height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
+                    height = _rotateAngle ? textWidth * Math.abs(Math.sin(_rotateAngle)) + textHeight * Math.abs(Math.cos(_rotateAngle)) : textHeight;
+                }
                 ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: width, height: height, hasLabel: true };
             }
             else
@@ -394,7 +412,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         for (var i = 0; i < len; i++) {
             x = ticksInfo[i].position;
             if (isHorizontal) {
-                shift = ticksInfo[i].width / 2;
+                shift = _rotateAngle ? (ticksInfo[i].width * Math.abs(Math.cos(_rotateAngle)) + ticksInfo[i].height * Math.abs(Math.sin(_rotateAngle))) / 2 : ticksInfo[i].width / 2;
                 if (minTicks) {
                     if (i == 0) shift *= 2;
                     else if (i == len - 1) shift = 0;
@@ -405,7 +423,11 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
 
                 if (!_ticks[i].invisible) ctx.fillRect(x, 1, 1, InteractiveDataDisplay.tickLength);
-                if (_ticks[i].label) _ticks[i].label.css("left", x - shift);
+                if (_ticks[i].label) {
+                    _ticks[i].label.css("left", x - shift);
+                    if (_mode == "bottom")
+                        _ticks[i].label.css("top", _rotateAngle ? (ticksInfo[i].height / 2) * Math.abs(Math.sin(_rotateAngle)) + 2 : 0);
+                }
             }
             else {
                 x = (_size - 1) - x;
@@ -422,7 +444,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 if (!_ticks[i].invisible) ctx.fillRect(1, x, InteractiveDataDisplay.tickLength, 1);
                 if (_ticks[i].label) {
                     _ticks[i].label.css("top", x - shift);
-                    if (_mode == "left")
+                    if (_mode == "left") 
                         _ticks[i].label.css("left", text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width));
                 }
             }
@@ -692,14 +714,19 @@ InteractiveDataDisplay.LabelledAxis = function (div, params) {
 
     this.updateLabels = function (params) {
         this.tickSource = new InteractiveDataDisplay.LabelledTickSource(params);
+        if (params && params.rotate)
+            this.rotateLabels = true;
+        if (params && params.rotateAngle)
+            this.rotateAngle = params.rotateAngle;
     };
 
     if (params && params.rotate)
         this.rotateLabels = true;
+
+    this.base(div, new InteractiveDataDisplay.LabelledTickSource(params));
     if (params && params.rotateAngle)
         this.rotateAngle = params.rotateAngle;
 
-    this.base(div, new InteractiveDataDisplay.LabelledTickSource(params));
     return this;
 }
 InteractiveDataDisplay.LabelledAxis.prototype = new InteractiveDataDisplay.TicksRenderer;
@@ -1207,6 +1234,12 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
                         div.css("-ms-transform", 'rotate(' + rotateAngle + 'deg)');
                         div.css("-o-transform", 'rotate(' + rotateAngle + 'deg)');
                         div.css("transform", 'rotate(' + rotateAngle + 'deg)');
+
+                        div.css("transform-origin", 'center');
+                        div.css("-webkit-transform-origin", 'center');
+                        div.css("-moz-transform-origin", 'center');
+                        div.css("-ms-transform-origin", 'center');
+                        div.css("-o-transform-origin", 'center');
                     }
                     ticks[l] = { position: value, label: div, text: _labels[m] };
                     l++;
@@ -1253,7 +1286,12 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
                             div.css("-ms-transform", 'rotate(' + rotateAngle + 'deg)');
                             div.css("-o-transform", 'rotate(' + rotateAngle + 'deg)');
                             div.css("transform", 'rotate(' + rotateAngle + 'deg)');
-                            div.css("transform", "rotate(-" + rotateAngle + ") scale(" + scale + ", " + scale + ")");
+
+                            div.css("transform-origin", 'center');
+                            div.css("-webkit-transform-origin", 'center');
+                            div.css("-moz-transform-origin", 'center');
+                            div.css("-ms-transform-origin", 'center');
+                            div.css("-o-transform-origin", 'center');
                         }
                         ticks[l] = { position: v, label: div, invisible: true, text: _labels[m1-1] };
                         l++;
