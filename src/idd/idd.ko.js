@@ -59,6 +59,18 @@
                 }
             }
         };
+         ko.bindingHandlers.iddEditorColorPalette = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var palette = ko.unwrap(value);
+
+                if ($(element).hasClass("idd-colorPaletteEditor")) {
+                    if (typeof element.editor != 'undefined') {
+                        element.editor.palette = palette;
+                    }
+                }
+            }
+        };
         ko.bindingHandlers.iddAxisSettings = {
             update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
