@@ -24,8 +24,6 @@
                 axes[i].FontSize = fontSize;
             }
             chart.updateLayout();
-            var svg = chart.exportToSvg();
-            $("#svg").text(svg.svg());
         }
 
         $(document).ready(function () {
@@ -343,7 +341,5 @@
         </div>
     </div>
     <button onclick="increaseFontSize();">Increase font size</button>
-    <div id="svg">
-    </div>
 </body>
 </html>
