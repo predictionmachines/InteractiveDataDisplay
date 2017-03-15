@@ -70,7 +70,7 @@
                                     }
                                 }
 
-                            var axisElement = element.plot.addAxis("bottom", "labels", { labels: v.labels, ticks: v.ticks });
+                            var axisElement = element.plot.addAxis("bottom", "labels", { labels: v.labels, ticks: v.ticks, rotateAngle: v.rotateAngle });
                             axisElement.data("iddBottomAxisLabels", "true");
 
                             if(typeof v.attachGrid != 'undefined' && v.attachGrid){
