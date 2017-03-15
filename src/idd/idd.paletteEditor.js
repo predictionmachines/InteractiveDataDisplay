@@ -4,6 +4,7 @@ InteractiveDataDisplay.ColorPaletteEditor = function ($div, palette) {
     if($div.hasClass("idd-colorPaletteEditor")) return;
 
     $div.addClass("idd-colorPaletteEditor");
+    $div[0].editor = this;
 
     var borderTemplate = "gray";
     var fillTemplate = "rgba(100,100,100,0.3)";
@@ -12,6 +13,11 @@ InteractiveDataDisplay.ColorPaletteEditor = function ($div, palette) {
     var _palette = palette;
     Object.defineProperty(this, "palette", {
             get: function () { return _palette; },
+            set: function (value) {
+                _palette = value;
+                paletteViewer.palette = _palette;
+                updateMarkers();
+            },
             configurable: false
     });
     var firePaletteChanged = function(newPalette){
@@ -28,12 +34,14 @@ InteractiveDataDisplay.ColorPaletteEditor = function ($div, palette) {
     var $bar = 
         $("<div></div>")
         .height(barHeight)
+        .width(width)
         .addClass("idd-colorPaletteEditor-bar")
         .appendTo($div);
 
     var $viewer = 
         $("<div></div>")
         .height(paletteHeight)
+        .width(width)
         .addClass("idd-colorPaletteEditor-viewer")
         .appendTo($div);
 
