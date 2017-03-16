@@ -63,9 +63,8 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var _imageData;
     var _y;
     var _x;
-    var _f;
-    var _f_u68, _f_l68, _f_median;
-    var _fmin, _fmax;
+    var _f, _f_u68, _f_l68, _f_median, _fmin, _fmax;
+    var _logColors, _log_f, _log_fmin, _log_fmax;
     var _opacity; // 1 is opaque, 0 is transparent
     var _mode; // gradient or matrix
     var _palette;
@@ -299,6 +298,21 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 _f = f;
                 _x = x;
                 _y = y;
+
+                // Logarithmic colors
+                _logColors = data.logPalette !== undefined && data.logPalette;
+                if(_logColors){
+                    _log_f = new Array(_f.length);
+                    for(var i = 0; i < _f.length; i++)
+                    {
+                        var row = _f[i];
+                        var logRow = _log_f[i] = new Float32Array(row.length);
+                        for(var j = 0; j < row.length; j++)
+                        {
+                            logRow[j] = Math.log10(row[j]);
+                        }
+                    }
+                }
             }
         }
 
@@ -341,6 +355,11 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             var minmax = findFminmax(_f);
             _fmin = minmax.min;
             _fmax = minmax.max;
+
+            if(_logColors){
+                _log_fmin = Math.log10(_fmin);
+                _log_fmax = Math.log10(_fmax);
+            }
         }
         _dataChanged = true;
         var prevBB = this.invalidateLocalBounds();
@@ -552,9 +571,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                     height: _imageData.height,
                     x: _x,
                     y: _y,
-                    f: _f,
-                    fmin: _fmin,
-                    fmax: _fmax,
+                    f: _logColors ? _log_f : _f,
+                    fmin: _logColors ? _log_fmin : _fmin,
+                    fmax: _logColors ? _log_fmax : _fmax,
                     plotRect: visibleRect,
                     scaleX: scale.x,
                     scaleY: scale.y,
@@ -772,7 +791,6 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             $($("<span style='margin-left:3px;'>highlight similar</span>")).appendTo(checkBoxCnt);
             return $toolTip;
         }
-        return;
     };
 
 
@@ -822,15 +840,17 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         setName();
         var colorIsVisible = 0;
         var paletteControl, colorDiv, paletteDiv;
+        colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(infoDiv);
+
         var clrTitleText, colorTitle;
         var refreshColor = function () {
             clrTitleText = that.getTitle("values");
             if (colorIsVisible == 0) {
-                colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(infoDiv);
+                colorDiv.empty();                
                 colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                 paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(colorDiv);
 
-                paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette);
+                paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette, { logAxis: _logColors });
                 colorIsVisible = 2;
             } else colorTitle.text(clrTitleText);
 
@@ -858,8 +878,10 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                     setName();
                 if (!propertyName || propertyName == "interval")
                     refreshInterval();
-                if (!propertyName || propertyName == "values" || propertyName == "colorPalette")
+                if (!propertyName || propertyName == "values" || propertyName == "colorPalette"){
+                    colorIsVisible = 0;
                     refreshColor();
+                }
                 if (!propertyName || propertyName == "palette") paletteControl.palette = _palette;
                 var oldRange = paletteControl.dataRange;
                 if (_palette && _palette.isNormalized && (oldRange == undefined || oldRange.min != _fmin || oldRange.max != _fmax)) {
