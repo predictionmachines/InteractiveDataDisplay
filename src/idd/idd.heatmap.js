@@ -64,7 +64,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var _y;
     var _x;
     var _f, _f_u68, _f_l68, _f_median, _fmin, _fmax;
-    var _logColors, _log_f, _log_fmin, _log_fmax;
+    var _logColors, _logTolerance, _log_f, _log_fmin, _log_fmax;
     var _opacity; // 1 is opaque, 0 is transparent
     var _mode; // gradient or matrix
     var _palette;
@@ -232,6 +232,11 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         var y = data.y;
         if (_originalInterval == undefined && _interval == undefined) _originalInterval = data.interval;
         _interval = data.interval;
+
+
+        _logColors = data.logPalette !== undefined && data.logPalette;
+        _logTolerance = data.logTolerance ? data.logTolerance : 1e-12;
+
         if (f["median"]) {//uncertainty
             if (_heatmap_nav == undefined) {
                 var div = $("<div></div>")
@@ -300,7 +305,6 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 _y = y;
 
                 // Logarithmic colors
-                _logColors = data.logPalette !== undefined && data.logPalette;
                 if(_logColors){
                     _log_f = new Array(_f.length);
                     for(var i = 0; i < _f.length; i++)
@@ -356,7 +360,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             _fmin = minmax.min;
             _fmax = minmax.max;
 
-            if(_logColors){
+            if(_logColors){      
+                _fmin = Math.max(_fmin, _logTolerance);
+                _fmax = Math.max(_fmax, _logTolerance);
                 _log_fmin = Math.log10(_fmin);
                 _log_fmax = Math.log10(_fmax);
             }

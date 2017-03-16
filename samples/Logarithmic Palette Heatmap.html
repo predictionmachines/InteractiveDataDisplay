@@ -45,7 +45,7 @@
             // Compute next iteration and store it in data array
             for (var i = 0; i < N; i++)
                 for (var j = 0; j < M; j++)
-                    f[i][j] = Math.pow(10, x[i] + y[j]) * phase;
+                    f[i][j] = Math.pow(10, x[i] + y[j]) * phase - 1;
             phase += 0.1;
             heatmap.draw({ x: x, y: y, values: f, logPalette: true });
             heatmap2.draw({ x: x, y: y, values: f, logPalette: false });
