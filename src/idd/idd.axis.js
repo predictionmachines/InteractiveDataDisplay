@@ -310,9 +310,6 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         var newTicks, newResult;
         var iterations = 0;
 
-        if (_rotateAngle) {
-            _ticks = _tickSource.updateTransform(result);
-        }
         if (result == -1) {
             // if labels overlay each other -> need to be decreased
             while (iterations++ < InteractiveDataDisplay.maxTickArrangeIterations) {
@@ -338,6 +335,9 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 if (newResult == 0)
                     break;
             }
+        }
+        if (_rotateAngle) {
+            _ticks = _tickSource.updateTransform(result);
         }
         minTicks = false;
         if (_tickSource.getMinTicks) {
@@ -414,7 +414,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         for (var i = 0; i < len; i++) {
             x = ticksInfo[i].position;
             if (isHorizontal) {
-                shift = _rotateAngle && result == -1 ? (ticksInfo[i].width * Math.abs(Math.cos(_rotateAngle))) / 4 : ticksInfo[i].width / 2;
+                shift = ticksInfo[i].width / 2;
                 if (minTicks) {
                     if (i == 0) shift *= 2;
                     else if (i == len - 1) shift = 0;
@@ -427,10 +427,12 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 if (!_ticks[i].invisible) ctx.fillRect(x, 1, 1, InteractiveDataDisplay.tickLength);
                 if (_ticks[i].label) {
                     
-                    if (!_rotateAngle || result == 1 || _rotateAngle > 0)
+                    if (!_rotateAngle || result == 1)
                         _ticks[i].label.css("left", x - shift);
+                    else if (_rotateAngle > 0) 
+                        _ticks[i].label.css("left", x);
                     else {
-                        _ticks[i].label.css("left", x - 0.75 * ticksInfo[i].width - ticksInfo[i].width * Math.abs(Math.sin(_rotateAngle)) / 4);
+                        _ticks[i].label.css("left", x - ticksInfo[i].width);
                     }
                 }
             }
@@ -534,7 +536,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         for (var i = 0; i < len; i++) {
             x = ticksInfo[i].position;
             if (isHorizontal) { // horizontal (top and bottom)
-                shift = _rotateAngle ? (ticksInfo[i].width * Math.abs(Math.cos(_rotateAngle))) / 4 : ticksInfo[i].width / 2;
+                shift = ticksInfo[i].width / 2;
                 if (minTicks) {
                     if (i == 0) shift *= 2;
                     else if (i == len - 1) shift = 0;
@@ -564,7 +566,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                     } else if (_rotateAngle) {
                         if (_rotateAngle > 0) {
                             var text = _tickSource.renderToSvg(_ticks[i], svg)
-                                .translate(x - shift, textShift)
+                                .translate(x, textShift)
                                 .rotate(angle, 0, 0)
                                 .font({
                                     family: fontFamily,
@@ -572,7 +574,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                                 });
                         } else if (_rotateAngle < 0) {
                             var text = _tickSource.renderToSvg(_ticks[i], svg)
-                            .translate(x - 0.75 * ticksInfo[i].width - ticksInfo[i].width * Math.abs(Math.sin(_rotateAngle)) / 4, textShift)
+                            .translate(x - ticksInfo[i].width, textShift)
                             .rotate(angle, ticksInfo[i].width, 0)
                             .font({
                                 family: fontFamily,
