@@ -77,19 +77,22 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     var _size;
     var _deltaRange;
     var _canvasHeight;
+    var _rotateAngle;
 
     // checks if size of host element changed and refreshes size of canvas and labels' div
     this.updateSize = function () {
         var prevSize = _size;
         if (div) {
-            _width = div.outerWidth(false);
-            _height = div.outerHeight(false);
+            var divWidth = div.outerWidth(false);
+            var divHeight = div.outerHeight(false);
+            _width = divWidth;
+            _height = _rotateAngle ? divWidth * Math.abs(Math.sin(_rotateAngle)) + divHeight * Math.abs(Math.cos(_rotateAngle)) : divHeight;
         }
         if (isHorizontal) {
             _size = _width;
             if (_size != prevSize) {
                 canvas[0].width = _size;
-                labelsDiv.css("width", _size);
+                labelsDiv.css("width", _size);              
             }
         }
         else {
@@ -103,7 +106,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         _canvasHeight = canvas[0].height;
     };
 
-    var text_size = -1;
+    var text_size = -1; 
     var smallTickLength = InteractiveDataDisplay.tickLength / 3;
 
     var strokeStyle = _host ? _host.css("color") : "Black";
@@ -159,8 +162,17 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             _tickSource.invalidate();
             that.update();
         },
-        configurable: false });
-
+        configurable: false
+    });
+    Object.defineProperty(this, "rotateAngle", {
+        get: function () { return _rotateAngle; },
+        set: function (value) {
+            _rotateAngle = value * Math.PI / 180;
+            _tickSource.invalidate();
+            that.update();
+        },
+        configurable: false
+    });
     this.sizeChanged = true;
 
     // transform data <-> plot: is applied before converting into screen coordinates
@@ -186,24 +198,26 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             var tick = ticks[i];
             if (tick.label) {
                 size = tick.label._size;
-                width = size.width;
+                width = size.width; 
                 height = size.height;
-                if (width == 0){
-                    var inner = _tickSource.getInner(tick.position);
-                    if(typeof inner === "string"){
-                        width = ctx.measureText(inner).width;
-                    }else{
-                        var $div = $("<div></div>").append($(inner)).css({ "display":"block", "visibility":"hidden", "position":"absolute"}).appendTo($("body"));                        
-                        width =  $div.width();
-                        $div.remove();
-                    }                    
+                if(width == 0 || height == 0) {       
+                  var inner = _tickSource.getInner(tick.position);
+                  if(typeof inner === "string"){
+                      var sz = ctx.measureText(_tickSource.getInnerText(tick.position));
+                      width = sz.width;
+                      height = sz.height; // height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
+                  }else{ // html element
+                      var $div = $("<div></div>").append($(inner)).css({ "display":"block", "visibility":"hidden", "position":"absolute" }).appendTo($("body"));                        
+                      width = $div.width();
+                      height = $div.height();
+                      $div.remove();
+                  }
                 }
-                if (height == 0)
-                    height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
+                height = _rotateAngle ? width * Math.abs(Math.sin(_rotateAngle)) + height * Math.abs(Math.cos(_rotateAngle)) : height;                
                 ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: width, height: height, hasLabel: true };
-            }
-            else
+            } else { // no label
                 ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: 0, height: 0, hasLabel: false };
+            }
         }
     };
 
@@ -322,7 +336,9 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                     break;
             }
         }
-
+        if (_rotateAngle) {
+            _ticks = _tickSource.updateTransform(result);
+        }
         minTicks = false;
         if (_tickSource.getMinTicks) {
             if (newResult == -1 && iterations > InteractiveDataDisplay.maxTickArrangeIterations || _ticks.length < 2) {
@@ -409,7 +425,16 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
 
                 if (!_ticks[i].invisible) ctx.fillRect(x, 1, 1, InteractiveDataDisplay.tickLength);
-                if (_ticks[i].label) _ticks[i].label.css("left", x - shift);
+                if (_ticks[i].label) {
+                    
+                    if (!_rotateAngle || result == 1)
+                        _ticks[i].label.css("left", x - shift);
+                    else if (_rotateAngle > 0) 
+                        _ticks[i].label.css("left", x);
+                    else {
+                        _ticks[i].label.css("left", x - ticksInfo[i].width);
+                    }
+                }
             }
             else {
                 x = (_size - 1) - x;
@@ -426,7 +451,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 if (!_ticks[i].invisible) ctx.fillRect(1, x, InteractiveDataDisplay.tickLength, 1);
                 if (_ticks[i].label) {
                     _ticks[i].label.css("top", x - shift);
-                    if (_mode == "left")
+                    if (_mode == "left") 
                         _ticks[i].label.css("left", text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width));
                 }
             }
@@ -527,12 +552,36 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
                 
                 if (_ticks[i].label)
-                    _tickSource.renderToSvg(_ticks[i], svg)
-                        .translate(x - shift, textShift)
-                        .font({
-                            family: fontFamily,
-                            size: _fontSize
-                        });
+                    var style = _ticks[i].label instanceof jQuery ? window.getComputedStyle(_ticks[i].label[0], null) : window.getComputedStyle(_ticks[i].label, null);
+                    var transform = style ? style.getPropertyValue('transform') : undefined;
+                    var b = transform ? transform.split(',')[1] : undefined;
+                    var angle = b ? Math.round(Math.asin(b) * (180 / Math.PI)) : 0;
+                    if (angle == 0 || !_rotateAngle) {
+                        _tickSource.renderToSvg(_ticks[i], svg)
+                          .translate(x - shift, textShift)
+                          .font({
+                              family: fontFamily,
+                              size: _fontSize
+                          });
+                    } else if (_rotateAngle) {
+                        if (_rotateAngle > 0) {
+                            var text = _tickSource.renderToSvg(_ticks[i], svg)
+                                .translate(x, textShift)
+                                .rotate(angle, 0, 0)
+                                .font({
+                                    family: fontFamily,
+                                    size: _fontSize
+                                });
+                        } else if (_rotateAngle < 0) {
+                            var text = _tickSource.renderToSvg(_ticks[i], svg)
+                            .translate(x - ticksInfo[i].width, textShift)
+                            .rotate(angle, ticksInfo[i].width, 0)
+                            .font({
+                                family: fontFamily,
+                                size: _fontSize
+                            });
+                        }
+                    }
             }
             else { // vertical (left and right)
                 x = (_size - 1) - x;
@@ -554,12 +603,22 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                     var leftShift = 0;                    
                     if (_mode == "left")
                         leftShift = text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width) + textShift;
-                    _tickSource.renderToSvg(_ticks[i], svg)
-                        .translate(leftShift + textShift, x-shift)
-                        .font({
-                            family: fontFamily,
-                            size: _fontSize
-                        });
+                    if (this.rotateLabels) {
+                        _tickSource.renderToSvg(_ticks[i], svg)
+                            .translate(leftShift - textShift - ticksInfo[i].height, x - shift)
+                            .rotate(-90)
+                            .font({
+                                family: fontFamily,
+                                size: _fontSize
+                            });       
+                    } else {
+                        _tickSource.renderToSvg(_ticks[i], svg)
+                            .translate(leftShift + textShift, x - shift)
+                            .font({
+                                family: fontFamily,
+                                size: _fontSize
+                            });
+                    }
                 }
             }
         }
@@ -694,12 +753,17 @@ InteractiveDataDisplay.LabelledAxis = function (div, params) {
 
     this.updateLabels = function (params) {
         this.tickSource = new InteractiveDataDisplay.LabelledTickSource(params);
+        if (params && params.rotate)
+            this.rotateLabels = true;
+        this.rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
     };
 
     if (params && params.rotate)
         this.rotateLabels = true;
 
     this.base(div, new InteractiveDataDisplay.LabelledTickSource(params));
+    this.rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
+
     return this;
 }
 InteractiveDataDisplay.LabelledAxis.prototype = new InteractiveDataDisplay.TicksRenderer;
@@ -1147,7 +1211,8 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var delta = _ticks.length - _labels.length;
 
     var rotateLabels = params && params.rotate ? params.rotate : false;
-    
+    var rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
+
     this.renderToSvg = function (tick, svg) {
         var text = tick.text ? tick.text : "";
         return svg.text(text);
@@ -1238,8 +1303,9 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
 
             var count = m2 - m1 + 1;
             var l = 0;
-
+            
             var value2 = _ticks[m1];
+
             for (var i = 0; i < count; i++) {
                 value = value2;
                 if (value >= that.start && value <= that.finish) {
@@ -1278,6 +1344,43 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
         else step--;
         return createTicks();
     };
+    
+    this.updateTransform = function (result) {
+        var ticks = createTicks();
+        for (var i = 0; i < ticks.length; i++) {
+            if (ticks[i].label) {
+                var div = ticks[i].label;
+                if (result == -1) {
+                    div.css("-webkit-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("-moz-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("-ms-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("-o-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("transform", 'rotate(' + rotateAngle + 'deg)');
+                    if (rotateAngle > 0) {
+                        div.css("transform-origin", 'left top');
+                        div.css("-webkit-transform-origin", 'left top');
+                        div.css("-moz-transform-origin", 'left top');
+                        div.css("-ms-transform-origin", 'left top');
+                        div.css("-o-transform-origin", 'left top');
+                    }
+                    else {
+                        div.css("transform-origin", 'right top');
+                        div.css("-webkit-transform-origin", 'right top');
+                        div.css("-moz-transform-origin", 'right top');
+                        div.css("-ms-transform-origin", 'right top');
+                        div.css("-o-transform-origin", 'right top');
+                    }
+                } else if (result == 1) {
+                    div.css("-webkit-transform", '');
+                    div.css("-moz-transform", '');
+                    div.css("-ms-transform", '');
+                    div.css("-o-transform", '');
+                    div.css("transform", '');
+                }
+            }
+        }
+        return ticks;
+    }
 
     // constructs array of small ticks
     this.getSmallTicks = function (ticks) {

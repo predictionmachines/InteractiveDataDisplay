@@ -82,14 +82,14 @@
                     if (typeof element.axis != 'undefined') {
                         var div = $(element).closest('div[data-idd-plot]');
                         if (plotAttr != v.type) {
-                            var axisElement = div[0].plot.addAxis(placement, v.type, { labels: v.labels ? v.labels : [], ticks: v.ticks ? v.ticks : [], rotate: v.rotate }, element);
+                            var axisElement = div[0].plot.addAxis(placement, v.type, { labels: v.labels ? v.labels : [], ticks: v.ticks ? v.ticks : [], rotate: v.rotate, rotateAngle: v.rotateAngle }, element);
                             var bindData = $(element).attr("data-bind");
                             axisElement.attr("data-bind", bindData);
                             element.axis.remove();
                             element = axisElement;
                         }
                         else if (plotAttr == "labels") {
-                                element.axis.updateLabels({ labels: v.labels, ticks: v.ticks, rotate: v.rotate });
+                            element.axis.updateLabels({ labels: v.labels, ticks: v.ticks, rotate: v.rotate, rotateAngle: v.rotateAngle });
                         }
                         if (v.fontSize) element.axis.FontSize = v.fontSize;
                         if (typeof v.attachGrid != 'undefined' && v.attachGrid && typeof div[0].plot != 'undefined') {
