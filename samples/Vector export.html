@@ -28,7 +28,8 @@
     </script>
 </head>
 <body>
-    <div id="chart_svg" style="width: 800px; height: 600px; margin-bottom: 5px;" onclick="exportSvg()">
+    <div id="chart_svg" style="width: 800px; height: 600px; margin-bottom: 5px; background-color: azure;" onclick="exportSvg(); $('#chart_svg').css('background-color', 'transparent');">
+        Every time you click here you get an SVG snapshot of the chart below.
     </div>
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;" >
         <div id="axisr" data-idd-axis="numeric" data-idd-placement="right"></div>

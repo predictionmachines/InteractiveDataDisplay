@@ -4,6 +4,7 @@ New features:
  - Deployment of `idd` as an npm package. 
  - Heatmap supports log10-based color palette. 
  - Palette editor `InteractiveDataDisplay.ColorPaletteEditor`.
+ - `InteractiveDataDisplay.ColorPaletteViewer` can show palette as logarithmic.
  - IDD Knockout Js extended:
       - New binding [`iddAxisSettings`](https://github.com/predictionmachines/InteractiveDataDisplay/wiki/KnockoutJS%3A-Axis) allows creating a labelled axis, change tick font size etc.
       - New binding `iddPlotTitles` to provide titles for each of a plot properties.      
@@ -15,8 +16,9 @@ New features:
  - The event `Plot.appearanceChanged` now fires asynchronously and thus multiple events of this kind can be accumulated into a single event and corresponding legend update occurs just once. This significantly reduces load caused by legend update in case
  of intensive data update.
  - New property `Axis.FontSize` to set tick labels font size for particular axis instance.
+ - Logarithmic axis can be exported to SVG.
  - `Plot` instances expose an integer ID through property `Plot.instanceId` which is assigned automatically during construction of the plot and is unique during the window lifetime.
- This simplifies debugging of plots. 
+ This simplifies debugging of plots.  
 
 Bug fixes: 
   - Fixed bug with pan and zoom using touch events.

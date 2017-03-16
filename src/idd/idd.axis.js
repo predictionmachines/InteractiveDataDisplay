@@ -6,15 +6,12 @@
     switch (axisType) {
         case "numeric":
             div.axis = new InteractiveDataDisplay.NumericAxis(div);
-            div[0].axis = div.axis;
             return div.axis;
         case "log":
             div.axis = new InteractiveDataDisplay.LogarithmicAxis(div);
-            div[0].axis = div.axis;
             return div.axis;
         case "labels":
             div.axis = new InteractiveDataDisplay.LabelledAxis(div, params);
-            div[0].axis = div.axis;
             return div.axis;
     }
 };
@@ -28,9 +25,8 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         }
     }
 
-    if (div && div.hasClass("idd-axis"))
-        return;
-
+    if (div && div.hasClass("idd-axis")) return;
+    if (div) div[0].axis = this;
     var that = this;
 
     // link to div element - container of axis
@@ -1012,12 +1008,18 @@ InteractiveDataDisplay.LogarithmicTickSource = function () {
         }
     };
 
+    this.renderToSvg = function (tick, svg) {
+        var inner = tick.position;
+        return svg.text(inner.toString());
+        // todo: render exponential form in a special graphic representation
+    }
+
     this.getTicks = function (_range) {
         InteractiveDataDisplay.LogarithmicTickSource.prototype.getTicks.call(this, _range);
         start = Math.pow(10, this.start);
         finish = Math.pow(10, this.finish);
         return createTicks();
-    };
+    };    
 
     var createTicks = function () {
         var ticks = [];
