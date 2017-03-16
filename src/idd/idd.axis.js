@@ -90,7 +90,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             var divWidth = div.outerWidth(false);
             var divHeight = div.outerHeight(false);
             _width = divWidth;
-            _height = _rotateAngle ? divWidth * Math.abs(Math.cos(_rotateAngle)) + divHeight * Math.abs(Math.cos(_rotateAngle)) : divHeight;
+            _height = _rotateAngle ? divWidth * Math.abs(Math.sin(_rotateAngle)) + divHeight * Math.abs(Math.cos(_rotateAngle)) : divHeight;
         }
         if (isHorizontal) {
             _size = _width;
@@ -310,6 +310,9 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         var newTicks, newResult;
         var iterations = 0;
 
+        if (_rotateAngle) {
+            _ticks = _tickSource.updateTransform(result);
+        }
         if (result == -1) {
             // if labels overlay each other -> need to be decreased
             while (iterations++ < InteractiveDataDisplay.maxTickArrangeIterations) {
@@ -335,9 +338,6 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 if (newResult == 0)
                     break;
             }
-        }
-        if (_rotateAngle) {
-            _ticks = _tickSource.updateTransform(result);
         }
         minTicks = false;
         if (_tickSource.getMinTicks) {
@@ -414,7 +414,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         for (var i = 0; i < len; i++) {
             x = ticksInfo[i].position;
             if (isHorizontal) {
-                shift = _rotateAngle && result == -1 ? (ticksInfo[i].width * Math.abs(Math.cos(_rotateAngle))) / 8 : ticksInfo[i].width / 2;
+                shift = _rotateAngle && result == -1 ? (ticksInfo[i].width * Math.abs(Math.cos(_rotateAngle))) / 4 : ticksInfo[i].width / 2;
                 if (minTicks) {
                     if (i == 0) shift *= 2;
                     else if (i == len - 1) shift = 0;
@@ -430,7 +430,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                     if (!_rotateAngle || result == 1 || _rotateAngle > 0)
                         _ticks[i].label.css("left", x - shift);
                     else {
-                        _ticks[i].label.css("left", x - ticksInfo[i].width);
+                        _ticks[i].label.css("left", x - 0.75 * ticksInfo[i].width - ticksInfo[i].width * Math.abs(Math.sin(_rotateAngle)) / 4);
                     }
                 }
             }
@@ -534,7 +534,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         for (var i = 0; i < len; i++) {
             x = ticksInfo[i].position;
             if (isHorizontal) { // horizontal (top and bottom)
-                shift = _rotateAngle ? (ticksInfo[i].width * Math.abs(Math.cos(_rotateAngle))) / 8 : ticksInfo[i].width / 2;
+                shift = _rotateAngle ? (ticksInfo[i].width * Math.abs(Math.cos(_rotateAngle))) / 4 : ticksInfo[i].width / 2;
                 if (minTicks) {
                     if (i == 0) shift *= 2;
                     else if (i == len - 1) shift = 0;
@@ -572,7 +572,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                                 });
                         } else if (_rotateAngle < 0) {
                             var text = _tickSource.renderToSvg(_ticks[i], svg)
-                            .translate(x - ticksInfo[i].width, textShift)
+                            .translate(x - 0.75 * ticksInfo[i].width - ticksInfo[i].width * Math.abs(Math.sin(_rotateAngle)) / 4, textShift)
                             .rotate(angle, ticksInfo[i].width, 0)
                             .font({
                                 family: fontFamily,
@@ -1193,7 +1193,6 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
 
     var rotateLabels = params && params.rotate ? params.rotate : false;
     var rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
-   // this.rotate = false;
 
     this.renderToSvg = function (tick, svg) {
         var text = tick.text ? tick.text : "";
@@ -1352,7 +1351,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
                         div.css("-ms-transform-origin", 'right top');
                         div.css("-o-transform-origin", 'right top');
                     }
-                } else {
+                } else if (result == 1) {
                     div.css("-webkit-transform", '');
                     div.css("-moz-transform", '');
                     div.css("-ms-transform", '');
