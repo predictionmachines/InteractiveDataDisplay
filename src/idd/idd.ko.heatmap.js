@@ -33,6 +33,10 @@
 			    data.opacity = ko.unwrap(allBindings.get('iddOpacity'));
 			if (allBindings.has('iddPlotTitles'))
 			    titles = ko.unwrap(allBindings.get('iddPlotTitles'));
+			if (allBindings.has('iddLogColors'))
+			    data.logPalette = ko.unwrap(allBindings.get('iddLogColors'));
+			if (allBindings.has('iddLogTolerance'))
+			    data.logTolerance = ko.unwrap(allBindings.get('iddLogTolerance'));				
 
 			var plotAttr = element.getAttribute("data-idd-plot");
 			if (plotAttr != null) {

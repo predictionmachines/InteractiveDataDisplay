@@ -55,6 +55,8 @@
                 return this.ColourFrom()+","+this.ColourTo();
             },this);             
             this.ColoursToChoose = ["Red","Green","Blue","Black"];            
+
+            this.LogColors = ko.observable(false);
 		}
 		
         $(document).ready(function () {
@@ -73,7 +75,8 @@
 				iddY: Y,
                 iddValues: Data,
 				iddColorPalette: ColourPallete,
-                iddOpacity: Opacity
+                iddOpacity: Opacity,
+                iddLogColors: LogColors
                 ">
         </div>
 	</div>
@@ -86,6 +89,8 @@
         </p>
         <p>Opacity (%):
             <input data-bind="value: OpacityPercent" type="number" min="0" max="100">
+        </p>
+        <p><input type="checkbox" data-bind="checked: LogColors">Logarithmic colors</input>
         </p>                
     </div>
     </div>
