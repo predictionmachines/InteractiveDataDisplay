@@ -665,12 +665,10 @@ InteractiveDataDisplay.NumericAxis.prototype = new InteractiveDataDisplay.TicksR
 InteractiveDataDisplay.LogarithmicAxis = function (div) {
     this.base = InteractiveDataDisplay.TicksRenderer;
 
-    var logE10 = Math.log(10);
-
     this.getCoordinateFromTick = function (x) {
         var delta = this.deltaRange;
         if (isFinite(delta)) {
-            var coord = Math.log(x) / logE10;
+            var coord = InteractiveDataDisplay.Utils.log10(x);
             return (coord - this.range.min) * delta;
         }
         else return this.axisSize / 2;
@@ -826,7 +824,6 @@ InteractiveDataDisplay.NumericTickSource = function () {
 
     var that = this;
 
-    var log10 = 1 / Math.log(10);
     var delta, beta;
 
     this.getInner = function (x) {
@@ -840,7 +837,7 @@ InteractiveDataDisplay.NumericTickSource = function () {
         InteractiveDataDisplay.NumericTickSource.prototype.getTicks.call(this, _range);
 
         delta = 1;
-        beta = Math.floor(Math.log(this.finish - this.start) * log10);
+        beta = Math.floor(InteractiveDataDisplay.Utils.log10(this.finish - this.start));
 
         return createTicks();
     };
@@ -946,7 +943,7 @@ InteractiveDataDisplay.NumericTickSource = function () {
     this.getMinTicks = function () {
         var ticks = [];
 
-        beta = Math.floor(Math.log(this.finish - this.start) * log10);
+        beta = Math.floor(InteractiveDataDisplay.Utils.log10(this.finish - this.start));
 
         if (isFinite(beta)) {
             var step = Math.pow(10, beta);

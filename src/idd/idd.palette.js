@@ -657,7 +657,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
 
     function dataToPlot(range){
          if(_logAxis){
-             return { min : Math.log10(range.min), max : Math.log10(range.max) };
+             return { min : InteractiveDataDisplay.Utils.log10(range.min), max : InteractiveDataDisplay.Utils.log10(range.max) };
          }else{
             return range;
         }

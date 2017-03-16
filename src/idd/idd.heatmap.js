@@ -81,9 +81,12 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var _palette;
     var _dataChanged;
     var _paletteColors;
+
+    // Uncertainty interval
     var _interval;
     var _originalInterval;
     var _heatmap_nav;
+
     var _formatter_f, _formatter_f_median, _formatter_f_l68, _formatter_f_u68, _formatter_interval;
 
     loadOpacity((initialData && typeof (initialData.opacity) != 'undefined') ? parseFloat(initialData.opacity) : 1.0);
@@ -221,7 +224,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         };
     };
 
-    var computeMinMax = function() {
+    var computePaletteMinMax = function() {
         var minmax = findFminmax(_f);
         _fmin = minmax.min;
         _fmax = minmax.max;
@@ -229,8 +232,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         if(_logColors){      
             _fmin = Math.max(_fmin, _logTolerance);
             _fmax = Math.max(_fmax, _logTolerance);
-            _log_fmin = Math.log10(_fmin);
-            _log_fmax = Math.log10(_fmax);
+            // Palette range is in "plot coordinates", i.e. log10 of range.
+            _log_fmin = InteractiveDataDisplay.Utils.log10(_fmin);
+            _log_fmax = InteractiveDataDisplay.Utils.log10(_fmax);
         }
     }
 
@@ -262,7 +266,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         _logColors = data.logPalette !== undefined && data.logPalette;
         _logTolerance = data.logTolerance ? data.logTolerance : 1e-12;
 
-        if (f["median"]) {//uncertainty
+        if (f["median"]) { //uncertain data
             if (_heatmap_nav == undefined) {
                 var div = $("<div></div>")
                     .attr("data-idd-name", "heatmap__nav_")
@@ -328,19 +332,20 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 _f = f;
                 _x = x;
                 _y = y;
+            }
+        }
 
-                // Logarithmic colors
-                if(_logColors){
-                    _log_f = new Array(_f.length);
-                    for(var i = 0; i < _f.length; i++)
-                    {
-                        var row = _f[i];
-                        var logRow = _log_f[i] = new Float32Array(row.length);
-                        for(var j = 0; j < row.length; j++)
-                        {
-                            logRow[j] = Math.log10(row[j]);
-                        }
-                    }
+        // Logarithmic colors: builds log10(_f) to be rendered, so the color palette
+        // is logarithmic.
+        if(_logColors){
+            _log_f = new Array(_f.length);
+            for(var i = 0; i < _f.length; i++)
+            {
+                var row = _f[i];
+                var logRow = _log_f[i] = new Float32Array(row.length);
+                for(var j = 0; j < row.length; j++)
+                {
+                    logRow[j] = InteractiveDataDisplay.Utils.log10(row[j]);
                 }
             }
         }
@@ -380,8 +385,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         }
         if (data && typeof (data.colorPalette) != 'undefined')
             loadPalette(data.colorPalette);
+
         if (_palette.isNormalized) {
-            computeMinMax();
+            computePaletteMinMax();
         }
         _dataChanged = true;
         var prevBB = this.invalidateLocalBounds();
@@ -822,7 +828,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             if (value == _palette) return;
             if (!value) throw "Heatmap palette is undefined";
             if (_palette && value.isNormalized && !_palette.isNormalized && _f) {
-                computeMinMax();
+                computePaletteMinMax();
             }
             loadPalette(value);
             lastCompletedTask = undefined;
