@@ -203,7 +203,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 if(width == 0 || height == 0) {       
                   var inner = _tickSource.getInner(tick.position);
                   if(typeof inner === "string"){
-                      var sz = ctx.measureText(_tickSource.getInnerText(tick.position));
+                      var sz = ctx.measureText(inner);
                       width = sz.width;
                       height = sz.height; // height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
                   }else{ // html element
