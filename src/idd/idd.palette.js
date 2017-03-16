@@ -631,6 +631,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     var _width = _host.width();
     var _height = 20;
     var _axisVisible = true;
+    var _logAxis = false;
     var _palette = palette;
     var _dataRange = undefined;
 
@@ -642,6 +643,8 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
             _width = options.width;
         if (options.axisVisible !== undefined)
             _axisVisible = options.axisVisible;
+        if (options.logAxis !== undefined)
+            _logAxis = options.logAxis;
     }
 
     // canvas to render palette
@@ -652,14 +655,27 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     var _axisDiv = null;
     var _axis = null;
 
+    function dataToPlot(range){
+         if(_logAxis){
+             return { min : InteractiveDataDisplay.Utils.log10(range.min), max : InteractiveDataDisplay.Utils.log10(range.max) };
+         }else{
+            return range;
+        }
+    }
+
     function addAxis() {
         _axisDiv = $("<div data-idd-placement='bottom' style='width: " + _width + "px; color: rgb(0,0,0)'></div>");
         _host[0].appendChild(_axisDiv[0]);
-        _axis = new InteractiveDataDisplay.NumericAxis(_axisDiv);
+
+        if(!_logAxis){
+            _axis = new InteractiveDataDisplay.NumericAxis(_axisDiv);
+        }else{
+            _axis = new InteractiveDataDisplay.LogarithmicAxis(_axisDiv);
+        }
         if (_palette && !_palette.isNormalized) // Take axis values from fixed palette
-            _axis.update({ min: _palette.range.min, max: _palette.range.max });
+            _axis.update(dataToPlot({ min: _palette.range.min, max: _palette.range.max }));
         else if (_dataRange) // Try to take axis values from data range
-            _axis.update({ min: _dataRange.min, max: _dataRange.max });
+            _axis.update(dataToPlot({ min: _dataRange.min, max: _dataRange.max }));
     }
 
     function removeAxis() {
@@ -692,7 +708,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
             if (value) {
                 _palette = value;
                 if (_axisVisible && (!_palette.isNormalized || !_dataRange))
-                    _axis.update({ min: _palette.range.min, max: _palette.range.max });
+                    _axis.update(dataToPlot({ min: _palette.range.min, max: _palette.range.max }));
                 renderPalette();
             }
         },
@@ -705,7 +721,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
             if (value) {
                 _dataRange = value;
                 if (_axisVisible && (!_palette || _palette.isNormalized)) {
-                    _axis.update({ min: _dataRange.min, max: _dataRange.max });
+                    _axis.update(dataToPlot({ min: _dataRange.min, max: _dataRange.max }));
                 }
             }
         },

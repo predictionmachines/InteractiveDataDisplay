@@ -6,15 +6,12 @@
     switch (axisType) {
         case "numeric":
             div.axis = new InteractiveDataDisplay.NumericAxis(div);
-            div[0].axis = div.axis;
             return div.axis;
         case "log":
             div.axis = new InteractiveDataDisplay.LogarithmicAxis(div);
-            div[0].axis = div.axis;
             return div.axis;
         case "labels":
             div.axis = new InteractiveDataDisplay.LabelledAxis(div, params);
-            div[0].axis = div.axis;
             return div.axis;
     }
 };
@@ -28,9 +25,8 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         }
     }
 
-    if (div && div.hasClass("idd-axis"))
-        return;
-
+    if (div && div.hasClass("idd-axis")) return;
+    if (div) div[0].axis = this;
     var that = this;
 
     // link to div element - container of axis
@@ -202,22 +198,26 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             var tick = ticks[i];
             if (tick.label) {
                 size = tick.label._size;
-                width = size.width;
-                height = _rotateAngle ? size.width * Math.abs(Math.sin(_rotateAngle)) + size.height * Math.abs(Math.cos(_rotateAngle)) : size.height;
-                if (width == 0) {
-                    var textWidth = ctx.measureText(_tickSource.getInnerText(tick.position)).width;
-                    var textHeight = height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
-                    width = textWidth;
+                width = size.width; 
+                height = size.height;
+                if(width == 0 || height == 0) {       
+                  var inner = _tickSource.getInner(tick.position);
+                  if(typeof inner === "string"){
+                      var sz = ctx.measureText(_tickSource.getInnerText(tick.position));
+                      width = sz.width;
+                      height = sz.height; // height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
+                  }else{ // html element
+                      var $div = $("<div></div>").append($(inner)).css({ "display":"block", "visibility":"hidden", "position":"absolute" }).appendTo($("body"));                        
+                      width = $div.width();
+                      height = $div.height();
+                      $div.remove();
+                  }
                 }
-                if (height == 0) {
-                    var textWidth = ctx.measureText(_tickSource.getInnerText(tick.position)).width;
-                    var textHeight = height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
-                    height = _rotateAngle ? textWidth * Math.abs(Math.sin(_rotateAngle)) + textHeight * Math.abs(Math.cos(_rotateAngle)) : textHeight;
-                }
+                height = _rotateAngle ? width * Math.abs(Math.sin(_rotateAngle)) + height * Math.abs(Math.cos(_rotateAngle)) : height;                
                 ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: width, height: height, hasLabel: true };
-            }
-            else
+            } else { // no label
                 ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: 0, height: 0, hasLabel: false };
+            }
         }
     };
 
@@ -663,8 +663,8 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     };
 
     // function to set new _range
-    this.update = function (newRange) {
-        if (newRange) _range = newRange;
+    this.update = function (newPlotRange) {
+        if (newPlotRange) _range = newPlotRange;
         render();
     };
 
@@ -720,12 +720,10 @@ InteractiveDataDisplay.NumericAxis.prototype = new InteractiveDataDisplay.TicksR
 InteractiveDataDisplay.LogarithmicAxis = function (div) {
     this.base = InteractiveDataDisplay.TicksRenderer;
 
-    var logE10 = Math.log(10);
-
     this.getCoordinateFromTick = function (x) {
         var delta = this.deltaRange;
         if (isFinite(delta)) {
-            var coord = Math.log(x) / logE10;
+            var coord = InteractiveDataDisplay.Utils.log10(x);
             return (coord - this.range.min) * delta;
         }
         else return this.axisSize / 2;
@@ -784,7 +782,7 @@ InteractiveDataDisplay.TickSource = function () {
 
     // gets first available div (not used) or creates new one
     this.getDiv = function (x) {
-        var inner = this.getInnerText(x);
+        var inner = this.getInner(x);
         var i = inners.indexOf(inner);
         if (i != -1) {
             isUsedPool[i] = true;
@@ -800,26 +798,36 @@ InteractiveDataDisplay.TickSource = function () {
                 styles[i].display = "block";
                 inners[i] = inner;
                 var $div = divPool[i];
-                $div.text(inner);
+                if(typeof inner !== "string"){
+                    $div.empty();
+                    $div.append(inner);
+                }else{
+                    $div.text(inner);
+                }
                 var div = $div[0];
                 $div._size = { width: div.offsetWidth, height: div.offsetHeight };
                 return divPool[i];
             }
             else {
-                var div = $("<div></div>").text(inner);
+                var $div = $("<div></div>");
+                if(typeof inner !== "string"){
+                    $div.append(inner);
+                }else{
+                    $div.text(inner);
+                }
                 isUsedPool[len] = true;
-                divPool[len] = div;
+                divPool[len] = $div;
                 inners[len] = inner;
-                styles[len] = div[0].style;
-                div._size = undefined;
+                styles[len] = $div[0].style;
+                $div._size = undefined;
                 len++;
-                return div;
+                return $div;
             }
         }
     };
 
     // function to get div's innerText
-    this.getInnerText = function (x) {
+    this.getInner = function (x) {
         if (x)
             return x.toString();
         return undefined;
@@ -876,10 +884,9 @@ InteractiveDataDisplay.NumericTickSource = function () {
 
     var that = this;
 
-    var log10 = 1 / Math.log(10);
     var delta, beta;
 
-    this.getInnerText = function (x) {
+    this.getInner = function (x) {
         if (x == 0) return x.toString();
         else if (beta >= InteractiveDataDisplay.minNumOrder)
             return this.round(x / Math.pow(10, beta), -1) + "e+" + beta;
@@ -890,13 +897,13 @@ InteractiveDataDisplay.NumericTickSource = function () {
         InteractiveDataDisplay.NumericTickSource.prototype.getTicks.call(this, _range);
 
         delta = 1;
-        beta = Math.floor(Math.log(this.finish - this.start) * log10);
+        beta = Math.floor(InteractiveDataDisplay.Utils.log10(this.finish - this.start));
 
         return createTicks();
     };
     
     this.renderToSvg = function (tick, svg) {
-        return svg.text(that.getInnerText(tick.position));
+        return svg.text(that.getInner(tick.position));
     }
 
     var createTicks = function () {
@@ -996,7 +1003,7 @@ InteractiveDataDisplay.NumericTickSource = function () {
     this.getMinTicks = function () {
         var ticks = [];
 
-        beta = Math.floor(Math.log(this.finish - this.start) * log10);
+        beta = Math.floor(InteractiveDataDisplay.Utils.log10(this.finish - this.start));
 
         if (isFinite(beta)) {
             var step = Math.pow(10, beta);
@@ -1054,19 +1061,29 @@ InteractiveDataDisplay.LogarithmicTickSource = function () {
     var start, finish;
 
     // redefined function for innerText - if degree is less than specific constant then render full number otherwise render 10 with degree
-    this.getInnerText = function (x) {
+    this.getInner = function (x) {
         if (Math.abs(x) < InteractiveDataDisplay.minLogOrder)
             return Math.pow(10, x).toString();
-        else
-            return "10<sup>" + x + "</sup>";
+        else {
+            var html = "10<sup>" + x + "</sup>";
+            var element = document.createElement("span");
+            element.innerHTML = html;
+            return element;
+        }
     };
+
+    this.renderToSvg = function (tick, svg) {
+        var inner = tick.position;
+        return svg.text(inner.toString());
+        // todo: render exponential form in a special graphic representation
+    }
 
     this.getTicks = function (_range) {
         InteractiveDataDisplay.LogarithmicTickSource.prototype.getTicks.call(this, _range);
         start = Math.pow(10, this.start);
         finish = Math.pow(10, this.finish);
         return createTicks();
-    };
+    };    
 
     var createTicks = function () {
         var ticks = [];

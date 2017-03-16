@@ -63,17 +63,30 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var _imageData;
     var _y;
     var _x;
-    var _f;
-    var _f_u68, _f_l68, _f_median;
-    var _fmin, _fmax;
+
+    // _f contains values that are mapped to colors.
+    // _log_f is log10(_f) and it is used only if options.logColors is enabled instead of _f for color mapping.
+    // _f or _logf is passed to the heatmap render.
+    // _fmin/_fmax (and corresponding log-versions) are min/max for _f (_log_f) and are used EXCLUSIVELY for palette range.
+    // Log range are computed with respect to _logTolerance (taken from option.logTolerance).
+    // _log_f is passed to rendered only.
+    // _f is passed to renderer and to build tooltip value.
+    var _f, _f_u68, _f_l68, _f_median, _fmin, _fmax;
+    var _logColors, _logTolerance;
+    var _log_f, _log_fmin, _log_fmax;
+
+
     var _opacity; // 1 is opaque, 0 is transparent
     var _mode; // gradient or matrix
     var _palette;
     var _dataChanged;
     var _paletteColors;
+
+    // Uncertainty interval
     var _interval;
     var _originalInterval;
     var _heatmap_nav;
+
     var _formatter_f, _formatter_f_median, _formatter_f_l68, _formatter_f_u68, _formatter_interval;
 
     loadOpacity((initialData && typeof (initialData.opacity) != 'undefined') ? parseFloat(initialData.opacity) : 1.0);
@@ -211,6 +224,20 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         };
     };
 
+    var computePaletteMinMax = function() {
+        var minmax = findFminmax(_f);
+        _fmin = minmax.min;
+        _fmax = minmax.max;
+
+        if(_logColors){      
+            _fmin = Math.max(_fmin, _logTolerance);
+            _fmax = Math.max(_fmax, _logTolerance);
+            // Palette range is in "plot coordinates", i.e. log10 of range.
+            _log_fmin = InteractiveDataDisplay.Utils.log10(_fmin);
+            _log_fmax = InteractiveDataDisplay.Utils.log10(_fmax);
+        }
+    }
+
     this.onRenderTaskCompleted = function (completedTask) {
         lastCompletedTask = completedTask;
         if (_innerCanvas.width !== lastCompletedTask.width || _innerCanvas.height !== lastCompletedTask.height) {
@@ -227,13 +254,19 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     this.draw = function (data, titles) {
         var f = data.values;
         if (!f) throw "Data series f is undefined";
-        var isOneDimensional = f["median"] !== undefined && !InteractiveDataDisplay.Utils.isArray(f["median"][0])
-                || !InteractiveDataDisplay.Utils.isArray(f[0]);
+        var isOneDimensional = 
+            f["median"] !== undefined && !InteractiveDataDisplay.Utils.isArray(f["median"][0])
+            || !InteractiveDataDisplay.Utils.isArray(f[0]);
         var x = data.x;
         var y = data.y;
         if (_originalInterval == undefined && _interval == undefined) _originalInterval = data.interval;
         _interval = data.interval;
-        if (f["median"]) {//uncertainty
+
+
+        _logColors = data.logPalette !== undefined && data.logPalette;
+        _logTolerance = data.logTolerance ? data.logTolerance : 1e-12;
+
+        if (f["median"]) { //uncertain data
             if (_heatmap_nav == undefined) {
                 var div = $("<div></div>")
                     .attr("data-idd-name", "heatmap__nav_")
@@ -302,6 +335,21 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             }
         }
 
+        // Logarithmic colors: builds log10(_f) to be rendered, so the color palette
+        // is logarithmic.
+        if(_logColors){
+            _log_f = new Array(_f.length);
+            for(var i = 0; i < _f.length; i++)
+            {
+                var row = _f[i];
+                var logRow = _log_f[i] = new Float32Array(row.length);
+                for(var j = 0; j < row.length; j++)
+                {
+                    logRow[j] = InteractiveDataDisplay.Utils.log10(row[j]);
+                }
+            }
+        }
+
         _formatter_f = undefined;
         _formatter_f_median = undefined;
         _formatter_f_l68 = undefined;
@@ -337,10 +385,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         }
         if (data && typeof (data.colorPalette) != 'undefined')
             loadPalette(data.colorPalette);
+
         if (_palette.isNormalized) {
-            var minmax = findFminmax(_f);
-            _fmin = minmax.min;
-            _fmax = minmax.max;
+            computePaletteMinMax();
         }
         _dataChanged = true;
         var prevBB = this.invalidateLocalBounds();
@@ -552,9 +599,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                     height: _imageData.height,
                     x: _x,
                     y: _y,
-                    f: _f,
-                    fmin: _fmin,
-                    fmax: _fmax,
+                    f: _logColors ? _log_f : _f,
+                    fmin: _logColors ? _log_fmin : _fmin,
+                    fmax: _logColors ? _log_fmax : _fmax,
                     plotRect: visibleRect,
                     scaleX: scale.x,
                     scaleY: scale.y,
@@ -772,7 +819,6 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             $($("<span style='margin-left:3px;'>highlight similar</span>")).appendTo(checkBoxCnt);
             return $toolTip;
         }
-        return;
     };
 
 
@@ -782,9 +828,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             if (value == _palette) return;
             if (!value) throw "Heatmap palette is undefined";
             if (_palette && value.isNormalized && !_palette.isNormalized && _f) {
-                var minmax = findFminmax(_f);
-                _fmin = minmax.min;
-                _fmax = minmax.max;
+                computePaletteMinMax();
             }
             loadPalette(value);
             lastCompletedTask = undefined;
@@ -822,15 +866,17 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         setName();
         var colorIsVisible = 0;
         var paletteControl, colorDiv, paletteDiv;
+        colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(infoDiv);
+
         var clrTitleText, colorTitle;
         var refreshColor = function () {
             clrTitleText = that.getTitle("values");
             if (colorIsVisible == 0) {
-                colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(infoDiv);
+                colorDiv.empty();                
                 colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                 paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(colorDiv);
 
-                paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette);
+                paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette, { logAxis: _logColors });
                 colorIsVisible = 2;
             } else colorTitle.text(clrTitleText);
 
@@ -858,8 +904,10 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                     setName();
                 if (!propertyName || propertyName == "interval")
                     refreshInterval();
-                if (!propertyName || propertyName == "values" || propertyName == "colorPalette")
+                if (!propertyName || propertyName == "values" || propertyName == "colorPalette"){
+                    colorIsVisible = 0;
                     refreshColor();
+                }
                 if (!propertyName || propertyName == "palette") paletteControl.palette = _palette;
                 var oldRange = paletteControl.dataRange;
                 if (_palette && _palette.isNormalized && (oldRange == undefined || oldRange.min != _fmin || oldRange.max != _fmax)) {

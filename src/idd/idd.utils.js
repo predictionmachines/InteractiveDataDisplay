@@ -5,6 +5,10 @@ InteractiveDataDisplay.Utils =
     {
         //trim: function (s) { return s.replace(/^[\s\n]+|[\s\n]+$/g, ''); },
 
+        logE10neg : 1.0 / Math.log(10), 
+
+        log10: (typeof Math.log10 !== "undefined") ? Math.log10 : function(x) { return Math.log(x) * InteractiveDataDisplay.Utils.logE10neg; },
+
         applyMask: function(mask, array, newLength) {
             var n = mask.length;
             var newArr = new Array(newLength);
