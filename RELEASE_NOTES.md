@@ -9,7 +9,10 @@ New features:
       - New binding [`iddAxisSettings`](https://github.com/predictionmachines/InteractiveDataDisplay/wiki/KnockoutJS%3A-Axis) allows creating a labelled axis, change tick font size etc.
       - New binding `iddPlotTitles` to provide titles for each of a plot properties.      
       - New binding `iddEditorColorPalette` to assign a color palette to the color palette editor instance.
- - Too long axis labels can become angled.
+ - Labelled axis:
+    - Labels can be angled, see sample `ChangeBottomAxisLabelsAngle.html`.
+    - Too long axis labels can become angled.
+    - Line breaks are preserved and multiline labels show tooltips.     
  - Box-and-whiskers plot (a kind of markers plot) allows to specify line thickness.
  - Plot has new property `padding` which allows to specify padding which is added to the bounding box of the plot in fit-to-view.
  - Bar plot allows to specify orientation, either horizontal or vertical.
