@@ -1213,6 +1213,19 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var rotateLabels = params && params.rotate ? params.rotate : false;
     var rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
 
+    this.getInner = function (x) {
+        var hasNewLines = typeof x === "string" && x.indexOf("\n") !== -1;
+        if (!hasNewLines)
+            return x;
+        else {
+            var html = x.replace(/(?:\r\n|\r|\n)/g, '<br />');
+            var element = document.createElement("span");
+            element.title = x;
+            element.innerHTML = html;
+            return element;
+        }
+    };
+
     this.renderToSvg = function (tick, svg) {
         var text = tick.text ? tick.text : "";
         return svg.text(text);
