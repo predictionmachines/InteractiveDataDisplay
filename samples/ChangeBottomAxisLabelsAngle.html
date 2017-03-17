@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Heatmap with Knockout</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">		 		
+        var angle = 15;
+
+        var increaseAngle = function () {
+            if (angle < 90) angle += 5;
+            var plot = InteractiveDataDisplay.asPlot($("#figure"));
+            var axes = plot.getAxes('bottom')[0];
+            axes.rotateAngle = angle;
+            
+            plot.updateLayout();
+        }
+        var decreaseAngle = function () {
+            if (angle > -90) angle -= 5;
+            var plot = InteractiveDataDisplay.asPlot($("#figure"));
+            var axes = plot.getAxes('bottom')[0];
+            axes.rotateAngle = angle;
+
+            plot.updateLayout();
+        }
+        $(document).ready(function () {
+            var plot = InteractiveDataDisplay.asPlot($("#figure"));
+            var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(plot.centralPart);
+            plot.navigation.gestureSource = gestureSource;
+            var ticks = [0, 1, 2, 3, 4, 5];
+            var names = ["species A", "species B", "species C", "species D", "species E"];
+            plot.addAxis("bottom", "labels", { ticks: ticks, labels: names, rotateAngle: angle });
+            plot.addAxis("left", "numeric");
+            var grid = plot.get("grid");
+            grid.yAxis = plot.getAxes("left")[0];
+            plot.markers("Bars", { x: [0.5, 1.5, 2.5, 3.5, 4.5], y: [7, 6, 1, 4, 0], barWidth: 0.5, color: ['blue', 'red', 'green', 'orange', 'purple'], shape: 'bars', shadow: 'grey' });
+        });
+    </script>
+</head>
+<body>
+    <div style="display: inline-block">
+    <div id="figure" data-idd-plot="figure" style="width: 600px; height: 500px; float:left" >
+        <div id="grid" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px'></div> 
+    </div>
+    <div style="float: right; margin: 2em">
+        <button style="display:block" onclick="increaseAngle()">Increase labels angle</button>  
+        <button style="display:block; margin-top:10px" onclick="decreaseAngle()">Decrease labels angle</button>                             
+    </div>
+    </div>
+</body>
+</html>
