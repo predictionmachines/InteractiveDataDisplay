@@ -164,6 +164,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         },
         configurable: false
     });
+    // Get or set label angle in degrees, from -90 to 90.
     Object.defineProperty(this, "rotateAngle", {
         get: function () { return _rotateAngle; },
         set: function (value) {
@@ -828,8 +829,9 @@ InteractiveDataDisplay.TickSource = function () {
 
     // function to get div's innerText
     this.getInner = function (x) {
-        if (x)
+        if (x) {
             return x.toString();
+        }
         return undefined;
     };
 
@@ -1215,12 +1217,12 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     this.getInner = function (x) {
         var hasNewLines = typeof x === "string" && x.indexOf("\n") !== -1;
         if (!hasNewLines)
-            return x;
+            return x.toString();
         else {
-            var html = x.replace(/(?:\r\n|\r|\n)/g, '<br />');
             var element = document.createElement("span");
             element.title = x;
-            element.innerHTML = html;
+            element.innerText = x;
+            $(element).css("white-space", "pre");
             return element;
         }
     };
@@ -1416,7 +1418,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     this.getMinTicks = function () {
         var ticks = [];
 
-        if (delta <= 0 && _labels.length == 0) {
+        if (delta <= 0 && _labels.length > 0) {
             var div = that.getDiv(_labels[0]);
             if (rotateLabels) {
                 div.addClass('idd-verticalText');
