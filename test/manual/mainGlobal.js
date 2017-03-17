@@ -1,3 +1,4 @@
+///<reference path="../../dist/idd.d.ts"/>
 var main;
 (function (main) {
     function start() {

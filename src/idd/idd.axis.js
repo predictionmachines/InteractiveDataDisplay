@@ -337,7 +337,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             }
         }
         if (_rotateAngle) {
-            _ticks = _tickSource.updateTransform(result);
+            _ticks = _tickSource.updateTransform(result, _rotateAngle * 180/ Math.PI);
         }
         minTicks = false;
         if (_tickSource.getMinTicks) {
@@ -1211,7 +1211,6 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var delta = _ticks.length - _labels.length;
 
     var rotateLabels = params && params.rotate ? params.rotate : false;
-    var rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
 
     this.getInner = function (x) {
         var hasNewLines = typeof x === "string" && x.indexOf("\n") !== -1;
@@ -1358,7 +1357,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
         return createTicks();
     };
     
-    this.updateTransform = function (result) {
+    this.updateTransform = function (result, rotateAngle) {
         var ticks = createTicks();
         for (var i = 0; i < ticks.length; i++) {
             if (ticks[i].label) {
