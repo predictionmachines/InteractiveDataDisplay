@@ -1,4 +1,4 @@
-#### 1.5.1 (unpublished)
+## 1.5.1 (March 24, 2017)
 
 New features:
  - Deployment of `idd` as an npm package. 
@@ -33,7 +33,7 @@ Bug fixes:
   - Fixed processing of the attribute `data-idd-datasource`.  
   - Fixed export of labelled axis to svg.
  
-## 1.5.0 (December 28, 2016)
+### 1.5.0 (December 28, 2016)
 
 **Breaking changes**:
  - **IDD now requires `jquery.mousewheel.js`.** 
