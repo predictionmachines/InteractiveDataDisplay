@@ -2136,7 +2136,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // Initialization (#1)
         var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
         var initialData = initializer(div);
-
+        
         this.base = InteractiveDataDisplay.CanvasPlot;
         this.base(div, master);
 
@@ -2163,6 +2163,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.draw = function (data) {
             var y = data.y.median ? data.y.median : data.y;
             if (!y) throw "Data series y is undefined";
+            y = InteractiveDataDisplay.Utils.missingValuesNaNProcessing(y);
             var n = y.length;
 
             if (!data.x) {
