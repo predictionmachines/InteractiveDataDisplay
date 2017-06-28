@@ -9,6 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
     <script src="../dist/idd_knockout.js"></script>
@@ -53,6 +55,8 @@
                 return this.ColourFrom()+","+this.ColourTo();
             },this);             
             this.ColoursToChoose = ["Red","Green","Blue","Black"];            
+
+            this.LogColors = ko.observable(false);
 		}
 		
         $(document).ready(function () {
@@ -71,7 +75,8 @@
 				iddY: Y,
                 iddValues: Data,
 				iddColorPalette: ColourPallete,
-                iddOpacity: Opacity
+                iddOpacity: Opacity,
+                iddLogColors: LogColors
                 ">
         </div>
 	</div>
@@ -84,6 +89,8 @@
         </p>
         <p>Opacity (%):
             <input data-bind="value: OpacityPercent" type="number" min="0" max="100">
+        </p>
+        <p><input type="checkbox" data-bind="checked: LogColors">Logarithmic colors</input>
         </p>                
     </div>
     </div>

@@ -9,23 +9,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
-    <script src="../dist/idd_knockout.min.js"></script>
+    <script src="../ext/svg.js/dist/svg.js"></script>
+    <script src="../dist/idd.js"></script>
 
     <script type="text/javascript">
-        viewModel = {
-            x: ko.observableArray([]),
-            y: ko.observableArray([]),
-            values: ko.observableArray([]),
-            colorPalette: '0=#00A8C6,#40C0CB,#F9F2E7,#AEE239,#8FBE00=3'
-        };
         var N = 200;
         var M = 200;
-        var phase = 0.0;
-
+        var phase = 0.1;
 
         // 1D arrays for grids x,y and 1D array for values f.
         // Size of data array here is one less than size of the grid.
@@ -33,22 +24,20 @@
         // defines N x M rectangular cells filled with gradient brush according to 
         // corresponding 4 elements of the data array.
         var x, y, f;
-        var heatmap;
+        var heatmap, heatmap2;
 
         $(document).ready(function () {
-
-            InteractiveDataDisplay.asPlot($('#chart'));
-            ko.applyBindings(viewModel);
-
             // Initializing chart
+            heatmap = InteractiveDataDisplay.asPlot('chart').get("heatmap");
+            heatmap2 = InteractiveDataDisplay.asPlot('chart2').get("heatmap2");
             // Allocating arrays
             x = new Array(N);
             y = new Array(M);
             f = new Array(N);
             for (var i = 0; i < N; i++) f[i] = new Array(M);
             // Coordinate grid is constant and it is initialized once
-            for (var i = 0; i < N; i++) x[i] = -Math.PI + 2 * i * Math.PI / N;
-            for (var j = 0; j < M; j++) y[j] = -Math.PI / 2 + j * Math.PI / M;
+            for (var i = 0; i < N; i++) x[i] = i / 70;
+            for (var j = 0; j < M; j++) y[j] = j / 70;
             // Running the model for the first time
             modelRun();
         });
@@ -57,21 +46,32 @@
             // Compute next iteration and store it in data array
             for (var i = 0; i < N; i++)
                 for (var j = 0; j < M; j++)
-                    f[i][j] = Math.sqrt(x[i] * x[i] + y[j] * y[j])
-                              * Math.abs(Math.cos(x[i] * x[i] + y[j] * y[j] + phase));
+                    f[i][j] = Math.pow(10, x[i] + y[j]) * phase; // - 1; // Uncomment this to get negative values
             phase += 0.1;
-            viewModel.x(x);
-            viewModel.y(y);
-            viewModel.values(f);
-            setTimeout(modelRun, 1000 / 60.0);
-        }
+            heatmap.draw({ x: x, y: y, values: f, logPalette: true });
+            heatmap2.draw({ x: x, y: y, values: f, logPalette: false });
+            //setTimeout(modelRun, 1000 / 60.0);
+        };
+
+        function exportSvg() {
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+            var svg = chart.exportToSvg();  
+            $("#svgoutput").text(svg.svg());  
+        };
     </script>
 </head>
 <body>
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
-        <div data-idd-placement="top" style="text-align: center">Dynamic Heatmap</div>
-        <div id="heatmap" data-idd-plot="heatmap" data-bind="iddX: x, iddY: y, iddValues: values, iddColorPalette: colorPalette">
+        <div data-idd-placement="top" style="text-align: center">Logarithmic color palette</div>
+        <div id="heatmap" data-idd-plot="heatmap" data-idd-style="colorPalette:blue,green,red">
         </div>
     </div>
+    <div id="chart2" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div data-idd-placement="top" style="text-align: center">Normal color palette</div>
+        <div id="heatmap2" data-idd-plot="heatmap" data-idd-style="colorPalette:blue,green,red">
+        </div>
+    </div>
+    <button onclick="exportSvg()">Export to SVG</button>
+    <div id="svgoutput"></div>
 </body>
 </html>

@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Labelled Axis Sample Page</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+    <script src="../ext/svg.js/dist/svg.js"></script>
+    <script src="../dist/idd.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var figure = InteractiveDataDisplay.asPlot($("#figure"));
+
+            var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(figure.host);
+            figure.navigation.gestureSource = gestureSource;
+
+            var label1 = "<Virtue> itself 'scapes not calumnious strokes:\n" +
+                "The canker galls the infants of the spring,\n" + 
+                "Too oft before their buttons be disclosed."
+
+            var label2 = "So, oft it chances in particular men,\n" +
+                "That for some vicious mole of nature in them...";
+
+            figure.addAxis("bottom", "labels", { 
+                labels: [label1, label2],
+                ticks: [ 0, 1, 2 ] });
+            figure.addAxis("left", "numeric");
+            var grid = figure.get("grid2");
+            grid.xAxis = figure.getAxes("bottom")[0];
+            grid.yAxis = figure.getAxes("left")[0];
+
+        });
+
+        var exportSVG = function() {
+            var figure = InteractiveDataDisplay.asPlot($("#figure"));
+            var svg = figure.exportToSvg();
+            
+            $("#output").html(svg.svg());    
+        };
+    </script>
+</head>
+<body style="font-family: Segoe UI; font-size: 14px">
+    <div id="figure" data-idd-plot="figure" data-idd-legend="figure2Legend" style="width: 800px; height: 200px; ">
+        <div id="grid" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px'></div>
+    </div>        
+    <button onclick="exportSVG()">Export to SVG</button>
+    <div id="output" style="width: 800px; height: 200px;">
+    </div>
+</body>
+</html>

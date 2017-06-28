@@ -347,93 +347,98 @@
         <button id="delete">delete legend</button>
     </div>
 
-    <div id="figure" data-idd-plot="figure" data-idd-legend="figureLegend" style="width: 800px; height: 400px; float: left">
+    <div id="figure" data-idd-plot="figure" style="width: 800px; height: 400px; float: left">
+        <div data-idd-placement="center" style="float: right; z-index:1000">
+            <div id="comboLegend"></div>
+        </div>
         <div id="axis1" data-idd-axis="numeric" data-idd-placement="bottom"></div>
         <div id="axis2" data-idd-axis="numeric" data-idd-placement="left"></div>
         <div id="heat2" data-idd-plot="heatmap" data-idd-legend="p1Legend"></div>
-        <div id="polyline1" data-idd-plot="polyline" data-idd-legend="p2Legend" data-idd-style="stroke: blue" data-idd-datasource="InteractiveDataDisplay.readTable">
-            <table>
-                <tr>
-                    <th class="auto-style1">x</th>
-                    <th class="auto-style2">y</th>
-                </tr>
-                <tr>
-                    <td class="auto-style1">-1.0</td>
-                    <td class="auto-style2">0.5</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">0.1</td>
-                    <td class="auto-style2">0.4</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">1.1</td>
-                    <td class="auto-style2">0.1</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">2.4</td>
-                    <td class="auto-style2">-0.1</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">2.8</td>
-                    <td class="auto-style2">0.2</td>
-                </tr>
-            </table>
-        </div>
-        <div id="polyline2" data-idd-plot="polyline" data-idd-legend="p3Legend" data-idd-style="stroke: green" data-idd-datasource="InteractiveDataDisplay.readTable">
-            <table>
-                <tr>
-                    <th class="auto-style1">x</th>
-                    <th class="auto-style2">y</th>
-                </tr>
-                <tr>
-                    <td class="auto-style1">-1.0</td>
-                    <td class="auto-style2">-0.5</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">0.1</td>
-                    <td class="auto-style2">-0.4</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">1.1</td>
-                    <td class="auto-style2">-0.1</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">2.4</td>
-                    <td class="auto-style2">0.1</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">2.8</td>
-                    <td class="auto-style2">-0.2</td>
-                </tr>
-            </table>
-        </div>
-        <div id="markers" data-idd-plot="markers" data-idd-legend="p4Legend" data-idd-style="size: 20; shape: box; color: orange" data-idd-datasource="InteractiveDataDisplay.readTable">
-            <table>
-                <tr>
-                    <th class="auto-style1">x</th>
-                    <th class="auto-style2">y</th>
-                </tr>
-                <tr>
-                    <td class="auto-style1">-1.0</td>
-                    <td class="auto-style2">0.5</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">0.1</td>
-                    <td class="auto-style2">0.4</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">1.1</td>
-                    <td class="auto-style2">0.1</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">2.4</td>
-                    <td class="auto-style2">-0.1</td>
-                </tr>
-                <tr>
-                    <td class="auto-style1">2.8</td>
-                    <td class="auto-style2">0.2</td>
-                </tr>
-            </table>
+        <div id="combo" data-idd-plot="plot" data-idd-legend="comboLegend">
+            <div id="polyline1" data-idd-plot="polyline" data-idd-legend="p2Legend" data-idd-style="stroke: blue" data-idd-datasource="InteractiveDataDisplay.readTable">
+                <table>
+                    <tr>
+                        <th class="auto-style1">x</th>
+                        <th class="auto-style2">y</th>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">-1.0</td>
+                        <td class="auto-style2">0.5</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">0.1</td>
+                        <td class="auto-style2">0.4</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">1.1</td>
+                        <td class="auto-style2">0.1</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">2.4</td>
+                        <td class="auto-style2">-0.1</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">2.8</td>
+                        <td class="auto-style2">0.2</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="polyline2" data-idd-plot="polyline" data-idd-legend="p3Legend" data-idd-style="stroke: green" data-idd-datasource="InteractiveDataDisplay.readTable">
+                <table>
+                    <tr>
+                        <th class="auto-style1">x</th>
+                        <th class="auto-style2">y</th>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">-1.0</td>
+                        <td class="auto-style2">-0.5</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">0.1</td>
+                        <td class="auto-style2">-0.4</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">1.1</td>
+                        <td class="auto-style2">-0.1</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">2.4</td>
+                        <td class="auto-style2">0.1</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">2.8</td>
+                        <td class="auto-style2">-0.2</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="markers" data-idd-plot="markers" data-idd-legend="p4Legend" data-idd-style="size: 20; shape: box; color: orange" data-idd-datasource="InteractiveDataDisplay.readTable">
+                <table>
+                    <tr>
+                        <th class="auto-style1">x</th>
+                        <th class="auto-style2">y</th>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">-1.0</td>
+                        <td class="auto-style2">0.5</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">0.1</td>
+                        <td class="auto-style2">0.4</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">1.1</td>
+                        <td class="auto-style2">0.1</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">2.4</td>
+                        <td class="auto-style2">-0.1</td>
+                    </tr>
+                    <tr>
+                        <td class="auto-style1">2.8</td>
+                        <td class="auto-style2">0.2</td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
     <div style="float: left">
@@ -445,6 +450,5 @@
         <div id="p3Legend"></div>
         <div id="p4Legend"></div>
     </div>
-
 </body>
 </html>
