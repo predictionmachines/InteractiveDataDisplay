@@ -3,103 +3,43 @@
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
     <title>Bar chart</title>
-    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/interactive-data-display/1.5.1/idd.css" />
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
-    <script src="../dist/idd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/interactive-data-display/1.5.1/idd.min.js"></script>
 
     <script type="text/javascript">
         var N = 20;
 
-        var barMarker = {
-            draw: function (marker, plotRect, screenSize, transform, context) {
-                var barWidth = 0.5 * marker.barWidth;
-                var xLeft = transform.dataToScreenX(marker.x - barWidth);
-                var xRight = transform.dataToScreenX(marker.x + barWidth);
-                if (xLeft > screenSize.width || xRight < 0) return;
-                var yTop = transform.dataToScreenY(marker.y);
-                var yBottom = transform.dataToScreenY(0);
-                if (yTop > yBottom) {
-                    var k = yBottom;
-                    yBottom = yTop;
-                    yTop = k;
-                }
-                if (yTop > screenSize.height || yBottom < 0) return;
-
-                if (marker.shadow) {
-                    context.fillStyle = marker.shadow;
-                    context.fillRect(xLeft + 2, yTop + 2, xRight - xLeft, yBottom - yTop);
-                }
-
-                context.fillStyle = marker.color;
-                context.fillRect(xLeft, yTop, xRight - xLeft, yBottom - yTop);
-                if (marker.border) {
-                    context.strokeStyle = marker.border;
-                    context.strokeRect(xLeft, yTop, xRight - xLeft, yBottom - yTop);
-                }
-            },
-            
-            prepare: function(data) {
-                if(data.x == undefined)
-                    data.x = InteractiveDataDisplay.Utils.range(0, data.y.length - 1);
-                
-                if(data.colorPalette && data.color){
-                    if(data.colorPalette.isNormalized){
-                        var r = InteractiveDataDisplay.Utils.getMinMax(data.color);
-                        r = InteractiveDataDisplay.Utils.makeNonEqual(r);
-                        data.colorPalette = data.colorPalette.absolute(r.min, r.max);
-                    }
-                    var n = data.color.length;
-                    var colors = new Array(n);
-                    for (var i = 0; i < n; i++){
-                        var color = data.color[i];
-                        var rgba = data.colorPalette.getRgba(color);                        
-                        colors[i] = "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
-                    }
-                    data.color = colors;
-                }
-            },
-            getBoundingBox: function (marker) {  
-                var barWidth = marker.barWidth;  
-                var xLeft = marker.x - barWidth / 2;  
-                var yBottom = Math.min(0, marker.y);  
-                return { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
-            },
-
-            hitTest: function (marker, transform, ps, pd) {
-                var barWidth = marker.barWidth;
-                var xLeft = marker.x - barWidth / 2;
-                var yBottom = Math.min(0, marker.y);
-                if (pd.x < xLeft || pd.x > xLeft + barWidth) return false;
-                if (pd.y < yBottom || pd.y > yBottom + Math.abs(marker.y)) return false;
-                return true;
-            }
-        };
-
         $(document).ready(function () {
-            var bars = InteractiveDataDisplay.asPlot("chart").get("bars");
+            // Preparing data
             var x = new Array(N);
             var y = new Array(N);
             var color = new Array(N);
 
             var colorPalette = InteractiveDataDisplay.ColorPalette.parse("#69D2E7,#A7DBD8,#E0E4CC,#F38630,#FA6900");
 
+            var xmin = -3, xmax = 3;
             for (var i = 0; i < N; i++) {
-                y[i] = Math.random() * N - N / 2;
+                x[i] = xmin + i * (xmax-xmin) / (N-1);
+                y[i] = Math.exp(-x[i]*x[i]);
                 color[i] = y[i];
             }
-            bars.draw({ y: y, color: color, colorPalette: colorPalette, border:'grey', barWidth: 0.9, shadow: 'grey', shape: barMarker }, 
-                { color: "rate" });
+
+            // Drawing bars
+            var bars = InteractiveDataDisplay.asPlot("chart").get("bars");
+            bars.draw({ x: x, y: y, color: color, colorPalette: colorPalette, shape: 'bars', border:'grey', barWidth: (xmax-xmin) / N, shadow: 'grey' }, // data and settings
+                      { color: "rate" }); // title of the 'color' series in legend and tooltip
         });
     </script>
 </head>
 <body>
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
-        <div data-idd-name="bars" data-idd-plot="markers">
+        <div id="bars" data-idd-name="bars title" data-idd-plot="markers">
         </div>
     </div>
 </body>
