@@ -1,4 +1,4 @@
-function IDD($, Rx, ko) {
+function IDD($, Rx, ko, SVG, saveAs) {
 	if (Number.MAX_SAFE_INTEGER == undefined) Number.MAX_SAFE_INTEGER = 9007199254740991;;InteractiveDataDisplay = {
     MinSizeToShow: 1, // minimum size in pixels of the element to be rendered
     Padding: 20, // extra padding in pixels which is added to padding computed by the plots
@@ -24,6 +24,10 @@ function IDD($, Rx, ko) {
 InteractiveDataDisplay.Utils =
     {
         //trim: function (s) { return s.replace(/^[\s\n]+|[\s\n]+$/g, ''); },
+
+        logE10neg : 1.0 / Math.log(10), 
+
+        log10: (typeof Math.log10 !== "undefined") ? Math.log10 : function(x) { return Math.log(x) * InteractiveDataDisplay.Utils.logE10neg; },
 
         applyMask: function(mask, array, newLength) {
             var n = mask.length;
@@ -182,7 +186,13 @@ InteractiveDataDisplay.Utils =
 
         getDataSourceFunction: function (jqElem, defaultSource) {
             var source = jqElem.attr("data-idd-datasource");
-            if (source)
+            if(source == "InteractiveDataDisplay.readTable")
+                return InteractiveDataDisplay.readTable;
+            else if(source == "InteractiveDataDisplay.readCsv")
+                return InteractiveDataDisplay.readCsv;
+            else if(source == "InteractiveDataDisplay.readCsv2d")
+                return InteractiveDataDisplay.readCsv2d;
+            else if (source)
                 return function(){
                     return JSON.parse(source, function (key, value) {
                         if (value === null) {
@@ -865,6 +875,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     InteractiveDataDisplay.Event.isVisibleChanged = jQuery.Event("visibleChanged");
     InteractiveDataDisplay.Event.plotRemoved = jQuery.Event("plotRemoved");
     InteractiveDataDisplay.Event.orderChanged = jQuery.Event("orderChanged");
+    // Occurs when master plot has rendered a frame. It is fired only for the master plot.    
+    InteractiveDataDisplay.Event.frameRendered = jQuery.Event("frameRendered");
+
+    var _plotCounter = 0;
 
     InteractiveDataDisplay.Plot = function (div, master, myCentralPart) {
 
@@ -899,6 +913,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _width, _height;
         var _name = "";
         var _order = 0;
+        var _padding = InteractiveDataDisplay.Padding;
         // Contains user-readable titles for data series of a plot. They should be used in tooltips and legends.
         var _titles = {};
         // The flag is set in setVisibleRegion when it is called at me as a bound plot to notify that another plot is changed his visible.
@@ -938,8 +953,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _constraint = undefined;
 
         var that = this;
+        var _plotInstanceId = _plotCounter++;
 
         // Plot properties
+        Object.defineProperty(this, "instanceId", { get: function () { return _plotInstanceId; }, configurable: false });
         Object.defineProperty(this, "isMaster", { get: function () { return _isMaster; }, configurable: false });
         // Indicates whether the last frame included rendering of this plot or not.
         Object.defineProperty(this, "isRendered", { get: function () { return _isRendered; }, configurable: false });
@@ -1051,7 +1068,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             },
             configurable: false
         });
-
+        Object.defineProperty(this, "padding", {
+            get: function () { return _isMaster ? _padding : _master.padding; },
+            set: function (value) {
+                if (_isMaster) {
+                    _padding = value;
+                    this.updateLayout();
+                }
+                else
+                    _master.padding = value;
+            },
+            configurable: false
+        });
         Object.defineProperty(this, "visibleRect", {
             get: function () {
                 if (_isMaster) {
@@ -1404,10 +1432,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     bottom: Math.max(padding.bottom, plotPadding.bottom)
                 };
             }
-            padding.left = padding.left + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
-            padding.right = padding.right + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
-            padding.top = padding.top + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
-            padding.bottom = padding.bottom + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
+            padding.left = padding.left + this.padding || this.padding;
+            padding.right = padding.right + this.padding || this.padding;
+            padding.top = padding.top + this.padding || this.padding;
+            padding.bottom = padding.bottom + this.padding || this.padding;
             return padding;
         };
 
@@ -1428,7 +1456,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 that.isAnimationFrameRequested = false;
 
                 renderAll = true;
-                that.updateLayout();
+                that.updateLayout(); // this eventually fires the frameRendered event
             } else {
                 that.isAnimationFrameRequested = false;
 
@@ -1436,9 +1464,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height }); // (x,y) is left/top            
                 // rectangle in the plot plane which is visible, (x,y) is left/bottom (i.e. less) of the rectangle
 
-                updatePlotsOutputRec(renderAll, _master, plotRect, screenSize);
+                updatePlotsOutputRec(renderAll, _master, plotRect, screenSize);  
+                that.fireFrameRendered();
             }
-            renderAll = false;
+            renderAll = false;          
 
             if (_updateTooltip) _updateTooltip();
         };
@@ -2071,14 +2100,26 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return getrec(p, this.master);
         };
 
+        var appearanceChanged = false;
+
         // fires the AppearanceChanged event
         this.fireAppearanceChanged = function (propertyName) {
-            this.host.trigger(InteractiveDataDisplay.Event.appearanceChanged, propertyName);
+            if(!appearanceChanged){
+                appearanceChanged = true;
+                setTimeout(function() {
+                    that.host.trigger(InteractiveDataDisplay.Event.appearanceChanged, propertyName);
+                    appearanceChanged = false;
+                }, 20);
+            }
         };
 
         // fires the ChildrenChanged event
         this.fireChildrenChanged = function (propertyParams) {
-            this.master.host.trigger(InteractiveDataDisplay.Event.childrenChanged, propertyParams);
+            this.host.trigger(InteractiveDataDisplay.Event.childrenChanged, propertyParams);
+        };
+
+        this.fireFrameRendered = function (propertyParams) {
+            this.host.trigger(InteractiveDataDisplay.Event.frameRendered, propertyParams);
         };
 
         // fires the VisibleRect event
@@ -2254,8 +2295,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     var _plotLegends = [];
     //Legend with hide/show function
     InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact) {
-
+        // Inner legends for this legend.
         var plotLegends = [];
+        var plotSubs = [];
         var divStyle = _jqdiv[0].style;
 
         var _isVisible = true;
@@ -2310,16 +2352,43 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             });
         }
         
+        var subscribeToChanges = function(plot) {
+            plot.host.bind("visibleChanged", visibleChangedHandler);
+            plot.host.bind("childrenChanged", childrenChangedHandler);
+            plotSubs.push(plot);
+        };
+
+        var unsubscribeFromChanges = function(plot) {
+            plot.host.unbind("visibleChanged", visibleChangedHandler);
+            plot.host.unbind("childrenChanged", childrenChangedHandler);
+            for(var i = 0; i < plotSubs.length; i++){
+                if(plotSubs[i] === plot){
+                    plotSubs.splice(i, 1);
+                }
+            }            
+        };
+
+        var unsubscribeAll = function(){
+            for(var i = 0; i < plotSubs.length; i++){
+                var plot = plotSubs[i];
+                plot.host.unbind("visibleChanged", visibleChangedHandler);
+                plot.host.unbind("childrenChanged", childrenChangedHandler);
+            }  
+            plotSubs = [];
+        }
+
         var createLegend = function () {
             _jqdiv.empty();
             for (var i = 0, len = plotLegends.length; i < len; i++) {
                 removeLegend(plotLegends[i]);
             }
-            _plot.host.unbind('childrenChanged', childrenChangedHandler);
+            unsubscribeAll();
             plotLegends = [];
             var plots = InteractiveDataDisplay.Utils.enumPlots(_plot);
             for (var i = 0; i < plots.length; i++) {
-                createLegendForPlot(plots[plots.length - i - 1]);
+                var p = plots[plots.length - i - 1];
+                subscribeToChanges(p);
+                createLegendForPlot(p);
             }
             if (_jqdiv[0].hasChildNodes() && _isVisible) {
                 divStyle.display = "block";
@@ -2350,9 +2419,20 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
             }
         };
+
+        var containsLegendFor = function(plot){
+            for (var i = 0, len = plotSubs.length; i < len; i++)
+                if (plotSubs[i] === plot) return true;
+            return false;
+        }
+
         var childrenChangedHandler = function (event, params) {
 
             if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
+                if(containsLegendFor(params.plot)) {
+                    return;    
+                }
+                subscribeToChanges(params.plot);
                 createLegendForPlot(params.plot);
             }
             else if (params.type === "remove") {
@@ -2360,8 +2440,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     var legend = plotLegends[i];
                     plotLegends.splice(i, 1);
                     removeLegend(legend);
-                    legend.plot.host.unbind("childrenChanged", childrenChangedHandler);
-                    legend.plot.host.unbind("visibleChanged", visibleChangedHandler);
                     if (legend.onLegendRemove) legend.onLegendRemove();
                     legend[0].innerHTML = "";
                     if (isCompact) legend.removeClass("idd-legend-item-compact");
@@ -2382,7 +2460,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     if (plotLegends[i].plot === params.plot) {
                         removeLegendItem(i);
                         break;
-                    }
+                    }                
+                unsubscribeFromChanges(params.plot);
             }
             else {
                 _jqdiv[0].innerHTML = "";
@@ -2390,14 +2469,13 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 len = plotLegends.length;
                 for (i = 0; i < len; i++) {
                     removeLegend(plotLegends[i]);
-                    plotLegends[i].plot.host.unbind("childrenChanged", childrenChangedHandler);
                     if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
                     plotLegends[i][0].innerHTML = "";
                     if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
                     else plotLegends[i].removeClass("idd-legend-item");
                 }
-                plotLegends = [];
-              
+                unsubscribeAll();                
+                plotLegends = [];              
                 createLegend();
             }
         };
@@ -2421,9 +2499,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         }; 
         var createLegendForPlot = function (plot) {
             var legend = plot.getLegend();
-            //change getLegend
-            plot.host.bind("visibleChanged", visibleChangedHandler);
-            plot.host.bind("childrenChanged", childrenChangedHandler);
             if (legend) {
                 var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<li class='idd-legend-item'></li>");
                 if (!isCompact) div.data("plot", plot);
@@ -2446,6 +2521,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 div.plot.updateOrder();
             }
         };
+
         this.remove = function () {
             for (var i = 0, len = plotLegends.length; i < len; i++) {
                 removeLegend(plotLegends[i]);
@@ -2455,6 +2531,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 else plotLegends[i].removeClass("idd-legend-item");
             }
             plotLegends = [];
+            unsubscribeAll();
             var removeLegendForPlot = function (plot) {
                 plot.host.unbind("visibleChanged", visibleChangedHandler);
                 var childDivs = plot.children;
@@ -2469,11 +2546,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _jqdiv.removeClass("unselectable");
             _plot.host.unbind("plotRemoved", plotRemovedHandler);
             _plot.host.unbind("orderChanged", orderChangedHandler);
-            _plot.host.unbind("childrenChanged", childrenChangedHandler);
         };
         _plot.host.bind("plotRemoved", plotRemovedHandler);
         _plot.host.bind("orderChanged", orderChangedHandler);
-        _plot.host.bind("childrenChanged", childrenChangedHandler);
         createLegend();
         _jqdiv.dblclick(function (event) {
             event.stopImmediatePropagation();
@@ -3996,15 +4071,17 @@ InteractiveDataDisplay.readCsv2d = function (jqDiv) {
     
     if (div.hasClass("idd-axis"))
         throw "The div element already is initialized as an axis";
-
     var axisType = div.attr("data-idd-axis");
     switch (axisType) {
         case "numeric":
-            return new InteractiveDataDisplay.NumericAxis(div);
+            div.axis = new InteractiveDataDisplay.NumericAxis(div);
+            return div.axis;
         case "log":
-            return new InteractiveDataDisplay.LogarithmicAxis(div);
+            div.axis = new InteractiveDataDisplay.LogarithmicAxis(div);
+            return div.axis;
         case "labels":
-            return new InteractiveDataDisplay.LabelledAxis(div, params);
+            div.axis = new InteractiveDataDisplay.LabelledAxis(div, params);
+            return div.axis;
     }
 };
 
@@ -4017,9 +4094,8 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         }
     }
 
-    if (div && div.hasClass("idd-axis"))
-        return;
-
+    if (div && div.hasClass("idd-axis")) return;
+    if (div) div[0].axis = this;
     var that = this;
 
     // link to div element - container of axis
@@ -4070,19 +4146,22 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     var _size;
     var _deltaRange;
     var _canvasHeight;
+    var _rotateAngle;
 
     // checks if size of host element changed and refreshes size of canvas and labels' div
     this.updateSize = function () {
         var prevSize = _size;
         if (div) {
-            _width = div.outerWidth(false);
-            _height = div.outerHeight(false);
+            var divWidth = div.outerWidth(false);
+            var divHeight = div.outerHeight(false);
+            _width = divWidth;
+            _height = _rotateAngle ? divWidth * Math.abs(Math.sin(_rotateAngle)) + divHeight * Math.abs(Math.cos(_rotateAngle)) : divHeight;
         }
         if (isHorizontal) {
             _size = _width;
             if (_size != prevSize) {
                 canvas[0].width = _size;
-                labelsDiv.css("width", _size);
+                labelsDiv.css("width", _size);              
             }
         }
         else {
@@ -4096,7 +4175,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         _canvasHeight = canvas[0].height;
     };
 
-    var text_size = -1;
+    var text_size = -1; 
     var smallTickLength = InteractiveDataDisplay.tickLength / 3;
 
     var strokeStyle = _host ? _host.css("color") : "Black";
@@ -4104,32 +4183,66 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     ctx.strokeStyle = strokeStyle;
     ctx.fillStyle = strokeStyle;
     ctx.lineWidth = 1;
-    var fontSize = 12;
-    if (_host) {
+
+    var fontSize = 12;        
+    var customFontSize = false;
+    var fontFamily = "";
+
+    if (_host) {       
         if (_host[0].currentStyle) {
             fontSize = _host[0].currentStyle["font-size"];
-            ctx.font = fontSize + _host[0].currentStyle["font-family"];
+            fontFamily = _host[0].currentStyle["font-family"];
         }
         else if (document.defaultView && document.defaultView.getComputedStyle) {
             fontSize = document.defaultView.getComputedStyle(_host[0], null).getPropertyValue("font-size");
-            ctx.font = fontSize + document.defaultView.getComputedStyle(_host[0], null).getPropertyValue("font-family");
+            fontFamily = document.defaultView.getComputedStyle(_host[0], null).getPropertyValue("font-family");
         }
         else if (_host[0].style) {
             fontSize = _host[0].style["font-size"];
-            ctx.font = fontSize + _host[0].style["font-family"];
+            fontFamily = _host[0].style["font-family"];
         }
+        ctx.font = fontSize + fontFamily;        
     }
 
     Object.defineProperty(this, "host", { get: function () { return _host; }, configurable: false });
     Object.defineProperty(this, "mode", { get: function () { return _mode; }, configurable: false });
-    Object.defineProperty(this, "tickSource", { get: function () { return _tickSource; }, configurable: false });
+    Object.defineProperty(this, "tickSource",
+        {
+            get: function () { return _tickSource; },
+            set: function (value) {
+                _tickSource = value;
+                labelsDiv.empty();
+                render();
+            },
+            configurable: false
+        });
     Object.defineProperty(this, "range", { get: function () { return _range; }, configurable: false });
     Object.defineProperty(this, "ticks", { get: function () { return _ticks; }, configurable: false });
 
     Object.defineProperty(this, "DesiredSize", { get: function () { return { width: _width, height: _height }; }, configurable: false });
     Object.defineProperty(this, "axisSize", { get: function () { return _size; }, configurable: false });
     Object.defineProperty(this, "deltaRange", { get: function () { return _deltaRange; }, configurable: false });
-
+    Object.defineProperty(this, "FontSize", { 
+        get: function () { return _defaultFontSize; }, 
+        set: function (newFontSize) {
+            customFontSize = true;
+            fontSize = newFontSize + "px";
+            ctx.font = fontSize + fontFamily;  
+            _tickSource.invalidate();
+            that.update();
+        },
+        configurable: false
+    });
+    // Get or set label angle in degrees, from -90 to 90.
+    Object.defineProperty(this, "rotateAngle", {
+        get: function () { return _rotateAngle; },
+        set: function (value) {
+            _rotateAngle = value * Math.PI / 180;
+            _tickSource.invalidate();
+            that.update();
+        },
+        configurable: false
+    });
     this.sizeChanged = true;
 
     // transform data <-> plot: is applied before converting into screen coordinates
@@ -4155,16 +4268,26 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             var tick = ticks[i];
             if (tick.label) {
                 size = tick.label._size;
-                width = size.width;
+                width = size.width; 
                 height = size.height;
-                if (width == 0)
-                    width = ctx.measureText(_tickSource.getInnerText(tick.position)).width;
-                if (height == 0)
-                    height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
+                if(width == 0 || height == 0) {       
+                  var inner = _tickSource.getInner(tick.position);
+                  if(typeof inner === "string"){
+                      var sz = ctx.measureText(inner);
+                      width = sz.width;
+                      height = sz.height; // height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
+                  }else{ // html element
+                      var $div = $("<div></div>").append($(inner)).css({ "display":"block", "visibility":"hidden", "position":"absolute" }).appendTo($("body"));                        
+                      width = $div.width();
+                      height = $div.height();
+                      $div.remove();
+                  }
+                }
+                height = _rotateAngle ? width * Math.abs(Math.sin(_rotateAngle)) + height * Math.abs(Math.cos(_rotateAngle)) : height;                
                 ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: width, height: height, hasLabel: true };
-            }
-            else
+            } else { // no label
                 ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: 0, height: 0, hasLabel: false };
+            }
         }
     };
 
@@ -4283,7 +4406,9 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                     break;
             }
         }
-
+        if (_rotateAngle) {
+            _ticks = _tickSource.updateTransform(result, _rotateAngle * 180/ Math.PI);
+        }
         minTicks = false;
         if (_tickSource.getMinTicks) {
             if (newResult == -1 && iterations > InteractiveDataDisplay.maxTickArrangeIterations || _ticks.length < 2) {
@@ -4370,7 +4495,16 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
 
                 if (!_ticks[i].invisible) ctx.fillRect(x, 1, 1, InteractiveDataDisplay.tickLength);
-                if (_ticks[i].label) _ticks[i].label.css("left", x - shift);
+                if (_ticks[i].label) {
+                    
+                    if (!_rotateAngle || result == 1)
+                        _ticks[i].label.css("left", x - shift);
+                    else if (_rotateAngle > 0) 
+                        _ticks[i].label.css("left", x);
+                    else {
+                        _ticks[i].label.css("left", x - ticksInfo[i].width);
+                    }
+                }
             }
             else {
                 x = (_size - 1) - x;
@@ -4387,7 +4521,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 if (!_ticks[i].invisible) ctx.fillRect(1, x, InteractiveDataDisplay.tickLength, 1);
                 if (_ticks[i].label) {
                     _ticks[i].label.css("top", x - shift);
-                    if (_mode == "left")
+                    if (_mode == "left") 
                         _ticks[i].label.css("left", text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width));
                 }
             }
@@ -4452,11 +4586,22 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         // if range is single point - render only label in the middle of axis
         var x, shift;
         var len = _ticks.length;
-        var fontSize, fontFamily;
+        var _fontSize, fontFamily;
         if(len > 0){
-            var style = window.getComputedStyle(_ticks[0].label[0], null);
-            fontSize = parseFloat(style.getPropertyValue('font-size')); 
-            fontFamily = style.getPropertyValue('font-family');
+            var firstLabel = undefined;
+            for (i = 0 ; i < _ticks.length; i++) {
+                if (_ticks[i] && _ticks[i].label) {
+                    firstLabel = _ticks[i].label[0];
+                    break;
+                }
+            }
+            var style = window.getComputedStyle(firstLabel, null);
+            fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+            if(customFontSize){
+                _fontSize = fontSize;
+            }else{
+                _fontSize = style ? parseFloat(style.getPropertyValue('font-size')): undefined; 
+            }
         }
         for (var i = 0; i < len; i++) {
             x = ticksInfo[i].position;
@@ -4477,12 +4622,36 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
                 
                 if (_ticks[i].label)
-                    _tickSource.renderToSvg(_ticks[i], svg)
-                        .translate(x - shift, textShift)
-                        .font({
-                            family: fontFamily,
-                            size: fontSize
-                        });
+                    var style = _ticks[i].label instanceof jQuery ? window.getComputedStyle(_ticks[i].label[0], null) : window.getComputedStyle(_ticks[i].label, null);
+                    var transform = style ? style.getPropertyValue('transform') : undefined;
+                    var b = transform ? transform.split(',')[1] : undefined;
+                    var angle = b ? Math.round(Math.asin(b) * (180 / Math.PI)) : 0;
+                    if (angle == 0 || !_rotateAngle) {
+                        _tickSource.renderToSvg(_ticks[i], svg)
+                          .translate(x - shift, textShift)
+                          .font({
+                              family: fontFamily,
+                              size: _fontSize
+                          });
+                    } else if (_rotateAngle) {
+                        if (_rotateAngle > 0) {
+                            var text = _tickSource.renderToSvg(_ticks[i], svg)
+                                .translate(x, textShift)
+                                .rotate(angle, 0, 0)
+                                .font({
+                                    family: fontFamily,
+                                    size: _fontSize
+                                });
+                        } else if (_rotateAngle < 0) {
+                            var text = _tickSource.renderToSvg(_ticks[i], svg)
+                            .translate(x - ticksInfo[i].width, textShift)
+                            .rotate(angle, ticksInfo[i].width, 0)
+                            .font({
+                                family: fontFamily,
+                                size: _fontSize
+                            });
+                        }
+                    }
             }
             else { // vertical (left and right)
                 x = (_size - 1) - x;
@@ -4504,12 +4673,22 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                     var leftShift = 0;                    
                     if (_mode == "left")
                         leftShift = text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width) + textShift;
-                    _tickSource.renderToSvg(_ticks[i], svg)
-                        .translate(leftShift + textShift, x-shift)
-                        .font({
-                            family: fontFamily,
-                            size: fontSize
-                        });
+                    if (this.rotateLabels) {
+                        _tickSource.renderToSvg(_ticks[i], svg)
+                            .translate(leftShift - textShift - ticksInfo[i].height, x - shift)
+                            .rotate(-90)
+                            .font({
+                                family: fontFamily,
+                                size: _fontSize
+                            });       
+                    } else {
+                        _tickSource.renderToSvg(_ticks[i], svg)
+                            .translate(leftShift + textShift, x - shift)
+                            .font({
+                                family: fontFamily,
+                                size: _fontSize
+                            });
+                    }
                 }
             }
         }
@@ -4546,13 +4725,16 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 labelsDiv[0].appendChild(labelDiv);
                 label.addClass('idd-axis-label');
                 label._size = { width: labelDiv.offsetWidth, height: labelDiv.offsetHeight };
+                if(customFontSize){
+                    label.css("fontSize", fontSize);
+                }
             }
         }
     };
 
     // function to set new _range
-    this.update = function (newRange) {
-        if (newRange) _range = newRange;
+    this.update = function (newPlotRange) {
+        if (newPlotRange) _range = newPlotRange;
         render();
     };
 
@@ -4608,12 +4790,10 @@ InteractiveDataDisplay.NumericAxis.prototype = new InteractiveDataDisplay.TicksR
 InteractiveDataDisplay.LogarithmicAxis = function (div) {
     this.base = InteractiveDataDisplay.TicksRenderer;
 
-    var logE10 = Math.log(10);
-
     this.getCoordinateFromTick = function (x) {
         var delta = this.deltaRange;
         if (isFinite(delta)) {
-            var coord = Math.log(x) / logE10;
+            var coord = InteractiveDataDisplay.Utils.log10(x);
             return (coord - this.range.min) * delta;
         }
         else return this.axisSize / 2;
@@ -4641,10 +4821,20 @@ InteractiveDataDisplay.LabelledAxis = function (div, params) {
         else return this.axisSize / 2;
     };
 
+    this.updateLabels = function (params) {
+        this.tickSource = new InteractiveDataDisplay.LabelledTickSource(params);
+        if (params && params.rotate)
+            this.rotateLabels = true;
+        this.rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
+    };
+
     if (params && params.rotate)
         this.rotateLabels = true;
 
     this.base(div, new InteractiveDataDisplay.LabelledTickSource(params));
+    this.rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
+
+    return this;
 }
 InteractiveDataDisplay.LabelledAxis.prototype = new InteractiveDataDisplay.TicksRenderer;
 
@@ -4662,7 +4852,7 @@ InteractiveDataDisplay.TickSource = function () {
 
     // gets first available div (not used) or creates new one
     this.getDiv = function (x) {
-        var inner = this.getInnerText(x);
+        var inner = this.getInner(x);
         var i = inners.indexOf(inner);
         if (i != -1) {
             isUsedPool[i] = true;
@@ -4677,29 +4867,52 @@ InteractiveDataDisplay.TickSource = function () {
                 isUsedPool[i] = true;
                 styles[i].display = "block";
                 inners[i] = inner;
-                var div = divPool[i][0];
-                div.innerHTML = inner;
-                divPool[i]._size = { width: div.offsetWidth, height: div.offsetHeight };
+                var $div = divPool[i];
+                if(typeof inner !== "string"){
+                    $div.empty();
+                    $div.append(inner);
+                }else{
+                    $div.text(inner);
+                }
+                var div = $div[0];
+                $div._size = { width: div.offsetWidth, height: div.offsetHeight };
                 return divPool[i];
             }
             else {
-                var div = $("<div>" + inner + "</div>");
+                var $div = $("<div></div>");
+                if(typeof inner !== "string"){
+                    $div.append(inner);
+                }else{
+                    $div.text(inner);
+                }
                 isUsedPool[len] = true;
-                divPool[len] = div;
+                divPool[len] = $div;
                 inners[len] = inner;
-                styles[len] = div[0].style;
-                div._size = undefined;
+                styles[len] = $div[0].style;
+                $div._size = undefined;
                 len++;
-                return div;
+                return $div;
             }
         }
     };
 
     // function to get div's innerText
-    this.getInnerText = function (x) {
-        if (x)
+    this.getInner = function (x) {
+        if (x) {
             return x.toString();
+        }
         return undefined;
+    };
+
+    this.invalidate = function() {
+        for(var i = 0; i < divPool.length; i++){
+            divPool[i].remove();
+        }
+        isUsedPool = [];
+        divPool = [];
+        inners = [];
+        styles = [];
+        len = 0;
     };
 
     // make all not used divs invisible (final step)
@@ -4742,10 +4955,9 @@ InteractiveDataDisplay.NumericTickSource = function () {
 
     var that = this;
 
-    var log10 = 1 / Math.log(10);
     var delta, beta;
 
-    this.getInnerText = function (x) {
+    this.getInner = function (x) {
         if (x == 0) return x.toString();
         else if (beta >= InteractiveDataDisplay.minNumOrder)
             return this.round(x / Math.pow(10, beta), -1) + "e+" + beta;
@@ -4756,13 +4968,13 @@ InteractiveDataDisplay.NumericTickSource = function () {
         InteractiveDataDisplay.NumericTickSource.prototype.getTicks.call(this, _range);
 
         delta = 1;
-        beta = Math.floor(Math.log(this.finish - this.start) * log10);
+        beta = Math.floor(InteractiveDataDisplay.Utils.log10(this.finish - this.start));
 
         return createTicks();
     };
     
     this.renderToSvg = function (tick, svg) {
-        return svg.text(that.getInnerText(tick.position));
+        return svg.text(that.getInner(tick.position));
     }
 
     var createTicks = function () {
@@ -4862,7 +5074,7 @@ InteractiveDataDisplay.NumericTickSource = function () {
     this.getMinTicks = function () {
         var ticks = [];
 
-        beta = Math.floor(Math.log(this.finish - this.start) * log10);
+        beta = Math.floor(InteractiveDataDisplay.Utils.log10(this.finish - this.start));
 
         if (isFinite(beta)) {
             var step = Math.pow(10, beta);
@@ -4920,19 +5132,29 @@ InteractiveDataDisplay.LogarithmicTickSource = function () {
     var start, finish;
 
     // redefined function for innerText - if degree is less than specific constant then render full number otherwise render 10 with degree
-    this.getInnerText = function (x) {
+    this.getInner = function (x) {
         if (Math.abs(x) < InteractiveDataDisplay.minLogOrder)
             return Math.pow(10, x).toString();
-        else
-            return "10<sup>" + x + "</sup>";
+        else {
+            var html = "10<sup>" + x + "</sup>";
+            var element = document.createElement("span");
+            element.innerHTML = html;
+            return element;
+        }
     };
+
+    this.renderToSvg = function (tick, svg) {
+        var inner = tick.position;
+        return svg.text(inner.toString());
+        // todo: render exponential form in a special graphic representation
+    }
 
     this.getTicks = function (_range) {
         InteractiveDataDisplay.LogarithmicTickSource.prototype.getTicks.call(this, _range);
         start = Math.pow(10, this.start);
         finish = Math.pow(10, this.finish);
         return createTicks();
-    };
+    };    
 
     var createTicks = function () {
         var ticks = [];
@@ -5060,9 +5282,23 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var delta = _ticks.length - _labels.length;
 
     var rotateLabels = params && params.rotate ? params.rotate : false;
-    
+
+    this.getInner = function (x) {
+        var hasNewLines = typeof x === "string" && x.indexOf("\n") !== -1;
+        if (!hasNewLines)
+            return x.toString();
+        else {
+            var element = document.createElement("span");
+            element.title = x;
+            element.innerText = x;
+            $(element).css("white-space", "pre");
+            return element;
+        }
+    };
+
     this.renderToSvg = function (tick, svg) {
-        return svg.text(tick.text);
+        var text = tick.text ? tick.text : "";
+        return svg.text(text);
     }
 
     this.getTicks = function (_range) {
@@ -5150,8 +5386,9 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
 
             var count = m2 - m1 + 1;
             var l = 0;
-
+            
             var value2 = _ticks[m1];
+
             for (var i = 0; i < count; i++) {
                 value = value2;
                 if (value >= that.start && value <= that.finish) {
@@ -5190,6 +5427,43 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
         else step--;
         return createTicks();
     };
+    
+    this.updateTransform = function (result, rotateAngle) {
+        var ticks = createTicks();
+        for (var i = 0; i < ticks.length; i++) {
+            if (ticks[i].label) {
+                var div = ticks[i].label;
+                if (result == -1) {
+                    div.css("-webkit-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("-moz-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("-ms-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("-o-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("transform", 'rotate(' + rotateAngle + 'deg)');
+                    if (rotateAngle > 0) {
+                        div.css("transform-origin", 'left top');
+                        div.css("-webkit-transform-origin", 'left top');
+                        div.css("-moz-transform-origin", 'left top');
+                        div.css("-ms-transform-origin", 'left top');
+                        div.css("-o-transform-origin", 'left top');
+                    }
+                    else {
+                        div.css("transform-origin", 'right top');
+                        div.css("-webkit-transform-origin", 'right top');
+                        div.css("-moz-transform-origin", 'right top');
+                        div.css("-ms-transform-origin", 'right top');
+                        div.css("-o-transform-origin", 'right top');
+                    }
+                } else if (result == 1) {
+                    div.css("-webkit-transform", '');
+                    div.css("-moz-transform", '');
+                    div.css("-ms-transform", '');
+                    div.css("-o-transform", '');
+                    div.css("transform", '');
+                }
+            }
+        }
+        return ticks;
+    }
 
     // constructs array of small ticks
     this.getSmallTicks = function (ticks) {
@@ -5213,7 +5487,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     this.getMinTicks = function () {
         var ticks = [];
 
-        if (delta <= 0 && _labels.length == 0) {
+        if (delta <= 0 && _labels.length > 0) {
             var div = that.getDiv(_labels[0]);
             if (rotateLabels) {
                 div.addClass('idd-verticalText');
@@ -5244,7 +5518,6 @@ InteractiveDataDisplay.TicksRenderer.getAxisType = function (dataTransform) {
 }
 ;InteractiveDataDisplay = InteractiveDataDisplay || {};
 
-
 // Represents a mapping from a number to a value (e.g. a color)
 // The function color has an domain [min,max]. If type is absolute, min and max are arbitrary numbers such that max>min.
 // If type is relative, min=0,max=1, and a user of the palette should normalize the values to that range.
@@ -5254,7 +5527,7 @@ InteractiveDataDisplay.ColorPalette = function (isNormalized, range, palettePoin
 
     var _isNormalized;
     var _range;
-    var _points;
+    var _points; // Structure: { x : number, leftColor? : string, rightColor? : string }
     var that = this;
 
     Object.defineProperty(this, "isNormalized", { get: function () { return _isNormalized; }, configurable: false });
@@ -5396,7 +5669,75 @@ InteractiveDataDisplay.ColorPalette = function (isNormalized, range, palettePoin
 
         return new InteractiveDataDisplay.ColorPalette(_isNormalized, _range, points);
     };
+
+    this.gradientString = function() {
+        var colors = InteractiveDataDisplay.ColorPalette.getColorNames();
+        var getHexColor = function(hsla){
+            var toHex = function(v) {
+                var h = v.toString(16);
+                while(h.length < 2)
+                    h = "0" + h;
+                return h;
+            }
+            var rgba = InteractiveDataDisplay.ColorPalette.HSLtoRGB(hsla);
+            var r = toHex(rgba.r);
+            var g = toHex(rgba.g);
+            var b = toHex(rgba.b);
+            var color = "#" + r + g + b;
+
+            var names = Object.keys(colors);            
+            for(var i = 0; i < names.length; i++){
+                var name = names[i];
+                if(colors[name] == color){
+                    color = name;
+                    break;
+                }
+            }
+            return color;
+        }
+
+        var str = "";
+        var n = _points.length;
+        if(!_isNormalized){
+            str = _points[0].x + "=";
+        }
+
+        for(var i = 1; i < n; i++){
+            var pl = _points[i-1];
+            var pr = _points[i];
+
+            if(pl.rightColor === pr.leftColor){
+                str += getHexColor(pl.rightColor);
+            }else{
+                str += getHexColor(pl.rightColor) + "," + getHexColor(pr.leftColor);;
+            }
+            if(i < n-1){
+                str += "=" + pr.x + "=";
+            }
+        }
+
+        if(!_isNormalized){
+            str += "=" + _points[n-1].x;
+        }
+        return str;
+    };
 };
+
+InteractiveDataDisplay.ColorPalette.getColorNames = function() {
+        return {
+        "aliceblue": "#f0f8ff", "antiquewhite": "#faebd7", "aqua": "#00ffff", "aquamarine": "#7fffd4", "azure": "#f0ffff", "beige": "#f5f5dc", "bisque": "#ffe4c4", "black": "#000000", "blanchedalmond": "#ffebcd", "blue": "#0000ff", "blueviolet": "#8a2be2", "brown": "#a52a2a", "burlywood": "#deb887",
+        "cadetblue": "#5f9ea0", "chartreuse": "#7fff00", "chocolate": "#d2691e", "coral": "#ff7f50", "cornflowerblue": "#6495ed", "cornsilk": "#fff8dc", "crimson": "#dc143c", "cyan": "#00ffff", "darkblue": "#00008b", "darkcyan": "#008b8b", "darkgoldenrod": "#b8860b", "darkgray": "#a9a9a9", "darkgreen": "#006400", "darkkhaki": "#bdb76b", "darkmagenta": "#8b008b", "darkolivegreen": "#556b2f",
+        "darkorange": "#ff8c00", "darkorchid": "#9932cc", "darkred": "#8b0000", "darksalmon": "#e9967a", "darkseagreen": "#8fbc8f", "darkslateblue": "#483d8b", "darkslategray": "#2f4f4f", "darkturquoise": "#00ced1", "darkviolet": "#9400d3", "deeppink": "#ff1493", "deepskyblue": "#00bfff", "dimgray": "#696969", "dodgerblue": "#1e90ff",
+        "firebrick": "#b22222", "floralwhite": "#fffaf0", "forestgreen": "#228b22", "fuchsia": "#ff00ff", "gainsboro": "#dcdcdc", "ghostwhite": "#f8f8ff", "gold": "#ffd700", "goldenrod": "#daa520", "gray": "#808080", "green": "#008000", "greenyellow": "#adff2f",
+        "honeydew": "#f0fff0", "hotpink": "#ff69b4", "indianred ": "#cd5c5c", "indigo ": "#4b0082", "ivory": "#fffff0", "khaki": "#f0e68c", "lavender": "#e6e6fa", "lavenderblush": "#fff0f5", "lawngreen": "#7cfc00", "lemonchiffon": "#fffacd", "lightblue": "#add8e6", "lightcoral": "#f08080", "lightcyan": "#e0ffff", "lightgoldenrodyellow": "#fafad2",
+        "lightgrey": "#d3d3d3", "lightgreen": "#90ee90", "lightpink": "#ffb6c1", "lightsalmon": "#ffa07a", "lightseagreen": "#20b2aa", "lightskyblue": "#87cefa", "lightslategray": "#778899", "lightsteelblue": "#b0c4de", "lightyellow": "#ffffe0", "lime": "#00ff00", "limegreen": "#32cd32", "linen": "#faf0e6",
+        "magenta": "#ff00ff", "maroon": "#800000", "mediumaquamarine": "#66cdaa", "mediumblue": "#0000cd", "mediumorchid": "#ba55d3", "mediumpurple": "#9370d8", "mediumseagreen": "#3cb371", "mediumslateblue": "#7b68ee", "mediumspringgreen": "#00fa9a", "mediumturquoise": "#48d1cc", "mediumvioletred": "#c71585", "midnightblue": "#191970", "mintcream": "#f5fffa", "mistyrose": "#ffe4e1", "moccasin": "#ffe4b5",
+        "navajowhite": "#ffdead", "navy": "#000080", "oldlace": "#fdf5e6", "olive": "#808000", "olivedrab": "#6b8e23", "orange": "#ffa500", "orangered": "#ff4500", "orchid": "#da70d6",
+        "palegoldenrod": "#eee8aa", "palegreen": "#98fb98", "paleturquoise": "#afeeee", "palevioletred": "#d87093", "papayawhip": "#ffefd5", "peachpuff": "#ffdab9", "peru": "#cd853f", "pink": "#ffc0cb", "plum": "#dda0dd", "powderblue": "#b0e0e6", "purple": "#800080",
+        "red": "#ff0000", "rosybrown": "#bc8f8f", "royalblue": "#4169e1", "saddlebrown": "#8b4513", "salmon": "#fa8072", "sandybrown": "#f4a460", "seagreen": "#2e8b57", "seashell": "#fff5ee", "sienna": "#a0522d", "silver": "#c0c0c0", "skyblue": "#87ceeb", "slateblue": "#6a5acd", "slategray": "#708090", "snow": "#fffafa", "springgreen": "#00ff7f", "steelblue": "#4682b4",
+        "tan": "#d2b48c", "teal": "#008080", "thistle": "#d8bfd8", "tomato": "#ff6347", "transparent": "#00000000", "turquoise": "#40e0d0", "violet": "#ee82ee", "wheat": "#f5deb3", "white": "#ffffff", "whitesmoke": "#f5f5f5", "yellow": "#ffff00", "yellowgreen": "#9acd32"
+        }
+    };
 
 // Discretizes the palette
 // Returns an Uint8Array array of numbers with length (4 x number of colors), 
@@ -5660,21 +6001,7 @@ InteractiveDataDisplay.Lexer = function (paletteString) {
 };
 
 InteractiveDataDisplay.ColorPalette.colorFromString = function (hexColor) {
-
-    var colours = {
-        "aliceblue": "#f0f8ff", "antiquewhite": "#faebd7", "aqua": "#00ffff", "aquamarine": "#7fffd4", "azure": "#f0ffff", "beige": "#f5f5dc", "bisque": "#ffe4c4", "black": "#000000", "blanchedalmond": "#ffebcd", "blue": "#0000ff", "blueviolet": "#8a2be2", "brown": "#a52a2a", "burlywood": "#deb887",
-        "cadetblue": "#5f9ea0", "chartreuse": "#7fff00", "chocolate": "#d2691e", "coral": "#ff7f50", "cornflowerblue": "#6495ed", "cornsilk": "#fff8dc", "crimson": "#dc143c", "cyan": "#00ffff", "darkblue": "#00008b", "darkcyan": "#008b8b", "darkgoldenrod": "#b8860b", "darkgray": "#a9a9a9", "darkgreen": "#006400", "darkkhaki": "#bdb76b", "darkmagenta": "#8b008b", "darkolivegreen": "#556b2f",
-        "darkorange": "#ff8c00", "darkorchid": "#9932cc", "darkred": "#8b0000", "darksalmon": "#e9967a", "darkseagreen": "#8fbc8f", "darkslateblue": "#483d8b", "darkslategray": "#2f4f4f", "darkturquoise": "#00ced1", "darkviolet": "#9400d3", "deeppink": "#ff1493", "deepskyblue": "#00bfff", "dimgray": "#696969", "dodgerblue": "#1e90ff",
-        "firebrick": "#b22222", "floralwhite": "#fffaf0", "forestgreen": "#228b22", "fuchsia": "#ff00ff", "gainsboro": "#dcdcdc", "ghostwhite": "#f8f8ff", "gold": "#ffd700", "goldenrod": "#daa520", "gray": "#808080", "green": "#008000", "greenyellow": "#adff2f",
-        "honeydew": "#f0fff0", "hotpink": "#ff69b4", "indianred ": "#cd5c5c", "indigo ": "#4b0082", "ivory": "#fffff0", "khaki": "#f0e68c", "lavender": "#e6e6fa", "lavenderblush": "#fff0f5", "lawngreen": "#7cfc00", "lemonchiffon": "#fffacd", "lightblue": "#add8e6", "lightcoral": "#f08080", "lightcyan": "#e0ffff", "lightgoldenrodyellow": "#fafad2",
-        "lightgrey": "#d3d3d3", "lightgreen": "#90ee90", "lightpink": "#ffb6c1", "lightsalmon": "#ffa07a", "lightseagreen": "#20b2aa", "lightskyblue": "#87cefa", "lightslategray": "#778899", "lightsteelblue": "#b0c4de", "lightyellow": "#ffffe0", "lime": "#00ff00", "limegreen": "#32cd32", "linen": "#faf0e6",
-        "magenta": "#ff00ff", "maroon": "#800000", "mediumaquamarine": "#66cdaa", "mediumblue": "#0000cd", "mediumorchid": "#ba55d3", "mediumpurple": "#9370d8", "mediumseagreen": "#3cb371", "mediumslateblue": "#7b68ee", "mediumspringgreen": "#00fa9a", "mediumturquoise": "#48d1cc", "mediumvioletred": "#c71585", "midnightblue": "#191970", "mintcream": "#f5fffa", "mistyrose": "#ffe4e1", "moccasin": "#ffe4b5",
-        "navajowhite": "#ffdead", "navy": "#000080", "oldlace": "#fdf5e6", "olive": "#808000", "olivedrab": "#6b8e23", "orange": "#ffa500", "orangered": "#ff4500", "orchid": "#da70d6",
-        "palegoldenrod": "#eee8aa", "palegreen": "#98fb98", "paleturquoise": "#afeeee", "palevioletred": "#d87093", "papayawhip": "#ffefd5", "peachpuff": "#ffdab9", "peru": "#cd853f", "pink": "#ffc0cb", "plum": "#dda0dd", "powderblue": "#b0e0e6", "purple": "#800080",
-        "red": "#ff0000", "rosybrown": "#bc8f8f", "royalblue": "#4169e1", "saddlebrown": "#8b4513", "salmon": "#fa8072", "sandybrown": "#f4a460", "seagreen": "#2e8b57", "seashell": "#fff5ee", "sienna": "#a0522d", "silver": "#c0c0c0", "skyblue": "#87ceeb", "slateblue": "#6a5acd", "slategray": "#708090", "snow": "#fffafa", "springgreen": "#00ff7f", "steelblue": "#4682b4",
-        "tan": "#d2b48c", "teal": "#008080", "thistle": "#d8bfd8", "tomato": "#ff6347", "transparent": "#00000000", "turquoise": "#40e0d0", "violet": "#ee82ee", "wheat": "#f5deb3", "white": "#ffffff", "whitesmoke": "#f5f5f5", "yellow": "#ffff00", "yellowgreen": "#9acd32"
-    };
-
+    var colours = InteractiveDataDisplay.ColorPalette.getColorNames();
     if (typeof (hexColor) !== "string")
         throw "wrong definition of color: must be a string";
 
@@ -5822,6 +6149,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     var _width = _host.width();
     var _height = 20;
     var _axisVisible = true;
+    var _logAxis = false;
     var _palette = palette;
     var _dataRange = undefined;
 
@@ -5833,6 +6161,8 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
             _width = options.width;
         if (options.axisVisible !== undefined)
             _axisVisible = options.axisVisible;
+        if (options.logAxis !== undefined)
+            _logAxis = options.logAxis;
     }
 
     // canvas to render palette
@@ -5843,14 +6173,27 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     var _axisDiv = null;
     var _axis = null;
 
+    function dataToPlot(range){
+         if(_logAxis){
+             return { min : InteractiveDataDisplay.Utils.log10(range.min), max : InteractiveDataDisplay.Utils.log10(range.max) };
+         }else{
+            return range;
+        }
+    }
+
     function addAxis() {
         _axisDiv = $("<div data-idd-placement='bottom' style='width: " + _width + "px; color: rgb(0,0,0)'></div>");
         _host[0].appendChild(_axisDiv[0]);
-        _axis = new InteractiveDataDisplay.NumericAxis(_axisDiv);
+
+        if(!_logAxis){
+            _axis = new InteractiveDataDisplay.NumericAxis(_axisDiv);
+        }else{
+            _axis = new InteractiveDataDisplay.LogarithmicAxis(_axisDiv);
+        }
         if (_palette && !_palette.isNormalized) // Take axis values from fixed palette
-            _axis.update({ min: _palette.range.min, max: _palette.range.max });
+            _axis.update(dataToPlot({ min: _palette.range.min, max: _palette.range.max }));
         else if (_dataRange) // Try to take axis values from data range
-            _axis.update({ min: _dataRange.min, max: _dataRange.max });
+            _axis.update(dataToPlot({ min: _dataRange.min, max: _dataRange.max }));
     }
 
     function removeAxis() {
@@ -5883,7 +6226,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
             if (value) {
                 _palette = value;
                 if (_axisVisible && (!_palette.isNormalized || !_dataRange))
-                    _axis.update({ min: _palette.range.min, max: _palette.range.max });
+                    _axis.update(dataToPlot({ min: _palette.range.min, max: _palette.range.max }));
                 renderPalette();
             }
         },
@@ -5896,7 +6239,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
             if (value) {
                 _dataRange = value;
                 if (_axisVisible && (!_palette || _palette.isNormalized)) {
-                    _axis.update({ min: _dataRange.min, max: _dataRange.max });
+                    _axis.update(dataToPlot({ min: _dataRange.min, max: _dataRange.max }));
                 }
             }
         },
@@ -6282,7 +6625,362 @@ InteractiveDataDisplay.palettes = {
                                                               { x: 1.0, rightColor: { h: 0, s: 0, l: 1, a: 1 }, leftColor: { h: 0, s: 0, l: 1, a: 1 } }])
 };
 
-;InteractiveDataDisplay.Gestures = {};
+;InteractiveDataDisplay = InteractiveDataDisplay || {};
+
+InteractiveDataDisplay.ColorPaletteEditor = function ($div, palette) {
+    if($div.hasClass("idd-colorPaletteEditor")) return;
+
+    $div.addClass("idd-colorPaletteEditor");
+    $div[0].editor = this;
+
+    var borderTemplate = "gray";
+    var fillTemplate = "rgba(100,100,100,0.3)";
+
+    var that = this;        
+    var _palette = palette;
+    Object.defineProperty(this, "palette", {
+            get: function () { return _palette; },
+            set: function (value) {
+                _palette = value;
+                paletteViewer.palette = _palette;
+                updateMarkers();
+            },
+            configurable: false
+    });
+    var firePaletteChanged = function(newPalette){
+        $div.trigger("paletteChanged", [ newPalette ]);
+    }
+
+    var isDraggingMarker = false;
+    var isChoosingColor = false;
+    
+    var width = $div.width();
+    var barHeight = 10;
+    var paletteHeight = 20;    
+
+    var $bar = 
+        $("<div></div>")
+        .height(barHeight)
+        .width(width)
+        .addClass("idd-colorPaletteEditor-bar")
+        .appendTo($div);
+
+    var $viewer = 
+        $("<div></div>")
+        .height(paletteHeight)
+        .width(width)
+        .addClass("idd-colorPaletteEditor-viewer")
+        .appendTo($div);
+
+    var options = {
+        height : paletteHeight,
+        axisVisible : false
+    };
+    var paletteViewer = new InteractiveDataDisplay.ColorPaletteViewer($viewer, _palette, options);
+    var height = barHeight + $viewer.height();
+    $div.height(height);
+
+    var markers = [];
+
+    var getCssColor = function(hsla){
+        var rgba = InteractiveDataDisplay.ColorPalette.HSLtoRGB(hsla);
+        return "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
+    }
+
+     var getHexColor = function(hsla){
+        var toHex = function(v) {
+            var h = v.toString(16);
+            while(h.length < 2)
+                h = "0" + h;
+            return h;
+        }
+        var rgba = InteractiveDataDisplay.ColorPalette.HSLtoRGB(hsla);
+        var r = toHex(rgba.r);
+        var g = toHex(rgba.g);
+        var b = toHex(rgba.b);
+        return "#" + r + g + b;
+    }
+
+    var renderMarker = function(ctx, left, top, borderColor, leftColor, rightColor){
+        var sz = barHeight;        
+        if(leftColor){
+            ctx.fillStyle = leftColor;
+            ctx.beginPath();
+            ctx.moveTo(left, top);
+            ctx.lineTo(left + sz/2, top);
+            ctx.lineTo(left + sz/2, top + sz);
+            ctx.fill();
+        }
+        if(rightColor){
+            ctx.fillStyle = rightColor;
+            ctx.beginPath();
+            ctx.moveTo(left + sz/2, top);
+            ctx.lineTo(left + sz, top);
+            ctx.lineTo(left + sz/2, top + sz);
+            ctx.fill();
+        }
+        // outline:
+        ctx.strokeStyle = borderColor;
+        ctx.beginPath();
+        ctx.moveTo(left, top);
+        ctx.lineTo(left + sz, top);
+        ctx.lineTo(left + sz/2, top + sz);
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    var $canvasNew = 
+        $("<canvas height='" + barHeight + "px'" + "width='" + width + "px' style='display: block'></canvas>")
+        .css("position", "absolute")
+        .appendTo($bar);
+    var clearCanvasNew = function(){
+        var ctx = $canvasNew[0].getContext("2d");
+        ctx.clearRect(0, 0, width, barHeight);
+    }
+
+    var stopChoosingColor = function(){
+        if(isChoosingColor){
+            var $pickers = $(".idd-colorPaletteEditor-colorPicker", $bar);
+            if($pickers.length > 0){
+                var handler = $.data($pickers[0], "onClick");
+                if(handler){
+                    $(window).off("click", handler);
+                }
+                $(".idd-colorPaletteEditor-colorPicker", $bar).remove();
+            }
+            isChoosingColor = false;
+        }
+    }
+
+    // Shows an element that allows to choose a color.
+    // It is shown above the palette viewer.
+    // Arguments:
+    //  - xp: x-position relative to bars
+    //  - hsla: initial color
+    //  - onSelected: callback to set the chosen color
+    var chooseColor = function(xp, hsla, onChosen){
+        stopChoosingColor();
+        isChoosingColor = true;
+
+        var w = 60;
+        var h = 20;
+
+        var $colorPicker = 
+            $("<div></div>")
+            .addClass("idd-colorPaletteEditor-colorPicker")
+            .css({ "position": "absolute", "left":  xp - w/2, "top": barHeight })            
+            .appendTo($bar);
+
+        $("<span>Color:</span>")
+            .css("margin-right", 10)
+            .appendTo($colorPicker);
+
+        var $input = 
+            $("<input type=color></input>")            
+            .width(w)
+            .height(h)
+            .val(getHexColor(hsla))
+            .change(function(){
+                var color = $input.val();
+                var rgba = InteractiveDataDisplay.ColorPalette.colorFromString(color);
+                var hsla = InteractiveDataDisplay.ColorPalette.RGBtoHSL(rgba);
+                onChosen(hsla);
+                stopChoosingColor();
+            })
+            .appendTo($colorPicker);
+
+        var onClick = function(e){
+            var isOfColorPicker = 
+                $(e.target).hasClass("idd-colorPaletteEditor-colorPicker") ||
+                $colorPicker.has($(e.target)).length > 0;
+            if(!isOfColorPicker){
+                stopChoosingColor();
+                e.stopPropagation();
+            }
+        }
+        $(window).click(onClick);
+        $.data($colorPicker[0], "onClick", onClick); // saves the handler to unsubscribe
+    };
+
+    // Computes position on the _palette range for the given marker element.
+    var getMarkerX = function($marker) {
+        var offset = $canvasNew.offset(); 
+        var xp = $marker.offset().left + $marker.width()/2 - offset.left;
+        var k = (_palette.range.max - _palette.range.min) / width;        
+        var x = k * xp + _palette.range.min;
+        return x;
+    }
+
+    var addMarker = function(point, leftX, rightX, isDraggable){
+        var k = width / (_palette.range.max - _palette.range.min);
+        var xp = k * (point.x - _palette.range.min);
+        var lxp = k * (leftX - _palette.range.min);
+        var rxp = k * (rightX - _palette.range.min);
+
+        // Structure
+        var sz = barHeight;
+        var $marker = 
+            $("<div style='position:absolute;'></div>")
+            .addClass("idd-colorPaletteEditor-marker")
+            .width(sz)
+            .height(sz)
+            .appendTo($bar);
+        var $canvas = 
+             $("<canvas height='" + sz + "px'" + "width='" + sz + "px' style='display: block'></canvas>")
+            .appendTo($marker);
+        $marker.css("left", xp - sz/2);
+
+        if(isDraggable){
+            var offset = $canvasNew.offset();
+            var renderedAsRemoving = false;
+            $marker.draggable({ 
+                axis: "x", 
+                containment: [ offset.left + lxp - sz/2, offset.top, offset.left + rxp - sz/2, offset.top + sz ],
+                start: function(e){  // Starts dragging the marker
+                    isDraggingMarker = true;
+                    renderedAsRemoving = false;
+
+                    stopChoosingColor();                    
+                    clearCanvasNew();
+                    var offset = $canvasNew.offset();
+                    $(e.target).draggable("option", "containment",
+                        [ offset.left + lxp - sz/2, offset.top, offset.left + rxp - sz/2, offset.top + sz ]);
+                }, 
+                drag: function(e){ // Dragging the marker
+                    var parentOffset = $div.offset(); 
+                    var cursorY = e.pageY - parentOffset.top;
+                    if(cursorY < 0 || cursorY > height) { // cursor is above or below the bar panel ==> remove?
+                        if(!renderedAsRemoving){
+                            var ctx = $canvas[0].getContext("2d");
+                            ctx.clearRect(0, 0, sz, sz);
+                            renderMarker(ctx, 0, 0, borderTemplate, fillTemplate, fillTemplate);
+                            renderedAsRemoving = true;
+                        }
+                    }else if(renderedAsRemoving) {
+                        var ctx = $canvas[0].getContext("2d");
+                        ctx.clearRect(0, 0, sz, sz);
+                        renderMarker(ctx, 0, 0,
+                            'black', 
+                            point.leftColor && getCssColor(point.leftColor),
+                            point.rightColor && getCssColor(point.rightColor));
+                        renderedAsRemoving = false;
+                    }
+                },
+                stop: function(e){ // Dragging stopped and we move the marker to new position                    
+                    isDraggingMarker = false;
+                    
+                    var parentOffset = $div.offset(); 
+                    var cursorY = e.pageY - parentOffset.top;
+
+                    if(cursorY < 0 || cursorY > height) { // cursor is above or below the bar panel ==> remove
+                        for(var i = 0; i < _palette.points.length; i++){
+                            if(_palette.points[i].x == point.x){
+                                _palette.points.splice(i, 1); // <-- remove the palette point
+                                firePaletteChanged(_palette);
+                                paletteViewer.palette = _palette;
+                                break;
+                            }
+                        }
+                    } else { // new position for the marker
+                        var x = getMarkerX($marker)
+                        if(x > _palette.range.min && x < _palette.range.max){
+                            point.x = x;           // <-- new palette point                            
+                            firePaletteChanged(_palette);  
+                            paletteViewer.palette = _palette;
+                        }
+                    }                                        
+                    updateMarkers();                    
+                }
+            });
+        }
+        $marker.click(function(e){ // <-- prompts a user to choose new color for the marker
+            chooseColor(xp, point.rightColor ? point.rightColor : point.leftColor, 
+                function(hsla) {  // <-- new color is chosen for the marker
+                    if(point.leftColor) point.leftColor = hsla;
+                    if(point.rightColor) point.rightColor = hsla;
+                    paletteViewer.palette = _palette;
+                    firePaletteChanged(_palette);
+                    updateMarkers();
+                });
+            e.stopPropagation();
+        });
+
+        // Render   
+        var ctx = $canvas[0].getContext("2d");
+        renderMarker(ctx, 0, 0,
+            'black', 
+            point.leftColor && getCssColor(point.leftColor),
+            point.rightColor && getCssColor(point.rightColor));
+    }; // end of `addMarker`
+
+    // Refreshes UI markers to correspond the `_palette`.
+    var updateMarkers = function(){
+        isDraggingMarker = false;
+        stopChoosingColor();
+        
+        var $markers = $(".idd-colorPaletteEditor-marker", $bar);
+        $markers.filter(".ui-draggable").each(function(){
+            $(this).draggable("destroy");            
+        });
+        $markers.remove();
+
+        for(var i = 0; i < _palette.points.length; i++){
+            var leftX = i == 0 ? _palette.range.min : _palette.points[i-1].x;
+            var rightX = i == _palette.points.length-1 ? _palette.range.max : _palette.points[i+1].x;
+            addMarker(_palette.points[i], leftX, rightX, i > 0 && i < _palette.points.length - 1);
+        }
+    }
+
+    var addPalettePoint = function(p) { // <-- adds new palette point
+        var points = _palette.points;
+        if(points[0].x >= p.x || points[points.length-1].x <= p.x) return;
+        var points2;
+        for(var i = 1; i < points.length; i++){
+            if(p.x == points[i].x) return;
+            if(p.x < points[i].x){
+                points2 = points.slice();
+                points2.splice(i, 0, p);
+                break;
+            }
+        }
+        _palette = new InteractiveDataDisplay.ColorPalette(_palette.isNormalized, _palette.range, points2);
+        paletteViewer.palette = _palette;
+        firePaletteChanged(_palette);
+        updateMarkers();
+    }
+    
+    $canvasNew.mousemove(function(e){ // <-- draw a marker placeholder to indicate that it can be added here
+        if(isDraggingMarker || isChoosingColor) return;
+
+        var parentOffset = $canvasNew.offset(); 
+        var relX = e.pageX - parentOffset.left;
+        
+        var ctx = $canvasNew[0].getContext("2d");
+        ctx.clearRect(0, 0, width, barHeight);
+        renderMarker(ctx, relX-barHeight/2, 0, borderTemplate, fillTemplate, fillTemplate);
+    });
+    $canvasNew.mouseleave(function(){
+        clearCanvasNew();
+    });
+    $canvasNew.click(function(e){  // <-- user clicked to add new marker
+        if(isDraggingMarker || isChoosingColor) return;
+
+        var parentOffset = $canvasNew.offset(); 
+        var relX = e.pageX - parentOffset.left;
+        var k = (_palette.range.max - _palette.range.min) / width;
+        
+        var x = k * relX + _palette.range.min;
+        var c = _palette.getHsla(x);
+        var p = {
+            x: x,
+            leftColor: c,
+            rightColor: c
+        };
+        addPalettePoint(p);
+    });
+
+    updateMarkers();
+};InteractiveDataDisplay.Gestures = {};
 InteractiveDataDisplay.Gestures.FullEventList = [
     "mousedown",
     "mousemove",
@@ -10258,7 +10956,8 @@ InteractiveDataDisplay.BoxWhisker = {
         // border
         if (data.border == undefined || data.border == "none")
             data.border = null; // no border
-
+        if (data.thickness == undefined || data.thickness == "none")
+            data.thickness = 2;
         // colors        
         if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
 
@@ -10349,10 +11048,10 @@ InteractiveDataDisplay.BoxWhisker = {
 
         context.beginPath();
         context.strokeStyle = marker.border === undefined ? "black" : marker.border;
-
+        context.lineWidth = marker.thickness;
         if (marker.color) context.fillRect(x - shift, l68, msize, u68 - l68);
         context.strokeRect(x - shift, l68, msize, u68 - l68);
-       
+
         context.moveTo(x - shift, u95);
         context.lineTo(x + shift, u95);
 
@@ -10368,6 +11067,7 @@ InteractiveDataDisplay.BoxWhisker = {
         context.lineTo(x + shift, mean);
        
         context.stroke();
+        
 
         if (marker.y_min !== undefined) {
             context.beginPath();
@@ -10397,9 +11097,10 @@ InteractiveDataDisplay.BoxWhisker = {
     },
     getBoundingBox: function (marker) {
         var size = marker.size;
+        var xLeft = marker.x;
         var yBottom = marker.lower95 ? marker.lower95 : (marker.lower68 ? marker.lower68 : marker.y);
         var yTop = marker.upper95 ? marker.upper95 : (marker.upper68 ? marker.upper68 : marker.y);
-        return { x: marker.x - size / 2, y: yBottom, width: size, height: Math.abs(yTop - yBottom) };
+        return { x: xLeft, y: yBottom, width: 0, height: Math.abs(yTop - yBottom) };
     },
     getPadding: function (data) {
         var padding = 0;
@@ -10587,22 +11288,25 @@ InteractiveDataDisplay.BoxWhisker = {
         var shift = size / 2;
         var color = data.color;
         var border = data.border == null ? 'none' : data.border;
+        var thickness = data.thickness;
         for (; i < n; i++) {
             x1 = dataToScreenX(data.x[i]);
             y1 = dataToScreenY(data.y[i]);
-            u68 = dataToScreenY(data.upper68[i]);
-            l68 = dataToScreenY(data.lower68[i]);
-            u95 = dataToScreenY(data.upper95[i]);
-            l95 = dataToScreenY(data.lower95[i]);
+            u68 = data.upper68 ? dataToScreenY(data.upper68[i]) : undefined;
+            l68 = data.lower68 ? dataToScreenY(data.lower68[i]) : undefined;
+            u95 = data.upper95 ? dataToScreenY(data.upper95[i]) : undefined;
+            l95 = data.lower95 ? dataToScreenY(data.lower95[i]) : undefined;
             mean = dataToScreenY(data.y[i]);
             c1 = (x1 < 0 || x1 > w_s || y1 < 0 || y1 > h_s);
             if (!c1) {
-                bx_g.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).stroke(border);
-                bx_g.polyline([[x1 - shift, u95], [x1 + shift, u95]]).stroke(border);
-                bx_g.polyline([[x1, u95], [x1, u68]]).stroke(border);
-                bx_g.polyline([[x1, l68], [x1, l95]]).stroke(border);
-                bx_g.polyline([[x1 - shift, l95], [x1 + shift, l95]]).stroke(border);
-                bx_g.polyline([[x1 - shift, mean], [x1 + shift, mean]]).stroke(border);
+                if (u95 != undefined && l95 != undefined) {
+                    bx_g.polyline([[x1 - shift, u95], [x1 + shift, u95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                    bx_g.polyline([[x1, u95], [x1, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                    //bx_g.polyline([[x1, l68], [x1, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                    bx_g.polyline([[x1 - shift, l95], [x1 + shift, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                }
+                if (u68 != undefined && l68 != undefined) bx_g.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).style({ fill: color, stroke: border, "stroke-width": thickness });
+                bx_g.polyline([[x1 - shift, mean], [x1 + shift, mean]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
             }
         }
         bx_g.clipWith(bx_g.rect(w_s, h_s));
@@ -10610,25 +11314,48 @@ InteractiveDataDisplay.BoxWhisker = {
 };
 InteractiveDataDisplay.Bars = {
     prepare: function (data) {
-        // y
-        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
-        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
-        var n = data.y.length;
-        var mask = new Int8Array(n);
-        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
-        //x
-        if (data.x == undefined)
-            data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
-        else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
-        else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from lenght of 'y'"
-        else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+        var n, mask;
+        // x
+        if (data.orientation == "h") {
+            if (data.x == undefined || data.x == null) throw "The mandatory property 'x' is undefined or null";
+            if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+            n = data.x.length;
+            mask = new Int8Array(n);
+            InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+            //x
+            if (data.y == undefined)
+                data.y = InteractiveDataDisplay.Utils.range(0, n - 1);
+            else if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'x' must be an array of numbers";
+            else if (data.y.length != n) throw "Length of the array which is a value of the property 'x' differs from length of 'y'"
+            else InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+        }
+        else {
+            if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
+            if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
+            n = data.y.length;
+            mask = new Int8Array(n);
+            InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+            //x
+            if (data.x == undefined)
+                data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+            else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+            else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from length of 'y'"
+            else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+        }
+        //var mask = new Int8Array(n);
+        //InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+        ////x
+        //if (data.x == undefined)
+        //    data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+        //else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+        //else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from length of 'y'"
+        //else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
         // border
         if (data.border == undefined || data.border == "none")
             data.border = null; // no border
         // shadow
         if (data.shadow == undefined || data.shadow == "none")
             data.shadow = null; // no shadow
-
         if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
         if (InteractiveDataDisplay.Utils.isArray(data.color)) {
             if (data.color.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
@@ -10675,18 +11402,32 @@ InteractiveDataDisplay.Bars = {
     },
     draw: function (marker, plotRect, screenSize, transform, context) {
         var barWidth = 0.5 * marker.barWidth;
-        var xLeft = transform.dataToScreenX(marker.x - barWidth);
-        var xRight = transform.dataToScreenX(marker.x + barWidth);
-        if (xLeft > screenSize.width || xRight < 0) return;
-        var yTop = transform.dataToScreenY(marker.y);
-        var yBottom = transform.dataToScreenY(0);
-        if (yTop > yBottom) {
-            var k = yBottom;
-            yBottom = yTop;
-            yTop = k;
+        var xLeft, xRight, yTop, yBottom;
+        if (marker.orientation == "h") {
+            xLeft = transform.dataToScreenX(0);
+            xRight = transform.dataToScreenX(marker.x);
+            if (xLeft > xRight) {
+                var k = xRight;
+                xRight = xLeft;
+                xLeft = k;
+            }
+            if (xLeft > screenSize.width || xRight < 0) return;
+            yTop = transform.dataToScreenY(marker.y + barWidth);
+            yBottom = transform.dataToScreenY(marker.y - barWidth);
+            if (yTop > screenSize.height || yBottom < 0) return;
+        } else {
+            xLeft = transform.dataToScreenX(marker.x - barWidth);
+            xRight = transform.dataToScreenX(marker.x + barWidth);
+            if (xLeft > screenSize.width || xRight < 0) return;
+            yTop = transform.dataToScreenY(marker.y);
+            yBottom = transform.dataToScreenY(0);
+            if (yTop > yBottom) {
+                var k = yBottom;
+                yBottom = yTop;
+                yTop = k;
+            }
+            if (yTop > screenSize.height || yBottom < 0) return;
         }
-        if (yTop > screenSize.height || yBottom < 0) return;
-
         if (marker.shadow) {
             context.fillStyle = marker.shadow;
             context.fillRect(xLeft + 2, yTop + 2, xRight - xLeft, yBottom - yTop);
@@ -10701,14 +11442,20 @@ InteractiveDataDisplay.Bars = {
     },
     getBoundingBox: function (marker) {
         var barWidth = marker.barWidth;
-        var xLeft = marker.x - barWidth / 2;
-        var yBottom = Math.min(0, marker.y);
-        return { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
+        var xLeft = marker.orientation == "h"? Math.min(0, marker.x) : marker.x - barWidth / 2;
+        var yBottom = marker.orientation == "h" ? marker.y - barWidth / 2 : Math.min(0, marker.y);
+        
+        return marker.orientation == "h" ? {x: xLeft, y: yBottom, width: Math.abs(marker.x), height: barWidth} : { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
     },
     hitTest: function (marker, transform, ps, pd) {
         var barWidth = marker.barWidth;
-        var xLeft = marker.x - barWidth / 2;
-        var yBottom = Math.min(0, marker.y);
+        var xLeft = marker.orientation == "h"? Math.min(0, marker.x) : marker.x - barWidth / 2;
+        var yBottom = marker.orientation == "h" ? marker.y - barWidth / 2 : Math.min(0, marker.y);
+        if (marker.orientation == "h") {
+            if (pd.x < xLeft || pd.x > xLeft  + Math.abs(marker.x)) return false;
+            if (pd.y < yBottom || pd.y > yBottom + barWidth) return false;
+            return true;
+        }
         if (pd.x < xLeft || pd.x > xLeft + barWidth) return false;
         if (pd.y < yBottom || pd.y > yBottom + Math.abs(marker.y)) return false;
         return true;
@@ -10848,16 +11595,28 @@ InteractiveDataDisplay.Bars = {
         var border = data.border == null ? 'none' : data.border;
         var shadow = data.shadow == null ? 'none' : data.shadow;
         for (; i < n; i++) {
-            xLeft = dataToScreenX(data.x[i] - shift);
-            xRight = dataToScreenX(data.x[i] + shift);
-            yTop = dataToScreenY(data.y[i]);
-            yBottom = dataToScreenY(0);
-            if (yTop > yBottom) {
-                var k = yBottom;
-                yBottom = yTop;
-                yTop = k;
+            if (data.orientation == "h") {
+                xLeft = dataToScreenX(0);
+                xRight = dataToScreenX(data.x[i]);
+                yTop = dataToScreenY(data.y[i] + shift);
+                yBottom = dataToScreenY(data.y[i] - shift);
+                if (xLeft > xRight) {
+                    var k = xRight;
+                    xRight = xLeft;
+                    xLeft = k;
+                }
+            } else {
+                xLeft = dataToScreenX(data.x[i] - shift);
+                xRight = dataToScreenX(data.x[i] + shift);
+                yTop = dataToScreenY(data.y[i]);
+                yBottom = dataToScreenY(0);
+                if (yTop > yBottom) {
+                    var k = yBottom;
+                    yBottom = yTop;
+                    yTop = k;
+                }
             }
-            color = data.individualColors ? data.color[i]: data.color;
+            color = data.individualColors ? data.color[i] : data.color;
             c1 = (xRight < 0 || xLeft > w_s || yBottom < 0 || yTop > h_s);
             if (!c1) {
                 bars_g.polyline([[xLeft + 2, yBottom + 2], [xLeft + 2, yTop + 2], [xRight + 2, yTop + 2], [xRight + 2, yBottom + 2], [xLeft + 2, yBottom + 2]]).fill(shadow);
@@ -10879,6 +11638,7 @@ InteractiveDataDisplay.Bars = {
         var y3 = size / 3;
         var barWidth = size / 3;
         var shadowSize = 1;
+        var shadow = 'none';
         //thumbnail
         if (data.individualColors) {
             border = "#000000";
@@ -11273,17 +12033,30 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var _imageData;
     var _y;
     var _x;
-    var _f;
-    var _f_u68, _f_l68, _f_median;
-    var _fmin, _fmax;
+
+    // _f contains values that are mapped to colors.
+    // _log_f is log10(_f) and it is used only if options.logColors is enabled instead of _f for color mapping.
+    // _f or _logf is passed to the heatmap render.
+    // _fmin/_fmax (and corresponding log-versions) are min/max for _f (_log_f) and are used EXCLUSIVELY for palette range.
+    // Log range are computed with respect to _logTolerance (taken from option.logTolerance).
+    // _log_f is passed to rendered only.
+    // _f is passed to renderer and to build tooltip value.
+    var _f, _f_u68, _f_l68, _f_median, _fmin, _fmax;
+    var _logColors, _logTolerance;
+    var _log_f, _log_fmin, _log_fmax;
+
+
     var _opacity; // 1 is opaque, 0 is transparent
     var _mode; // gradient or matrix
     var _palette;
     var _dataChanged;
     var _paletteColors;
+
+    // Uncertainty interval
     var _interval;
     var _originalInterval;
     var _heatmap_nav;
+
     var _formatter_f, _formatter_f_median, _formatter_f_l68, _formatter_f_u68, _formatter_interval;
 
     loadOpacity((initialData && typeof (initialData.opacity) != 'undefined') ? parseFloat(initialData.opacity) : 1.0);
@@ -11421,6 +12194,20 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         };
     };
 
+    var computePaletteMinMax = function() {
+        var minmax = findFminmax(_f);
+        _fmin = minmax.min;
+        _fmax = minmax.max;
+
+        if(_logColors){      
+            _fmin = Math.max(_fmin, _logTolerance);
+            _fmax = Math.max(_fmax, _logTolerance);
+            // Palette range is in "plot coordinates", i.e. log10 of range.
+            _log_fmin = InteractiveDataDisplay.Utils.log10(_fmin);
+            _log_fmax = InteractiveDataDisplay.Utils.log10(_fmax);
+        }
+    }
+
     this.onRenderTaskCompleted = function (completedTask) {
         lastCompletedTask = completedTask;
         if (_innerCanvas.width !== lastCompletedTask.width || _innerCanvas.height !== lastCompletedTask.height) {
@@ -11437,13 +12224,19 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     this.draw = function (data, titles) {
         var f = data.values;
         if (!f) throw "Data series f is undefined";
-        var isOneDimensional = f["median"] !== undefined && !InteractiveDataDisplay.Utils.isArray(f["median"][0])
-                || !InteractiveDataDisplay.Utils.isArray(f[0]);
+        var isOneDimensional = 
+            f["median"] !== undefined && !InteractiveDataDisplay.Utils.isArray(f["median"][0])
+            || !InteractiveDataDisplay.Utils.isArray(f[0]);
         var x = data.x;
         var y = data.y;
         if (_originalInterval == undefined && _interval == undefined) _originalInterval = data.interval;
         _interval = data.interval;
-        if (f["median"]) {//uncertainty
+
+
+        _logColors = data.logPalette !== undefined && data.logPalette;
+        _logTolerance = data.logTolerance ? data.logTolerance : 1e-12;
+
+        if (f["median"]) { //uncertain data
             if (_heatmap_nav == undefined) {
                 var div = $("<div></div>")
                     .attr("data-idd-name", "heatmap__nav_")
@@ -11512,6 +12305,21 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             }
         }
 
+        // Logarithmic colors: builds log10(_f) to be rendered, so the color palette
+        // is logarithmic.
+        if(_logColors){
+            _log_f = new Array(_f.length);
+            for(var i = 0; i < _f.length; i++)
+            {
+                var row = _f[i];
+                var logRow = _log_f[i] = new Float32Array(row.length);
+                for(var j = 0; j < row.length; j++)
+                {
+                    logRow[j] = InteractiveDataDisplay.Utils.log10(row[j]);
+                }
+            }
+        }
+
         _formatter_f = undefined;
         _formatter_f_median = undefined;
         _formatter_f_l68 = undefined;
@@ -11547,10 +12355,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         }
         if (data && typeof (data.colorPalette) != 'undefined')
             loadPalette(data.colorPalette);
+
         if (_palette.isNormalized) {
-            var minmax = findFminmax(_f);
-            _fmin = minmax.min;
-            _fmax = minmax.max;
+            computePaletteMinMax();
         }
         _dataChanged = true;
         var prevBB = this.invalidateLocalBounds();
@@ -11762,9 +12569,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                     height: _imageData.height,
                     x: _x,
                     y: _y,
-                    f: _f,
-                    fmin: _fmin,
-                    fmax: _fmax,
+                    f: _logColors ? _log_f : _f,
+                    fmin: _logColors ? _log_fmin : _fmin,
+                    fmax: _logColors ? _log_fmax : _fmax,
                     plotRect: visibleRect,
                     scaleX: scale.x,
                     scaleY: scale.y,
@@ -11982,7 +12789,6 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             $($("<span style='margin-left:3px;'>highlight similar</span>")).appendTo(checkBoxCnt);
             return $toolTip;
         }
-        return;
     };
 
 
@@ -11992,9 +12798,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             if (value == _palette) return;
             if (!value) throw "Heatmap palette is undefined";
             if (_palette && value.isNormalized && !_palette.isNormalized && _f) {
-                var minmax = findFminmax(_f);
-                _fmin = minmax.min;
-                _fmax = minmax.max;
+                computePaletteMinMax();
             }
             loadPalette(value);
             lastCompletedTask = undefined;
@@ -12032,15 +12836,17 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         setName();
         var colorIsVisible = 0;
         var paletteControl, colorDiv, paletteDiv;
+        colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(infoDiv);
+
         var clrTitleText, colorTitle;
         var refreshColor = function () {
             clrTitleText = that.getTitle("values");
             if (colorIsVisible == 0) {
-                colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(infoDiv);
+                colorDiv.empty();                
                 colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                 paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(colorDiv);
 
-                paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette);
+                paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette, { logAxis: _logColors });
                 colorIsVisible = 2;
             } else colorTitle.text(clrTitleText);
 
@@ -12068,8 +12874,10 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                     setName();
                 if (!propertyName || propertyName == "interval")
                     refreshInterval();
-                if (!propertyName || propertyName == "values" || propertyName == "colorPalette")
+                if (!propertyName || propertyName == "values" || propertyName == "colorPalette"){
+                    colorIsVisible = 0;
                     refreshColor();
+                }
                 if (!propertyName || propertyName == "palette") paletteControl.palette = _palette;
                 var oldRange = paletteControl.dataRange;
                 if (_palette && _palette.isNormalized && (oldRange == undefined || oldRange.min != _fmin || oldRange.max != _fmax)) {
@@ -12542,1318 +13350,7 @@ InteractiveDataDisplay.BingMapsPlot = function (div, master) {
     }
 }
 
-InteractiveDataDisplay.BingMapsPlot.prototype = new InteractiveDataDisplay.Plot;;var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    function PersistentViewState() {
-        var that = this;
-        var callbacks = [];
-        function raisePropertyChanged(propName, extraData) {
-            for (var i = 0; i < callbacks.length; ++i)
-                callbacks[i](that, propName, extraData);
-        }
-        this.subscribe = function (callback) {
-            callbacks.push(callback);
-            return function () {
-                var i = callbacks.indexOf(callback);
-                if (i >= 0)
-                    callbacks.splice(i, 1);
-            };
-        };
-        var _axisTransform = undefined;
-        Object.defineProperty(this, "axisTransform", {
-            get: function () { return _axisTransform; },
-            set: function (value) {
-                if (value == _axisTransform)
-                    return;
-                _axisTransform = value;
-                raisePropertyChanged("axisTransform");
-            },
-            configurable: false,
-            enumerable: true
-        });
-        var _plotRect = undefined;
-        Object.defineProperty(this, "plotRect", {
-            get: function () { return _plotRect; },
-            set: function (value) {
-                if (value == _plotRect)
-                    return;
-                _plotRect = value;
-                raisePropertyChanged("plotRect");
-            },
-            configurable: false,
-            enumerable: true
-        });
-        var _mapType = undefined;
-        Object.defineProperty(this, "mapType", {
-            get: function () { return _mapType; },
-            set: function (value) {
-                if (value == _mapType)
-                    return;
-                _mapType = value;
-                raisePropertyChanged("mapType");
-            },
-            configurable: false,
-            enumerable: true
-        });
-        var _isAutoFit = undefined;
-        Object.defineProperty(this, "isAutoFit", {
-            get: function () { return _isAutoFit; },
-            set: function (value) {
-                if (value == _isAutoFit)
-                    return;
-                _isAutoFit = value;
-                raisePropertyChanged("isAutoFit");
-            },
-            configurable: false,
-            enumerable: true
-        });
-        var _isLogData = {};
-        Object.defineProperty(this, "isLogData", {
-            get: function () { return _isLogData; },
-            configurable: false,
-            enumerable: true
-        });
-        this.setLogDataForPlot = function (plotId, value) {
-            _isLogData[plotId] = value;
-            raisePropertyChanged("isLogData", { id: plotId });
-        };
-        var _selectedPlots = undefined;
-        Object.defineProperty(this, "selectedPlots", {
-            get: function () { return _selectedPlots; },
-            set: function (value) {
-                if (value == _selectedPlots)
-                    return;
-                _selectedPlots = value;
-                raisePropertyChanged("selectedPlots");
-            },
-            configurable: false,
-            enumerable: true
-        });
-        var _xAxisTitle = undefined;
-        Object.defineProperty(this, "xAxisTitle", {
-            get: function () { return _xAxisTitle; },
-            set: function (value) {
-                if (value == _xAxisTitle)
-                    return;
-                _xAxisTitle = value;
-                raisePropertyChanged("xAxisTitle");
-            },
-            configurable: false,
-            enumerable: true
-        });
-        var _yAxisTitle = undefined;
-        Object.defineProperty(this, "yAxisTitle", {
-            get: function () { return _yAxisTitle; },
-            set: function (value) {
-                if (value == _yAxisTitle)
-                    return;
-                _yAxisTitle = value;
-                raisePropertyChanged("yAxisTitle");
-            },
-            configurable: false,
-            enumerable: true
-        });
-        var _probesViewModel = undefined;
-        Object.defineProperty(this, "probesViewModel", {
-            get: function () { return _probesViewModel; },
-            configurable: false,
-            enumerable: true
-        });
-        this.initProbes = function (probes) {
-            if (_probesViewModel === undefined) {
-                _probesViewModel = new InteractiveDataDisplay.ProbesVM(probes);
-                _probesViewModel.subscribe(function (args) {
-                    raisePropertyChanged("probes");
-                });
-            }
-            else {
-                throw "Probes are already initialized";
-            }
-        };
-        var _uncertaintyRange = {};
-        Object.defineProperty(this, "uncertaintyRange", {
-            get: function () { return _uncertaintyRange; },
-            set: function (value) {
-                if (value == _uncertaintyRange)
-                    return;
-                _uncertaintyRange = value;
-                raisePropertyChanged("uncertaintyRange");
-            },
-            configurable: false,
-            enumerable: true
-        });
-    }
-    InteractiveDataDisplay.PersistentViewState = PersistentViewState;
-    function TransientViewState() {
-        var that = this;
-        var callbacks = [];
-        function raisePropertyChanged(propName, extraData) {
-            for (var i = 0; i < callbacks.length; ++i)
-                callbacks[i](that, propName, extraData);
-        }
-        this.subscribe = function (callback) {
-            callbacks.push(callback);
-        };
-        this.unsubscribe = function (callback) {
-            callbacks = callbacks.filter(function (cb) {
-                return cb !== callback;
-            });
-        };
-        var _ranges = {};
-        Object.defineProperty(this, "ranges", {
-            get: function () { return _ranges; },
-            configurable: false,
-            enumerable: true
-        });
-        var _plotXFormatter = new InteractiveDataDisplay.AdaptiveFormatter(0, 1);
-        Object.defineProperty(this, "plotXFormatter", {
-            get: function () { return _plotXFormatter; },
-            set: function (value) {
-                if (value == _plotXFormatter)
-                    return;
-                _plotXFormatter = value;
-                raisePropertyChanged("plotXFormatter");
-            },
-            configurable: false,
-            enumerable: true
-        });
-        var _plotYFormatter = new InteractiveDataDisplay.AdaptiveFormatter(0, 1);
-        Object.defineProperty(this, "plotYFormatter", {
-            get: function () { return _plotYFormatter; },
-            set: function (value) {
-                if (value == _plotYFormatter)
-                    return;
-                _plotYFormatter = value;
-                raisePropertyChanged("plotYFormatter");
-            },
-            configurable: false,
-            enumerable: true
-        });
-        this.setRangesForPlot = function (plotId, value) {
-            _ranges[plotId] = value;
-            raisePropertyChanged("ranges", { id: plotId });
-        };
-    }
-    InteractiveDataDisplay.TransientViewState = TransientViewState;
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    InteractiveDataDisplay.PlotRegistry = {};
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    function createSmallProbe(jqDiv, num, fill, scale) {
-        jqDiv.empty();
-        var canvasScale = scale !== undefined ? scale : 1;
-        var canvas = $("<canvas width='" + (40 * canvasScale) + "' height='" + 40 * canvasScale + "'></canvas>").appendTo(jqDiv);
-        var ctx = canvas.get(0).getContext("2d");
-        var img = new Image();
-        img.src = fill ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC45bDN+TgAAApdJREFUaEPtWc1KW0EUDrjL+9RVN2ZVNC1SaBdREewmYkW00NI+QVEkxJ+2/iBq1KX2CVrJM3Tj1ifIG9yebzhnvFxO4iR3Zm4C94Nvk8yc7zs/czOXVEower3eFLHqyCneVjxghk11iYkjsbbYRCDOJqzxfw+Pyf5NdyCxRtbz3viJQJDFrfG9624yv36STC8eDiTWYK2SSJwkIMSCxkSrc5/MrOyrZgextnKQtK/u04mETwICLGSEl75equaG4fK3TpwkEJgFjGB97ZdqaBS++XgcNgkE5MDezQuDJkHB8KQwAj7Gph8z41Rl+XxAJYim+jiwmrBP4mBzAn66QEFs9Ud52gzL2ocDf11ABYim+nh2a4IhCC1OIF8XaLOtvsuPlOXCnttnffh249RPFyQBXAE0oZCEZvwEHKr8wrETxSTgkWUCQJlADhaTQHmIn+g1Afyo4LaoCWnUquxaeTBzM82VgL1K7F78UcVCsHX5V8znv9BRgOhj5GV8BJIAWvpu60wV9EloeBkfAQWxYxSjC6nq5x8fAQWyXXjV/KEK+yBie62+AJUgmi6EfC/w9h6ggQLaLsyu+n+pR8wg1RegIsRgZyHI7GdBgW0XGp/PVSOjsPHlImz1BagM0XsXolRfQAK2C5vbd6qhYYgYUaovQIWIpgsQrq8dqcZciL0p8+GrL4AQC+YapaijkwUJ2lHa2vmtGhxE7Ik6OlmgYkQ7Su8/ud+TsLaQ0ckCwmzAGHq5/PydH2vGwrwABtiI0zWj0LnvBzJiz8PG91vVOIjvUtWPP/f9gEoS7Shp/yHgs7EanSxgiI0Zo3OrP615/KMz1uYFMMYGjeHXzbbhRJgXwCAbFdOTY14Ao0Qc7DQnw3yJoVCp/AcXkU+yAO498gAAAABJRU5ErkJggg=='
-            : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMC45bDN+TgAAAylJREFUaEPVmdtOMjEUhX0Wn9CHwkPQeIxwwQ0SD1eaqIkHghEidxD1Dfrvb0KT+ScLpu0UEy6+xL1ou9fedGbKuNVqtTYaKW4SUkzl9/d329ipYVvNTUWKsWBqYW5guBoYk60QKYaCiYWZwc/PjxuNRu729tZdXl66drvtdnd3C/gbjc8+Pj4cY5mzmNuoECmGQGJv/PHx0R0fHzvTg2Ds09NTuZDkIqRYhzf/9fXlzs/PpckQLi4u3HQ6bVSEFFfhzb+/v7v9/X1pLAbWGA6HyUVIcRll8+xt07LAWqlFSFHhzbNtcnS+CmumbCcpKmzRHS66Jnu+Dq6JxYW9Y7H0UUWKVegIneFuY/FaeX5+jvoWpFiFjtCZmFtlKicnJ1HfghTL0Ak6wkPK4iAODg6CtGXwsCMnuS2WvjxSLEMnjOIpavGfcHd3RwFB34IUy/gCOApYvJKQLoeM6XQ6+QvgPGPxn3B4eJi/gJwPrjrIlb2Avb09mWwdkCt7AUdHRzLZOiBX9gK63a5MVibXRUyu7AVwa7P4T8h9Gy0eZJwWLQ5CdTmk856Yk6kUq9CJ7+/vKBOpkINc5LRY+ikjxSosZrh+vy+T5oQc5MpdQLGNPj8/ZdKckINc5LRY+ikjRQUdMYozu8VrgbXJQS6LpY8qUlTQEWPw8vIik+fg9fU1qvsgxWXQGc7qp6en0kATzs7Oon+NgRSXQWfo0NvbmzTRBF4UsDY5LJb5FVJcBR0yiiOvxVmIOT5XkeIq6JAxmEwm0kwKrMWarG2xzLsMKdZBpwx3fX0tDcVwc3OT3H2QYh10yhjM5/NGp1TmsgZrsaZpMt8qpBiCLyLmjFSlyStFjxRDscTFVrq6upIGV8Ec5rKGxXL9EKQYCp0ziq0U+3q96dbxSDEGXwRnmJDfzYwZj8dZzIMUY/FF3N/fS9NlGJPLPEgxBTNUHDN6vZ40Dnxm4xrv+zJSTIGOGoPZbFa83zTtP9D4jDGMZU4OpJiKL6L6PwT+RsttHqTYBF8EhzOLC1IPaiFIsSm+iIeHBwfrMg9SzMGiCB50sBbzIMVNQoqbhBQ3h9bWP/HfsYvIwP9AAAAAAElFTkSuQmCC';
-        ctx.drawImage(img, 0, 0, 40 * canvasScale, 40 * canvasScale);
-        if (num !== undefined) {
-            ctx.fillStyle = "white";
-            var fontsize = (num < 10 ? 14 : 11) * canvasScale;
-            ctx.font = fontsize + "px Arial";
-            var offsetX = (num < 10 ? 16 : 13) * canvasScale;
-            ctx.fillText(num, offsetX, 20 * canvasScale);
-        }
-    }
-    InteractiveDataDisplay.createSmallProbe = createSmallProbe;
-    ;
-    function ProbePull(hostDiv, d3Div) {
-        var _host = hostDiv;
-        var draggable = $("<div></div>").addClass("dragPoint").addClass("probe").appendTo(_host);
-        draggable.draggable({
-            containment: "document",
-            scroll: false,
-            zIndex: 2500,
-            helper: function () {
-                var hdr = $("<div></div>").addClass("dragPoint");
-                createSmallProbe(hdr);
-                return hdr;
-            },
-            appendTo: d3Div
-        });
-        draggable.mousedown(function (e) {
-            e.stopPropagation();
-        });
-    }
-    InteractiveDataDisplay.ProbePull = ProbePull;
-    ;
-    function OnScreenNavigation(div, d3Chart, persistentViewState) {
-        var that = this;
-        InteractiveDataDisplay.NavigationPanel(d3Chart, div, 'https://github.com/predictionmachines/InteractiveDataDisplay/wiki/UI-Guidelines#chartviewer');
-        var legendViewer = div.find('.idd-onscreennavigation-showlegend');
-        legendViewer.remove();
-        legendViewer = div.find('.idd-onscreennavigation-hidelegend');
-        legendViewer.remove();
-        var hideShowLegend = $('<div></div>').addClass("idd-onscreennavigation-hidelegend").prependTo(div);
-    }
-    InteractiveDataDisplay.OnScreenNavigation = OnScreenNavigation;
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    var PlotViewer = (function () {
-        function PlotViewer(div, navigationDiv, persistentViewState, transientViewState) {
-            this.currentPlots = {};
-            this.div = div;
-            var that = this;
-            var iddDiv = this.iddDiv = $("<div data-idd-plot='chart'></div>").appendTo(div);
-            iddDiv.width(div.width());
-            iddDiv.height(div.height());
-            var iddChart = this.iddChart = InteractiveDataDisplay.asPlot(iddDiv);
-            iddChart.legend.isVisible = false;
-            iddChart.isToolTipEnabled = false;
-            iddChart.doFitOnDataTransformChanged = false;
-            var onscreenNavigationContainer = $("<div></div>").addClass("dsv-onscreennavigationcontainer").attr("data-idd-placement", "center").appendTo(navigationDiv);
-            var onscreenNavigationDiv = $("<div></div>").addClass("dsv-onscreennavigation").appendTo(onscreenNavigationContainer);
-            var onscreenNavigation = new InteractiveDataDisplay.OnScreenNavigation(onscreenNavigationDiv, iddChart, persistentViewState);
-            var probesPlot_div = $("<div></div>")
-                .attr("data-idd-name", "draggableMarkers")
-                .appendTo(iddChart.host);
-            var probesPlot = new InteractiveDataDisplay.DOMPlot(probesPlot_div, iddChart);
-            probesPlot.order = 9007199254740991;
-            iddChart.addChild(probesPlot);
-            this.persistentViewState = persistentViewState;
-            persistentViewState.probesViewModel.getProbeContent = function (probe) {
-                var children = iddChart.children;
-                var result = [];
-                for (var i = 0; i < children.length; i++) {
-                    if (children[i].isVisible) {
-                        var px = children[i].xDataTransform ? (children[i].xDataTransform.isInDomain && children[i].xDataTransform.isInDomain(probe.location.x) ? children[i].xDataTransform.dataToPlot(probe.location.x) : probe.location.x) : probe.location.x;
-                        var py = children[i].yDataTransform ? (children[i].yDataTransform.isInDomain && children[i].yDataTransform.isInDomain(probe.location.y) ? children[i].yDataTransform.dataToPlot(probe.location.y) : probe.location.y) : probe.location.y;
-                        var tt = children[i].getTooltip(probe.location.x, probe.location.y, px, py, true);
-                        if (tt !== undefined) {
-                            result.push(tt);
-                        }
-                    }
-                }
-                if (result.length > 0) {
-                    return result;
-                }
-                else
-                    return undefined;
-            };
-            var addNewProbe = function (probe) {
-                var id = probe.id;
-                var x = probe.location.x;
-                var y = probe.location.y;
-                var draggable = $("<div></div>");
-                draggable.addClass("dragPoint");
-                probesPlot.add(draggable[0], 'none', x, y, undefined, undefined, 0.5, 1);
-                var children = probesPlot.domElements;
-                var addedDragable = children[children.length - 1];
-                addedDragable.id = id;
-                draggable.draggable({
-                    containment: probesPlot.master.centralPart[0],
-                    scroll: false,
-                    drag: function () {
-                    },
-                    stop: function (event, ui) {
-                        var pinCoord = { x: addedDragable._x, y: addedDragable._y };
-                        persistentViewState.probesViewModel.updateProbe(id, pinCoord);
-                    },
-                    start: function () {
-                    }
-                });
-                if (probe.selected) {
-                    InteractiveDataDisplay.createSmallProbe(draggable, id, "#365C95");
-                }
-                else {
-                    InteractiveDataDisplay.createSmallProbe(draggable, id);
-                }
-            };
-            probesPlot.host.droppable({
-                accept: ".probe",
-                tolerance: "fit",
-                drop: function (event, ui) {
-                    var pos = $(this).offset();
-                    var probePosition = {
-                        x: ui.position.left + ui.draggable.width() / 2,
-                        y: ui.position.top + ui.draggable.height()
-                    };
-                    var cs = probesPlot.coordinateTransform;
-                    var x = iddChart.xDataTransform ? iddChart.xDataTransform.plotToData(cs.screenToPlotX(probePosition.x)) : cs.screenToPlotX(probePosition.x);
-                    var y = iddChart.yDataTransform ? iddChart.yDataTransform.plotToData(cs.screenToPlotY(probePosition.y)) : cs.screenToPlotY(probePosition.y);
-                    var id = persistentViewState.probesViewModel.addProbe({ x: x, y: y });
-                    addNewProbe({ id: id, location: { x: x, y: y } });
-                },
-            });
-            persistentViewState.probesViewModel.subscribe(function (args) {
-                var probe = args.probe;
-                switch (args.status) {
-                    case "fit":
-                        var eps = 1e-7;
-                        var children = probesPlot.domElements;
-                        for (var i = 0; i < children.length; i++) {
-                            var draggable = children[i];
-                            if (draggable.id === probe.id) {
-                                var curPlotRect = iddChart.visibleRect;
-                                var x = iddChart.xDataTransform ? iddChart.xDataTransform.dataToPlot(draggable._x) : draggable._x;
-                                var y = iddChart.yDataTransform ? iddChart.yDataTransform.dataToPlot(draggable._y) : draggable._y;
-                                if (Math.abs(x - curPlotRect.x - curPlotRect.width / 2) > eps || Math.abs(y - curPlotRect.y - curPlotRect.height / 2) > eps) {
-                                    iddChart.navigation.setVisibleRect({ x: x - curPlotRect.width / 2, y: y - curPlotRect.height / 2, width: curPlotRect.width, height: curPlotRect.height }, true);
-                                }
-                                break;
-                            }
-                        }
-                        break;
-                    case "remove":
-                        var children = probesPlot.domElements;
-                        for (var i = 0; i < children.length; i++) {
-                            var draggable = children[i];
-                            if (draggable.id === probe.id) {
-                                probesPlot.remove(draggable);
-                                break;
-                            }
-                        }
-                        break;
-                    case "unselected":
-                        var children = probesPlot.domElements;
-                        for (var i = 0; i < children.length; i++) {
-                            var possibleProbe = children[i];
-                            InteractiveDataDisplay.createSmallProbe(possibleProbe, possibleProbe.id);
-                        }
-                        break;
-                    case "selected":
-                        var children = probesPlot.domElements;
-                        for (var i = 0; i < children.length; i++) {
-                            var possibleProbe = children[i];
-                            if (possibleProbe.id === probe.id) {
-                                InteractiveDataDisplay.createSmallProbe(possibleProbe, possibleProbe.id, "#365C95");
-                            }
-                            else {
-                                InteractiveDataDisplay.createSmallProbe(possibleProbe, possibleProbe.id);
-                            }
-                        }
-                        break;
-                }
-            });
-            var existingProbes = persistentViewState.probesViewModel.getProbes();
-            for (var i = 0; i < existingProbes.length; i++) {
-                addNewProbe(existingProbes[i]);
-            }
-            iddDiv.on("visibleRectChanged", function () {
-                var plotRect = iddChart.visibleRect;
-                transientViewState.plotXFormatter = new InteractiveDataDisplay.AdaptiveFormatter(plotRect.x, plotRect.x + plotRect.width);
-                transientViewState.plotYFormatter = new InteractiveDataDisplay.AdaptiveFormatter(plotRect.y, plotRect.y + plotRect.height);
-                persistentViewState.plotRect = plotRect;
-                if (persistentViewState.probesViewModel !== undefined) {
-                    persistentViewState.probesViewModel.refresh();
-                }
-            });
-            persistentViewState.subscribe(function (state, propName) {
-                if (propName == "selectedPlots")
-                    that.setupPlotsVisibility();
-            });
-        }
-        PlotViewer.prototype.setupPlotsVisibility = function () {
-            for (var id in this.currentPlots) {
-                var p = this.currentPlots[id];
-                var iddPlots = p.Plots;
-                if (iddPlots) {
-                    var isVisible = this.persistentViewState.selectedPlots.indexOf(p.Id) == -1;
-                    for (var j = 0; j < iddPlots.length; ++j)
-                        iddPlots[j].isVisible = isVisible;
-                }
-            }
-        };
-        PlotViewer.prototype.checkLatLon = function (plot) {
-            var isLat = function (str) {
-                var lower = str.toLowerCase();
-                return lower === "lat" || lower === "latitude";
-            };
-            var isLon = function (str) {
-                var lower = str.toLowerCase();
-                return lower === "lon" || lower === "longitude";
-            };
-            return plot["x"] !== undefined && isLon(InteractiveDataDisplay.getTitle(plot, "x")) && plot["y"] !== undefined && isLat(InteractiveDataDisplay.getTitle(plot, "y"));
-        };
-        PlotViewer.prototype.addPlot = function (p) {
-            var factory = InteractiveDataDisplay.PlotRegistry[p.Definition.kind] ? InteractiveDataDisplay.PlotRegistry[p.Definition.kind] : InteractiveDataDisplay.PlotRegistry["fallback"];
-            p.Plots = factory.initialize(p.Definition, this.persistentViewState, this.iddChart);
-            try {
-                factory.draw(p.Plots, p.Definition);
-            }
-            catch (ex) {
-                if (p.Plots !== undefined)
-                    p.Plots.forEach(function (graph) { graph.remove(); });
-                factory = InteractiveDataDisplay.PlotRegistry["fallback"];
-                p.Definition["error"] = ex.message;
-                p.Plots = factory.initialize(p.Definition, this.persistentViewState, this.iddChart);
-                factory.draw(p.Plots, p.Definition);
-            }
-        };
-        PlotViewer.prototype.updateAxes = function () {
-            var xAxisStr = "";
-            var yAxisStr = "";
-            var xNames = [];
-            var yNames = [];
-            for (var id in this.currentPlots) {
-                var p = this.currentPlots[id];
-                var def = p.Definition;
-                if (def["x"]) {
-                    var xStr = InteractiveDataDisplay.getTitle(def, "x");
-                    var contains = false;
-                    for (var i = 0; i < xNames.length; i++) {
-                        if (xNames[i] === xStr) {
-                            contains = true;
-                            break;
-                        }
-                    }
-                    if (!contains) {
-                        xNames.push(xStr);
-                        if (xAxisStr !== "") {
-                            xAxisStr += ", ";
-                        }
-                        xAxisStr += xStr;
-                    }
-                }
-                if (def["y"]) {
-                    var yStr = InteractiveDataDisplay.getTitle(def, "y");
-                    var contains = false;
-                    for (var i = 0; i < yNames.length; i++) {
-                        if (yNames[i] === yStr) {
-                            contains = true;
-                            break;
-                        }
-                    }
-                    if (!contains) {
-                        yNames.push(yStr);
-                        if (yAxisStr !== "") {
-                            yAxisStr += ", ";
-                        }
-                        yAxisStr += yStr;
-                    }
-                }
-            }
-            if (xAxisStr !== "") {
-                if (this.xAxisTitle === undefined) {
-                    this.xAxisTitle = $(this.iddChart.addDiv('<div style="font-size: larger; text-align: center"></div>', "bottom"));
-                }
-                this.xAxisTitle.text(xAxisStr);
-            }
-            else {
-                if (this.xAxisTitle !== undefined) {
-                    this.iddChart.removeDiv(this.xAxisTitle[0]);
-                    this.xAxisTitle.remove();
-                    this.xAxisTitle = undefined;
-                }
-            }
-            if (yAxisStr !== "") {
-                if (this.yAxisTitle === undefined) {
-                    this.yAxisTitle =
-                        $(this.iddChart.addDiv('<div class="idd-verticalTitle" style="font-size: larger;"></div>', "left"));
-                }
-                this.yAxisTitle.text(yAxisStr);
-            }
-            else {
-                if (this.yAxisTitle !== undefined) {
-                    this.iddChart.removeDiv(this.yAxisTitle[0]);
-                    this.yAxisTitle.remove();
-                    this.yAxisTitle = undefined;
-                }
-            }
-        };
-        PlotViewer.prototype.createMap = function () {
-            var div = $("<div></div>")
-                .attr("data-idd-name", "bingMaps")
-                .css("z-index", 0)
-                .prependTo(this.iddChart.host);
-            var plot = new InteractiveDataDisplay.BingMapsPlot(div, this.iddChart);
-            plot.order = 9007199254740991;
-            this.iddChart.addChild(plot);
-            return plot;
-        };
-        PlotViewer.prototype.updateMap = function () {
-            var shouldContainMap = false;
-            var first = true;
-            for (var id in this.currentPlots) {
-                var p = this.currentPlots[id];
-                shouldContainMap = (first || shouldContainMap) && this.checkLatLon(p.Definition);
-                first = false;
-            }
-            if (shouldContainMap && typeof Microsoft !== 'undefined') {
-                if (this.bingMapsPlot === undefined) {
-                    this.bingMapsPlot = this.createMap();
-                    if (this.persistentViewState.mapType)
-                        this.bingMapsPlot.setMap(this.persistentViewState.mapType);
-                    else
-                        this.bingMapsPlot.setMap(Microsoft.Maps.MapTypeId.road);
-                    this.iddChart.yDataTransform = InteractiveDataDisplay.mercatorTransform;
-                    this.iddChart.xDataTransform = undefined;
-                }
-                else {
-                    if (this.persistentViewState.mapType)
-                        this.bingMapsPlot.setMap(this.persistentViewState.mapType);
-                }
-            }
-            else {
-                if (this.bingMapsPlot !== undefined) {
-                    this.bingMapsPlot.remove();
-                    this.bingMapsPlot = undefined;
-                    this.iddChart.yDataTransform = undefined;
-                }
-            }
-        };
-        PlotViewer.prototype.draw = function (plots) {
-            var that = this;
-            this.currentPlots = InteractiveDataDisplay.updateBag(this.currentPlots, plots, function (id, oldPlot, newPlot) {
-                if (oldPlot.Definition.kind == newPlot.Definition.kind) {
-                    if (InteractiveDataDisplay.syncProps(oldPlot.Definition, newPlot.Definition))
-                        InteractiveDataDisplay.PlotRegistry[oldPlot.Definition.kind].draw(oldPlot.Plots, oldPlot.Definition);
-                    return oldPlot;
-                }
-                else {
-                    if (oldPlot.Plots !== undefined)
-                        oldPlot.Plots.forEach(function (graph) { graph.remove(); });
-                    that.addPlot(newPlot);
-                    return newPlot;
-                }
-            }, function (id, newPlot) {
-                that.addPlot(newPlot);
-                return newPlot;
-            }, function (id, p) {
-                if (p.Plots !== undefined)
-                    p.Plots.forEach(function (graph) { graph.remove(); });
-            });
-            this.updateAxes();
-            this.persistentViewState.probesViewModel.refresh();
-            this.updateMap();
-            var z = 0;
-            for (var id in this.currentPlots) {
-                var p = this.currentPlots[id];
-                if (p.ZIndex)
-                    z = Math.max(p.ZIndex, z);
-            }
-            for (var id in this.currentPlots) {
-                var p = this.currentPlots[id];
-                if (!p.ZIndex)
-                    p.ZIndex = ++z;
-                if (!p.Plots)
-                    continue;
-                for (var j = 0; j < p.Plots.length; ++j)
-                    p.Plots[j].host.css("z-index", p.ZIndex);
-            }
-            if (this.persistentViewState.selectedPlots)
-                this.setupPlotsVisibility();
-            return this.currentPlots;
-        };
-        PlotViewer.prototype.updateLayout = function () {
-            this.iddDiv.width(this.div.width());
-            this.iddDiv.height(this.div.height());
-            this.iddChart.updateLayout();
-            if (this.bingMapsPlot !== undefined) {
-                this.iddChart.navigation.setVisibleRect(this.iddChart.visibleRect, false);
-            }
-        };
-        return PlotViewer;
-    }());
-    InteractiveDataDisplay.PlotViewer = PlotViewer;
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    function PlotList(rootDiv, plotViewer, persistentViewState, transientViewState) {
-        var that = this;
-        var _isEditable = true;
-        var _cards = [];
-        var _plots = [];
-        rootDiv.addClass("dsv-plotlist");
-        var legendDiv = $("<div></div>").appendTo(rootDiv);
-        var legend = new InteractiveDataDisplay.Legend(plotViewer.iddChart, legendDiv);
-        plotViewer.iddChart.host.bind("visibleChanged", function () {
-            persistentViewState.probesViewModel.refresh(persistentViewState.probesViewModel.getProbes());
-        });
-        persistentViewState.probesViewModel.refresh(persistentViewState.probesViewModel.getProbes());
-        var probesDiv = $("<div></div>").addClass('probes').appendTo(rootDiv);
-        var probesTitle = $("<div style='width:240px; margin-bottom: 16px'></div>").appendTo(probesDiv);
-        var probePullDiv = $("<div></div>").addClass("dsv-onscreennavigation-probepull").appendTo(probesTitle);
-        var probePull = new InteractiveDataDisplay.ProbePull(probePullDiv, plotViewer.iddChart.centralPart);
-        var titleDiv = $("<div style='width: 195px; display:inline-block'></div>").appendTo(probesTitle);
-        $("<div style='width:180px; height:1px; margin-bottom:6px; float:right; margin-top: 8px; background-color:lightgrey'></div>").appendTo(titleDiv);
-        $("<div style='float:left; margin-left:15px;font-family: Segoe UI;font-size: 12px;color:grey; margin-bottom:16px'>Probes</div>").appendTo(titleDiv);
-        var probeListHost = $("<div></div>").addClass("probes-list").appendTo(probesDiv);
-        probeListHost[0].style.display = "none";
-        var probesControl = new InteractiveDataDisplay.ProbesControl(probesDiv, probeListHost, persistentViewState, transientViewState);
-        this.remove = function () {
-            plotViewer.iddChart.host.bind("visibleChanged");
-            legend.remove();
-        };
-    }
-    InteractiveDataDisplay.PlotList = PlotList;
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    var ChartViewerControl = (function () {
-        function ChartViewerControl(container) {
-            this.rightPanelExtraShift = 3;
-            this.navigationPanelShift = 65;
-            this.minWidthToShowLeftPanel = 540;
-            this.plotList = undefined;
-            this.viewState = undefined;
-            var that = this;
-            var controlDiv = this.controlDiv = $(container);
-            this.persistentViewState = this.viewState = new InteractiveDataDisplay.PersistentViewState();
-            this.persistentViewState.initProbes();
-            this.transientViewState = new InteractiveDataDisplay.TransientViewState();
-            var width = controlDiv.width();
-            var height = controlDiv.height();
-            if (width === 0)
-                controlDiv.width(400);
-            if (height === 0)
-                controlDiv.height(400);
-            var visControl = $("<div class='dsv-visualizaition-control'></div>");
-            controlDiv.append(visControl);
-            var leftPanelCont = $("<div class='dsv-leftpanelcontainer'></div>");
-            visControl.append(leftPanelCont);
-            var rightPanel = $("<div class='dsv-rightpanel'></div>");
-            visControl.append(rightPanel);
-            var leftPanel = $("<div class='dsv-leftpanel'></div>");
-            leftPanelCont.append(leftPanel);
-            leftPanel.append($("<div class='plotlist'></div>"));
-            rightPanel.append($("<div class='dsv-visualization-preview'></div>"));
-            var navigationDiv = $("<div class='dsv-navigation-container'></div>").appendTo(visControl);
-            navigationDiv.addClass('no-print');
-            var rightpanel = this.rightpanel = controlDiv.find(".dsv-rightpanel");
-            var leftpanel = controlDiv.find(".dsv-leftpanel");
-            var leftPanelContainer = this.leftPanelContainer = controlDiv.find(".dsv-leftpanelcontainer");
-            var isLeftpanelShown = false;
-            this.plotViewer = new InteractiveDataDisplay.PlotViewer(controlDiv.find(".dsv-visualization-preview"), navigationDiv, this.persistentViewState, this.transientViewState);
-            var plotListDiv = controlDiv.find(".plotlist");
-            this.plotList = new InteractiveDataDisplay.PlotList(plotListDiv, this.plotViewer, this.persistentViewState, this.transientViewState);
-            this.plotList.isEditable = false;
-            this.plotViewer.iddChart.exportToSvg = function (plotRect, screenSize, svg) {
-                if (!SVG.supported)
-                    throw "SVG is not supported";
-                var screenSize = this.screenSize;
-                var plotRect = this.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
-                var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                var svg = SVG(svgHost).size(this.host.width(), this.host.height());
-                var chart_g = svg.group();
-                this.exportContentToSvg(plotRect, screenSize, chart_g);
-                var legend_g = svg.group();
-                var shift = this.host.width();
-                if (isLeftpanelShown) {
-                    legend_g.add(this.exportLegendToSvg(this.legend.div[0])).translate(shift, 30);
-                    svg.size(200 + shift, this.host.height());
-                }
-                return svg;
-            };
-            var hideShowLegend = navigationDiv[0].children[0].firstChild.firstChild;
-            $(hideShowLegend).click(function () {
-                if (isLeftpanelShown) {
-                    isLeftpanelShown = false;
-                    leftpanel.hide();
-                    $(hideShowLegend).removeClass("idd-onscreennavigation-showlegend").addClass("idd-onscreennavigation-hidelegend");
-                }
-                else {
-                    isLeftpanelShown = true;
-                    leftpanel.show();
-                    $(hideShowLegend).removeClass("idd-onscreennavigation-hidelegend").addClass("idd-onscreennavigation-showlegend");
-                }
-                rightpanel.width(controlDiv.width() - leftPanelContainer.width() - that.rightPanelExtraShift - that.navigationPanelShift);
-                that.plotViewer.updateLayout();
-            });
-            leftpanel.hide();
-            rightpanel.width(controlDiv.width() - leftPanelContainer.width() - this.rightPanelExtraShift - this.navigationPanelShift);
-            $(window).resize(function () { that.updateLayout(); });
-            this.updateLayout();
-        }
-        ChartViewerControl.prototype.update = function (chartInfo) {
-            var plotItems = {};
-            for (var id in chartInfo) {
-                var plotInfo = chartInfo[id];
-                if (plotInfo != null) {
-                    plotItems[id] = {
-                        Id: id,
-                        Definition: plotInfo
-                    };
-                    if (plotInfo.displayName === null || typeof plotInfo.displayName === "undefined") {
-                        plotInfo = $.extend(false, {}, plotInfo);
-                        plotInfo.displayName = id;
-                        plotItems[id].Definition = plotInfo;
-                    }
-                }
-                else
-                    plotItems[id] = null;
-            }
-            plotItems = this.plotViewer.draw(plotItems);
-        };
-        ChartViewerControl.prototype.updateLayout = function () {
-            var widthToSubtract = 0;
-            if (this.controlDiv.width() < this.minWidthToShowLeftPanel && this.leftPanelContainer !== undefined)
-                this.leftPanelContainer.hide();
-            else if (this.leftPanelContainer !== undefined) {
-                this.leftPanelContainer.show();
-                widthToSubtract = this.leftPanelContainer.width();
-            }
-            this.rightpanel.width(this.controlDiv.width() - widthToSubtract - this.rightPanelExtraShift - this.navigationPanelShift);
-            this.plotViewer.updateLayout();
-        };
-        ChartViewerControl.prototype.dispose = function () {
-            this.plotList.remove();
-            this.controlDiv.children().remove();
-        };
-        return ChartViewerControl;
-    }());
-    InteractiveDataDisplay.ChartViewerControl = ChartViewerControl;
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    function ProbesVM(initialProbes) {
-        var that = this;
-        var lastUsedProbeIndex = 0;
-        var _callbacks = [];
-        var _probes = [];
-        var raiseProbeUpdated = function (probe, status) {
-            if (_callbacks.length > 0) {
-                for (var i = 0; i < _callbacks.length; i++) {
-                    _callbacks[i]({ probe: probe, status: status });
-                }
-            }
-        };
-        this.subscribe = function (callback) {
-            _callbacks.push(callback);
-        };
-        this.clear = function () {
-            var probesToRemove = _probes.slice(0);
-            for (var i = 0; i < probesToRemove.length; i++) {
-                that.removeProbe(probesToRemove[i].id);
-            }
-        };
-        this.addProbe = function (plotCoord) {
-            var newProbe = { id: ++lastUsedProbeIndex, location: plotCoord, selected: false };
-            _probes.push(newProbe);
-            raiseProbeUpdated(newProbe, "add");
-            return newProbe.id;
-        };
-        this.removeProbe = function (id) {
-            var probeToRemove = undefined;
-            for (var i = 0; i < _probes.length; i++) {
-                var probe = _probes[i];
-                if (probe.id == id) {
-                    probeToRemove = probe;
-                    break;
-                }
-            }
-            if (probeToRemove !== undefined) {
-                _probes = _probes.filter(function (p) { return p !== probeToRemove; });
-                raiseProbeUpdated(probeToRemove, "remove");
-            }
-        };
-        this.updateProbe = function (id, plotCoord) {
-            var probeToUpdate = undefined;
-            for (var i = 0; i < _probes.length; i++) {
-                var probe = _probes[i];
-                if (probe.id == id) {
-                    probeToUpdate = probe;
-                    break;
-                }
-            }
-            if (probeToUpdate !== undefined) {
-                probeToUpdate.location = plotCoord;
-                raiseProbeUpdated(probeToUpdate, "update");
-            }
-        };
-        this.selectProbe = function (id) {
-            if (id === -1) {
-                for (var i = 0; i < _probes.length; i++) {
-                    var probe = _probes[i];
-                    probe.selected = false;
-                }
-                raiseProbeUpdated(undefined, "unselected");
-                return;
-            }
-            var selectedProbe = undefined;
-            for (var i = 0; i < _probes.length; i++) {
-                var probe = _probes[i];
-                if (probe.id == id) {
-                    selectedProbe = probe;
-                    selectedProbe.selected = true;
-                }
-                else {
-                    probe.selected = false;
-                }
-            }
-            if (selectedProbe !== undefined) {
-                raiseProbeUpdated(selectedProbe, "selected");
-            }
-        };
-        this.fitToProbe = function (id) {
-            var selectedProbe = undefined;
-            for (var i = 0; i < _probes.length; i++) {
-                var probe = _probes[i];
-                if (probe.id == id) {
-                    selectedProbe = probe;
-                    raiseProbeUpdated(selectedProbe, "fit");
-                }
-            }
-        };
-        this.getProbes = function () {
-            return _probes.slice(0);
-        };
-        this.getProbeContent = function (probe) {
-            return undefined;
-        };
-        this.refresh = function () {
-            if (that.onRefresh !== undefined) {
-                that.onRefresh(_probes.slice(0));
-            }
-        };
-        if (initialProbes !== undefined) {
-            for (var i = 0; i < initialProbes.length; i++) {
-                var newProbe = { id: initialProbes[i].id, location: { x: initialProbes[i].location.x, y: initialProbes[i].location.y }, selected: initialProbes[i].selected };
-                _probes.push(newProbe);
-                if (newProbe.id > lastUsedProbeIndex)
-                    lastUsedProbeIndex = newProbe.id;
-            }
-        }
-    }
-    InteractiveDataDisplay.ProbesVM = ProbesVM;
-    function ProbesControl(div, hostDiv, persistentViewState, transientViewState) {
-        var probesVM = persistentViewState.probesViewModel;
-        var _host = hostDiv;
-        var probeDivs = [];
-        var getProbeDiv = function (probe) {
-            div[0].style.display = "block";
-            var probeDiv = $("<div></div>").addClass("probeCard");
-            if (probe.selected === true) {
-                probeDiv.addClass("probeCard-selected");
-            }
-            var iconScale = 0.6;
-            var probeHeader = $("<div></div>").addClass("probeHeader").appendTo(probeDiv).height(40 * iconScale);
-            var probeIcon = $("<div></div>").addClass("probe").css("float", "left").css("margin-right", 3).width(40 * iconScale).height(40 * iconScale).appendTo(probeHeader);
-            if (probe.selected) {
-                InteractiveDataDisplay.createSmallProbe(probeIcon, probe.id, "#365C95", iconScale);
-            }
-            else {
-                InteractiveDataDisplay.createSmallProbe(probeIcon, probe.id, undefined, iconScale);
-            }
-            $("<div></div>").addClass("probeHeader-name").text(transientViewState.plotXFormatter.toString(probe.location.x) + ", " + transientViewState.plotYFormatter.toString(probe.location.y)).appendTo(probeHeader);
-            var actionPanel = $("<div></div>").addClass("probeActionPanel").appendTo(probeDiv);
-            var deleteBtn = $("<div></div>").addClass("probeCard-remove").appendTo(actionPanel);
-            deleteBtn.click(function () {
-                probesVM.removeProbe(probe.id);
-                if (persistentViewState.uncertaintyRange !== undefined && persistentViewState.uncertaintyRange.probeid === probe.id) {
-                    persistentViewState.uncertaintyRange = undefined;
-                }
-                if (hostDiv[0].childNodes.length == 0)
-                    hostDiv[0].style.display = "none";
-            });
-            var fitBtn = $("<div></div>").addClass("probeCard-fit").appendTo(actionPanel);
-            fitBtn.click(function () {
-                probesVM.fitToProbe(probe.id);
-            });
-            var tooltip = probesVM.getProbeContent(probe);
-            if (tooltip !== undefined) {
-                for (var i = 0; i < tooltip.length; i++) {
-                    var tt = $(tooltip[i]);
-                    tt.addClass("probecard-record");
-                    tt.appendTo(probeDiv);
-                }
-            }
-            return probeDiv;
-        };
-        var refresh = function (probes) {
-            _host.empty();
-            probeDivs = [];
-            for (var i = 0; i < probes.length; i++) {
-                var probe = probes[i];
-                var probeDiv = getProbeDiv(probe);
-                var probeHost = $("<div></div>").css("display", "inline").appendTo(_host);
-                probeDiv.appendTo(probeHost);
-                probeDivs.push({ id: probe.id, div: probeDiv, host: probeHost });
-            }
-        };
-        refresh(probesVM.getProbes());
-        probesVM.subscribe(function (args) {
-            var probe = args.probe;
-            switch (args.status) {
-                case "add":
-                    hostDiv[0].style.display = "block";
-                    var probeDiv = getProbeDiv(args.probe);
-                    var probeHost = $("<div></div>").css("display", "inline").appendTo(_host);
-                    probeDiv.appendTo(probeHost);
-                    probeDivs.push({ id: probe.id, div: probeDiv, host: probeHost });
-                    break;
-                case "remove":
-                    for (var i = 0; i < probeDivs.length; i++) {
-                        var pDiv = probeDivs[i];
-                        if (pDiv.id === probe.id) {
-                            pDiv.host.remove();
-                            probeDivs = probeDivs.filter(function (d) { return d.id !== probe.id; });
-                            if (hostDiv[0].childNodes.length == 0)
-                                hostDiv[0].style.display = "none";
-                            break;
-                        }
-                    }
-                    break;
-                case "update":
-                    for (var i = 0; i < probeDivs.length; i++) {
-                        var pDiv = probeDivs[i];
-                        if (pDiv.id === probe.id) {
-                            pDiv.host.empty();
-                            var probeDiv = getProbeDiv(args.probe);
-                            probeDiv.appendTo(pDiv.host);
-                            pDiv.div = probeDiv;
-                            break;
-                        }
-                    }
-                    break;
-                case "selected":
-                    refresh(probesVM.getProbes());
-                    break;
-                case "unselected":
-                    refresh(probesVM.getProbes());
-                    break;
-            }
-        });
-        probesVM.onRefresh = function (probes) {
-            refresh(probes);
-        };
-    }
-    InteractiveDataDisplay.ProbesControl = ProbesControl;
-    function show(domElement, plots, viewState) {
-        if (viewState)
-            throw "viewState argument is not supported";
-        var control = new InteractiveDataDisplay.ChartViewerControl(domElement);
-        control.update(plots);
-        return control;
-    }
-    InteractiveDataDisplay.show = show;
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    function updateBag(bagA, bagB, replace, add, remove) {
-        var output = {};
-        for (var k in bagB) {
-            var vA = bagA[k];
-            var vB = bagB[k];
-            if (typeof (vB) == "undefined")
-                continue;
-            if (typeof (vA) != "undefined") {
-                if (vB == null) {
-                    output[k] = vA;
-                }
-                else {
-                    output[k] = replace(k, vA, vB);
-                }
-            }
-            else {
-                output[k] = add(k, vB);
-            }
-        }
-        for (var k in bagA) {
-            var vA = bagA[k];
-            var vB = bagB[k];
-            if (typeof (vA) == "undefined")
-                continue;
-            if (typeof (vB) == "undefined") {
-                remove(k, vA);
-            }
-        }
-        return output;
-    }
-    InteractiveDataDisplay.updateBag = updateBag;
-    function getTitle(def, seriesName) {
-        if (def.titles && typeof def.titles[seriesName] != "undefined")
-            return def.titles[seriesName];
-        return seriesName;
-    }
-    InteractiveDataDisplay.getTitle = getTitle;
-    function updateProp(propName, obj1, obj2) {
-        if (obj1[propName] === obj2[propName]) {
-            return true;
-        }
-        else {
-            obj1[propName] = obj2[propName];
-            return false;
-        }
-    }
-    InteractiveDataDisplay.updateProp = updateProp;
-    function isNumber(obj) {
-        return !isNaN(parseFloat(obj)) && isFinite(obj);
-    }
-    InteractiveDataDisplay.isNumber = isNumber;
-    function isString(obj) {
-        return obj === obj + "";
-    }
-    InteractiveDataDisplay.isString = isString;
-    function isStringOrNumber(obj) {
-        return isNumber(obj) || isString(obj);
-    }
-    InteractiveDataDisplay.isStringOrNumber = isStringOrNumber;
-    function deepCopyJS(obj) {
-        var type = typeof obj;
-        if (type !== 'object' || obj == null) {
-            return obj;
-        }
-        else if (InteractiveDataDisplay.Utils.isArray(obj)) {
-            var result = [];
-            for (var i = 0; i < obj.length; i++)
-                result.push(deepCopyJS(obj[i]));
-            return result;
-        }
-        else {
-            var result1 = {};
-            for (var prop in obj) {
-                result1[prop] = deepCopyJS(obj[prop]);
-            }
-            return result1;
-        }
-    }
-    InteractiveDataDisplay.deepCopyJS = deepCopyJS;
-    function syncProps(obj1, obj2) {
-        var wasUpdated = false;
-        for (var key in obj2) {
-            if (obj1[key] === undefined || (isStringOrNumber(obj1[key]) && !isStringOrNumber(obj2[key]))) {
-                obj1[key] = deepCopyJS(obj2[key]);
-                if (!wasUpdated)
-                    wasUpdated = true;
-            }
-            else if (isStringOrNumber(obj2[key])) {
-                var wasUpdatedloc = !updateProp(key, obj1, obj2);
-                if (!wasUpdated)
-                    wasUpdated = wasUpdatedloc;
-            }
-            else {
-                var wasUpdatedloc = syncProps(obj1[key], obj2[key]);
-                if (!wasUpdated)
-                    wasUpdated = wasUpdatedloc;
-            }
-        }
-        var unpresentedProperties = [];
-        for (var prop in obj1) {
-            if (prop === "d3Graphs" || prop === "isPresented")
-                continue;
-            var isPresented = false;
-            for (var key in obj2) {
-                if (key === prop) {
-                    isPresented = true;
-                    break;
-                }
-            }
-            if (!isPresented) {
-                unpresentedProperties.push(prop);
-                if (!wasUpdated)
-                    wasUpdated = true;
-            }
-        }
-        unpresentedProperties.forEach(function (prop) {
-            delete obj1[prop];
-        });
-        for (var i = 0; i < obj1.length; i++) {
-            if (obj1[i] == undefined && typeof obj1 != "function") {
-                obj1.splice(i, 1);
-                i--;
-            }
-        }
-        return wasUpdated;
-    }
-    InteractiveDataDisplay.syncProps = syncProps;
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    InteractiveDataDisplay.PlotRegistry["area"] = {
-        initialize: function (plotDefinition, viewState, chart) {
-            var div = $("<div></div>")
-                .attr("data-idd-name", plotDefinition.displayName)
-                .appendTo(chart.host);
-            var bandgraph = new InteractiveDataDisplay.Area(div, chart.master);
-            chart.addChild(bandgraph);
-            return [bandgraph];
-        },
-        draw: function (plots, plotDefinition) {
-            var plot = plots[0];
-            var bandDef = plotDefinition;
-            plot.draw(bandDef);
-        }
-    };
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    InteractiveDataDisplay.PlotRegistry["fallback"] = {
-        initialize: function (plotDefinition, viewState, chart) {
-            var div = $("<div></div>")
-                .attr("data-idd-name", plotDefinition.displayName)
-                .appendTo(chart.host);
-            var plot = new FallbackPlot(div, chart.master);
-            chart.addChild(plot);
-            return [plot];
-        },
-        draw: function (plots, plotDefinition) {
-            var drawArgs = {
-                kind: plotDefinition.kind,
-                error: plotDefinition["error"]
-            };
-            plots[0].draw(drawArgs);
-        }
-    };
-    function FallbackPlot(div, master) {
-        var that = this;
-        var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
-        var initialData = initializer(div);
-        this.base = InteractiveDataDisplay.CanvasPlot;
-        this.base(div, master);
-        var _kind;
-        var _error;
-        if (initialData)
-            _kind = initialData.kind;
-        this.draw = function (data) {
-            _kind = data.kind;
-            _error = data.error;
-            this.fireAppearanceChanged('error');
-        };
-        this.getLocalPadding = function () {
-            return { left: 0, right: 0, top: 0, bottom: 0 };
-        };
-        this.renderCore = function (plotRect, screenSize) {
-        };
-        this.getLegend = function () {
-            var that = this;
-            var nameDiv = $("<span></span>");
-            var contentDiv = $("<div class='plotcard-error'></div>");
-            var setName = function () {
-                nameDiv.text(that.name);
-            };
-            setName();
-            var content = "";
-            var setContent = function () {
-                var content = "";
-                if (_error)
-                    content = _error;
-                else if (_kind)
-                    content = 'kind "' + _kind + '" is unknown';
-                else
-                    content = "Error plot definition!";
-                contentDiv.text(content);
-            };
-            setContent();
-            this.host.bind("appearanceChanged", function (event, propertyName) {
-                if (!propertyName || propertyName == "error")
-                    setContent();
-                if (!propertyName || propertyName == "name")
-                    setName();
-            });
-            var that = this;
-            var onLegendRemove = function () {
-                that.host.unbind("appearanceChanged");
-                div[0].innerHTML = "";
-                div.removeClass("idd-legend-item");
-            };
-            return { name: nameDiv, legend: { thumbnail: undefined, content: contentDiv }, onLegendRemove: onLegendRemove };
-        };
-    }
-    InteractiveDataDisplay.FallbackPlot = FallbackPlot;
-    FallbackPlot.prototype = new InteractiveDataDisplay.CanvasPlot;
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    InteractiveDataDisplay.PlotRegistry["heatmap"] = {
-        initialize: function (plotDefinition, viewState, chart) {
-            var div = $("<div></div>")
-                .attr("data-idd-name", plotDefinition.displayName)
-                .appendTo(chart.host);
-            var heatmap = new InteractiveDataDisplay.Heatmap(div, chart.master);
-            chart.addChild(heatmap);
-            var plots = [heatmap];
-            return plots;
-        },
-        draw: function (plots, plotDefinition) {
-            var heatmap = plotDefinition;
-            plots[0].draw(heatmap, heatmap.titles);
-        }
-    };
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    InteractiveDataDisplay.PlotRegistry["line"] = {
-        initialize: function (plotDefinition, viewState, chart) {
-            var div = $("<div></div>")
-                .attr("data-idd-name", plotDefinition.displayName)
-                .appendTo(chart.host);
-            var plot = new InteractiveDataDisplay.Polyline(div, chart.master);
-            chart.addChild(plot);
-            return [plot];
-        },
-        draw: function (plots, plotDefinition) {
-            var plot = plots[0];
-            var lineDef = plotDefinition;
-            plot.draw(lineDef);
-        }
-    };
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var InteractiveDataDisplay;
-(function (InteractiveDataDisplay) {
-    InteractiveDataDisplay.PlotRegistry["markers"] = {
-        initialize: function (plotDefinition, viewState, chart) {
-            var div = $("<div></div>")
-                .attr("data-idd-name", plotDefinition.displayName)
-                .appendTo(chart.host);
-            var markerGraph = new InteractiveDataDisplay.Markers(div, chart.master);
-            chart.addChild(markerGraph);
-            return [markerGraph];
-        },
-        draw: function (plots, plotDefinition) {
-            var plot = plotDefinition;
-            plots[0].draw(plot, plot.titles);
-        }
-    };
-})(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
-var Plot;
-(function (Plot) {
-    var MarkerShape;
-    (function (MarkerShape) {
-        MarkerShape.Box = "box";
-        MarkerShape.Circle = "circle";
-        MarkerShape.Diamond = "diamond";
-        MarkerShape.Cross = "cross";
-        MarkerShape.Triangle = "triangle";
-    })(MarkerShape = Plot.MarkerShape || (Plot.MarkerShape = {}));
-    var HeatmapRenderType;
-    (function (HeatmapRenderType) {
-        HeatmapRenderType.Gradient = "gradient";
-        HeatmapRenderType.Discrete = "discrete";
-    })(HeatmapRenderType = Plot.HeatmapRenderType || (Plot.HeatmapRenderType = {}));
-    var LineTreatAs;
-    (function (LineTreatAs) {
-        LineTreatAs.Function = "function";
-        LineTreatAs.Trajectory = "trajectory";
-    })(LineTreatAs = Plot.LineTreatAs || (Plot.LineTreatAs = {}));
-    function line(element) {
-        var plotInfo = element;
-        plotInfo.kind = "line";
-        return plotInfo;
-    }
-    Plot.line = line;
-    function area(element) {
-        var plotInfo = element;
-        plotInfo.kind = "area";
-        return plotInfo;
-    }
-    Plot.area = area;
-    function boxplot(element) {
-        var plotInfo = element;
-        plotInfo.kind = "markers";
-        plotInfo["shape"] = "boxwhisker";
-        return plotInfo;
-    }
-    Plot.boxplot = boxplot;
-    function markers(element) {
-        var plotInfo = element;
-        plotInfo.kind = "markers";
-        return plotInfo;
-    }
-    Plot.markers = markers;
-    function heatmap(element) {
-        var plotInfo = element;
-        plotInfo.kind = "heatmap";
-        return plotInfo;
-    }
-    Plot.heatmap = heatmap;
-})(Plot || (Plot = {}));
-;
+InteractiveDataDisplay.BingMapsPlot.prototype = new InteractiveDataDisplay.Plot;;
 (function(InteractiveDataDisplay) {
     if (!ko) {
         console.log("Knockout was no found, please load Knockout first");
@@ -13900,7 +13397,74 @@ var Plot;
                     }
                 }
             }
-        };        
+        };
+        ko.bindingHandlers.iddPlotTitles = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var unwrappedData = ko.unwrap(value);
+
+                var plotAttr = element.getAttribute("data-idd-plot");
+                if (plotAttr != null) {
+                    if (typeof element.plot != 'undefined') {
+                        element.plot.setTitles(unwrappedData);
+                    }
+                }
+            }
+        };
+         ko.bindingHandlers.iddEditorColorPalette = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var palette = ko.unwrap(value);
+
+                if ($(element).hasClass("idd-colorPaletteEditor")) {
+                    if (typeof element.editor != 'undefined') {
+                        element.editor.palette = palette;
+                    }
+                }
+            }
+        };
+        ko.bindingHandlers.iddAxisSettings = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var v = ko.unwrap(value);
+
+                var plotAttr = element.getAttribute("data-idd-axis");
+                if (plotAttr != null && v.type) {
+                    var placement = element.getAttribute("data-idd-placement");
+                    if (typeof element.axis != 'undefined') {
+                        var div = $(element).closest('div[data-idd-plot]');
+                        if (plotAttr != v.type) {
+                            var axisElement = div[0].plot.addAxis(placement, v.type, { labels: v.labels ? v.labels : [], ticks: v.ticks ? v.ticks : [], rotate: v.rotate, rotateAngle: v.rotateAngle }, element);
+                            var bindData = $(element).attr("data-bind");
+                            axisElement.attr("data-bind", bindData);
+                            element.axis.remove();
+                            element = axisElement;
+                        }
+                        else if (plotAttr == "labels") {
+                            element.axis.updateLabels({ labels: v.labels, ticks: v.ticks, rotate: v.rotate, rotateAngle: v.rotateAngle });
+                        }
+                        if (v.fontSize) element.axis.FontSize = v.fontSize;
+                        if (typeof v.attachGrid != 'undefined' && v.attachGrid && typeof div[0].plot != 'undefined') {
+                           var plots = div[0].plot.getPlotsSequence();
+                           for (var i = 0; i < plots.length; i++) {
+                               var p = plots[i];
+                               if (p instanceof InteractiveDataDisplay.GridlinesPlot) {
+                                   if (placement == "bottom") {
+                                       p.xAxis = element.axis;
+                                       p.requestUpdateLayout();
+                                   }
+                                   else if (placement == "left") {
+                                       p.yAxis = element.axis;
+                                       p.requestUpdateLayout();
+                                   }
+                                   break;
+                               }
+                           }
+                        }
+                    }
+                }
+            }
+        };
     }
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}));
 (function(InteractiveDataDisplay) {
@@ -13940,6 +13504,9 @@ var Plot;
                         console.warn("Ignoring markers (boxwhisker) iddBorder binding. It must be string, not an array!");
                         delete data.border;
                     }
+                }
+                if (allBindings.has('iddThickness')) {
+                    data.thickness = ko.unwrap(allBindings.get('iddThickness'));
                 }
                 if (!allBindings.has('iddYMedian'))
                     throw new Error("Please define iddYMedian binding for \"boxwhisker\" marker shape");
@@ -13994,25 +13561,33 @@ var Plot;
                     data.y = ko.unwrap(allBindings.get('iddY'));                        
                 if (data.x && data.y && data.x.length !== data.y.length)
                     return;
+
+                if (allBindings.has('iddColor'))
+                    data.color = ko.unwrap(allBindings.get('iddColor'));
+
+                if (data.y && data.color && Array.isArray(data.color) && data.color.length !== data.y.length)
+                    return;
             
                 var customShape;
-            
+                var titles = undefined;
                 if (allBindings.has('iddSize')) 
                     data.size = ko.unwrap(allBindings.get('iddSize'));
                 if (allBindings.has('iddBorder'))
                     data.border = ko.unwrap(allBindings.get('iddBorder'));
-                if (allBindings.has('iddColor'))
-                    data.color = ko.unwrap(allBindings.get('iddColor'));
     			if (allBindings.has('iddColorPalette'))
                     data.colorPalette = ko.unwrap(allBindings.get('iddColorPalette'));
     			if (allBindings.has('iddBarWidth'))
                     data.barWidth = ko.unwrap(allBindings.get('iddBarWidth'));
     			if (allBindings.has('iddShadow'))
                     data.shadow = ko.unwrap(allBindings.get('iddShadow'));
+    			if (allBindings.has('iddOrientation'))
+    			    data.orientation = ko.unwrap(allBindings.get('iddOrientation'));
     			if (allBindings.has('iddLabelPlacement'))
                     data.placement = ko.unwrap(allBindings.get('iddLabelPlacement'));
                 if (allBindings.has('iddCustomShape'))
                     customShape = ko.unwrap(allBindings.get('iddCustomShape'));
+                if (allBindings.has('iddPlotTitles'))
+                    titles = ko.unwrap(allBindings.get('iddPlotTitles'));
             }
             var plotAttr = element.getAttribute("data-idd-plot");
             if (plotAttr != null) {
@@ -14020,7 +13595,7 @@ var Plot;
                     if (customShape)
                         for (var prop in customShape)
                             data[prop] = ko.unwrap(customShape[prop]);
-                    element.plot.draw(data);
+                    element.plot.draw(data, titles);
                 }
                 else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
                     //storing the data in data-idd-datasource attribute as JSON string. it will be used by IDD during IDD-initializing of the dom element	 	
@@ -14029,7 +13604,7 @@ var Plot;
             }
         }
 
-        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("markers", updateMarkers, ['iddX', 'iddY','iddYMedian','iddMedian','iddLower68','iddUpper68','iddLower95','iddUpper95', 'iddShape', 'iddSize', 'iddBorder', 'iddColor','iddColorPalette','iddBarWidth', 'iddShadow','iddCustomShape','iddLabelPlacement'])
+        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("markers", updateMarkers, ['iddX', 'iddY','iddYMedian','iddMedian','iddLower68','iddUpper68','iddLower95','iddUpper95', 'iddShape', 'iddSize', 'iddBorder', 'iddThickness', 'iddColor','iddColorPalette','iddBarWidth', 'iddShadow', 'iddOrientation', 'iddCustomShape','iddLabelPlacement'])
     }
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))
 ;
@@ -14239,18 +13814,24 @@ var Plot;
 				N < 2 || M < 2)
 				return;
 
-
+			var titles = undefined;
 			if (allBindings.has('iddInterval'))
 				data.interval = ko.unwrap(allBindings.get('iddInterval'));
 			if (allBindings.has('iddColorPalette'))
 				data.colorPalette = ko.unwrap(allBindings.get('iddColorPalette'));
 			if (allBindings.has('iddOpacity'))
-				data.opacity = ko.unwrap(allBindings.get('iddOpacity'));
+			    data.opacity = ko.unwrap(allBindings.get('iddOpacity'));
+			if (allBindings.has('iddPlotTitles'))
+			    titles = ko.unwrap(allBindings.get('iddPlotTitles'));
+			if (allBindings.has('iddLogColors'))
+			    data.logPalette = ko.unwrap(allBindings.get('iddLogColors'));
+			if (allBindings.has('iddLogTolerance'))
+			    data.logTolerance = ko.unwrap(allBindings.get('iddLogTolerance'));				
 
 			var plotAttr = element.getAttribute("data-idd-plot");
 			if (plotAttr != null) {
 				if (typeof element.plot != 'undefined') {
-					element.plot.draw(data);
+					element.plot.draw(data, titles);
 				}
 				else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
 					//storing the data in data-idd-datasource attribute as JSON string. it will be used by IDD during IDD-initializing of the dom element		
@@ -14315,19 +13896,61 @@ var Plot;
 		}
 
 		InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("label", updateLabels, ['iddX', 'iddY', 'iddLabelsText'])
+
+		ko.bindingHandlers.iddBottomAxisLabels = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var v = ko.unwrap(value);
+
+                var plotAttr = element.getAttribute("data-idd-plot");
+                if (plotAttr != null) {
+                    if (typeof element.plot != 'undefined') {
+                        if(typeof element.plot.addAxis != 'undefined'){
+                            // Removing previously added bottom axis
+                            var axes = element.plot.getAxes("bottom");
+                            if(axes !== undefined)
+                                for(var i = 0; i < axes.length; i++){
+                                    var attr = axes[i].host.data("iddBottomAxisLabels");
+                                    if(attr == "true"){
+                                        axes[i].remove();
+                                    }
+                                }
+
+                            var axisElement = element.plot.addAxis("bottom", "labels", { labels: v.labels, ticks: v.ticks, rotateAngle: v.rotateAngle });
+                            axisElement.data("iddBottomAxisLabels", "true");
+
+                            if(typeof v.attachGrid != 'undefined' && v.attachGrid){
+                                var plots = element.plot.getPlotsSequence();
+                                for(var i = 0; i < plots.length; i++){
+                                    var p = plots[i];
+                                    if(p instanceof InteractiveDataDisplay.GridlinesPlot){
+                                        p.xAxis = axisElement.axis;
+                                        break;
+                                    }
+                                }
+                            }
+                        }else{
+                            throw "The target for the iddBottomAxisLabels binding must be figure or derived."
+                        }
+                    }
+                    else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)                        
+                    }
+                }
+            }
+        };
 	}
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))
 ;return InteractiveDataDisplay;
 }
 (function () {
     if (window.define) {
-        define(['jquery', 'rx', 'knockout'],
-            function ($, Rx, ko) {
-                var InteractiveDataDisplay = IDD($, Rx, ko);
+        define(['jquery', 'rx', 'knockout', 'svg', 'filesaver', 'jqueryui', 'jquery-mousewheel'],
+            function ($, Rx, ko, SVG, filesaver) {
+                var InteractiveDataDisplay = IDD($, Rx, ko, SVG, filesaver);
                 return InteractiveDataDisplay;
             });
     } else {
-        var InteractiveDataDisplay = IDD($, Rx, ko);
+        var InteractiveDataDisplay = IDD($, Rx, ko, SVG, saveAs);
         window.InteractiveDataDisplay = InteractiveDataDisplay;
     }
 }());

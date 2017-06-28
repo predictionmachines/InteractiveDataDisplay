@@ -24,6 +24,10 @@ InteractiveDataDisplay.Utils =
     {
         //trim: function (s) { return s.replace(/^[\s\n]+|[\s\n]+$/g, ''); },
 
+        logE10neg : 1.0 / Math.log(10), 
+
+        log10: (typeof Math.log10 !== "undefined") ? Math.log10 : function(x) { return Math.log(x) * InteractiveDataDisplay.Utils.logE10neg; },
+
         applyMask: function(mask, array, newLength) {
             var n = mask.length;
             var newArr = new Array(newLength);
@@ -181,7 +185,13 @@ InteractiveDataDisplay.Utils =
 
         getDataSourceFunction: function (jqElem, defaultSource) {
             var source = jqElem.attr("data-idd-datasource");
-            if (source)
+            if(source == "InteractiveDataDisplay.readTable")
+                return InteractiveDataDisplay.readTable;
+            else if(source == "InteractiveDataDisplay.readCsv")
+                return InteractiveDataDisplay.readCsv;
+            else if(source == "InteractiveDataDisplay.readCsv2d")
+                return InteractiveDataDisplay.readCsv2d;
+            else if (source)
                 return function(){
                     return JSON.parse(source, function (key, value) {
                         if (value === null) {
@@ -864,6 +874,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     InteractiveDataDisplay.Event.isVisibleChanged = jQuery.Event("visibleChanged");
     InteractiveDataDisplay.Event.plotRemoved = jQuery.Event("plotRemoved");
     InteractiveDataDisplay.Event.orderChanged = jQuery.Event("orderChanged");
+    // Occurs when master plot has rendered a frame. It is fired only for the master plot.    
+    InteractiveDataDisplay.Event.frameRendered = jQuery.Event("frameRendered");
+
+    var _plotCounter = 0;
 
     InteractiveDataDisplay.Plot = function (div, master, myCentralPart) {
 
@@ -898,6 +912,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _width, _height;
         var _name = "";
         var _order = 0;
+        var _padding = InteractiveDataDisplay.Padding;
         // Contains user-readable titles for data series of a plot. They should be used in tooltips and legends.
         var _titles = {};
         // The flag is set in setVisibleRegion when it is called at me as a bound plot to notify that another plot is changed his visible.
@@ -937,8 +952,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _constraint = undefined;
 
         var that = this;
+        var _plotInstanceId = _plotCounter++;
 
         // Plot properties
+        Object.defineProperty(this, "instanceId", { get: function () { return _plotInstanceId; }, configurable: false });
         Object.defineProperty(this, "isMaster", { get: function () { return _isMaster; }, configurable: false });
         // Indicates whether the last frame included rendering of this plot or not.
         Object.defineProperty(this, "isRendered", { get: function () { return _isRendered; }, configurable: false });
@@ -1050,7 +1067,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             },
             configurable: false
         });
-
+        Object.defineProperty(this, "padding", {
+            get: function () { return _isMaster ? _padding : _master.padding; },
+            set: function (value) {
+                if (_isMaster) {
+                    _padding = value;
+                    this.updateLayout();
+                }
+                else
+                    _master.padding = value;
+            },
+            configurable: false
+        });
         Object.defineProperty(this, "visibleRect", {
             get: function () {
                 if (_isMaster) {
@@ -1403,10 +1431,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     bottom: Math.max(padding.bottom, plotPadding.bottom)
                 };
             }
-            padding.left = padding.left + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
-            padding.right = padding.right + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
-            padding.top = padding.top + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
-            padding.bottom = padding.bottom + InteractiveDataDisplay.Padding || InteractiveDataDisplay.Padding;
+            padding.left = padding.left + this.padding || this.padding;
+            padding.right = padding.right + this.padding || this.padding;
+            padding.top = padding.top + this.padding || this.padding;
+            padding.bottom = padding.bottom + this.padding || this.padding;
             return padding;
         };
 
@@ -1427,7 +1455,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 that.isAnimationFrameRequested = false;
 
                 renderAll = true;
-                that.updateLayout();
+                that.updateLayout(); // this eventually fires the frameRendered event
             } else {
                 that.isAnimationFrameRequested = false;
 
@@ -1435,9 +1463,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height }); // (x,y) is left/top            
                 // rectangle in the plot plane which is visible, (x,y) is left/bottom (i.e. less) of the rectangle
 
-                updatePlotsOutputRec(renderAll, _master, plotRect, screenSize);
+                updatePlotsOutputRec(renderAll, _master, plotRect, screenSize);  
+                that.fireFrameRendered();
             }
-            renderAll = false;
+            renderAll = false;          
 
             if (_updateTooltip) _updateTooltip();
         };
@@ -2070,14 +2099,26 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return getrec(p, this.master);
         };
 
+        var appearanceChanged = false;
+
         // fires the AppearanceChanged event
         this.fireAppearanceChanged = function (propertyName) {
-            this.host.trigger(InteractiveDataDisplay.Event.appearanceChanged, propertyName);
+            if(!appearanceChanged){
+                appearanceChanged = true;
+                setTimeout(function() {
+                    that.host.trigger(InteractiveDataDisplay.Event.appearanceChanged, propertyName);
+                    appearanceChanged = false;
+                }, 20);
+            }
         };
 
         // fires the ChildrenChanged event
         this.fireChildrenChanged = function (propertyParams) {
-            this.master.host.trigger(InteractiveDataDisplay.Event.childrenChanged, propertyParams);
+            this.host.trigger(InteractiveDataDisplay.Event.childrenChanged, propertyParams);
+        };
+
+        this.fireFrameRendered = function (propertyParams) {
+            this.host.trigger(InteractiveDataDisplay.Event.frameRendered, propertyParams);
         };
 
         // fires the VisibleRect event
@@ -2253,8 +2294,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     var _plotLegends = [];
     //Legend with hide/show function
     InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact) {
-
+        // Inner legends for this legend.
         var plotLegends = [];
+        var plotSubs = [];
         var divStyle = _jqdiv[0].style;
 
         var _isVisible = true;
@@ -2309,16 +2351,43 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             });
         }
         
+        var subscribeToChanges = function(plot) {
+            plot.host.bind("visibleChanged", visibleChangedHandler);
+            plot.host.bind("childrenChanged", childrenChangedHandler);
+            plotSubs.push(plot);
+        };
+
+        var unsubscribeFromChanges = function(plot) {
+            plot.host.unbind("visibleChanged", visibleChangedHandler);
+            plot.host.unbind("childrenChanged", childrenChangedHandler);
+            for(var i = 0; i < plotSubs.length; i++){
+                if(plotSubs[i] === plot){
+                    plotSubs.splice(i, 1);
+                }
+            }            
+        };
+
+        var unsubscribeAll = function(){
+            for(var i = 0; i < plotSubs.length; i++){
+                var plot = plotSubs[i];
+                plot.host.unbind("visibleChanged", visibleChangedHandler);
+                plot.host.unbind("childrenChanged", childrenChangedHandler);
+            }  
+            plotSubs = [];
+        }
+
         var createLegend = function () {
             _jqdiv.empty();
             for (var i = 0, len = plotLegends.length; i < len; i++) {
                 removeLegend(plotLegends[i]);
             }
-            _plot.host.unbind('childrenChanged', childrenChangedHandler);
+            unsubscribeAll();
             plotLegends = [];
             var plots = InteractiveDataDisplay.Utils.enumPlots(_plot);
             for (var i = 0; i < plots.length; i++) {
-                createLegendForPlot(plots[plots.length - i - 1]);
+                var p = plots[plots.length - i - 1];
+                subscribeToChanges(p);
+                createLegendForPlot(p);
             }
             if (_jqdiv[0].hasChildNodes() && _isVisible) {
                 divStyle.display = "block";
@@ -2349,9 +2418,20 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
             }
         };
+
+        var containsLegendFor = function(plot){
+            for (var i = 0, len = plotSubs.length; i < len; i++)
+                if (plotSubs[i] === plot) return true;
+            return false;
+        }
+
         var childrenChangedHandler = function (event, params) {
 
             if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
+                if(containsLegendFor(params.plot)) {
+                    return;    
+                }
+                subscribeToChanges(params.plot);
                 createLegendForPlot(params.plot);
             }
             else if (params.type === "remove") {
@@ -2359,8 +2439,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     var legend = plotLegends[i];
                     plotLegends.splice(i, 1);
                     removeLegend(legend);
-                    legend.plot.host.unbind("childrenChanged", childrenChangedHandler);
-                    legend.plot.host.unbind("visibleChanged", visibleChangedHandler);
                     if (legend.onLegendRemove) legend.onLegendRemove();
                     legend[0].innerHTML = "";
                     if (isCompact) legend.removeClass("idd-legend-item-compact");
@@ -2381,7 +2459,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     if (plotLegends[i].plot === params.plot) {
                         removeLegendItem(i);
                         break;
-                    }
+                    }                
+                unsubscribeFromChanges(params.plot);
             }
             else {
                 _jqdiv[0].innerHTML = "";
@@ -2389,14 +2468,13 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 len = plotLegends.length;
                 for (i = 0; i < len; i++) {
                     removeLegend(plotLegends[i]);
-                    plotLegends[i].plot.host.unbind("childrenChanged", childrenChangedHandler);
                     if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
                     plotLegends[i][0].innerHTML = "";
                     if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
                     else plotLegends[i].removeClass("idd-legend-item");
                 }
-                plotLegends = [];
-              
+                unsubscribeAll();                
+                plotLegends = [];              
                 createLegend();
             }
         };
@@ -2420,9 +2498,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         }; 
         var createLegendForPlot = function (plot) {
             var legend = plot.getLegend();
-            //change getLegend
-            plot.host.bind("visibleChanged", visibleChangedHandler);
-            plot.host.bind("childrenChanged", childrenChangedHandler);
             if (legend) {
                 var div = (isCompact) ? $("<div class='idd-legend-item-compact'></div>") : $("<li class='idd-legend-item'></li>");
                 if (!isCompact) div.data("plot", plot);
@@ -2445,6 +2520,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 div.plot.updateOrder();
             }
         };
+
         this.remove = function () {
             for (var i = 0, len = plotLegends.length; i < len; i++) {
                 removeLegend(plotLegends[i]);
@@ -2454,6 +2530,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 else plotLegends[i].removeClass("idd-legend-item");
             }
             plotLegends = [];
+            unsubscribeAll();
             var removeLegendForPlot = function (plot) {
                 plot.host.unbind("visibleChanged", visibleChangedHandler);
                 var childDivs = plot.children;
@@ -2468,11 +2545,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _jqdiv.removeClass("unselectable");
             _plot.host.unbind("plotRemoved", plotRemovedHandler);
             _plot.host.unbind("orderChanged", orderChangedHandler);
-            _plot.host.unbind("childrenChanged", childrenChangedHandler);
         };
         _plot.host.bind("plotRemoved", plotRemovedHandler);
         _plot.host.bind("orderChanged", orderChangedHandler);
-        _plot.host.bind("childrenChanged", childrenChangedHandler);
         createLegend();
         _jqdiv.dblclick(function (event) {
             event.stopImmediatePropagation();
@@ -3995,15 +4070,17 @@ InteractiveDataDisplay.readCsv2d = function (jqDiv) {
     
     if (div.hasClass("idd-axis"))
         throw "The div element already is initialized as an axis";
-
     var axisType = div.attr("data-idd-axis");
     switch (axisType) {
         case "numeric":
-            return new InteractiveDataDisplay.NumericAxis(div);
+            div.axis = new InteractiveDataDisplay.NumericAxis(div);
+            return div.axis;
         case "log":
-            return new InteractiveDataDisplay.LogarithmicAxis(div);
+            div.axis = new InteractiveDataDisplay.LogarithmicAxis(div);
+            return div.axis;
         case "labels":
-            return new InteractiveDataDisplay.LabelledAxis(div, params);
+            div.axis = new InteractiveDataDisplay.LabelledAxis(div, params);
+            return div.axis;
     }
 };
 
@@ -4016,9 +4093,8 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         }
     }
 
-    if (div && div.hasClass("idd-axis"))
-        return;
-
+    if (div && div.hasClass("idd-axis")) return;
+    if (div) div[0].axis = this;
     var that = this;
 
     // link to div element - container of axis
@@ -4069,19 +4145,22 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     var _size;
     var _deltaRange;
     var _canvasHeight;
+    var _rotateAngle;
 
     // checks if size of host element changed and refreshes size of canvas and labels' div
     this.updateSize = function () {
         var prevSize = _size;
         if (div) {
-            _width = div.outerWidth(false);
-            _height = div.outerHeight(false);
+            var divWidth = div.outerWidth(false);
+            var divHeight = div.outerHeight(false);
+            _width = divWidth;
+            _height = _rotateAngle ? divWidth * Math.abs(Math.sin(_rotateAngle)) + divHeight * Math.abs(Math.cos(_rotateAngle)) : divHeight;
         }
         if (isHorizontal) {
             _size = _width;
             if (_size != prevSize) {
                 canvas[0].width = _size;
-                labelsDiv.css("width", _size);
+                labelsDiv.css("width", _size);              
             }
         }
         else {
@@ -4095,7 +4174,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         _canvasHeight = canvas[0].height;
     };
 
-    var text_size = -1;
+    var text_size = -1; 
     var smallTickLength = InteractiveDataDisplay.tickLength / 3;
 
     var strokeStyle = _host ? _host.css("color") : "Black";
@@ -4103,32 +4182,66 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     ctx.strokeStyle = strokeStyle;
     ctx.fillStyle = strokeStyle;
     ctx.lineWidth = 1;
-    var fontSize = 12;
-    if (_host) {
+
+    var fontSize = 12;        
+    var customFontSize = false;
+    var fontFamily = "";
+
+    if (_host) {       
         if (_host[0].currentStyle) {
             fontSize = _host[0].currentStyle["font-size"];
-            ctx.font = fontSize + _host[0].currentStyle["font-family"];
+            fontFamily = _host[0].currentStyle["font-family"];
         }
         else if (document.defaultView && document.defaultView.getComputedStyle) {
             fontSize = document.defaultView.getComputedStyle(_host[0], null).getPropertyValue("font-size");
-            ctx.font = fontSize + document.defaultView.getComputedStyle(_host[0], null).getPropertyValue("font-family");
+            fontFamily = document.defaultView.getComputedStyle(_host[0], null).getPropertyValue("font-family");
         }
         else if (_host[0].style) {
             fontSize = _host[0].style["font-size"];
-            ctx.font = fontSize + _host[0].style["font-family"];
+            fontFamily = _host[0].style["font-family"];
         }
+        ctx.font = fontSize + fontFamily;        
     }
 
     Object.defineProperty(this, "host", { get: function () { return _host; }, configurable: false });
     Object.defineProperty(this, "mode", { get: function () { return _mode; }, configurable: false });
-    Object.defineProperty(this, "tickSource", { get: function () { return _tickSource; }, configurable: false });
+    Object.defineProperty(this, "tickSource",
+        {
+            get: function () { return _tickSource; },
+            set: function (value) {
+                _tickSource = value;
+                labelsDiv.empty();
+                render();
+            },
+            configurable: false
+        });
     Object.defineProperty(this, "range", { get: function () { return _range; }, configurable: false });
     Object.defineProperty(this, "ticks", { get: function () { return _ticks; }, configurable: false });
 
     Object.defineProperty(this, "DesiredSize", { get: function () { return { width: _width, height: _height }; }, configurable: false });
     Object.defineProperty(this, "axisSize", { get: function () { return _size; }, configurable: false });
     Object.defineProperty(this, "deltaRange", { get: function () { return _deltaRange; }, configurable: false });
-
+    Object.defineProperty(this, "FontSize", { 
+        get: function () { return _defaultFontSize; }, 
+        set: function (newFontSize) {
+            customFontSize = true;
+            fontSize = newFontSize + "px";
+            ctx.font = fontSize + fontFamily;  
+            _tickSource.invalidate();
+            that.update();
+        },
+        configurable: false
+    });
+    // Get or set label angle in degrees, from -90 to 90.
+    Object.defineProperty(this, "rotateAngle", {
+        get: function () { return _rotateAngle; },
+        set: function (value) {
+            _rotateAngle = value * Math.PI / 180;
+            _tickSource.invalidate();
+            that.update();
+        },
+        configurable: false
+    });
     this.sizeChanged = true;
 
     // transform data <-> plot: is applied before converting into screen coordinates
@@ -4154,16 +4267,26 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             var tick = ticks[i];
             if (tick.label) {
                 size = tick.label._size;
-                width = size.width;
+                width = size.width; 
                 height = size.height;
-                if (width == 0)
-                    width = ctx.measureText(_tickSource.getInnerText(tick.position)).width;
-                if (height == 0)
-                    height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
+                if(width == 0 || height == 0) {       
+                  var inner = _tickSource.getInner(tick.position);
+                  if(typeof inner === "string"){
+                      var sz = ctx.measureText(inner);
+                      width = sz.width;
+                      height = sz.height; // height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
+                  }else{ // html element
+                      var $div = $("<div></div>").append($(inner)).css({ "display":"block", "visibility":"hidden", "position":"absolute" }).appendTo($("body"));                        
+                      width = $div.width();
+                      height = $div.height();
+                      $div.remove();
+                  }
+                }
+                height = _rotateAngle ? width * Math.abs(Math.sin(_rotateAngle)) + height * Math.abs(Math.cos(_rotateAngle)) : height;                
                 ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: width, height: height, hasLabel: true };
-            }
-            else
+            } else { // no label
                 ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: 0, height: 0, hasLabel: false };
+            }
         }
     };
 
@@ -4282,7 +4405,9 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                     break;
             }
         }
-
+        if (_rotateAngle) {
+            _ticks = _tickSource.updateTransform(result, _rotateAngle * 180/ Math.PI);
+        }
         minTicks = false;
         if (_tickSource.getMinTicks) {
             if (newResult == -1 && iterations > InteractiveDataDisplay.maxTickArrangeIterations || _ticks.length < 2) {
@@ -4369,7 +4494,16 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
 
                 if (!_ticks[i].invisible) ctx.fillRect(x, 1, 1, InteractiveDataDisplay.tickLength);
-                if (_ticks[i].label) _ticks[i].label.css("left", x - shift);
+                if (_ticks[i].label) {
+                    
+                    if (!_rotateAngle || result == 1)
+                        _ticks[i].label.css("left", x - shift);
+                    else if (_rotateAngle > 0) 
+                        _ticks[i].label.css("left", x);
+                    else {
+                        _ticks[i].label.css("left", x - ticksInfo[i].width);
+                    }
+                }
             }
             else {
                 x = (_size - 1) - x;
@@ -4386,7 +4520,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 if (!_ticks[i].invisible) ctx.fillRect(1, x, InteractiveDataDisplay.tickLength, 1);
                 if (_ticks[i].label) {
                     _ticks[i].label.css("top", x - shift);
-                    if (_mode == "left")
+                    if (_mode == "left") 
                         _ticks[i].label.css("left", text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width));
                 }
             }
@@ -4451,11 +4585,22 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         // if range is single point - render only label in the middle of axis
         var x, shift;
         var len = _ticks.length;
-        var fontSize, fontFamily;
+        var _fontSize, fontFamily;
         if(len > 0){
-            var style = window.getComputedStyle(_ticks[0].label[0], null);
-            fontSize = parseFloat(style.getPropertyValue('font-size')); 
-            fontFamily = style.getPropertyValue('font-family');
+            var firstLabel = undefined;
+            for (i = 0 ; i < _ticks.length; i++) {
+                if (_ticks[i] && _ticks[i].label) {
+                    firstLabel = _ticks[i].label[0];
+                    break;
+                }
+            }
+            var style = window.getComputedStyle(firstLabel, null);
+            fontFamily = style ? style.getPropertyValue('font-family') : undefined;
+            if(customFontSize){
+                _fontSize = fontSize;
+            }else{
+                _fontSize = style ? parseFloat(style.getPropertyValue('font-size')): undefined; 
+            }
         }
         for (var i = 0; i < len; i++) {
             x = ticksInfo[i].position;
@@ -4476,12 +4621,36 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
                 
                 if (_ticks[i].label)
-                    _tickSource.renderToSvg(_ticks[i], svg)
-                        .translate(x - shift, textShift)
-                        .font({
-                            family: fontFamily,
-                            size: fontSize
-                        });
+                    var style = _ticks[i].label instanceof jQuery ? window.getComputedStyle(_ticks[i].label[0], null) : window.getComputedStyle(_ticks[i].label, null);
+                    var transform = style ? style.getPropertyValue('transform') : undefined;
+                    var b = transform ? transform.split(',')[1] : undefined;
+                    var angle = b ? Math.round(Math.asin(b) * (180 / Math.PI)) : 0;
+                    if (angle == 0 || !_rotateAngle) {
+                        _tickSource.renderToSvg(_ticks[i], svg)
+                          .translate(x - shift, textShift)
+                          .font({
+                              family: fontFamily,
+                              size: _fontSize
+                          });
+                    } else if (_rotateAngle) {
+                        if (_rotateAngle > 0) {
+                            var text = _tickSource.renderToSvg(_ticks[i], svg)
+                                .translate(x, textShift)
+                                .rotate(angle, 0, 0)
+                                .font({
+                                    family: fontFamily,
+                                    size: _fontSize
+                                });
+                        } else if (_rotateAngle < 0) {
+                            var text = _tickSource.renderToSvg(_ticks[i], svg)
+                            .translate(x - ticksInfo[i].width, textShift)
+                            .rotate(angle, ticksInfo[i].width, 0)
+                            .font({
+                                family: fontFamily,
+                                size: _fontSize
+                            });
+                        }
+                    }
             }
             else { // vertical (left and right)
                 x = (_size - 1) - x;
@@ -4503,12 +4672,22 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                     var leftShift = 0;                    
                     if (_mode == "left")
                         leftShift = text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width) + textShift;
-                    _tickSource.renderToSvg(_ticks[i], svg)
-                        .translate(leftShift + textShift, x-shift)
-                        .font({
-                            family: fontFamily,
-                            size: fontSize
-                        });
+                    if (this.rotateLabels) {
+                        _tickSource.renderToSvg(_ticks[i], svg)
+                            .translate(leftShift - textShift - ticksInfo[i].height, x - shift)
+                            .rotate(-90)
+                            .font({
+                                family: fontFamily,
+                                size: _fontSize
+                            });       
+                    } else {
+                        _tickSource.renderToSvg(_ticks[i], svg)
+                            .translate(leftShift + textShift, x - shift)
+                            .font({
+                                family: fontFamily,
+                                size: _fontSize
+                            });
+                    }
                 }
             }
         }
@@ -4545,13 +4724,16 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 labelsDiv[0].appendChild(labelDiv);
                 label.addClass('idd-axis-label');
                 label._size = { width: labelDiv.offsetWidth, height: labelDiv.offsetHeight };
+                if(customFontSize){
+                    label.css("fontSize", fontSize);
+                }
             }
         }
     };
 
     // function to set new _range
-    this.update = function (newRange) {
-        if (newRange) _range = newRange;
+    this.update = function (newPlotRange) {
+        if (newPlotRange) _range = newPlotRange;
         render();
     };
 
@@ -4607,12 +4789,10 @@ InteractiveDataDisplay.NumericAxis.prototype = new InteractiveDataDisplay.TicksR
 InteractiveDataDisplay.LogarithmicAxis = function (div) {
     this.base = InteractiveDataDisplay.TicksRenderer;
 
-    var logE10 = Math.log(10);
-
     this.getCoordinateFromTick = function (x) {
         var delta = this.deltaRange;
         if (isFinite(delta)) {
-            var coord = Math.log(x) / logE10;
+            var coord = InteractiveDataDisplay.Utils.log10(x);
             return (coord - this.range.min) * delta;
         }
         else return this.axisSize / 2;
@@ -4640,10 +4820,20 @@ InteractiveDataDisplay.LabelledAxis = function (div, params) {
         else return this.axisSize / 2;
     };
 
+    this.updateLabels = function (params) {
+        this.tickSource = new InteractiveDataDisplay.LabelledTickSource(params);
+        if (params && params.rotate)
+            this.rotateLabels = true;
+        this.rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
+    };
+
     if (params && params.rotate)
         this.rotateLabels = true;
 
     this.base(div, new InteractiveDataDisplay.LabelledTickSource(params));
+    this.rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
+
+    return this;
 }
 InteractiveDataDisplay.LabelledAxis.prototype = new InteractiveDataDisplay.TicksRenderer;
 
@@ -4661,7 +4851,7 @@ InteractiveDataDisplay.TickSource = function () {
 
     // gets first available div (not used) or creates new one
     this.getDiv = function (x) {
-        var inner = this.getInnerText(x);
+        var inner = this.getInner(x);
         var i = inners.indexOf(inner);
         if (i != -1) {
             isUsedPool[i] = true;
@@ -4676,29 +4866,52 @@ InteractiveDataDisplay.TickSource = function () {
                 isUsedPool[i] = true;
                 styles[i].display = "block";
                 inners[i] = inner;
-                var div = divPool[i][0];
-                div.innerHTML = inner;
-                divPool[i]._size = { width: div.offsetWidth, height: div.offsetHeight };
+                var $div = divPool[i];
+                if(typeof inner !== "string"){
+                    $div.empty();
+                    $div.append(inner);
+                }else{
+                    $div.text(inner);
+                }
+                var div = $div[0];
+                $div._size = { width: div.offsetWidth, height: div.offsetHeight };
                 return divPool[i];
             }
             else {
-                var div = $("<div>" + inner + "</div>");
+                var $div = $("<div></div>");
+                if(typeof inner !== "string"){
+                    $div.append(inner);
+                }else{
+                    $div.text(inner);
+                }
                 isUsedPool[len] = true;
-                divPool[len] = div;
+                divPool[len] = $div;
                 inners[len] = inner;
-                styles[len] = div[0].style;
-                div._size = undefined;
+                styles[len] = $div[0].style;
+                $div._size = undefined;
                 len++;
-                return div;
+                return $div;
             }
         }
     };
 
     // function to get div's innerText
-    this.getInnerText = function (x) {
-        if (x)
+    this.getInner = function (x) {
+        if (x) {
             return x.toString();
+        }
         return undefined;
+    };
+
+    this.invalidate = function() {
+        for(var i = 0; i < divPool.length; i++){
+            divPool[i].remove();
+        }
+        isUsedPool = [];
+        divPool = [];
+        inners = [];
+        styles = [];
+        len = 0;
     };
 
     // make all not used divs invisible (final step)
@@ -4741,10 +4954,9 @@ InteractiveDataDisplay.NumericTickSource = function () {
 
     var that = this;
 
-    var log10 = 1 / Math.log(10);
     var delta, beta;
 
-    this.getInnerText = function (x) {
+    this.getInner = function (x) {
         if (x == 0) return x.toString();
         else if (beta >= InteractiveDataDisplay.minNumOrder)
             return this.round(x / Math.pow(10, beta), -1) + "e+" + beta;
@@ -4755,13 +4967,13 @@ InteractiveDataDisplay.NumericTickSource = function () {
         InteractiveDataDisplay.NumericTickSource.prototype.getTicks.call(this, _range);
 
         delta = 1;
-        beta = Math.floor(Math.log(this.finish - this.start) * log10);
+        beta = Math.floor(InteractiveDataDisplay.Utils.log10(this.finish - this.start));
 
         return createTicks();
     };
     
     this.renderToSvg = function (tick, svg) {
-        return svg.text(that.getInnerText(tick.position));
+        return svg.text(that.getInner(tick.position));
     }
 
     var createTicks = function () {
@@ -4861,7 +5073,7 @@ InteractiveDataDisplay.NumericTickSource = function () {
     this.getMinTicks = function () {
         var ticks = [];
 
-        beta = Math.floor(Math.log(this.finish - this.start) * log10);
+        beta = Math.floor(InteractiveDataDisplay.Utils.log10(this.finish - this.start));
 
         if (isFinite(beta)) {
             var step = Math.pow(10, beta);
@@ -4919,19 +5131,29 @@ InteractiveDataDisplay.LogarithmicTickSource = function () {
     var start, finish;
 
     // redefined function for innerText - if degree is less than specific constant then render full number otherwise render 10 with degree
-    this.getInnerText = function (x) {
+    this.getInner = function (x) {
         if (Math.abs(x) < InteractiveDataDisplay.minLogOrder)
             return Math.pow(10, x).toString();
-        else
-            return "10<sup>" + x + "</sup>";
+        else {
+            var html = "10<sup>" + x + "</sup>";
+            var element = document.createElement("span");
+            element.innerHTML = html;
+            return element;
+        }
     };
+
+    this.renderToSvg = function (tick, svg) {
+        var inner = tick.position;
+        return svg.text(inner.toString());
+        // todo: render exponential form in a special graphic representation
+    }
 
     this.getTicks = function (_range) {
         InteractiveDataDisplay.LogarithmicTickSource.prototype.getTicks.call(this, _range);
         start = Math.pow(10, this.start);
         finish = Math.pow(10, this.finish);
         return createTicks();
-    };
+    };    
 
     var createTicks = function () {
         var ticks = [];
@@ -5059,9 +5281,23 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var delta = _ticks.length - _labels.length;
 
     var rotateLabels = params && params.rotate ? params.rotate : false;
-    
+
+    this.getInner = function (x) {
+        var hasNewLines = typeof x === "string" && x.indexOf("\n") !== -1;
+        if (!hasNewLines)
+            return x.toString();
+        else {
+            var element = document.createElement("span");
+            element.title = x;
+            element.innerText = x;
+            $(element).css("white-space", "pre");
+            return element;
+        }
+    };
+
     this.renderToSvg = function (tick, svg) {
-        return svg.text(tick.text);
+        var text = tick.text ? tick.text : "";
+        return svg.text(text);
     }
 
     this.getTicks = function (_range) {
@@ -5149,8 +5385,9 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
 
             var count = m2 - m1 + 1;
             var l = 0;
-
+            
             var value2 = _ticks[m1];
+
             for (var i = 0; i < count; i++) {
                 value = value2;
                 if (value >= that.start && value <= that.finish) {
@@ -5189,6 +5426,43 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
         else step--;
         return createTicks();
     };
+    
+    this.updateTransform = function (result, rotateAngle) {
+        var ticks = createTicks();
+        for (var i = 0; i < ticks.length; i++) {
+            if (ticks[i].label) {
+                var div = ticks[i].label;
+                if (result == -1) {
+                    div.css("-webkit-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("-moz-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("-ms-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("-o-transform", 'rotate(' + rotateAngle + 'deg)');
+                    div.css("transform", 'rotate(' + rotateAngle + 'deg)');
+                    if (rotateAngle > 0) {
+                        div.css("transform-origin", 'left top');
+                        div.css("-webkit-transform-origin", 'left top');
+                        div.css("-moz-transform-origin", 'left top');
+                        div.css("-ms-transform-origin", 'left top');
+                        div.css("-o-transform-origin", 'left top');
+                    }
+                    else {
+                        div.css("transform-origin", 'right top');
+                        div.css("-webkit-transform-origin", 'right top');
+                        div.css("-moz-transform-origin", 'right top');
+                        div.css("-ms-transform-origin", 'right top');
+                        div.css("-o-transform-origin", 'right top');
+                    }
+                } else if (result == 1) {
+                    div.css("-webkit-transform", '');
+                    div.css("-moz-transform", '');
+                    div.css("-ms-transform", '');
+                    div.css("-o-transform", '');
+                    div.css("transform", '');
+                }
+            }
+        }
+        return ticks;
+    }
 
     // constructs array of small ticks
     this.getSmallTicks = function (ticks) {
@@ -5212,7 +5486,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     this.getMinTicks = function () {
         var ticks = [];
 
-        if (delta <= 0 && _labels.length == 0) {
+        if (delta <= 0 && _labels.length > 0) {
             var div = that.getDiv(_labels[0]);
             if (rotateLabels) {
                 div.addClass('idd-verticalText');
@@ -5243,7 +5517,6 @@ InteractiveDataDisplay.TicksRenderer.getAxisType = function (dataTransform) {
 }
 ;InteractiveDataDisplay = InteractiveDataDisplay || {};
 
-
 // Represents a mapping from a number to a value (e.g. a color)
 // The function color has an domain [min,max]. If type is absolute, min and max are arbitrary numbers such that max>min.
 // If type is relative, min=0,max=1, and a user of the palette should normalize the values to that range.
@@ -5253,7 +5526,7 @@ InteractiveDataDisplay.ColorPalette = function (isNormalized, range, palettePoin
 
     var _isNormalized;
     var _range;
-    var _points;
+    var _points; // Structure: { x : number, leftColor? : string, rightColor? : string }
     var that = this;
 
     Object.defineProperty(this, "isNormalized", { get: function () { return _isNormalized; }, configurable: false });
@@ -5395,7 +5668,75 @@ InteractiveDataDisplay.ColorPalette = function (isNormalized, range, palettePoin
 
         return new InteractiveDataDisplay.ColorPalette(_isNormalized, _range, points);
     };
+
+    this.gradientString = function() {
+        var colors = InteractiveDataDisplay.ColorPalette.getColorNames();
+        var getHexColor = function(hsla){
+            var toHex = function(v) {
+                var h = v.toString(16);
+                while(h.length < 2)
+                    h = "0" + h;
+                return h;
+            }
+            var rgba = InteractiveDataDisplay.ColorPalette.HSLtoRGB(hsla);
+            var r = toHex(rgba.r);
+            var g = toHex(rgba.g);
+            var b = toHex(rgba.b);
+            var color = "#" + r + g + b;
+
+            var names = Object.keys(colors);            
+            for(var i = 0; i < names.length; i++){
+                var name = names[i];
+                if(colors[name] == color){
+                    color = name;
+                    break;
+                }
+            }
+            return color;
+        }
+
+        var str = "";
+        var n = _points.length;
+        if(!_isNormalized){
+            str = _points[0].x + "=";
+        }
+
+        for(var i = 1; i < n; i++){
+            var pl = _points[i-1];
+            var pr = _points[i];
+
+            if(pl.rightColor === pr.leftColor){
+                str += getHexColor(pl.rightColor);
+            }else{
+                str += getHexColor(pl.rightColor) + "," + getHexColor(pr.leftColor);;
+            }
+            if(i < n-1){
+                str += "=" + pr.x + "=";
+            }
+        }
+
+        if(!_isNormalized){
+            str += "=" + _points[n-1].x;
+        }
+        return str;
+    };
 };
+
+InteractiveDataDisplay.ColorPalette.getColorNames = function() {
+        return {
+        "aliceblue": "#f0f8ff", "antiquewhite": "#faebd7", "aqua": "#00ffff", "aquamarine": "#7fffd4", "azure": "#f0ffff", "beige": "#f5f5dc", "bisque": "#ffe4c4", "black": "#000000", "blanchedalmond": "#ffebcd", "blue": "#0000ff", "blueviolet": "#8a2be2", "brown": "#a52a2a", "burlywood": "#deb887",
+        "cadetblue": "#5f9ea0", "chartreuse": "#7fff00", "chocolate": "#d2691e", "coral": "#ff7f50", "cornflowerblue": "#6495ed", "cornsilk": "#fff8dc", "crimson": "#dc143c", "cyan": "#00ffff", "darkblue": "#00008b", "darkcyan": "#008b8b", "darkgoldenrod": "#b8860b", "darkgray": "#a9a9a9", "darkgreen": "#006400", "darkkhaki": "#bdb76b", "darkmagenta": "#8b008b", "darkolivegreen": "#556b2f",
+        "darkorange": "#ff8c00", "darkorchid": "#9932cc", "darkred": "#8b0000", "darksalmon": "#e9967a", "darkseagreen": "#8fbc8f", "darkslateblue": "#483d8b", "darkslategray": "#2f4f4f", "darkturquoise": "#00ced1", "darkviolet": "#9400d3", "deeppink": "#ff1493", "deepskyblue": "#00bfff", "dimgray": "#696969", "dodgerblue": "#1e90ff",
+        "firebrick": "#b22222", "floralwhite": "#fffaf0", "forestgreen": "#228b22", "fuchsia": "#ff00ff", "gainsboro": "#dcdcdc", "ghostwhite": "#f8f8ff", "gold": "#ffd700", "goldenrod": "#daa520", "gray": "#808080", "green": "#008000", "greenyellow": "#adff2f",
+        "honeydew": "#f0fff0", "hotpink": "#ff69b4", "indianred ": "#cd5c5c", "indigo ": "#4b0082", "ivory": "#fffff0", "khaki": "#f0e68c", "lavender": "#e6e6fa", "lavenderblush": "#fff0f5", "lawngreen": "#7cfc00", "lemonchiffon": "#fffacd", "lightblue": "#add8e6", "lightcoral": "#f08080", "lightcyan": "#e0ffff", "lightgoldenrodyellow": "#fafad2",
+        "lightgrey": "#d3d3d3", "lightgreen": "#90ee90", "lightpink": "#ffb6c1", "lightsalmon": "#ffa07a", "lightseagreen": "#20b2aa", "lightskyblue": "#87cefa", "lightslategray": "#778899", "lightsteelblue": "#b0c4de", "lightyellow": "#ffffe0", "lime": "#00ff00", "limegreen": "#32cd32", "linen": "#faf0e6",
+        "magenta": "#ff00ff", "maroon": "#800000", "mediumaquamarine": "#66cdaa", "mediumblue": "#0000cd", "mediumorchid": "#ba55d3", "mediumpurple": "#9370d8", "mediumseagreen": "#3cb371", "mediumslateblue": "#7b68ee", "mediumspringgreen": "#00fa9a", "mediumturquoise": "#48d1cc", "mediumvioletred": "#c71585", "midnightblue": "#191970", "mintcream": "#f5fffa", "mistyrose": "#ffe4e1", "moccasin": "#ffe4b5",
+        "navajowhite": "#ffdead", "navy": "#000080", "oldlace": "#fdf5e6", "olive": "#808000", "olivedrab": "#6b8e23", "orange": "#ffa500", "orangered": "#ff4500", "orchid": "#da70d6",
+        "palegoldenrod": "#eee8aa", "palegreen": "#98fb98", "paleturquoise": "#afeeee", "palevioletred": "#d87093", "papayawhip": "#ffefd5", "peachpuff": "#ffdab9", "peru": "#cd853f", "pink": "#ffc0cb", "plum": "#dda0dd", "powderblue": "#b0e0e6", "purple": "#800080",
+        "red": "#ff0000", "rosybrown": "#bc8f8f", "royalblue": "#4169e1", "saddlebrown": "#8b4513", "salmon": "#fa8072", "sandybrown": "#f4a460", "seagreen": "#2e8b57", "seashell": "#fff5ee", "sienna": "#a0522d", "silver": "#c0c0c0", "skyblue": "#87ceeb", "slateblue": "#6a5acd", "slategray": "#708090", "snow": "#fffafa", "springgreen": "#00ff7f", "steelblue": "#4682b4",
+        "tan": "#d2b48c", "teal": "#008080", "thistle": "#d8bfd8", "tomato": "#ff6347", "transparent": "#00000000", "turquoise": "#40e0d0", "violet": "#ee82ee", "wheat": "#f5deb3", "white": "#ffffff", "whitesmoke": "#f5f5f5", "yellow": "#ffff00", "yellowgreen": "#9acd32"
+        }
+    };
 
 // Discretizes the palette
 // Returns an Uint8Array array of numbers with length (4 x number of colors), 
@@ -5659,21 +6000,7 @@ InteractiveDataDisplay.Lexer = function (paletteString) {
 };
 
 InteractiveDataDisplay.ColorPalette.colorFromString = function (hexColor) {
-
-    var colours = {
-        "aliceblue": "#f0f8ff", "antiquewhite": "#faebd7", "aqua": "#00ffff", "aquamarine": "#7fffd4", "azure": "#f0ffff", "beige": "#f5f5dc", "bisque": "#ffe4c4", "black": "#000000", "blanchedalmond": "#ffebcd", "blue": "#0000ff", "blueviolet": "#8a2be2", "brown": "#a52a2a", "burlywood": "#deb887",
-        "cadetblue": "#5f9ea0", "chartreuse": "#7fff00", "chocolate": "#d2691e", "coral": "#ff7f50", "cornflowerblue": "#6495ed", "cornsilk": "#fff8dc", "crimson": "#dc143c", "cyan": "#00ffff", "darkblue": "#00008b", "darkcyan": "#008b8b", "darkgoldenrod": "#b8860b", "darkgray": "#a9a9a9", "darkgreen": "#006400", "darkkhaki": "#bdb76b", "darkmagenta": "#8b008b", "darkolivegreen": "#556b2f",
-        "darkorange": "#ff8c00", "darkorchid": "#9932cc", "darkred": "#8b0000", "darksalmon": "#e9967a", "darkseagreen": "#8fbc8f", "darkslateblue": "#483d8b", "darkslategray": "#2f4f4f", "darkturquoise": "#00ced1", "darkviolet": "#9400d3", "deeppink": "#ff1493", "deepskyblue": "#00bfff", "dimgray": "#696969", "dodgerblue": "#1e90ff",
-        "firebrick": "#b22222", "floralwhite": "#fffaf0", "forestgreen": "#228b22", "fuchsia": "#ff00ff", "gainsboro": "#dcdcdc", "ghostwhite": "#f8f8ff", "gold": "#ffd700", "goldenrod": "#daa520", "gray": "#808080", "green": "#008000", "greenyellow": "#adff2f",
-        "honeydew": "#f0fff0", "hotpink": "#ff69b4", "indianred ": "#cd5c5c", "indigo ": "#4b0082", "ivory": "#fffff0", "khaki": "#f0e68c", "lavender": "#e6e6fa", "lavenderblush": "#fff0f5", "lawngreen": "#7cfc00", "lemonchiffon": "#fffacd", "lightblue": "#add8e6", "lightcoral": "#f08080", "lightcyan": "#e0ffff", "lightgoldenrodyellow": "#fafad2",
-        "lightgrey": "#d3d3d3", "lightgreen": "#90ee90", "lightpink": "#ffb6c1", "lightsalmon": "#ffa07a", "lightseagreen": "#20b2aa", "lightskyblue": "#87cefa", "lightslategray": "#778899", "lightsteelblue": "#b0c4de", "lightyellow": "#ffffe0", "lime": "#00ff00", "limegreen": "#32cd32", "linen": "#faf0e6",
-        "magenta": "#ff00ff", "maroon": "#800000", "mediumaquamarine": "#66cdaa", "mediumblue": "#0000cd", "mediumorchid": "#ba55d3", "mediumpurple": "#9370d8", "mediumseagreen": "#3cb371", "mediumslateblue": "#7b68ee", "mediumspringgreen": "#00fa9a", "mediumturquoise": "#48d1cc", "mediumvioletred": "#c71585", "midnightblue": "#191970", "mintcream": "#f5fffa", "mistyrose": "#ffe4e1", "moccasin": "#ffe4b5",
-        "navajowhite": "#ffdead", "navy": "#000080", "oldlace": "#fdf5e6", "olive": "#808000", "olivedrab": "#6b8e23", "orange": "#ffa500", "orangered": "#ff4500", "orchid": "#da70d6",
-        "palegoldenrod": "#eee8aa", "palegreen": "#98fb98", "paleturquoise": "#afeeee", "palevioletred": "#d87093", "papayawhip": "#ffefd5", "peachpuff": "#ffdab9", "peru": "#cd853f", "pink": "#ffc0cb", "plum": "#dda0dd", "powderblue": "#b0e0e6", "purple": "#800080",
-        "red": "#ff0000", "rosybrown": "#bc8f8f", "royalblue": "#4169e1", "saddlebrown": "#8b4513", "salmon": "#fa8072", "sandybrown": "#f4a460", "seagreen": "#2e8b57", "seashell": "#fff5ee", "sienna": "#a0522d", "silver": "#c0c0c0", "skyblue": "#87ceeb", "slateblue": "#6a5acd", "slategray": "#708090", "snow": "#fffafa", "springgreen": "#00ff7f", "steelblue": "#4682b4",
-        "tan": "#d2b48c", "teal": "#008080", "thistle": "#d8bfd8", "tomato": "#ff6347", "transparent": "#00000000", "turquoise": "#40e0d0", "violet": "#ee82ee", "wheat": "#f5deb3", "white": "#ffffff", "whitesmoke": "#f5f5f5", "yellow": "#ffff00", "yellowgreen": "#9acd32"
-    };
-
+    var colours = InteractiveDataDisplay.ColorPalette.getColorNames();
     if (typeof (hexColor) !== "string")
         throw "wrong definition of color: must be a string";
 
@@ -5821,6 +6148,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     var _width = _host.width();
     var _height = 20;
     var _axisVisible = true;
+    var _logAxis = false;
     var _palette = palette;
     var _dataRange = undefined;
 
@@ -5832,6 +6160,8 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
             _width = options.width;
         if (options.axisVisible !== undefined)
             _axisVisible = options.axisVisible;
+        if (options.logAxis !== undefined)
+            _logAxis = options.logAxis;
     }
 
     // canvas to render palette
@@ -5842,14 +6172,27 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
     var _axisDiv = null;
     var _axis = null;
 
+    function dataToPlot(range){
+         if(_logAxis){
+             return { min : InteractiveDataDisplay.Utils.log10(range.min), max : InteractiveDataDisplay.Utils.log10(range.max) };
+         }else{
+            return range;
+        }
+    }
+
     function addAxis() {
         _axisDiv = $("<div data-idd-placement='bottom' style='width: " + _width + "px; color: rgb(0,0,0)'></div>");
         _host[0].appendChild(_axisDiv[0]);
-        _axis = new InteractiveDataDisplay.NumericAxis(_axisDiv);
+
+        if(!_logAxis){
+            _axis = new InteractiveDataDisplay.NumericAxis(_axisDiv);
+        }else{
+            _axis = new InteractiveDataDisplay.LogarithmicAxis(_axisDiv);
+        }
         if (_palette && !_palette.isNormalized) // Take axis values from fixed palette
-            _axis.update({ min: _palette.range.min, max: _palette.range.max });
+            _axis.update(dataToPlot({ min: _palette.range.min, max: _palette.range.max }));
         else if (_dataRange) // Try to take axis values from data range
-            _axis.update({ min: _dataRange.min, max: _dataRange.max });
+            _axis.update(dataToPlot({ min: _dataRange.min, max: _dataRange.max }));
     }
 
     function removeAxis() {
@@ -5882,7 +6225,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
             if (value) {
                 _palette = value;
                 if (_axisVisible && (!_palette.isNormalized || !_dataRange))
-                    _axis.update({ min: _palette.range.min, max: _palette.range.max });
+                    _axis.update(dataToPlot({ min: _palette.range.min, max: _palette.range.max }));
                 renderPalette();
             }
         },
@@ -5895,7 +6238,7 @@ InteractiveDataDisplay.ColorPaletteViewer = function (div, palette, options) {
             if (value) {
                 _dataRange = value;
                 if (_axisVisible && (!_palette || _palette.isNormalized)) {
-                    _axis.update({ min: _dataRange.min, max: _dataRange.max });
+                    _axis.update(dataToPlot({ min: _dataRange.min, max: _dataRange.max }));
                 }
             }
         },
@@ -6281,7 +6624,362 @@ InteractiveDataDisplay.palettes = {
                                                               { x: 1.0, rightColor: { h: 0, s: 0, l: 1, a: 1 }, leftColor: { h: 0, s: 0, l: 1, a: 1 } }])
 };
 
-;InteractiveDataDisplay.Gestures = {};
+;InteractiveDataDisplay = InteractiveDataDisplay || {};
+
+InteractiveDataDisplay.ColorPaletteEditor = function ($div, palette) {
+    if($div.hasClass("idd-colorPaletteEditor")) return;
+
+    $div.addClass("idd-colorPaletteEditor");
+    $div[0].editor = this;
+
+    var borderTemplate = "gray";
+    var fillTemplate = "rgba(100,100,100,0.3)";
+
+    var that = this;        
+    var _palette = palette;
+    Object.defineProperty(this, "palette", {
+            get: function () { return _palette; },
+            set: function (value) {
+                _palette = value;
+                paletteViewer.palette = _palette;
+                updateMarkers();
+            },
+            configurable: false
+    });
+    var firePaletteChanged = function(newPalette){
+        $div.trigger("paletteChanged", [ newPalette ]);
+    }
+
+    var isDraggingMarker = false;
+    var isChoosingColor = false;
+    
+    var width = $div.width();
+    var barHeight = 10;
+    var paletteHeight = 20;    
+
+    var $bar = 
+        $("<div></div>")
+        .height(barHeight)
+        .width(width)
+        .addClass("idd-colorPaletteEditor-bar")
+        .appendTo($div);
+
+    var $viewer = 
+        $("<div></div>")
+        .height(paletteHeight)
+        .width(width)
+        .addClass("idd-colorPaletteEditor-viewer")
+        .appendTo($div);
+
+    var options = {
+        height : paletteHeight,
+        axisVisible : false
+    };
+    var paletteViewer = new InteractiveDataDisplay.ColorPaletteViewer($viewer, _palette, options);
+    var height = barHeight + $viewer.height();
+    $div.height(height);
+
+    var markers = [];
+
+    var getCssColor = function(hsla){
+        var rgba = InteractiveDataDisplay.ColorPalette.HSLtoRGB(hsla);
+        return "rgba(" + rgba.r + "," + rgba.g + "," + rgba.b + "," + rgba.a + ")";
+    }
+
+     var getHexColor = function(hsla){
+        var toHex = function(v) {
+            var h = v.toString(16);
+            while(h.length < 2)
+                h = "0" + h;
+            return h;
+        }
+        var rgba = InteractiveDataDisplay.ColorPalette.HSLtoRGB(hsla);
+        var r = toHex(rgba.r);
+        var g = toHex(rgba.g);
+        var b = toHex(rgba.b);
+        return "#" + r + g + b;
+    }
+
+    var renderMarker = function(ctx, left, top, borderColor, leftColor, rightColor){
+        var sz = barHeight;        
+        if(leftColor){
+            ctx.fillStyle = leftColor;
+            ctx.beginPath();
+            ctx.moveTo(left, top);
+            ctx.lineTo(left + sz/2, top);
+            ctx.lineTo(left + sz/2, top + sz);
+            ctx.fill();
+        }
+        if(rightColor){
+            ctx.fillStyle = rightColor;
+            ctx.beginPath();
+            ctx.moveTo(left + sz/2, top);
+            ctx.lineTo(left + sz, top);
+            ctx.lineTo(left + sz/2, top + sz);
+            ctx.fill();
+        }
+        // outline:
+        ctx.strokeStyle = borderColor;
+        ctx.beginPath();
+        ctx.moveTo(left, top);
+        ctx.lineTo(left + sz, top);
+        ctx.lineTo(left + sz/2, top + sz);
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    var $canvasNew = 
+        $("<canvas height='" + barHeight + "px'" + "width='" + width + "px' style='display: block'></canvas>")
+        .css("position", "absolute")
+        .appendTo($bar);
+    var clearCanvasNew = function(){
+        var ctx = $canvasNew[0].getContext("2d");
+        ctx.clearRect(0, 0, width, barHeight);
+    }
+
+    var stopChoosingColor = function(){
+        if(isChoosingColor){
+            var $pickers = $(".idd-colorPaletteEditor-colorPicker", $bar);
+            if($pickers.length > 0){
+                var handler = $.data($pickers[0], "onClick");
+                if(handler){
+                    $(window).off("click", handler);
+                }
+                $(".idd-colorPaletteEditor-colorPicker", $bar).remove();
+            }
+            isChoosingColor = false;
+        }
+    }
+
+    // Shows an element that allows to choose a color.
+    // It is shown above the palette viewer.
+    // Arguments:
+    //  - xp: x-position relative to bars
+    //  - hsla: initial color
+    //  - onSelected: callback to set the chosen color
+    var chooseColor = function(xp, hsla, onChosen){
+        stopChoosingColor();
+        isChoosingColor = true;
+
+        var w = 60;
+        var h = 20;
+
+        var $colorPicker = 
+            $("<div></div>")
+            .addClass("idd-colorPaletteEditor-colorPicker")
+            .css({ "position": "absolute", "left":  xp - w/2, "top": barHeight })            
+            .appendTo($bar);
+
+        $("<span>Color:</span>")
+            .css("margin-right", 10)
+            .appendTo($colorPicker);
+
+        var $input = 
+            $("<input type=color></input>")            
+            .width(w)
+            .height(h)
+            .val(getHexColor(hsla))
+            .change(function(){
+                var color = $input.val();
+                var rgba = InteractiveDataDisplay.ColorPalette.colorFromString(color);
+                var hsla = InteractiveDataDisplay.ColorPalette.RGBtoHSL(rgba);
+                onChosen(hsla);
+                stopChoosingColor();
+            })
+            .appendTo($colorPicker);
+
+        var onClick = function(e){
+            var isOfColorPicker = 
+                $(e.target).hasClass("idd-colorPaletteEditor-colorPicker") ||
+                $colorPicker.has($(e.target)).length > 0;
+            if(!isOfColorPicker){
+                stopChoosingColor();
+                e.stopPropagation();
+            }
+        }
+        $(window).click(onClick);
+        $.data($colorPicker[0], "onClick", onClick); // saves the handler to unsubscribe
+    };
+
+    // Computes position on the _palette range for the given marker element.
+    var getMarkerX = function($marker) {
+        var offset = $canvasNew.offset(); 
+        var xp = $marker.offset().left + $marker.width()/2 - offset.left;
+        var k = (_palette.range.max - _palette.range.min) / width;        
+        var x = k * xp + _palette.range.min;
+        return x;
+    }
+
+    var addMarker = function(point, leftX, rightX, isDraggable){
+        var k = width / (_palette.range.max - _palette.range.min);
+        var xp = k * (point.x - _palette.range.min);
+        var lxp = k * (leftX - _palette.range.min);
+        var rxp = k * (rightX - _palette.range.min);
+
+        // Structure
+        var sz = barHeight;
+        var $marker = 
+            $("<div style='position:absolute;'></div>")
+            .addClass("idd-colorPaletteEditor-marker")
+            .width(sz)
+            .height(sz)
+            .appendTo($bar);
+        var $canvas = 
+             $("<canvas height='" + sz + "px'" + "width='" + sz + "px' style='display: block'></canvas>")
+            .appendTo($marker);
+        $marker.css("left", xp - sz/2);
+
+        if(isDraggable){
+            var offset = $canvasNew.offset();
+            var renderedAsRemoving = false;
+            $marker.draggable({ 
+                axis: "x", 
+                containment: [ offset.left + lxp - sz/2, offset.top, offset.left + rxp - sz/2, offset.top + sz ],
+                start: function(e){  // Starts dragging the marker
+                    isDraggingMarker = true;
+                    renderedAsRemoving = false;
+
+                    stopChoosingColor();                    
+                    clearCanvasNew();
+                    var offset = $canvasNew.offset();
+                    $(e.target).draggable("option", "containment",
+                        [ offset.left + lxp - sz/2, offset.top, offset.left + rxp - sz/2, offset.top + sz ]);
+                }, 
+                drag: function(e){ // Dragging the marker
+                    var parentOffset = $div.offset(); 
+                    var cursorY = e.pageY - parentOffset.top;
+                    if(cursorY < 0 || cursorY > height) { // cursor is above or below the bar panel ==> remove?
+                        if(!renderedAsRemoving){
+                            var ctx = $canvas[0].getContext("2d");
+                            ctx.clearRect(0, 0, sz, sz);
+                            renderMarker(ctx, 0, 0, borderTemplate, fillTemplate, fillTemplate);
+                            renderedAsRemoving = true;
+                        }
+                    }else if(renderedAsRemoving) {
+                        var ctx = $canvas[0].getContext("2d");
+                        ctx.clearRect(0, 0, sz, sz);
+                        renderMarker(ctx, 0, 0,
+                            'black', 
+                            point.leftColor && getCssColor(point.leftColor),
+                            point.rightColor && getCssColor(point.rightColor));
+                        renderedAsRemoving = false;
+                    }
+                },
+                stop: function(e){ // Dragging stopped and we move the marker to new position                    
+                    isDraggingMarker = false;
+                    
+                    var parentOffset = $div.offset(); 
+                    var cursorY = e.pageY - parentOffset.top;
+
+                    if(cursorY < 0 || cursorY > height) { // cursor is above or below the bar panel ==> remove
+                        for(var i = 0; i < _palette.points.length; i++){
+                            if(_palette.points[i].x == point.x){
+                                _palette.points.splice(i, 1); // <-- remove the palette point
+                                firePaletteChanged(_palette);
+                                paletteViewer.palette = _palette;
+                                break;
+                            }
+                        }
+                    } else { // new position for the marker
+                        var x = getMarkerX($marker)
+                        if(x > _palette.range.min && x < _palette.range.max){
+                            point.x = x;           // <-- new palette point                            
+                            firePaletteChanged(_palette);  
+                            paletteViewer.palette = _palette;
+                        }
+                    }                                        
+                    updateMarkers();                    
+                }
+            });
+        }
+        $marker.click(function(e){ // <-- prompts a user to choose new color for the marker
+            chooseColor(xp, point.rightColor ? point.rightColor : point.leftColor, 
+                function(hsla) {  // <-- new color is chosen for the marker
+                    if(point.leftColor) point.leftColor = hsla;
+                    if(point.rightColor) point.rightColor = hsla;
+                    paletteViewer.palette = _palette;
+                    firePaletteChanged(_palette);
+                    updateMarkers();
+                });
+            e.stopPropagation();
+        });
+
+        // Render   
+        var ctx = $canvas[0].getContext("2d");
+        renderMarker(ctx, 0, 0,
+            'black', 
+            point.leftColor && getCssColor(point.leftColor),
+            point.rightColor && getCssColor(point.rightColor));
+    }; // end of `addMarker`
+
+    // Refreshes UI markers to correspond the `_palette`.
+    var updateMarkers = function(){
+        isDraggingMarker = false;
+        stopChoosingColor();
+        
+        var $markers = $(".idd-colorPaletteEditor-marker", $bar);
+        $markers.filter(".ui-draggable").each(function(){
+            $(this).draggable("destroy");            
+        });
+        $markers.remove();
+
+        for(var i = 0; i < _palette.points.length; i++){
+            var leftX = i == 0 ? _palette.range.min : _palette.points[i-1].x;
+            var rightX = i == _palette.points.length-1 ? _palette.range.max : _palette.points[i+1].x;
+            addMarker(_palette.points[i], leftX, rightX, i > 0 && i < _palette.points.length - 1);
+        }
+    }
+
+    var addPalettePoint = function(p) { // <-- adds new palette point
+        var points = _palette.points;
+        if(points[0].x >= p.x || points[points.length-1].x <= p.x) return;
+        var points2;
+        for(var i = 1; i < points.length; i++){
+            if(p.x == points[i].x) return;
+            if(p.x < points[i].x){
+                points2 = points.slice();
+                points2.splice(i, 0, p);
+                break;
+            }
+        }
+        _palette = new InteractiveDataDisplay.ColorPalette(_palette.isNormalized, _palette.range, points2);
+        paletteViewer.palette = _palette;
+        firePaletteChanged(_palette);
+        updateMarkers();
+    }
+    
+    $canvasNew.mousemove(function(e){ // <-- draw a marker placeholder to indicate that it can be added here
+        if(isDraggingMarker || isChoosingColor) return;
+
+        var parentOffset = $canvasNew.offset(); 
+        var relX = e.pageX - parentOffset.left;
+        
+        var ctx = $canvasNew[0].getContext("2d");
+        ctx.clearRect(0, 0, width, barHeight);
+        renderMarker(ctx, relX-barHeight/2, 0, borderTemplate, fillTemplate, fillTemplate);
+    });
+    $canvasNew.mouseleave(function(){
+        clearCanvasNew();
+    });
+    $canvasNew.click(function(e){  // <-- user clicked to add new marker
+        if(isDraggingMarker || isChoosingColor) return;
+
+        var parentOffset = $canvasNew.offset(); 
+        var relX = e.pageX - parentOffset.left;
+        var k = (_palette.range.max - _palette.range.min) / width;
+        
+        var x = k * relX + _palette.range.min;
+        var c = _palette.getHsla(x);
+        var p = {
+            x: x,
+            leftColor: c,
+            rightColor: c
+        };
+        addPalettePoint(p);
+    });
+
+    updateMarkers();
+};InteractiveDataDisplay.Gestures = {};
 InteractiveDataDisplay.Gestures.FullEventList = [
     "mousedown",
     "mousemove",
@@ -10257,7 +10955,8 @@ InteractiveDataDisplay.BoxWhisker = {
         // border
         if (data.border == undefined || data.border == "none")
             data.border = null; // no border
-
+        if (data.thickness == undefined || data.thickness == "none")
+            data.thickness = 2;
         // colors        
         if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
 
@@ -10348,10 +11047,10 @@ InteractiveDataDisplay.BoxWhisker = {
 
         context.beginPath();
         context.strokeStyle = marker.border === undefined ? "black" : marker.border;
-
+        context.lineWidth = marker.thickness;
         if (marker.color) context.fillRect(x - shift, l68, msize, u68 - l68);
         context.strokeRect(x - shift, l68, msize, u68 - l68);
-       
+
         context.moveTo(x - shift, u95);
         context.lineTo(x + shift, u95);
 
@@ -10367,6 +11066,7 @@ InteractiveDataDisplay.BoxWhisker = {
         context.lineTo(x + shift, mean);
        
         context.stroke();
+        
 
         if (marker.y_min !== undefined) {
             context.beginPath();
@@ -10396,9 +11096,10 @@ InteractiveDataDisplay.BoxWhisker = {
     },
     getBoundingBox: function (marker) {
         var size = marker.size;
+        var xLeft = marker.x;
         var yBottom = marker.lower95 ? marker.lower95 : (marker.lower68 ? marker.lower68 : marker.y);
         var yTop = marker.upper95 ? marker.upper95 : (marker.upper68 ? marker.upper68 : marker.y);
-        return { x: marker.x - size / 2, y: yBottom, width: size, height: Math.abs(yTop - yBottom) };
+        return { x: xLeft, y: yBottom, width: 0, height: Math.abs(yTop - yBottom) };
     },
     getPadding: function (data) {
         var padding = 0;
@@ -10586,22 +11287,25 @@ InteractiveDataDisplay.BoxWhisker = {
         var shift = size / 2;
         var color = data.color;
         var border = data.border == null ? 'none' : data.border;
+        var thickness = data.thickness;
         for (; i < n; i++) {
             x1 = dataToScreenX(data.x[i]);
             y1 = dataToScreenY(data.y[i]);
-            u68 = dataToScreenY(data.upper68[i]);
-            l68 = dataToScreenY(data.lower68[i]);
-            u95 = dataToScreenY(data.upper95[i]);
-            l95 = dataToScreenY(data.lower95[i]);
+            u68 = data.upper68 ? dataToScreenY(data.upper68[i]) : undefined;
+            l68 = data.lower68 ? dataToScreenY(data.lower68[i]) : undefined;
+            u95 = data.upper95 ? dataToScreenY(data.upper95[i]) : undefined;
+            l95 = data.lower95 ? dataToScreenY(data.lower95[i]) : undefined;
             mean = dataToScreenY(data.y[i]);
             c1 = (x1 < 0 || x1 > w_s || y1 < 0 || y1 > h_s);
             if (!c1) {
-                bx_g.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).stroke(border);
-                bx_g.polyline([[x1 - shift, u95], [x1 + shift, u95]]).stroke(border);
-                bx_g.polyline([[x1, u95], [x1, u68]]).stroke(border);
-                bx_g.polyline([[x1, l68], [x1, l95]]).stroke(border);
-                bx_g.polyline([[x1 - shift, l95], [x1 + shift, l95]]).stroke(border);
-                bx_g.polyline([[x1 - shift, mean], [x1 + shift, mean]]).stroke(border);
+                if (u95 != undefined && l95 != undefined) {
+                    bx_g.polyline([[x1 - shift, u95], [x1 + shift, u95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                    bx_g.polyline([[x1, u95], [x1, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                    //bx_g.polyline([[x1, l68], [x1, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                    bx_g.polyline([[x1 - shift, l95], [x1 + shift, l95]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
+                }
+                if (u68 != undefined && l68 != undefined) bx_g.rect(size, Math.abs(u68 - l68)).translate(x1 - shift, u68).fill(color).style({ fill: color, stroke: border, "stroke-width": thickness });
+                bx_g.polyline([[x1 - shift, mean], [x1 + shift, mean]]).style({ fill: "none", stroke: border, "stroke-width": thickness });
             }
         }
         bx_g.clipWith(bx_g.rect(w_s, h_s));
@@ -10609,25 +11313,48 @@ InteractiveDataDisplay.BoxWhisker = {
 };
 InteractiveDataDisplay.Bars = {
     prepare: function (data) {
-        // y
-        if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
-        if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
-        var n = data.y.length;
-        var mask = new Int8Array(n);
-        InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
-        //x
-        if (data.x == undefined)
-            data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
-        else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
-        else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from lenght of 'y'"
-        else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+        var n, mask;
+        // x
+        if (data.orientation == "h") {
+            if (data.x == undefined || data.x == null) throw "The mandatory property 'x' is undefined or null";
+            if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+            n = data.x.length;
+            mask = new Int8Array(n);
+            InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+            //x
+            if (data.y == undefined)
+                data.y = InteractiveDataDisplay.Utils.range(0, n - 1);
+            else if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'x' must be an array of numbers";
+            else if (data.y.length != n) throw "Length of the array which is a value of the property 'x' differs from length of 'y'"
+            else InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+        }
+        else {
+            if (data.y == undefined || data.y == null) throw "The mandatory property 'y' is undefined or null";
+            if (!InteractiveDataDisplay.Utils.isArray(data.y)) throw "The property 'y' must be an array of numbers";
+            n = data.y.length;
+            mask = new Int8Array(n);
+            InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+            //x
+            if (data.x == undefined)
+                data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+            else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+            else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from length of 'y'"
+            else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
+        }
+        //var mask = new Int8Array(n);
+        //InteractiveDataDisplay.Utils.maskNaN(mask, data.y);
+        ////x
+        //if (data.x == undefined)
+        //    data.x = InteractiveDataDisplay.Utils.range(0, n - 1);
+        //else if (!InteractiveDataDisplay.Utils.isArray(data.x)) throw "The property 'x' must be an array of numbers";
+        //else if (data.x.length != n) throw "Length of the array which is a value of the property 'x' differs from length of 'y'"
+        //else InteractiveDataDisplay.Utils.maskNaN(mask, data.x);
         // border
         if (data.border == undefined || data.border == "none")
             data.border = null; // no border
         // shadow
         if (data.shadow == undefined || data.shadow == "none")
             data.shadow = null; // no shadow
-
         if (data.color == undefined) data.color = InteractiveDataDisplay.Markers.defaults.color;
         if (InteractiveDataDisplay.Utils.isArray(data.color)) {
             if (data.color.length != n) throw "Length of the array 'color' is different than length of the array 'y'"
@@ -10674,18 +11401,32 @@ InteractiveDataDisplay.Bars = {
     },
     draw: function (marker, plotRect, screenSize, transform, context) {
         var barWidth = 0.5 * marker.barWidth;
-        var xLeft = transform.dataToScreenX(marker.x - barWidth);
-        var xRight = transform.dataToScreenX(marker.x + barWidth);
-        if (xLeft > screenSize.width || xRight < 0) return;
-        var yTop = transform.dataToScreenY(marker.y);
-        var yBottom = transform.dataToScreenY(0);
-        if (yTop > yBottom) {
-            var k = yBottom;
-            yBottom = yTop;
-            yTop = k;
+        var xLeft, xRight, yTop, yBottom;
+        if (marker.orientation == "h") {
+            xLeft = transform.dataToScreenX(0);
+            xRight = transform.dataToScreenX(marker.x);
+            if (xLeft > xRight) {
+                var k = xRight;
+                xRight = xLeft;
+                xLeft = k;
+            }
+            if (xLeft > screenSize.width || xRight < 0) return;
+            yTop = transform.dataToScreenY(marker.y + barWidth);
+            yBottom = transform.dataToScreenY(marker.y - barWidth);
+            if (yTop > screenSize.height || yBottom < 0) return;
+        } else {
+            xLeft = transform.dataToScreenX(marker.x - barWidth);
+            xRight = transform.dataToScreenX(marker.x + barWidth);
+            if (xLeft > screenSize.width || xRight < 0) return;
+            yTop = transform.dataToScreenY(marker.y);
+            yBottom = transform.dataToScreenY(0);
+            if (yTop > yBottom) {
+                var k = yBottom;
+                yBottom = yTop;
+                yTop = k;
+            }
+            if (yTop > screenSize.height || yBottom < 0) return;
         }
-        if (yTop > screenSize.height || yBottom < 0) return;
-
         if (marker.shadow) {
             context.fillStyle = marker.shadow;
             context.fillRect(xLeft + 2, yTop + 2, xRight - xLeft, yBottom - yTop);
@@ -10700,14 +11441,20 @@ InteractiveDataDisplay.Bars = {
     },
     getBoundingBox: function (marker) {
         var barWidth = marker.barWidth;
-        var xLeft = marker.x - barWidth / 2;
-        var yBottom = Math.min(0, marker.y);
-        return { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
+        var xLeft = marker.orientation == "h"? Math.min(0, marker.x) : marker.x - barWidth / 2;
+        var yBottom = marker.orientation == "h" ? marker.y - barWidth / 2 : Math.min(0, marker.y);
+        
+        return marker.orientation == "h" ? {x: xLeft, y: yBottom, width: Math.abs(marker.x), height: barWidth} : { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
     },
     hitTest: function (marker, transform, ps, pd) {
         var barWidth = marker.barWidth;
-        var xLeft = marker.x - barWidth / 2;
-        var yBottom = Math.min(0, marker.y);
+        var xLeft = marker.orientation == "h"? Math.min(0, marker.x) : marker.x - barWidth / 2;
+        var yBottom = marker.orientation == "h" ? marker.y - barWidth / 2 : Math.min(0, marker.y);
+        if (marker.orientation == "h") {
+            if (pd.x < xLeft || pd.x > xLeft  + Math.abs(marker.x)) return false;
+            if (pd.y < yBottom || pd.y > yBottom + barWidth) return false;
+            return true;
+        }
         if (pd.x < xLeft || pd.x > xLeft + barWidth) return false;
         if (pd.y < yBottom || pd.y > yBottom + Math.abs(marker.y)) return false;
         return true;
@@ -10847,16 +11594,28 @@ InteractiveDataDisplay.Bars = {
         var border = data.border == null ? 'none' : data.border;
         var shadow = data.shadow == null ? 'none' : data.shadow;
         for (; i < n; i++) {
-            xLeft = dataToScreenX(data.x[i] - shift);
-            xRight = dataToScreenX(data.x[i] + shift);
-            yTop = dataToScreenY(data.y[i]);
-            yBottom = dataToScreenY(0);
-            if (yTop > yBottom) {
-                var k = yBottom;
-                yBottom = yTop;
-                yTop = k;
+            if (data.orientation == "h") {
+                xLeft = dataToScreenX(0);
+                xRight = dataToScreenX(data.x[i]);
+                yTop = dataToScreenY(data.y[i] + shift);
+                yBottom = dataToScreenY(data.y[i] - shift);
+                if (xLeft > xRight) {
+                    var k = xRight;
+                    xRight = xLeft;
+                    xLeft = k;
+                }
+            } else {
+                xLeft = dataToScreenX(data.x[i] - shift);
+                xRight = dataToScreenX(data.x[i] + shift);
+                yTop = dataToScreenY(data.y[i]);
+                yBottom = dataToScreenY(0);
+                if (yTop > yBottom) {
+                    var k = yBottom;
+                    yBottom = yTop;
+                    yTop = k;
+                }
             }
-            color = data.individualColors ? data.color[i]: data.color;
+            color = data.individualColors ? data.color[i] : data.color;
             c1 = (xRight < 0 || xLeft > w_s || yBottom < 0 || yTop > h_s);
             if (!c1) {
                 bars_g.polyline([[xLeft + 2, yBottom + 2], [xLeft + 2, yTop + 2], [xRight + 2, yTop + 2], [xRight + 2, yBottom + 2], [xLeft + 2, yBottom + 2]]).fill(shadow);
@@ -10878,6 +11637,7 @@ InteractiveDataDisplay.Bars = {
         var y3 = size / 3;
         var barWidth = size / 3;
         var shadowSize = 1;
+        var shadow = 'none';
         //thumbnail
         if (data.individualColors) {
             border = "#000000";
@@ -11272,17 +12032,30 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     var _imageData;
     var _y;
     var _x;
-    var _f;
-    var _f_u68, _f_l68, _f_median;
-    var _fmin, _fmax;
+
+    // _f contains values that are mapped to colors.
+    // _log_f is log10(_f) and it is used only if options.logColors is enabled instead of _f for color mapping.
+    // _f or _logf is passed to the heatmap render.
+    // _fmin/_fmax (and corresponding log-versions) are min/max for _f (_log_f) and are used EXCLUSIVELY for palette range.
+    // Log range are computed with respect to _logTolerance (taken from option.logTolerance).
+    // _log_f is passed to rendered only.
+    // _f is passed to renderer and to build tooltip value.
+    var _f, _f_u68, _f_l68, _f_median, _fmin, _fmax;
+    var _logColors, _logTolerance;
+    var _log_f, _log_fmin, _log_fmax;
+
+
     var _opacity; // 1 is opaque, 0 is transparent
     var _mode; // gradient or matrix
     var _palette;
     var _dataChanged;
     var _paletteColors;
+
+    // Uncertainty interval
     var _interval;
     var _originalInterval;
     var _heatmap_nav;
+
     var _formatter_f, _formatter_f_median, _formatter_f_l68, _formatter_f_u68, _formatter_interval;
 
     loadOpacity((initialData && typeof (initialData.opacity) != 'undefined') ? parseFloat(initialData.opacity) : 1.0);
@@ -11420,6 +12193,20 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         };
     };
 
+    var computePaletteMinMax = function() {
+        var minmax = findFminmax(_f);
+        _fmin = minmax.min;
+        _fmax = minmax.max;
+
+        if(_logColors){      
+            _fmin = Math.max(_fmin, _logTolerance);
+            _fmax = Math.max(_fmax, _logTolerance);
+            // Palette range is in "plot coordinates", i.e. log10 of range.
+            _log_fmin = InteractiveDataDisplay.Utils.log10(_fmin);
+            _log_fmax = InteractiveDataDisplay.Utils.log10(_fmax);
+        }
+    }
+
     this.onRenderTaskCompleted = function (completedTask) {
         lastCompletedTask = completedTask;
         if (_innerCanvas.width !== lastCompletedTask.width || _innerCanvas.height !== lastCompletedTask.height) {
@@ -11436,13 +12223,19 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
     this.draw = function (data, titles) {
         var f = data.values;
         if (!f) throw "Data series f is undefined";
-        var isOneDimensional = f["median"] !== undefined && !InteractiveDataDisplay.Utils.isArray(f["median"][0])
-                || !InteractiveDataDisplay.Utils.isArray(f[0]);
+        var isOneDimensional = 
+            f["median"] !== undefined && !InteractiveDataDisplay.Utils.isArray(f["median"][0])
+            || !InteractiveDataDisplay.Utils.isArray(f[0]);
         var x = data.x;
         var y = data.y;
         if (_originalInterval == undefined && _interval == undefined) _originalInterval = data.interval;
         _interval = data.interval;
-        if (f["median"]) {//uncertainty
+
+
+        _logColors = data.logPalette !== undefined && data.logPalette;
+        _logTolerance = data.logTolerance ? data.logTolerance : 1e-12;
+
+        if (f["median"]) { //uncertain data
             if (_heatmap_nav == undefined) {
                 var div = $("<div></div>")
                     .attr("data-idd-name", "heatmap__nav_")
@@ -11511,6 +12304,21 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             }
         }
 
+        // Logarithmic colors: builds log10(_f) to be rendered, so the color palette
+        // is logarithmic.
+        if(_logColors){
+            _log_f = new Array(_f.length);
+            for(var i = 0; i < _f.length; i++)
+            {
+                var row = _f[i];
+                var logRow = _log_f[i] = new Float32Array(row.length);
+                for(var j = 0; j < row.length; j++)
+                {
+                    logRow[j] = InteractiveDataDisplay.Utils.log10(row[j]);
+                }
+            }
+        }
+
         _formatter_f = undefined;
         _formatter_f_median = undefined;
         _formatter_f_l68 = undefined;
@@ -11546,10 +12354,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         }
         if (data && typeof (data.colorPalette) != 'undefined')
             loadPalette(data.colorPalette);
+
         if (_palette.isNormalized) {
-            var minmax = findFminmax(_f);
-            _fmin = minmax.min;
-            _fmax = minmax.max;
+            computePaletteMinMax();
         }
         _dataChanged = true;
         var prevBB = this.invalidateLocalBounds();
@@ -11761,9 +12568,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                     height: _imageData.height,
                     x: _x,
                     y: _y,
-                    f: _f,
-                    fmin: _fmin,
-                    fmax: _fmax,
+                    f: _logColors ? _log_f : _f,
+                    fmin: _logColors ? _log_fmin : _fmin,
+                    fmax: _logColors ? _log_fmax : _fmax,
                     plotRect: visibleRect,
                     scaleX: scale.x,
                     scaleY: scale.y,
@@ -11981,7 +12788,6 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             $($("<span style='margin-left:3px;'>highlight similar</span>")).appendTo(checkBoxCnt);
             return $toolTip;
         }
-        return;
     };
 
 
@@ -11991,9 +12797,7 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
             if (value == _palette) return;
             if (!value) throw "Heatmap palette is undefined";
             if (_palette && value.isNormalized && !_palette.isNormalized && _f) {
-                var minmax = findFminmax(_f);
-                _fmin = minmax.min;
-                _fmax = minmax.max;
+                computePaletteMinMax();
             }
             loadPalette(value);
             lastCompletedTask = undefined;
@@ -12031,15 +12835,17 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         setName();
         var colorIsVisible = 0;
         var paletteControl, colorDiv, paletteDiv;
+        colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(infoDiv);
+
         var clrTitleText, colorTitle;
         var refreshColor = function () {
             clrTitleText = that.getTitle("values");
             if (colorIsVisible == 0) {
-                colorDiv = $("<div class='idd-legend-item-palette'></div>").appendTo(infoDiv);
+                colorDiv.empty();                
                 colorTitle = $("<div class='idd-legend-item-property'></div>").text(clrTitleText).appendTo(colorDiv);
                 paletteDiv = $("<div style='width: 170px; margin-top: 5px; margin-bottom: 5px;'></div>").appendTo(colorDiv);
 
-                paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette);
+                paletteControl = new InteractiveDataDisplay.ColorPaletteViewer(paletteDiv, _palette, { logAxis: _logColors });
                 colorIsVisible = 2;
             } else colorTitle.text(clrTitleText);
 
@@ -12067,8 +12873,10 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                     setName();
                 if (!propertyName || propertyName == "interval")
                     refreshInterval();
-                if (!propertyName || propertyName == "values" || propertyName == "colorPalette")
+                if (!propertyName || propertyName == "values" || propertyName == "colorPalette"){
+                    colorIsVisible = 0;
                     refreshColor();
+                }
                 if (!propertyName || propertyName == "palette") paletteControl.palette = _palette;
                 var oldRange = paletteControl.dataRange;
                 if (_palette && _palette.isNormalized && (oldRange == undefined || oldRange.min != _fmin || oldRange.max != _fmax)) {

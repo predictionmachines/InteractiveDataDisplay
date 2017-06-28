@@ -555,6 +555,21 @@
 }
 .idd-onscreennavigation-exportsvg:hover {
     background-image: url('icons/ic_file_download_black.png');
+}
+.idd-colorPaletteEditor {
+    cursor: cursor;
+}
+.idd-colorPaletteEditor .idd-colorPaletteEditor-bar {    
+    position: relative;    
+}
+.idd-colorPaletteEditor .idd-colorPaletteEditor-colorPicker {
+    border-color: gray;
+    border-width: 1px;
+    border-style: solid;
+    background-color: white;
+    padding: 2px;
+    font-size:smaller;
+    cursor: default;
 }/*Probes*/
 .probes 
 {
