@@ -25,16 +25,15 @@
             var chart = InteractiveDataDisplay.asPlot($("#chart"));
             var svg = chart.exportToSvg();
             
-            $("#chart_svg").html(svg.svg());   
-            $("#output").text(svg.svg());         
+            $("#chart_svg").html(svg.svg());         
         };
     </script>
 </head>
 <body>
-    <div id="chart_svg" style="width: 800px; height: 600px; margin-bottom: 5px; background-color: azure;" onclick="exportSvg(); $('#chart_svg').css('background-color', 'transparent');">
+    <div id="chart_svg" style="width: 100%; height: 480px; margin-bottom: 5px; background-color: azure;" onclick="exportSvg(); $('#chart_svg').css('background-color', 'transparent');">
         Every time you click here you get an SVG snapshot of the chart below.
     </div>
-    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;" >
+    <div id="chart" data-idd-plot="chart" style="width: 70%; height: 480px;" >
         <div id="axisr" data-idd-axis="numeric" data-idd-placement="right"></div>
         <div id="axist" data-idd-axis="numeric" data-idd-placement="top"></div>
         <div id="line" data-idd-name="sin(x)"
@@ -650,7 +649,6 @@
             3   1.76938E-09       
         </div> 
     </div>  
-    <div id="output" />
 </body>
 </html>
 

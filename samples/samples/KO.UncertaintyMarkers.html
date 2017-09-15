@@ -73,8 +73,8 @@
     </script>
 </head>
 <body>
-    <div style="display: inline-block">
-    <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
+    <div>
+    <div id="chart" data-idd-plot="chart" style="width: 100%; height: 480px; float:left">
 		<div data-idd-plot="markers"
              data-bind="
 				iddX:X_Boxs,
@@ -108,7 +108,7 @@
                 iddShape: BullEyeShape">
         </div>
 	</div>
-    <div style="float: right; margin: 2em">
+    <div style="float: left; margin: 2em">
         <p>Upper 95 margin: <input data-bind="value: Upper95_delta" type="number" min="0" max="5"></p>
         <p>Upper 68 margin: <input data-bind="value: Upper68_delta" type="number" min="0" max="5"></p>
         <p>Lower 68 margin: <input data-bind="value: Lower68_delta" type="number" min="0" max="5"></p>

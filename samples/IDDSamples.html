@@ -2,7 +2,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../stylesheets/styles.css">
+    <link rel="stylesheet" href="../stylesheets/github-dark.css">
+    <script src="../javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />-->
     <title>InteractiveDataDisplay Samples Gallery</title>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script type="application/javascript">
@@ -67,8 +71,13 @@
         .menu
         {
             background-color: #365C95;
-            width: 320px;
+            width: 23%;
+            height:100%;
+            max-height:1000px;
             padding: 10px;
+            float:left;
+            overflow-y: scroll;
+            padding-right:17px;
         }
 
         .title
@@ -81,73 +90,91 @@
     </style>
 </head>
 <body onload="pageLoad()">
-    <div class="menu">
-        <div class="category" style="margin-top: 0px;">Basic Plot Samples</div>
-        <div id="axesNnav" class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Axes and navigation.html')">Axes and Navigation</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Navigation Panel.html')">Navigation Panel</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Titles.html')">Titles</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Custom plot.html')">Custom Plot</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Add and Remove plots using API.html')">Add/Remove Plot</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/AutoFitSample.html')">AutoFit modes and FitToView</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Nested charts.html')">Nested Charts</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/DOM elements in a plot.html')">DOM elements in a Plot</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/NestedChartAsDOMPlot.html')">Nested chart as DOM Plot</div>
-        <div class="category">Polyline Plot Samples</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Draw a polyline in HTML.html')">Simple Polyline</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Dynamic polyline.html')">Dynamic Polyline</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/DynamicArea.html')">Dynamic Area</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Uncertain polyline.html')">Uncertain Polyline</div>
-        <div class="category">Markers Plot Samples</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Markers.html')">Simple Markers</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Dynamic Markers.html')">Dynamic Markers</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Markers with custom series.html')">Markers with custom Color and Size series</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Bar chart.html')">Bar Chart</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Error bars.html')">Error Bars</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Markers with size uncertain data.html')">Show uncertain values using petals</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Markers with color uncertain data.html')">Show uncertain values using bull-eyes</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Boxplot sample.html')">Boxplot</div>
-        <div class="category">Heatmap Plot Samples</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Heatmap.html')">Simple Heatmap Plot</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Dynamic Matrix Heatmap.html')">Dynamic Matrix Heatmap</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Dynamic Gradient Heatmap.html')">Dynamic Gradient Heatmap</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Logarithmic Palette Heatmap.html')">Heatmap with logarithmic palette</div>
-        <div class="category">Knockout samples</div>
-		<div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Area.html')">Area plot with Knockout</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Bars.html')">Bars with Knockout</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Plots.html')">Add/remove plots with Knockout</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Markers.html')">Markers with Knockout</div>
-		<div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Polyline.html')">Polyline with Knockout</div>        
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Heatmap.html')">Heatmap with Knockout</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Dynamic Gradient Heatmap with Knockout.html')">Dynamic heatmap with Knockout</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Labels.html')">Label plot with Knockout</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.UncertaintyMarkers.html')">Uncertainty markers with Knockout</div>
-		<div class="category">Bing Map Samples</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/StandaloneBingMaps.html')">Bing Maps Plot</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Custom map layers.html')">Custom Map Layers</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Markers on a map.html')">Markers on a map</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/BingMapsHeatmapSample.html')">Heatmap on a map</div>
-        <div class="category">Axis Samples</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/LabelledAxisSample.html')">Labels on Axis</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/ChangeBottomAxisLabelsAngle.html')">Angled labels</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/DepthGraphSample.html')">Inverted Vertical Axis</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/ChangeFontSize.html')">Change axis label font size</div>
-        <div class="category">Misc Samples</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Vector export.html')">Export to SVG</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Logarithmic transform.html')">Logarithmic transform</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Color palettes.html')">Color Palettes</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Color Palette Editor.html')">Palette Editor</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/LegendSample.html')">Legend Samples</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Bound plots.html')">Bound Plots</div>
-        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Data series titles.html')">Data series names</div>
-        <div class="href" onclick="window.open('samples/ResponsiveLayout.html')">Responsive layout (new window)</div>
-        <div class="href" onclick="window.open('samples/ResponsiveTabs.html')">Responsive tabs (new window)</div>
-    </div>
 
-    <div style="position: fixed; left: 350px; top: 0px; width: 70%">
-        <p id="currenSample" style="left: 50px">No Sample Selected</p>
-        <iframe id="sampleHost" width="100%" height="768" frameborder="0">No proper iframe support
-        </iframe>
+    <div class="wrapperWithMenu">
+        <header>
+        <h1>Input data to idd and chart viewer</h1>
+        <p>Shows how to define different plots.</p>
+        <ul>
+          <li><a href="../index.html">Back <strong>Home</strong></a></li>
+          <li><a href="https://github.com/predictionmachines/InteractiveDataDisplay/blob/gh-pages/samples/IDDSamples.html">View On <strong>GitHub</strong></a></li>
+        </ul>
+        </header>
+        <section style="overflow:auto;">
+            <p>
+               <div class="menu">
+                <div class="category" style="margin-top: 0px;">Basic Plot Samples</div>
+                <div id="axesNnav" class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Axes and navigation.html')">Axes and Navigation</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Navigation Panel.html')">Navigation Panel</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Titles.html')">Titles</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Custom plot.html')">Custom Plot</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Add and Remove plots using API.html')">Add/Remove Plot</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/AutoFitSample.html')">AutoFit modes and FitToView</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Nested charts.html')">Nested Charts</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/DOM elements in a plot.html')">DOM elements in a Plot</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/NestedChartAsDOMPlot.html')">Nested chart as DOM Plot</div>
+                <div class="category">Polyline Plot Samples</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Draw a polyline in HTML.html')">Simple Polyline</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Dynamic polyline.html')">Dynamic Polyline</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/DynamicArea.html')">Dynamic Area</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Uncertain polyline.html')">Uncertain Polyline</div>
+                <div class="category">Markers Plot Samples</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Markers.html')">Simple Markers</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Dynamic Markers.html')">Dynamic Markers</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Markers with custom series.html')">Markers with custom Color and Size series</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Bar chart.html')">Bar Chart</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Error bars.html')">Error Bars</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Markers with size uncertain data.html')">Show uncertain values using petals</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Markers with color uncertain data.html')">Show uncertain values using bull-eyes</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Boxplot sample.html')">Boxplot</div>
+                <div class="category">Heatmap Plot Samples</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Heatmap.html')">Simple Heatmap Plot</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Dynamic Matrix Heatmap.html')">Dynamic Matrix Heatmap</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Dynamic Gradient Heatmap.html')">Dynamic Gradient Heatmap</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Logarithmic Palette Heatmap.html')">Heatmap with logarithmic palette</div>
+                <div class="category">Knockout samples</div>
+		        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Area.html')">Area plot with Knockout</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Bars.html')">Bars with Knockout</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Plots.html')">Add/remove plots with Knockout</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Markers.html')">Markers with Knockout</div>
+		        <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Polyline.html')">Polyline with Knockout</div>        
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Heatmap.html')">Heatmap with Knockout</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Dynamic Gradient Heatmap with Knockout.html')">Dynamic heatmap with Knockout</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.Labels.html')">Label plot with Knockout</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/KO.UncertaintyMarkers.html')">Uncertainty markers with Knockout</div>
+		        <div class="category">Bing Map Samples</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/StandaloneBingMaps.html')">Bing Maps Plot</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Custom map layers.html')">Custom Map Layers</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Markers on a map.html')">Markers on a map</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/BingMapsHeatmapSample.html')">Heatmap on a map</div>
+                <div class="category">Axis Samples</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/LabelledAxisSample.html')">Labels on Axis</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/ChangeBottomAxisLabelsAngle.html')">Angled labels</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/DepthGraphSample.html')">Inverted Vertical Axis</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/ChangeFontSize.html')">Change axis label font size</div>
+                <div class="category">Misc Samples</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Vector export.html')">Export to SVG</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Logarithmic transform.html')">Logarithmic transform</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Color palettes.html')">Color Palettes</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Color Palette Editor.html')">Palette Editor</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/LegendSample.html')">Legend Samples</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Bound plots.html')">Bound Plots</div>
+                <div class="href" onclick="onHoverA(arguments[0].currentTarget, 'samples/Data series titles.html')">Data series names</div>
+                <div class="href" onclick="window.open('samples/ResponsiveLayout.html')">Responsive layout (new window)</div>
+                <div class="href" onclick="window.open('samples/ResponsiveTabs.html')">Responsive tabs (new window)</div>
+            </div>
+            <div style="float:right;width:72%">
+                <p id="currenSample" style="margin-left:20px;font-size:18px">No Sample Selected</p>
+                <iframe id="sampleHost" width="100%" height="1000" frameborder="0">No proper iframe support
+                </iframe>
+            </div>
+	    </p>		
+        </section>
     </div>
-
+    <footer>
+      <p>Project maintained by <a href="https://github.com/predictionmachines">predictionmachines</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
 </body>
 </html>

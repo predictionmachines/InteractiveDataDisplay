@@ -22,7 +22,7 @@
             $("#but").click(function () {
                 if (state == 0) { // add chart
                     chart = InteractiveDataDisplay.asPlot($("<div data-idd-plot='chart'></div>").appendTo("#container"));
-                    chart.host.width(800).height(600);
+                    chart.host.width("100%").height(480);
                     chart.requestUpdateLayout();
                     $("#but").attr("value", "Draw polyline");
                 }

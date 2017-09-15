@@ -69,8 +69,8 @@
     </script>
 </head>
 <body>
-    <div style="display: inline-block">
-    <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
+    <div style="width:100%;display:inline-block">
+    <div id="chart" data-idd-plot="chart" style="width: 70%; height: 480px; float:left">
 		<div data-idd-plot="heatmap"
              data-bind="
 				iddX: X,
@@ -82,7 +82,7 @@
                 ">
         </div>
 	</div>
-    <div style="float: right; margin: 2em">
+    <div style="width:25%; float: right; margin: 5px">
         <p>From colour:
             <select data-bind="options: ColoursToChoose, value: ColourFrom"></select>
         </p>
