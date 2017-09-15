@@ -55,26 +55,18 @@
             heatmap2.draw({ x: x, y: y, values: f, logPalette: false });
             //setTimeout(modelRun, 1000 / 60.0);
         };
-
-        function exportSvg() {
-            var chart = InteractiveDataDisplay.asPlot($("#chart"));
-            var svg = chart.exportToSvg();  
-            $("#svgoutput").text(svg.svg());  
-        };
     </script>
 </head>
 <body>
-    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+    <div id="chart" data-idd-plot="chart" style="width: 100%; height: 480px;">
         <div data-idd-placement="top" style="text-align: center">Logarithmic color palette</div>
         <div id="heatmap" data-idd-plot="heatmap" data-idd-style="colorPalette:blue,green,red">
         </div>
     </div>
-    <div id="chart2" data-idd-plot="chart" style="width: 800px; height: 600px;">
+    <div id="chart2" data-idd-plot="chart" style="width: 100%; height: 480px;">
         <div data-idd-placement="top" style="text-align: center">Normal color palette</div>
         <div id="heatmap2" data-idd-plot="heatmap" data-idd-style="colorPalette:blue,green,red">
         </div>
     </div>
-    <button onclick="exportSvg()">Export to SVG</button>
-    <div id="svgoutput"></div>
 </body>
 </html>

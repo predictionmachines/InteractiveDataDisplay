@@ -27,7 +27,7 @@
             axes.rotateAngle = angle;
             
             plot.updateLayout();
-        }
+        };
         var decreaseAngle = function () {
             if (angle > -90) angle -= 5;
             var plot = InteractiveDataDisplay.asPlot($("#figure"));
@@ -35,7 +35,7 @@
             axes.rotateAngle = angle;
 
             plot.updateLayout();
-        }
+        };
         $(document).ready(function () {
             var plot = InteractiveDataDisplay.asPlot($("#figure"));
             var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(plot.centralPart);
@@ -51,11 +51,11 @@
     </script>
 </head>
 <body>
-    <div style="display: inline-block">
-    <div id="figure" data-idd-plot="figure" style="width: 600px; height: 500px; float:left" >
+    <div style="width:100%;display:inline-block">
+    <div id="figure" data-idd-plot="figure" style="width: 70%; height: 480px; float:left" >
         <div id="grid" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px'></div> 
     </div>
-    <div style="float: right; margin: 2em">
+    <div style="width:20%; float: right; margin: 5px">
         <button style="display:block" onclick="increaseAngle()">Increase labels angle</button>  
         <button style="display:block; margin-top:10px" onclick="decreaseAngle()">Decrease labels angle</button>                             
     </div>

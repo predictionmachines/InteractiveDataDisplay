@@ -19,7 +19,7 @@
     <script type="text/javascript">
         var fontSize = 12;
         var increaseFontSize = function() {
-            fontSize += 5;
+            if (fontSize < 60) fontSize += 5;
 
             var chart = InteractiveDataDisplay.asPlot($("#chart"));                        
             var axes = chart.getAxes();            
@@ -27,16 +27,26 @@
                 axes[i].FontSize = fontSize;
             }
             chart.updateLayout();
-        }
+        };
+        var decreaseFontSize = function() {
+            if (fontSize > 10) fontSize -= 5;
 
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));                        
+            var axes = chart.getAxes();            
+            for(var i = 0; i < axes.length; i++){
+                axes[i].FontSize = fontSize;
+            }
+            chart.updateLayout();
+        };
         $(document).ready(function () {
             InteractiveDataDisplay.asPlot($("#chart"));            
         });
     </script>
 </head>
 <body>
-    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
-        <div id="p"
+    <div style="width:100%;display:inline-block">
+        <div id="chart" data-idd-plot="chart" style="width: 70%; height: 480px; float:left">
+            <div id="p"
              data-idd-plot="polyline"
              data-idd-style="stroke: rgb(89,150,255); thickness: 3">
             x   y
@@ -341,8 +351,12 @@
             2.98    0.062790521
             2.99    0.031410761
             3   1.76938E-09
+            </div>
+        </div>
+        <div style="width:25%; float: right; margin: 2px">
+            <button style="display:block" onclick="increaseFontSize();">Increase font size</button>  
+            <button style="display:block; margin-top:10px" onclick="decreaseFontSize();">Decrease font size</button>                             
         </div>
     </div>
-    <button onclick="increaseFontSize();">Increase font size</button>
 </body>
 </html>
