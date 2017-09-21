@@ -231,6 +231,11 @@
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: content-box;
+    opacity: 0.4;
+}
+.idd-legend-compact:hover 
+{
+    opacity: 1.0;
 }
 .idd-legend-item-compact
 {

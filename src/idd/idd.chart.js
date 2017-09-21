@@ -95,17 +95,18 @@
             });
         }
     }
-
-    this.onChildrenChanged = function (arg) {
-        if (arg.type == "add") {
+    this.fireChildrenChanged = function (propertyName) {
+        if (propertyName.type == "add") {
             if (that.xDataTransform) {
-                arg.plot.xDataTransform = that.xDataTransform;
+                propertyName.plot.xDataTransform = that.xDataTransform;
             }
             if (that.yDataTransform) {
-                arg.plot.yDataTransform = that.yDataTransform;
+                propertyName.plot.yDataTransform = that.yDataTransform;
             }
         }
+        this.host.trigger(InteractiveDataDisplay.Event.childrenChanged, propertyName);
     };
+
     _legend.div = legendDiv;
     this.exportToSvg = function (plotRect, screenSize, svg) {
         if (!SVG.supported) throw "SVG is not supported";

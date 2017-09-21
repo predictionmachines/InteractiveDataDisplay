@@ -266,7 +266,7 @@ declare module InteractiveDataDisplay {
         legend: Legend;
         constructor(div, master?);
         onDataTranformChangedCore(arg);
-        onChildrenChanged(arg);
+        //onChildrenChanged(arg);
     }
     /**Base class for plots rendering on a private canvas.*/
     export class CanvasPlot extends Plot{

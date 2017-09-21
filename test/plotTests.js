@@ -29,7 +29,7 @@ describe('InteractiveDataDisplay.Plot', function () {
     });
     
     afterEach(function () {
-        plot.onChildrenChanged = function() { };
+        plot.fireChildrenChanged = function() { };
     });
 
     it('should be properly initialized', function () {
@@ -44,10 +44,11 @@ describe('InteractiveDataDisplay.Plot', function () {
 
     //if (!isPhantomJS) {
       it('should create plots for new dom elements', function(done) {
-        plot.onChildrenChanged = function() {
-          expect(plot.children.length).toBe(1);          
-          expect(div.children().length).toBe(3);
-          done();
+
+        plot.fireChildrenChanged = function () {
+            expect(plot.children.length).toBe(1);
+            expect(div.children().length).toBe(3);
+            done();
         }
         expect(plot.children.length).toBe(0);
         var div = plot.host;
@@ -59,22 +60,22 @@ describe('InteractiveDataDisplay.Plot', function () {
       it('should remove plots when corresponding dom elements are removed', function(done) {
         var element = newPlotNoInitialization("line1", "polyline");
         var div = plot.host;
-        plot.onChildrenChanged = function() {
-          // This should be true when polyline div is appended          
-          expect(plot.children.length).toBe(1);                    
-          expect(div.children().length).toBe(1);
-          
-          plot.onChildrenChanged = function() {
-            // This should be true when polyline div is removed
-            expect(plot.children.length).toBe(0);
-            expect(div.children().length).toBe(0);
-            done();
-          };
-          $(element).remove();          
-        }        
-        $(div).append(element); //element with idd-data-plot attribute must be registered as plot
-      });
-   // }    
+      
+        plot.fireChildrenChanged = function () {
+            // This should be true when polyline div is appended
+            expect(div.children().length).toBe(1);
+            expect(plot.children.length).toBe(1);
+            
+            plot.fireChildrenChanged = function () {
+                // This should be true when polyline div is removed
+                expect(plot.children.length).toBe(0);
+                expect(div.children().length).toBe(0);
+                done();
+            }
+            $(element).remove();
+        }
+        $(element).appendTo(div); //element with idd-data-plot attribute must be registered as plot
+      });  
 
     it('.addChild() should add new plot object to the children collection and fire the event', function () {
         var spyMaster = jasmine.createSpy("master.childrenChanged");

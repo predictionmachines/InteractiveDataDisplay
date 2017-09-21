@@ -597,11 +597,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
 
             this.fireChildrenChanged({ type: "add", plot: childPlot });
-            this.onChildrenChanged({ type: "add", plot: childPlot });
             this.requestUpdateLayout();
-        };
-
-        this.onChildrenChanged = function (arg) {
         };
 
         // The function is called when this plot is added(removed) to the new master.
@@ -648,7 +644,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     }
 
                     this.fireChildrenChanged({ type: "remove", plot: child });
-                    this.onChildrenChanged({ type: "remove", plot: child });
                     this.requestUpdateLayout();
                     return true;
                 }
