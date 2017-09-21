@@ -7,10 +7,13 @@
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
-    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
-    <script src="../ext/svg.js/dist/svg.js"></script>
     <script src="../dist/idd.js"></script>
 
     <script type="text/javascript">
@@ -31,7 +34,7 @@
                 labels: [label1, label2],
                 ticks: [ 0, 1, 2 ] });
             figure.addAxis("left", "numeric");
-            var grid = figure.get("grid2");
+            var grid = figure.get("grid");
             grid.xAxis = figure.getAxes("bottom")[0];
             grid.yAxis = figure.getAxes("left")[0];
 
@@ -46,9 +49,9 @@
     </script>
 </head>
 <body style="font-family: Segoe UI; font-size: 14px">
-    <div id="figure" data-idd-plot="figure" data-idd-legend="figure2Legend" style="width: 800px; height: 200px; ">
+    <div id="figure" data-idd-plot="figure" style="width: 800px; height: 200px; ">
         <div id="grid" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px'></div>
-    </div>        
+    </div>     
     <button onclick="exportSVG()">Export to SVG</button>
     <div id="output" style="width: 800px; height: 200px;">
     </div>
