@@ -456,7 +456,7 @@ declare module InteractiveDataDisplay {
     //Legend
     export class Legend {
         isVisible: boolean;
-        constructor(_plot, _jqdiv, isCompact?);
+        constructor(_plot, _jqdiv, isCompact?, hasTooltip?);
         remove();
     }
 

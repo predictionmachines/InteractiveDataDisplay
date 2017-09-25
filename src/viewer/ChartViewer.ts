@@ -318,7 +318,7 @@ module InteractiveDataDisplay {
         constructor(series, segment?);
     }
     export declare class Legend {
-        constructor(_plot, _jqdiv, isCompact?);
+        constructor(_plot, _jqdiv, isCompact?, hasTooltip?);
         remove();
     }
 }

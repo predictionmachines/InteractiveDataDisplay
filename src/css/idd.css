@@ -67,11 +67,11 @@
 {
     background-color: rgb(249, 251, 195);
     color: black;
-    border: 1px solid gray;
+    border: 1px solid lightgray;
     font-size: smaller;
-    -moz-box-shadow: 0 0 1em gray;
-    -webkit-box-shadow: 0 0 1em gray;
-    box-shadow: 0 0 1em gray; 
+    -moz-box-shadow: 0 0 1em lightgray;
+    -webkit-box-shadow: 0 0 1em lightgray;
+    box-shadow: 0 0 1em lightgray; 
     padding: 5px;
     position: absolute;
     display: block;
@@ -576,3 +576,4 @@
     font-size:smaller;
     cursor: default;
 }
+.ui-helper-hidden-accessible { display:none; }

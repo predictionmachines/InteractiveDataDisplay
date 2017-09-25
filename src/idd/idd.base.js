@@ -1642,7 +1642,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
     var _plotLegends = [];
     //Legend with hide/show function
-    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact) {
+    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact, hasTooltip) {
         // Inner legends for this legend.
         var plotLegends = [];
         var plotSubs = [];
@@ -1861,7 +1861,16 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (legend.legend && legend.legend.content)
                     if (isCompact) legend.legend.content.addClass("idd-legend-item-info-compact").appendTo(div);
                     else legend.legend.content.addClass("idd-legend-item-info").appendTo(div);
-                
+               
+                if (hasTooltip) {
+                    $(div).bind('mouseenter', function () {
+                        var $this = $(this);
+                        var legendname = isCompact ? $this.find(".idd-legend-item-title-name-compact") : $this.find(".idd-legend-item-title-name");
+                        if (legendname[0].offsetWidth < legendname[0].scrollWidth && $this.attr('title') === undefined ) {
+                            $this.attr('title', legendname.text());
+                        }
+                    });
+                }
                 div.prependTo(_jqdiv);
                 div.plot = plot;
                 plotLegends[plotLegends.length] = div;
@@ -2304,9 +2313,14 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var sy = ct.plotToScreenY(py);
 
             var context = this.getContext(false);
-            var myImageData = context.getImageData(sx, sy, 1, 1);
-            if (myImageData.data[0] === 0 && myImageData.data[1] === 0 && myImageData.data[2] === 0 && myImageData.data[3] === 0)
-                return undefined;
+
+            var myImageData = context.getImageData(sx - 1, sy - 1, 3, 3);
+            var zeroPixels = 0;
+            for (var k = 0; k < myImageData.data.length; k++) {
+                if (myImageData.data[k] === 0) zeroPixels++;
+            }
+            if (zeroPixels == myImageData.data.length) return undefined;
+          
             var $toolTip = $("<div></div>")
             $("<div></div>").addClass('idd-tooltip-name').text((this.name || "polyline")).appendTo($toolTip);
             return $toolTip;

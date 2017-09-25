@@ -41,7 +41,7 @@ module InteractiveDataDisplay {
 
             var iddChart = this.iddChart = InteractiveDataDisplay.asPlot(iddDiv);
             iddChart.legend.isVisible = false;
-            iddChart.isToolTipEnabled = false;
+            iddChart.isToolTipEnabled = true;
             iddChart.doFitOnDataTransformChanged = false;
         
             //adding onscreen navigation
@@ -85,7 +85,7 @@ module InteractiveDataDisplay {
                 var draggable = $("<div></div>");
                 draggable.addClass("dragPoint");
 
-                probesPlot.add(draggable[0], 'none', x, y, undefined, undefined, 0.5, 1);
+                probesPlot.add(draggable[0], 'none', x, y, undefined, undefined, 0.5, 0.92);
                 var children = probesPlot.domElements;
                 var addedDragable = children[children.length - 1];
                 addedDragable.id = id;
@@ -93,13 +93,10 @@ module InteractiveDataDisplay {
                 draggable.draggable({
                     containment: probesPlot.master.centralPart[0],
                     scroll: false,
-                    drag: function () {
-                    },
+                    opacity: 0.9,
                     stop: function (event, ui) {
                         var pinCoord = { x: addedDragable._x, y: addedDragable._y };
                         persistentViewState.probesViewModel.updateProbe(id, pinCoord);
-                    },
-                    start: function () {
                     }
                 });
 
