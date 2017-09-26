@@ -63,8 +63,12 @@ module InteractiveDataDisplay {
                 var result = [];
                 for (var i = 0; i < children.length; i++) {
                     if (children[i].isVisible) {
-                        var px = children[i].xDataTransform ? (children[i].xDataTransform.isInDomain && children[i].xDataTransform.isInDomain(probe.location.x) ? children[i].xDataTransform.dataToPlot(probe.location.x): probe.location.x): probe.location.x;
-                        var py = children[i].yDataTransform ? (children[i].yDataTransform.isInDomain && children[i].yDataTransform.isInDomain(probe.location.y) ? children[i].yDataTransform.dataToPlot(probe.location.y): probe.location.y) : probe.location.y;
+                        var px = children[i].xDataTransform ?
+                            (children[i].xDataTransform.domain && children[i].xDataTransform.domain.isInDomain && children[i].xDataTransform.domain.isInDomain(probe.location.x) ?
+                            children[i].xDataTransform.dataToPlot(probe.location.x) : probe.location.x) : probe.location.x;
+                        var py = children[i].yDataTransform ?
+                            (children[i].yDataTransform.domain && children[i].yDataTransform.domain.isInDomain && children[i].yDataTransform.domain.isInDomain(probe.location.y) ?
+                            children[i].yDataTransform.dataToPlot(probe.location.y) : probe.location.y) : probe.location.y;
                         var tt = children[i].getTooltip(probe.location.x, probe.location.y, px, py, true);
                         if (tt !== undefined) {
                             result.push(tt);

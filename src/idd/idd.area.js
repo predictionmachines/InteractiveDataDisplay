@@ -1,7 +1,8 @@
 ﻿// Area plot takes data with coordinates named 'x', 'y1', 'y2' and a fill colour named 'fill'. 
 InteractiveDataDisplay.Area = function (div, master) {
     var that = this;
-    var defaultFill = "rgba(0,0,0,0.2)";
+    var defaultFill = "#4169ed";
+    var defaultOpacity = 0.4;
 
     // Initialization (#1)
     var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
@@ -11,15 +12,16 @@ InteractiveDataDisplay.Area = function (div, master) {
     this.base(div, master);
 
 
-    var _x = []; // an array of horizontal axis coordinates
-    var _y1 = [];
-    var _y2 = []; // arrays of lower and upper limits of the area
+    var _x; // an array of horizontal axis coordinates
+    var _y1;
+    var _y2; // arrays of lower and upper limits of the area
     var _fill = defaultFill;
+    var _opacity = defaultOpacity;
 
     // default styles:
     if (initialData) {
         _fill = typeof initialData.fill != "undefined" ? initialData.fill : defaultFill;
-
+        _opacity = typeof initialData.opacity != "undefined" ? initialData.opacity : defaultOpacity;
     }
 
     this.draw = function (data) {
@@ -45,7 +47,7 @@ InteractiveDataDisplay.Area = function (div, master) {
 
         // styles:
         _fill = typeof data.fill != "undefined" ? data.fill : defaultFill;
-
+        _opacity = typeof data.opacity != "undefined" ? data.opacity : defaultOpacity;
         this.invalidateLocalBounds();
 
         this.requestNextFrameOrUpdate();
@@ -68,12 +70,40 @@ InteractiveDataDisplay.Area = function (div, master) {
         return { left: 0, right: 0, top: 0, bottom: 0 };
     };
 
+    this.getTooltip = function (xd, yd, px, py) {
+        if (_x === undefined || _y1 == undefined || _y2 == undefined)
+            return;
+        var n = _y1.length;
+        if (n == 0) return;
+
+        if (!this.isVisible) return;
+
+        var context = this.getContext(false);
+        var t = this.getTransform();
+        var ps = { x: t.dataToScreenX(xd), y: t.dataToScreenY(yd) };
+
+        var myImageData = context.getImageData(ps.x - 1, ps.y - 1, 3, 3);
+        var zeroPixels = 0;
+        for (var k = 0; k < myImageData.data.length; k++) {
+            if (myImageData.data[k] === 0) zeroPixels++;
+        }
+        if (zeroPixels === myImageData.data.length) return undefined;
+
+        var $toolTip = $("<div></div>")
+        $("<div></div>").addClass('idd-tooltip-name').text((this.name || "area")).appendTo($toolTip);
+        return $toolTip;
+    };
+
     this.renderCore = function (plotRect, screenSize) {
         InteractiveDataDisplay.Area.prototype.renderCore.call(this, plotRect, screenSize);
-        var context = that.getContext(true);
+        var context = this.getContext(true);
 
-        InteractiveDataDisplay.Area.render.call(this, _x, _y1, _y2, _fill, plotRect, screenSize, context);
+        InteractiveDataDisplay.Area.render.call(this, _x, _y1, _y2, _fill, plotRect, screenSize, context, _opacity);
     };
+
+    this.renderCoreSvg = function (plotRect, screenSize, svg) {
+        InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y1, _y2, _fill, _opacity);
+    }
 
     // Clipping algorithms
     var code = function (x, y, xmin, xmax, ymin, ymax) {
@@ -86,6 +116,30 @@ InteractiveDataDisplay.Area = function (div, master) {
         this.invalidateLocalBounds();
         InteractiveDataDisplay.Area.prototype.onDataTransformChanged.call(this, arg);
     };
+
+    Object.defineProperty(this, "fill", {
+        get: function () { return _fill; },
+        set: function (value) {
+            if (value == _fill) return;
+            _fill = value;
+
+            this.fireAppearanceChanged("fill");
+            this.requestNextFrameOrUpdate();
+        },
+        configurable: false
+    });
+
+    Object.defineProperty(this, "opacity", {
+        get: function () { return _opacity; },
+        set: function (value) {
+            if (value == _opacity) return;
+            _opacity = value;
+
+            this.fireAppearanceChanged("opacity");
+            this.requestNextFrameOrUpdate();
+        },
+        configurable: false
+    });
 
     this.getLegend = function () {
         var that = this;
@@ -149,13 +203,7 @@ InteractiveDataDisplay.Area = function (div, master) {
         //return { div: div, onLegendRemove: onLegendRemove };
         return { name: nameDiv, legend: { thumbnail: canvas, content: undefined }, onLegendRemove: onLegendRemove };
     };
-    // Initialization 
-    if (initialData && initialData.x && initialData.y1 && initialData.y2)
-        this.draw(initialData);
 
-    this.renderCoreSvg = function (plotRect, screenSize, svg) {
-        InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y1, _y2, _fill);
-    }
     this.buildSvgLegend = function (legendSettings, svg) {
         var that = this;
         legendSettings.height = 30;
@@ -168,6 +216,11 @@ InteractiveDataDisplay.Area = function (div, master) {
         svg.add(svg.text(that.name).font({ family: fontFamily, size: fontSize, weight: fontWeight }).translate(40, 0));
         svg.front();
     }
+
+    // Initialization 
+    if (initialData && initialData.x && initialData.y1 && initialData.y2)
+        this.draw(initialData);
+
 }
 InteractiveDataDisplay.Area.prototype = new InteractiveDataDisplay.CanvasPlot;
 InteractiveDataDisplay.Area.render = function (_x, _y1, _y2, _fill, plotRect, screenSize, context, globalAlpha) {

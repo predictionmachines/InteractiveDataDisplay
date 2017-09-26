@@ -1094,6 +1094,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
                 var newVisibleRect = that.visibleRect;
                 if (newVisibleRect.x !== oldVisibleRect.x || newVisibleRect.y !== oldVisibleRect.y || newVisibleRect.width !== oldVisibleRect.width || newVisibleRect.height !== oldVisibleRect.height) {
+                    updatePlotsOutput();
                     that.fireVisibleRectChanged({ visibleRect: newVisibleRect });
                 }
 
@@ -2307,19 +2308,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 return;
             var n = _y.length;
             if (n == 0) return;
-
-            var ct = this.coordinateTransform;
-            var sx = ct.plotToScreenX(px);
-            var sy = ct.plotToScreenY(py);
-
+          
+            if (!this.isVisible) return;
             var context = this.getContext(false);
-
-            var myImageData = context.getImageData(sx - 1, sy - 1, 3, 3);
+            var t = this.getTransform();
+            var ps = { x: t.dataToScreenX(xd), y: t.dataToScreenY(yd) };
+           
+            var myImageData = context.getImageData(ps.x - 1, ps.y - 1, 3, 3);
             var zeroPixels = 0;
             for (var k = 0; k < myImageData.data.length; k++) {
                 if (myImageData.data[k] === 0) zeroPixels++;
             }
-            if (zeroPixels == myImageData.data.length) return undefined;
+            if (zeroPixels === myImageData.data.length) return undefined;
           
             var $toolTip = $("<div></div>")
             $("<div></div>").addClass('idd-tooltip-name').text((this.name || "polyline")).appendTo($toolTip);

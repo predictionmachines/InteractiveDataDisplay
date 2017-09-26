@@ -26,12 +26,12 @@
             var y1 = new Array(n);
             var y2 = new Array(n);
 
-            for (var i = 0; i < n; i++) {
+            for (var i = 1; i < n; i++) {
                 var d = i * 0.003;
                 x[i] = d;
                 var k = 1 + 0.5 * Math.sin(t / 100 * Math.PI);
-                y1[i] = d == 0 ? k : k * Math.sin(d * k * Math.PI) / (d * k * Math.PI);
-                y2[i] = 0.5 * y1[i];
+                y1[i] = k * Math.sin(d * k * Math.PI) / (d * k * Math.PI) + 1.2;
+                y2[i] = 0.5 * y1[i] + 0.6;
             }
             InteractiveDataDisplay.show(document.getElementById("chart"), {
                 "p2": Plot.area({ x: x, y1: y1, y2: y2 })
