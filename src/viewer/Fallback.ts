@@ -1,28 +1,7 @@
 ﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="Utils.ts" />
-/// <reference path="PlotRegistry.ts" />
 
 module InteractiveDataDisplay {
-    PlotRegistry["fallback"] = {
-        initialize(plotDefinition: PlotInfo, viewState: ViewState, chart: IDDPlot) {
-            var div = $("<div></div>")
-                .attr("data-idd-name", plotDefinition.displayName)
-                .appendTo(chart.host);
-            var plot = new FallbackPlot(div, chart.master);
-            chart.addChild(plot);
-            return [plot];
-        },
-
-        draw(plots: IDDPlot[], plotDefinition: PlotInfo) {        
-            var drawArgs = {
-                kind: plotDefinition.kind,
-                error: plotDefinition["error"]
-            }
-            plots[0].draw(drawArgs);
-            
-        }
-    }
-
     export function FallbackPlot(div, master) {
         var that = this;
 

@@ -1,6 +1,5 @@
 ﻿/// <reference path="ViewState.ts" />
 /// <reference path="Utils.ts" />
-/// <reference path="PlotRegistry.ts" />
 /// <reference path="PlotViewer.ts" />
 
 module InteractiveDataDisplay {

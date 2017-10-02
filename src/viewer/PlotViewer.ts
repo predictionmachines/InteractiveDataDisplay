@@ -227,16 +227,34 @@ module InteractiveDataDisplay {
         }
 
         private addPlot(p: PlotViewerItem) {
-            var factory = PlotRegistry[p.Definition.kind] ? PlotRegistry[p.Definition.kind] : PlotRegistry["fallback"];
-            p.Plots = factory.initialize(p.Definition, this.persistentViewState, this.iddChart);
+            var div = $("<div></div>")
+                .attr("data-idd-name", p.Definition.displayName)
+                .appendTo(this.iddChart.host);
+            var new_plot;
+            switch (p.Definition.kind) {
+                case "line":
+                    new_plot = new InteractiveDataDisplay.Polyline(div, this.iddChart.master);
+                    break;
+                case "markers":
+                    new_plot = new InteractiveDataDisplay.Markers(div, this.iddChart.master);
+                    break;
+                case "heatmap":
+                    new_plot = new InteractiveDataDisplay.Heatmap(div, this.iddChart.master);
+                    break;
+                case "area":
+                    new_plot = new InteractiveDataDisplay.Area(div, this.iddChart.master);
+                    break;
+                default:
+                    new_plot = new InteractiveDataDisplay.FallbackPlot(div, this.iddChart.master);
+            }
+            this.iddChart.addChild(new_plot);
+            p.Plots = [new_plot];
             try {
-                factory.draw(p.Plots, p.Definition);
+                p.Plots[0].draw(p.Definition, p.Definition.titles);
             } catch (ex) {  
                 if (p.Plots !== undefined) p.Plots.forEach(function (graph) { graph.remove(); });                 
-                factory = PlotRegistry["fallback"];
                 p.Definition["error"] = ex.message;
-                p.Plots = factory.initialize(p.Definition, this.persistentViewState, this.iddChart);
-                factory.draw(p.Plots, p.Definition);
+                p.Plots = new_plot = new InteractiveDataDisplay.FallbackPlot(div, this.iddChart.master);
             }
         }
 
@@ -341,7 +359,7 @@ module InteractiveDataDisplay {
                     if (this.persistentViewState.mapType)
                         this.bingMapsPlot.setMap(this.persistentViewState.mapType);
                     else
-                        this.bingMapsPlot.setMap(Microsoft.Maps.MapTypeId.road);//InteractiveDataDisplay.BingMaps.ESRI.GetWorldShadedRelief());
+                        this.bingMapsPlot.setMap(Microsoft.Maps.MapTypeId.road);
                     this.iddChart.yDataTransform = InteractiveDataDisplay.mercatorTransform;
                     this.iddChart.xDataTransform = undefined;
                 } else {
@@ -364,7 +382,7 @@ module InteractiveDataDisplay {
                 function (id: string, oldPlot: PlotViewerItem, newPlot: PlotViewerItem): PlotViewerItem {
                     if (oldPlot.Definition.kind == newPlot.Definition.kind) {
                         if (syncProps(oldPlot.Definition, newPlot.Definition)) // if some properties of new plot are updated                            
-                            InteractiveDataDisplay.PlotRegistry[oldPlot.Definition.kind].draw(oldPlot.Plots, oldPlot.Definition);
+                            oldPlot.Plots[0].draw(oldPlot.Definition, oldPlot.Definition.titles);
                         return oldPlot;
                     }
                     else { // plot kind is changed

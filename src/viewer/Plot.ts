@@ -1,7 +1,6 @@
 /// <reference path="Utils.ts" />
 /// <reference path="ViewState.ts" />
 /// <reference path="onScreenNavigation.ts" />
-/// <reference path="PlotRegistry.ts" />
 /// <reference path="PlotViewer.ts" />
 module Plot {
     export module MarkerShape {
