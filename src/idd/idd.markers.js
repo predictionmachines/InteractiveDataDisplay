@@ -225,6 +225,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
     // Builds a tooltip <div> for a point
     this.getTooltip = function (xd, yd, xp, yp) {
         var that = this;
+        if (!this.isVisible || this.isErrorVisible) return;
+
         var resultMarkers = that.findToolTipMarkers(xd, yd, xp, yp);
         var buildTooltip = function (markerInfo) {
             var $content = $("<div></div>").addClass('idd-tooltip-compositevalue');

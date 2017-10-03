@@ -43,6 +43,11 @@ module InteractiveDataDisplay {
             
             
         };
+
+        Object.defineProperty(this, "isErrorVisible", {
+            get: function () { return true; },
+            configurable: true
+        });
         // Returns 4 margins in the screen coordinate system
         this.getLocalPadding = function () {
             return { left: 0, right: 0, top: 0, bottom: 0 };

@@ -84,7 +84,7 @@
                 return;
             var state = (((plot.xDataTransform ? 1 : 0) | (plot.yDataTransform ? 2 : 0)) + 1) % 4;
             switchToState(state);
-            plot.fitToView(); // doing this manually
+            plot.isAutoFitEnabled = true;
         };
     };
     var logScaleSwitcher = new LogScaleSwitcher(plot);

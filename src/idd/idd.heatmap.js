@@ -746,6 +746,9 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
         if (_f === undefined)
             return;
         var that = this;
+
+        if (!this.isVisible || this.IsErrorVisible) return;
+
         var pinCoord = { x: xd, y: yd };
         if (_f_u68 === undefined || _f_l68 === undefined || _f_median === undefined) {
             var fminmax = findFminmax(_f);
