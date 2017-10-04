@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Input data to idd and chart viewer</title>
+    <link rel="stylesheet" type="text/css" href="../../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
+    <script type="text/javascript" src="../../dist/idd.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var dataSet = {
+                "Line export": {//0
+                    y: [1, -0.2, 0, -0.3, -0.5],
+                    x: [-0.5, 0.5, 0.6, 0.7, 0.9],
+                    thickness: 10,
+                    stroke: 'red'
+                },
+                "Area export": {//1
+                    x: [1, 2, 3, 4, 5],
+                    y1: [0.001, 0.01, 2, 3, 4],
+                    y2: [0.005, 0.2, 4, 5, 6]
+                },
+                "Markers export": {//2
+                    y: [1, -0.2, 0, -0.3, -0.5],
+                    x: [-0.5, 0.5, 0.6, 0.7, 0.9],
+                    color: [1, 2, 3, 4, 5],
+                    colorPalette: new InteractiveDataDisplay.ColorPalette.parse("yellow, green"),
+                },
+                "Heatmap export": {//3
+                    y: [-4, 0, 4],
+                    x: [-2, 0, 5],
+                    values: [[1, 2, -3], [5, 1, 2], [-2, 4, 3]],
+                    colorPalette: new InteractiveDataDisplay.ColorPalette.parse("yellow, red")
+                }
+            };
+
+            var div = $('<div style="width:1720px; height: 600px">').appendTo(document.body);
+            var title = $('<h2>Line export</h2>').appendTo(div);
+            var svgButton = $('<button style="margin-left:10px; margin-right:10px;">Click to export</button>').appendTo(div);
+            var chart = $('<div data-idd-plot="chart" style="width: 600px; height: 500px; float: left;"></div>').appendTo(div);
+            var plot = InteractiveDataDisplay.asPlot(chart);
+            var line = plot.polyline("line", dataSet["Line export"]);
+            var svgDiv = $('<div style="width: 1000px; height: 500px; margin-top:-20px; float: right;"></div>').appendTo(div);
+            svgButton.click(function (e) {
+                exportSvg(plot, svgDiv);
+            });
+            
+            var div1 = $('<div style="width:1720px; height: 600px">').appendTo(document.body);
+            var title1 = $('<h2>Area export</h2>').appendTo(div1);
+            var svgButton1 = $('<button style="margin-left:10px; margin-right:10px;">Click to export</button>').appendTo(div1);
+            var chart1 = $('<div data-idd-plot="chart" style="width: 600px; height: 500px; float: left;"></div>').appendTo(div1);
+            var plot1 = InteractiveDataDisplay.asPlot(chart1);
+            var area = plot1.area("area", dataSet["Area export"]);
+            var svgDiv1 = $('<div style="width: 1000px; height: 500px; margin-top:-20px; float: right;"></div>').appendTo(div1);
+            svgButton1.click(function (e) {
+                exportSvg(plot1, svgDiv1);
+            });
+
+            var div2 = $('<div style="width:1720px; height: 600px">').appendTo(document.body);
+            var title2 = $('<h2>Markers export</h2>').appendTo(div2);
+            var svgButton2 = $('<button style="margin-left:10px; margin-right:10px;">Click to export</button>').appendTo(div2);
+            var chart2 = $('<div data-idd-plot="chart" style="width: 600px; height: 500px; float: left;"></div>').appendTo(div2);
+            var plot2 = InteractiveDataDisplay.asPlot(chart2);
+            var markers = plot2.markers("markers", dataSet["Markers export"]);
+            var svgDiv2 = $('<div style="width: 1000px; height: 500px; margin-top:-20px; float: right;"></div>').appendTo(div2);
+            svgButton2.click(function (e) {
+                exportSvg(plot2, svgDiv2);
+            });
+
+            var div3 = $('<div style="width:1720px; height: 600px">').appendTo(document.body);
+            var title3 = $('<h2>Heatmap export</h2>').appendTo(div3);
+            var svgButton3 = $('<button style="margin-left:10px; margin-right:10px;">Click to export</button>').appendTo(div3);
+            var chart3 = $('<div data-idd-plot="chart" style="width: 600px; height: 500px; float: left;"></div>').appendTo(div3);
+            var plot3 = InteractiveDataDisplay.asPlot(chart3);
+            var heatmap = plot3.heatmap("heatmap", dataSet["Heatmap export"]);
+            var svgDiv3 = $('<div style="width: 1000px; height: 500px;margin-top:-20px; float: right;"></div>').appendTo(div3);
+            svgButton3.click(function (e) {
+                exportSvg(plot3, svgDiv3);
+            });    
+        });
+
+        var exportSvg = function (plot, outputdiv) {
+            var svg = plot.exportToSvg();
+            outputdiv.html(svg.svg());
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1 align="center">Svg export</h1>
+    </header>
+</body>
+</html>
