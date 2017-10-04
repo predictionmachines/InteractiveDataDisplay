@@ -62,8 +62,6 @@
                 that.removeDiv(oldAxis[0]);
                 oldAxis.axis.destroy();
                 grid.yAxis = this.get(leftAxis[0]);
-
-                setDefaultGestureSource();
             }
 
             that.enumAll(that, function (plot) {
@@ -84,8 +82,6 @@
                 that.removeDiv(oldAxis[0]);
                 oldAxis.axis.destroy();
                 grid.xAxis = this.get(bottomAxis[0]);
-
-                setDefaultGestureSource();
             }
 
             that.enumAll(that, function (plot) {

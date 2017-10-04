@@ -40,7 +40,8 @@
             }
 
             this.Lambda = ko.observable(6)   ;              
-			
+            this.Opacity = ko.observable(1.0);
+
             this.Y2 = ko.computed(function() {
                 var x = this.X;
                 var lambda = this.Lambda();
@@ -72,6 +73,7 @@
 				iddY1: Y1,
                 iddY2: Y2,
 				iddFill: ActiveColour,
+                iddOpacity: Opacity,
                 iddPlotName: AreaName">
         </div>
 	</div>

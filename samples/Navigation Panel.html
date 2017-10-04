@@ -20,6 +20,7 @@
         $(document).ready(function () {
             var state = 0;
             var chart = InteractiveDataDisplay.asPlot($("#chart"));
+            chart.navigation.gestureSource = undefined;
             var panel;
             $("#but").click(function () {
                 if (state == 0) { // add navigation

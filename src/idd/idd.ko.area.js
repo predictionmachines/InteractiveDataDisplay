@@ -33,7 +33,9 @@
             
             if (allBindings.has('iddFill')) 
                 data.fill = ko.unwrap(allBindings.get('iddFill'));
-            
+            if (allBindings.has('iddOpacity'))
+                data.opacity = ko.unwrap(allBindings.get('iddOpacity'));
+
             var plotAttr = element.getAttribute("data-idd-plot");
             if (plotAttr != null) {
                 if (typeof element.plot != 'undefined') {
@@ -46,6 +48,6 @@
             }
         }
 
-        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("area", updateArea, ['iddX', 'iddY1', 'iddY2', 'iddFill'])
+        InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("area", updateArea, ['iddX', 'iddY1', 'iddY2', 'iddFill', 'iddOpacity'])
     }
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))

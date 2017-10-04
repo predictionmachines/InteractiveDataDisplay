@@ -91,7 +91,7 @@
     logScale.click(function (e) {
         logScaleSwitcher.switch();
         var gestureSource = plot.navigation.gestureSource;
-        plot.navigation.gestureSource = gestureSource.merge(observable);
+        plot.navigation.gestureSource = gestureSource ? observable.merge(gestureSource) : observable;
     });
     var gestureSource = undefined;
     if (plot.navigation.gestureSource !== undefined) {

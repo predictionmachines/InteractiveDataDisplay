@@ -72,6 +72,7 @@ module Plot {
         y1: number[];
         y2: number[];
         fill?: Color;
+        opacity?: number;
         displayName?: string;
         titles?: AreaTitles;
     }
