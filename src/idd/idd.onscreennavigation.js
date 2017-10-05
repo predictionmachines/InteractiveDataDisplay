@@ -233,6 +233,7 @@
         coords.y = (event.pageY - offset.top - xhalf) / xhalf;
     };
     this.remove = function () {
+        plot.navigation.gestureSource = defaultGestureSource;
         div.removeClass('idd-navigation-container');
         div[0].innerHTML = "";
     };

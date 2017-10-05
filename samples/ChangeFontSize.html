@@ -18,16 +18,24 @@
 
     <script type="text/javascript">
         var fontSize = 12;
-        var increaseFontSize = function() {
-            fontSize += 5;
-
-            var chart = InteractiveDataDisplay.asPlot($("#chart"));                        
-            var axes = chart.getAxes();            
-            for(var i = 0; i < axes.length; i++){
+        var increaseFontSize = function () {
+            if (fontSize < 60) fontSize += 5;
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+            var axes = chart.getAxes();
+            for (var i = 0; i < axes.length; i++) {
                 axes[i].FontSize = fontSize;
             }
             chart.updateLayout();
-        }
+        };
+        var decreaseFontSize = function () {
+            if (fontSize > 10) fontSize -= 5;
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+            var axes = chart.getAxes();
+            for (var i = 0; i < axes.length; i++) {
+                axes[i].FontSize = fontSize;
+            }
+            chart.updateLayout();
+        };
 
         $(document).ready(function () {
             InteractiveDataDisplay.asPlot($("#chart"));            
@@ -343,6 +351,9 @@
             3   1.76938E-09
         </div>
     </div>
-    <button onclick="increaseFontSize();">Increase font size</button>
+    <div>
+        <button onclick="increaseFontSize();">Increase font size</button>
+        <button style="margin-top:10px" onclick="decreaseFontSize();">Decrease font size</button>
+    </div>
 </body>
 </html>
