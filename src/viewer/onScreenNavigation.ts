@@ -55,5 +55,18 @@ module InteractiveDataDisplay {
         legendViewer.remove();
 
         var hideShowLegend = $('<div></div>').addClass("idd-onscreennavigation-hidelegend").prependTo(div);
+
+        var lockNavigation = div.find('.idd-onscreennavigation-navigationlockpressed');
+        if (persistentViewState.isNavigationPanelOpen) $(lockNavigation).click();
+        $(lockNavigation).bind('classChanged', function () {
+            persistentViewState.isNavigationPanelOpen = $(this).hasClass('idd-onscreennavigation-navigationlock');
+        });
+
+        var logSwitcher = div.find('.idd-onscreennavigation-logscale');
+        for (var i = 0; i < persistentViewState.isLogAxis; i++)
+            $(logSwitcher).click();
+        $(logSwitcher).on('axisChanged', function (event, state) {
+            persistentViewState.isLogAxis = state;
+        });
     }
 }

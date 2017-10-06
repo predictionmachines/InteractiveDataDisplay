@@ -32,6 +32,8 @@ module InteractiveDataDisplay {
         xAxisTitle: JQuery;
         yAxisTitle: JQuery;
 
+        initiallySelectedPlots;
+
         constructor(div: JQuery, navigationDiv, persistentViewState, transientViewState) {
             this.div = div;
             var that = this;
@@ -43,12 +45,11 @@ module InteractiveDataDisplay {
             iddChart.legend.isVisible = false;
             iddChart.isToolTipEnabled = true;
             iddChart.doFitOnDataTransformChanged = false;
-        
             //adding onscreen navigation
             var onscreenNavigationContainer = $("<div></div>").addClass("dsv-onscreennavigationcontainer").attr("data-idd-placement", "center").appendTo(navigationDiv);
             var onscreenNavigationDiv = $("<div></div>").addClass("dsv-onscreennavigation").appendTo(onscreenNavigationContainer);
             var onscreenNavigation = new OnScreenNavigation(onscreenNavigationDiv, iddChart, persistentViewState);
-
+            
             /* adds probes plot */
             var probesPlot_div = $("<div></div>")
                 .attr("data-idd-name", "draggableMarkers")
@@ -58,6 +59,10 @@ module InteractiveDataDisplay {
             iddChart.addChild(probesPlot);
 
             this.persistentViewState = persistentViewState;
+
+            iddChart.navigation.setVisibleRect(this.persistentViewState.plotRect, false, { suppressNotifyBoundPlots: true });
+            iddChart.isAutoFitEnabled = this.persistentViewState.isAutoFit;
+
             persistentViewState.probesViewModel.getProbeContent = function (probe) {
                 var children = iddChart.children;
                 var result = [];
@@ -80,7 +85,6 @@ module InteractiveDataDisplay {
                 } else
                     return undefined;
             }
-
             var addNewProbe = function (probe) {
                 var id = probe.id;
                 var x = probe.location.x;
@@ -184,7 +188,22 @@ module InteractiveDataDisplay {
             for (var i = 0; i < existingProbes.length; i++) {
                 addNewProbe(existingProbes[i]);
             }
-
+            iddDiv.on("visibleChanged", function () {
+                var result = [];
+                for (var id in that.currentPlots) {
+                    var p = that.currentPlots[id];
+                    var iddPlots = p.Plots;
+                    if (iddPlots && iddPlots.length > 0) {
+                        if (!iddPlots[0].isVisible) {
+                            result.push(p.Id);
+                        }
+                    }
+                }
+                that.persistentViewState.selectedPlots = result;
+            });
+            iddDiv.on("isAutoFitEnabledChanged", function () {
+                persistentViewState.isAutoFit = iddChart.isAutoFitEnabled;
+            });
             iddDiv.on("visibleRectChanged", function () {
                 var plotRect = iddChart.visibleRect;
 
@@ -196,19 +215,15 @@ module InteractiveDataDisplay {
                     persistentViewState.probesViewModel.refresh();
                 }
             });
-
-            persistentViewState.subscribe(function (state, propName) {
-                if (propName == "selectedPlots")
-                    that.setupPlotsVisibility();
-            });
         }
 
         private setupPlotsVisibility() {
+            
             for (var id in this.currentPlots) {
                 var p = this.currentPlots[id];
                 var iddPlots = p.Plots;
                 if (iddPlots) {
-                    var isVisible = this.persistentViewState.selectedPlots.indexOf(p.Id) == -1;
+                    var isVisible = this.initiallySelectedPlots.indexOf(p.Id) == -1;
                     for (var j = 0; j < iddPlots.length; ++j)
                         iddPlots[j].isVisible = isVisible;
                 }
@@ -322,7 +337,7 @@ module InteractiveDataDisplay {
                 .prependTo(this.iddChart.host);
             var plot = new InteractiveDataDisplay.BingMapsPlot(div, this.iddChart);
             plot.order = 9007199254740991;
-            this.iddChart.addChild(plot);
+            this.iddChart.addChild(plot); 
             return plot;
         }
 
@@ -343,12 +358,13 @@ module InteractiveDataDisplay {
                         this.bingMapsPlot.setMap(this.persistentViewState.mapType);
                     else
                         this.bingMapsPlot.setMap(Microsoft.Maps.MapTypeId.road);//InteractiveDataDisplay.BingMaps.ESRI.GetWorldShadedRelief());
-                    this.iddChart.yDataTransform = InteractiveDataDisplay.mercatorTransform;
-                    this.iddChart.xDataTransform = undefined;
                 } else {
                     if (this.persistentViewState.mapType)
                         this.bingMapsPlot.setMap(this.persistentViewState.mapType);
                 }
+                this.iddChart.yDataTransform = InteractiveDataDisplay.mercatorTransform;
+                this.iddChart.xDataTransform = undefined;
+                this.bingMapsPlot.navigation.animation.setMapView(this.persistentViewState.plotRect, this.iddChart.screenSize);
             } else {
                 if (this.bingMapsPlot !== undefined) {
                     this.bingMapsPlot.remove();
@@ -385,9 +401,8 @@ module InteractiveDataDisplay {
                 });
 
             this.updateAxes();
-            this.persistentViewState.probesViewModel.refresh();
-            this.updateMap();            
-
+            this.updateMap(); 
+            this.persistentViewState.probesViewModel.refresh();           
 
             var z = 0;
             for (var id in this.currentPlots) {
@@ -403,8 +418,10 @@ module InteractiveDataDisplay {
             }
 
 
-            if (this.persistentViewState.selectedPlots)
+            if (this.persistentViewState.selectedPlots) {
+                this.initiallySelectedPlots = this.persistentViewState.selectedPlots;
                 this.setupPlotsVisibility();
+            }
             return this.currentPlots;
         }
 

@@ -2082,7 +2082,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             } else { // individual canvas
                 canvas = _canvas;
             }
-
+            if (canvas === undefined) return;
             var context = canvas[0].getContext("2d");
             if (doClear) {
                 var size = this.screenSize;
@@ -2348,6 +2348,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
           
             if (!this.isVisible) return;
             var context = this.getContext(false);
+            if (context === undefined) return;
             var t = this.getTransform();
             var ps = { x: t.dataToScreenX(xd), y: t.dataToScreenY(yd) };
            

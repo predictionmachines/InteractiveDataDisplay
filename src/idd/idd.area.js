@@ -79,6 +79,7 @@ InteractiveDataDisplay.Area = function (div, master) {
         if (!this.isVisible) return;
 
         var context = this.getContext(false);
+        if (context === undefined) return;
         var t = this.getTransform();
         var ps = { x: t.dataToScreenX(xd), y: t.dataToScreenY(yd) };
 
