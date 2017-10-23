@@ -266,7 +266,7 @@ declare module InteractiveDataDisplay {
         legend: Legend;
         constructor(div, master?);
         onDataTranformChangedCore(arg);
-        onChildrenChanged(arg);
+        //onChildrenChanged(arg);
     }
     /**Base class for plots rendering on a private canvas.*/
     export class CanvasPlot extends Plot{
@@ -456,7 +456,7 @@ declare module InteractiveDataDisplay {
     //Legend
     export class Legend {
         isVisible: boolean;
-        constructor(_plot, _jqdiv, isCompact?);
+        constructor(_plot, _jqdiv, isCompact?, hasTooltip?);
         remove();
     }
 
@@ -621,6 +621,7 @@ declare module Plot {
         y1: number[];
         y2: number[];
         fill?: Color;
+        opacity?: number;
         displayName?: string;
         titles?: AreaTitles;
     };

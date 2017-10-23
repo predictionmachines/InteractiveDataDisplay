@@ -12,7 +12,7 @@ module InteractiveDataDisplay {
         // Create element structure inside root 'div'
         rootDiv.addClass("dsv-plotlist");
         var legendDiv = $("<div></div>").appendTo(rootDiv);
-        var legend = new InteractiveDataDisplay.Legend(plotViewer.iddChart, legendDiv);
+        var legend = new InteractiveDataDisplay.Legend(plotViewer.iddChart, legendDiv, false, true);
         plotViewer.iddChart.host.bind("visibleChanged", function () {
             persistentViewState.probesViewModel.refresh(persistentViewState.probesViewModel.getProbes());
         });

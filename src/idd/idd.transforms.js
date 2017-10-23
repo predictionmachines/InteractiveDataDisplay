@@ -41,6 +41,6 @@ InteractiveDataDisplay.logTransform = new InteractiveDataDisplay.DataTransform(
     function (x_p) {
         return Math.pow(10, x_p);
     },
-    { isInDomain: function (x) { return x > 0; } },
+    { isInDomain: function (x) { return x > 0.00000001; } },
     "log10"
 );

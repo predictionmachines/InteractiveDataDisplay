@@ -84,14 +84,16 @@
                 return;
             var state = (((plot.xDataTransform ? 1 : 0) | (plot.yDataTransform ? 2 : 0)) + 1) % 4;
             switchToState(state);
-            plot.fitToView(); // doing this manually
+            plot.isAutoFitEnabled = true;
+            return state;
         };
     };
     var logScaleSwitcher = new LogScaleSwitcher(plot);
     logScale.click(function (e) {
-        logScaleSwitcher.switch();
+        var currentState = logScaleSwitcher.switch();
         var gestureSource = plot.navigation.gestureSource;
-        plot.navigation.gestureSource = gestureSource.merge(observable);
+        plot.navigation.gestureSource = gestureSource ? observable.merge(gestureSource) : observable;
+        $(this).trigger('axisChanged', [currentState]);
     });
     var gestureSource = undefined;
     if (plot.navigation.gestureSource !== undefined) {
@@ -151,6 +153,7 @@
                 height: 225,
             }, 200);
         }
+        $(this).trigger('classChanged');
     });
     zoomOutDiv.dblclick(function (e) {
         e.stopPropagation();
@@ -233,6 +236,7 @@
         coords.y = (event.pageY - offset.top - xhalf) / xhalf;
     };
     this.remove = function () {
+        plot.navigation.gestureSource = defaultGestureSource;
         div.removeClass('idd-navigation-container');
         div[0].innerHTML = "";
     };

@@ -32,6 +32,8 @@ module InteractiveDataDisplay {
         xAxisTitle: JQuery;
         yAxisTitle: JQuery;
 
+        initiallySelectedPlots;
+
         constructor(div: JQuery, navigationDiv, persistentViewState, transientViewState) {
             this.div = div;
             var that = this;
@@ -41,14 +43,13 @@ module InteractiveDataDisplay {
 
             var iddChart = this.iddChart = InteractiveDataDisplay.asPlot(iddDiv);
             iddChart.legend.isVisible = false;
-            iddChart.isToolTipEnabled = false;
+            iddChart.isToolTipEnabled = true;
             iddChart.doFitOnDataTransformChanged = false;
-        
             //adding onscreen navigation
             var onscreenNavigationContainer = $("<div></div>").addClass("dsv-onscreennavigationcontainer").attr("data-idd-placement", "center").appendTo(navigationDiv);
             var onscreenNavigationDiv = $("<div></div>").addClass("dsv-onscreennavigation").appendTo(onscreenNavigationContainer);
             var onscreenNavigation = new OnScreenNavigation(onscreenNavigationDiv, iddChart, persistentViewState);
-
+            
             /* adds probes plot */
             var probesPlot_div = $("<div></div>")
                 .attr("data-idd-name", "draggableMarkers")
@@ -58,13 +59,21 @@ module InteractiveDataDisplay {
             iddChart.addChild(probesPlot);
 
             this.persistentViewState = persistentViewState;
+
+            iddChart.navigation.setVisibleRect(this.persistentViewState.plotRect, false, { suppressNotifyBoundPlots: true });
+            iddChart.isAutoFitEnabled = this.persistentViewState.isAutoFit;
+
             persistentViewState.probesViewModel.getProbeContent = function (probe) {
                 var children = iddChart.children;
                 var result = [];
                 for (var i = 0; i < children.length; i++) {
                     if (children[i].isVisible) {
-                        var px = children[i].xDataTransform ? (children[i].xDataTransform.isInDomain && children[i].xDataTransform.isInDomain(probe.location.x) ? children[i].xDataTransform.dataToPlot(probe.location.x): probe.location.x): probe.location.x;
-                        var py = children[i].yDataTransform ? (children[i].yDataTransform.isInDomain && children[i].yDataTransform.isInDomain(probe.location.y) ? children[i].yDataTransform.dataToPlot(probe.location.y): probe.location.y) : probe.location.y;
+                        var px = children[i].xDataTransform ?
+                            (children[i].xDataTransform.domain && children[i].xDataTransform.domain.isInDomain && children[i].xDataTransform.domain.isInDomain(probe.location.x) ?
+                            children[i].xDataTransform.dataToPlot(probe.location.x) : probe.location.x) : probe.location.x;
+                        var py = children[i].yDataTransform ?
+                            (children[i].yDataTransform.domain && children[i].yDataTransform.domain.isInDomain && children[i].yDataTransform.domain.isInDomain(probe.location.y) ?
+                            children[i].yDataTransform.dataToPlot(probe.location.y) : probe.location.y) : probe.location.y;
                         var tt = children[i].getTooltip(probe.location.x, probe.location.y, px, py, true);
                         if (tt !== undefined) {
                             result.push(tt);
@@ -76,7 +85,6 @@ module InteractiveDataDisplay {
                 } else
                     return undefined;
             }
-
             var addNewProbe = function (probe) {
                 var id = probe.id;
                 var x = probe.location.x;
@@ -85,7 +93,7 @@ module InteractiveDataDisplay {
                 var draggable = $("<div></div>");
                 draggable.addClass("dragPoint");
 
-                probesPlot.add(draggable[0], 'none', x, y, undefined, undefined, 0.5, 1);
+                probesPlot.add(draggable[0], 'none', x, y, undefined, undefined, 0.5, 0.92);
                 var children = probesPlot.domElements;
                 var addedDragable = children[children.length - 1];
                 addedDragable.id = id;
@@ -93,13 +101,10 @@ module InteractiveDataDisplay {
                 draggable.draggable({
                     containment: probesPlot.master.centralPart[0],
                     scroll: false,
-                    drag: function () {
-                    },
+                    opacity: 0.9,
                     stop: function (event, ui) {
                         var pinCoord = { x: addedDragable._x, y: addedDragable._y };
                         persistentViewState.probesViewModel.updateProbe(id, pinCoord);
-                    },
-                    start: function () {
                     }
                 });
 
@@ -183,7 +188,22 @@ module InteractiveDataDisplay {
             for (var i = 0; i < existingProbes.length; i++) {
                 addNewProbe(existingProbes[i]);
             }
-
+            iddDiv.on("visibleChanged", function () {
+                var result = [];
+                for (var id in that.currentPlots) {
+                    var p = that.currentPlots[id];
+                    var iddPlots = p.Plots;
+                    if (iddPlots && iddPlots.length > 0) {
+                        if (!iddPlots[0].isVisible) {
+                            result.push(p.Id);
+                        }
+                    }
+                }
+                that.persistentViewState.selectedPlots = result;
+            });
+            iddDiv.on("isAutoFitEnabledChanged", function () {
+                persistentViewState.isAutoFit = iddChart.isAutoFitEnabled;
+            });
             iddDiv.on("visibleRectChanged", function () {
                 var plotRect = iddChart.visibleRect;
 
@@ -195,19 +215,15 @@ module InteractiveDataDisplay {
                     persistentViewState.probesViewModel.refresh();
                 }
             });
-
-            persistentViewState.subscribe(function (state, propName) {
-                if (propName == "selectedPlots")
-                    that.setupPlotsVisibility();
-            });
         }
 
         private setupPlotsVisibility() {
+            
             for (var id in this.currentPlots) {
                 var p = this.currentPlots[id];
                 var iddPlots = p.Plots;
                 if (iddPlots) {
-                    var isVisible = this.persistentViewState.selectedPlots.indexOf(p.Id) == -1;
+                    var isVisible = this.initiallySelectedPlots.indexOf(p.Id) == -1;
                     for (var j = 0; j < iddPlots.length; ++j)
                         iddPlots[j].isVisible = isVisible;
                 }
@@ -321,7 +337,7 @@ module InteractiveDataDisplay {
                 .prependTo(this.iddChart.host);
             var plot = new InteractiveDataDisplay.BingMapsPlot(div, this.iddChart);
             plot.order = 9007199254740991;
-            this.iddChart.addChild(plot);
+            this.iddChart.addChild(plot); 
             return plot;
         }
 
@@ -342,12 +358,13 @@ module InteractiveDataDisplay {
                         this.bingMapsPlot.setMap(this.persistentViewState.mapType);
                     else
                         this.bingMapsPlot.setMap(Microsoft.Maps.MapTypeId.road);//InteractiveDataDisplay.BingMaps.ESRI.GetWorldShadedRelief());
-                    this.iddChart.yDataTransform = InteractiveDataDisplay.mercatorTransform;
-                    this.iddChart.xDataTransform = undefined;
                 } else {
                     if (this.persistentViewState.mapType)
                         this.bingMapsPlot.setMap(this.persistentViewState.mapType);
                 }
+                this.iddChart.yDataTransform = InteractiveDataDisplay.mercatorTransform;
+                this.iddChart.xDataTransform = undefined;
+                this.bingMapsPlot.navigation.animation.setMapView(this.persistentViewState.plotRect, this.iddChart.screenSize);
             } else {
                 if (this.bingMapsPlot !== undefined) {
                     this.bingMapsPlot.remove();
@@ -384,9 +401,8 @@ module InteractiveDataDisplay {
                 });
 
             this.updateAxes();
-            this.persistentViewState.probesViewModel.refresh();
-            this.updateMap();            
-
+            this.updateMap(); 
+            this.persistentViewState.probesViewModel.refresh();           
 
             var z = 0;
             for (var id in this.currentPlots) {
@@ -402,8 +418,10 @@ module InteractiveDataDisplay {
             }
 
 
-            if (this.persistentViewState.selectedPlots)
+            if (this.persistentViewState.selectedPlots) {
+                this.initiallySelectedPlots = this.persistentViewState.selectedPlots;
                 this.setupPlotsVisibility();
+            }
             return this.currentPlots;
         }
 

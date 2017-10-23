@@ -22,7 +22,6 @@ module InteractiveDataDisplay {
             var that = this;
             var controlDiv = this.controlDiv = $(container);
             this.persistentViewState = this.viewState = new PersistentViewState();
-            this.persistentViewState.initProbes();
             this.transientViewState = new TransientViewState();
 
             var width = controlDiv.width();
@@ -47,7 +46,7 @@ module InteractiveDataDisplay {
             var rightpanel = this.rightpanel = controlDiv.find(".dsv-rightpanel");
             var leftpanel = controlDiv.find(".dsv-leftpanel");
             var leftPanelContainer = this.leftPanelContainer = controlDiv.find(".dsv-leftpanelcontainer");
-            var isLeftpanelShown = false;
+            var isLeftpanelShown = this.persistentViewState.isLegendShown;
 
             this.plotViewer = new PlotViewer(controlDiv.find(".dsv-visualization-preview"), navigationDiv, this.persistentViewState, this.transientViewState);
             var plotListDiv = controlDiv.find(".plotlist");
@@ -76,18 +75,26 @@ module InteractiveDataDisplay {
             $(hideShowLegend).click(function () {
                 if (isLeftpanelShown) {
                     isLeftpanelShown = false;
+                    that.persistentViewState.isLegendShown = false;
                     leftpanel.hide();
                     $(hideShowLegend).removeClass("idd-onscreennavigation-showlegend").addClass("idd-onscreennavigation-hidelegend");
                 } else {
                     isLeftpanelShown = true;
+                    that.persistentViewState.isLegendShown = true;
                     leftpanel.show();
                     $(hideShowLegend).removeClass("idd-onscreennavigation-hidelegend").addClass("idd-onscreennavigation-showlegend");
                 }
                 rightpanel.width(controlDiv.width() - leftPanelContainer.width() - that.rightPanelExtraShift - that.navigationPanelShift);
                 that.plotViewer.updateLayout();
+                that.persistentViewState.probesViewModel.refresh();
             });
 
-            leftpanel.hide();
+            if (isLeftpanelShown) {
+                leftpanel.show();
+                $(hideShowLegend).removeClass("idd-onscreennavigation-hidelegend").addClass("idd-onscreennavigation-showlegend");
+            }
+            else leftpanel.hide();
+            
             rightpanel.width(controlDiv.width() - leftPanelContainer.width() - this.rightPanelExtraShift - this.navigationPanelShift);
 
             $(window).resize(function () { that.updateLayout(); });
@@ -126,6 +133,7 @@ module InteractiveDataDisplay {
             }
             this.rightpanel.width(this.controlDiv.width() - widthToSubtract - this.rightPanelExtraShift - this.navigationPanelShift);
             this.plotViewer.updateLayout();
+            this.persistentViewState.probesViewModel.refresh();
         }        
 
         dispose() {

@@ -256,6 +256,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _coordinateTransform = _isMaster ? new InteractiveDataDisplay.CoordinateTransform() : undefined;
         var _children = []; // array of Plot containing children plots of this master plot (every child may have its children recursively)
         var _isVisible = true;
+        var _isErrorVisible = false;
         var _aspectRatio;
         var _isAutoFitEnabled = true;
         var _requestFitToView = false;
@@ -413,6 +414,17 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             },
             configurable: false
         });
+   
+        Object.defineProperty(this, "isErrorVisible", {
+            get: function () { return _isErrorVisible; },
+            configurable: true
+        });
+        var SetIsErrorVisible = function (value) {
+            if (_isErrorVisible === value) return;
+            _isErrorVisible = value;
+            this.onIsVisibleChanged();
+            this.fireVisibleChanged(this);
+        }
         Object.defineProperty(this, "order", {
             get: function () { return _order; },
             set: function (value) {
@@ -597,11 +609,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
 
             this.fireChildrenChanged({ type: "add", plot: childPlot });
-            this.onChildrenChanged({ type: "add", plot: childPlot });
             this.requestUpdateLayout();
-        };
-
-        this.onChildrenChanged = function (arg) {
         };
 
         // The function is called when this plot is added(removed) to the new master.
@@ -648,7 +656,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     }
 
                     this.fireChildrenChanged({ type: "remove", plot: child });
-                    this.onChildrenChanged({ type: "remove", plot: child });
                     this.requestUpdateLayout();
                     return true;
                 }
@@ -722,10 +729,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             for (var i = 0; i < n; i++) {
                 var plot = plots[i];
                 var plotBounds = plot.getLocalBounds(1);
-                if (plotBounds === undefined) {
-                    undefinedBBPlots.push(plot);
-                } else {
-                    bounds = InteractiveDataDisplay.Utils.unionRects(bounds, plotBounds);
+                if (plot.isVisible && !plot.isErrorVisible) {
+                    if (plotBounds === undefined) {
+                        undefinedBBPlots.push(plot);
+                    } else {
+                        bounds = InteractiveDataDisplay.Utils.unionRects(bounds, plotBounds);
+                    }
                 }
             }
 
@@ -900,6 +909,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var intersection = InteractiveDataDisplay.Utils.intersect(localbb, plotRect); //  {x,y,width,height}
                 if (intersection)  // visible
                 {
+                    SetIsErrorVisible.call(this, false);
                     this.renderCore(plotRect, screenSize);
                     nowIsRendered = true;
 
@@ -911,7 +921,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     //    doRender = true;
                     //}
                 }
-
+                else if (localbb.width != localbb.width || localbb.height != localbb.height || localbb.x != localbb.x || localbb.y != localbb.y ||
+                         !Number.isFinite(localbb.width)|| !Number.isFinite(localbb.height) ||!Number.isFinite(localbb.y) ||!Number.isFinite(localbb.x)) {
+                    SetIsErrorVisible.call(this, true);
+                }
             } else {
                 this.renderCore(plotRect, screenSize);
                 nowIsRendered = true;
@@ -1009,8 +1022,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (_isAutoFitEnabled || _requestFitToView) {
                 var aggregated = _master.aggregateBounds();
                 var bounds = aggregated.bounds;
-                if (bounds.x != bounds.x || bounds.y != bounds.y || bounds.width != bounds.width || bounds.height != bounds.height)
-                    bounds = { x: 0, width: 1, y: 0, height: 1 }; // todo: this is an exceptional situation which should be properly handled
+                if (bounds.x != bounds.x) bounds.x = 0;
+                if (bounds.y != bounds.y) bounds.y = 0;
+                if (bounds.width != bounds.width) bounds.width = 1;
+                if (bounds.height != bounds.height) bounds.height = 1;
+                // todo: this is an exceptional situation which should be properly handled
                 _plotRect = bounds;
                 var padding = aggregated.isDefault ? { left: 0, top: 0, bottom: 0, right: 0 } : _master.aggregatePadding();
                 _coordinateTransform = InteractiveDataDisplay.Utils.calcCSWithPadding(_plotRect, screenSize, padding, _master.aspectRatio);
@@ -1099,6 +1115,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
                 var newVisibleRect = that.visibleRect;
                 if (newVisibleRect.x !== oldVisibleRect.x || newVisibleRect.y !== oldVisibleRect.y || newVisibleRect.width !== oldVisibleRect.width || newVisibleRect.height !== oldVisibleRect.height) {
+                    updatePlotsOutput();
                     that.fireVisibleRectChanged({ visibleRect: newVisibleRect });
                 }
 
@@ -1647,7 +1664,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
     var _plotLegends = [];
     //Legend with hide/show function
-    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact) {
+    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact, hasTooltip) {
         // Inner legends for this legend.
         var plotLegends = [];
         var plotSubs = [];
@@ -1750,18 +1767,27 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     
         var addVisibilityCheckBox = function (div, plot) {
             var cbx = $("<div></div>").addClass("idd-legend-isselected-false").appendTo(div);
-            if (plot.isVisible) cbx.attr("class", "idd-legend-isselected-false");
-            else cbx.attr("class", "idd-legend-isselected-true");
-            cbx.click(function (e) {
-                e.stopPropagation();
-                if (plot.isVisible) {
-                    cbx.attr("class", "idd-legend-isselected-true");
-                    plot.isVisible = false;
-                } else {
-                    cbx.attr("class", "idd-legend-isselected-false");
-                    plot.isVisible = true;
-                }
-            });
+            if (plot.isErrorVisible) {
+                cbx.attr("class", "idd-legend-isselected-error");
+                cbx.attr("title", "The data can not be displayed.");
+            }
+            else {
+                cbx.attr("title", "");
+                if (plot.isVisible) cbx.attr("class", "idd-legend-isselected-false");
+                else cbx.attr("class", "idd-legend-isselected-true");
+                cbx.click(function (e) {
+                    e.stopPropagation();
+                    if (!plot.isErrorVisible) {
+                        if (plot.isVisible) {
+                            cbx.attr("class", "idd-legend-isselected-true");
+                            plot.isVisible = false;
+                        } else {
+                            cbx.attr("class", "idd-legend-isselected-false");
+                            plot.isVisible = true;
+                        }
+                    }
+                });
+            }
         };
 
         var removeLegend = function (legend) {
@@ -1839,15 +1865,22 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (_plot == params) _jqdiv.remove();
         };
         var visibleChangedHandler = function (event, params) {
-            var updateLegendItem = function (i, isVisible) {
+            var updateLegendItem = function (i, isVisible, isErrorVisible) {
                 var legend = _plotLegends[i];
-                if (isVisible) legend[0].firstElementChild.lastElementChild.setAttribute("class", "idd-legend-isselected-false");
-                else legend[0].firstElementChild.lastElementChild.setAttribute("class", "idd-legend-isselected-true");
+                if (isErrorVisible) {
+                    legend[0].firstElementChild.lastElementChild.setAttribute("class", "idd-legend-isselected-error");
+                    legend[0].firstElementChild.lastElementChild.setAttribute("title", "The data can not be displayed.");
+                }
+                else {
+                    legend[0].firstElementChild.lastElementChild.setAttribute("title", "");
+                    if (isVisible) legend[0].firstElementChild.lastElementChild.setAttribute("class", "idd-legend-isselected-false");
+                    else legend[0].firstElementChild.lastElementChild.setAttribute("class", "idd-legend-isselected-true");
+                }
             };
 
             for (var i = 0, len = _plotLegends.length; i < len; i++)
                 if (_plotLegends[i].plot === params) {
-                    updateLegendItem(i, params.isVisible);
+                    updateLegendItem(i, params.isVisible, params.isErrorVisible);
                 }
         }; 
         var createLegendForPlot = function (plot) {
@@ -1866,7 +1899,16 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (legend.legend && legend.legend.content)
                     if (isCompact) legend.legend.content.addClass("idd-legend-item-info-compact").appendTo(div);
                     else legend.legend.content.addClass("idd-legend-item-info").appendTo(div);
-                
+               
+                if (hasTooltip) {
+                    $(div).bind('mouseenter', function () {
+                        var $this = $(this);
+                        var legendname = isCompact ? $this.find(".idd-legend-item-title-name-compact") : $this.find(".idd-legend-item-title-name");
+                        if (legendname[0].offsetWidth < legendname[0].scrollWidth && $this.attr('title') === undefined ) {
+                            $this.attr('title', legendname.text());
+                        }
+                    });
+                }
                 div.prependTo(_jqdiv);
                 div.plot = plot;
                 plotLegends[plotLegends.length] = div;
@@ -2040,7 +2082,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             } else { // individual canvas
                 canvas = _canvas;
             }
-
+            if (canvas === undefined) return;
             var context = canvas[0].getContext("2d");
             if (doClear) {
                 var size = this.screenSize;
@@ -2303,15 +2345,20 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 return;
             var n = _y.length;
             if (n == 0) return;
-
-            var ct = this.coordinateTransform;
-            var sx = ct.plotToScreenX(px);
-            var sy = ct.plotToScreenY(py);
-
+          
+            if (!this.isVisible) return;
             var context = this.getContext(false);
-            var myImageData = context.getImageData(sx, sy, 1, 1);
-            if (myImageData.data[0] === 0 && myImageData.data[1] === 0 && myImageData.data[2] === 0 && myImageData.data[3] === 0)
-                return undefined;
+            if (context === undefined) return;
+            var t = this.getTransform();
+            var ps = { x: t.dataToScreenX(xd), y: t.dataToScreenY(yd) };
+           
+            var myImageData = context.getImageData(ps.x - 1, ps.y - 1, 3, 3);
+            var zeroPixels = 0;
+            for (var k = 0; k < myImageData.data.length; k++) {
+                if (myImageData.data[k] === 0) zeroPixels++;
+            }
+            if (zeroPixels === myImageData.data.length) return undefined;
+          
             var $toolTip = $("<div></div>")
             $("<div></div>").addClass('idd-tooltip-name').text((this.name || "polyline")).appendTo($toolTip);
             return $toolTip;

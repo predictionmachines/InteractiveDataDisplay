@@ -20,122 +20,153 @@ module InteractiveDataDisplay {
             }
         }
 
-        var _axisTransform = undefined;
-       
-        Object.defineProperty(this, "axisTransform", {
-            get: function () { return _axisTransform; },
-            set: function (value) {
-                if (value == _axisTransform) return;
-                _axisTransform = value;
-                raisePropertyChanged("axisTransform");
-            },
-            configurable: false,
-            enumerable: true
-        });
-
-        var _plotRect = undefined;
+        var HasPropertyInStorage = function (property) {
+            return property != null && property != undefined && property != "undefined";
+        };
+        
+        var plotRect = sessionStorage.getItem("plotRect");
+        var _plotRect = HasPropertyInStorage(plotRect) ? JSON.parse(plotRect) : undefined;
         Object.defineProperty(this, "plotRect", {
             get: function () { return _plotRect; },
             set: function (value) {
                 if (value == _plotRect) return;
                 _plotRect = value;
+                sessionStorage.setItem("plotRect", JSON.stringify(_plotRect));
                 raisePropertyChanged("plotRect");
             },
             configurable: false,
             enumerable: true
         });
 
-        var _mapType = undefined;
-        Object.defineProperty(this, "mapType", {
-            get: function () { return _mapType; },
-            set: function (value) {
-                if (value == _mapType) return;
-                _mapType = value;
-                raisePropertyChanged("mapType");
-            },
-            configurable: false,
-            enumerable: true
-        });
-
-        var _isAutoFit = undefined;
+        var isAutoFit = sessionStorage.getItem("isAutoFit");
+        var _isAutoFit = HasPropertyInStorage(isAutoFit) ? JSON.parse(isAutoFit) : true;
         Object.defineProperty(this, "isAutoFit", {
             get: function () { return _isAutoFit; },
             set: function (value) {
                 if (value == _isAutoFit) return;
                 _isAutoFit = value;
+                sessionStorage.setItem("isAutoFit", JSON.stringify(_isAutoFit));
                 raisePropertyChanged("isAutoFit");
             },
             configurable: false,
             enumerable: true
         });
 
-        var _isLogData = {};
-        Object.defineProperty(this, "isLogData", {
-            get: function () { return _isLogData; },
-            configurable: false,
-            enumerable: true
-        });
-        this.setLogDataForPlot = function (plotId, value) {
-            _isLogData[plotId] = value;
-            raisePropertyChanged("isLogData", { id: plotId });
-        }
-
-        var _selectedPlots = undefined;
+        var selectedPlots = sessionStorage.getItem("selectedPlots");
+        var _selectedPlots = HasPropertyInStorage(selectedPlots) ? JSON.parse(selectedPlots) : [];
         Object.defineProperty(this, "selectedPlots", {
             get: function () { return _selectedPlots; },
             set: function (value) {
                 if (value == _selectedPlots) return;
                 _selectedPlots = value;
+                sessionStorage.setItem("selectedPlots", JSON.stringify(_selectedPlots));
                 raisePropertyChanged("selectedPlots");
             },
             configurable: false,
             enumerable: true
         });
 
-        var _xAxisTitle = undefined;
-        Object.defineProperty(this, "xAxisTitle", {
-            get: function () { return _xAxisTitle; },
-            set: function (value) {
-                if (value == _xAxisTitle) return;
-                _xAxisTitle = value;
-                raisePropertyChanged("xAxisTitle");
-            },
-            configurable: false,
-            enumerable: true
+        var probes = sessionStorage.getItem("probes");
+        var _probesViewModel = HasPropertyInStorage(probes) ? new ProbesVM(JSON.parse(probes)) : new ProbesVM(undefined);//undefined;
+        _probesViewModel.subscribe(function (args) {
+            sessionStorage.setItem("probes", JSON.stringify(_probesViewModel.getProbes()));
+            raisePropertyChanged("probes");
         });
-
-        var _yAxisTitle = undefined;
-        Object.defineProperty(this, "yAxisTitle", {
-            get: function () { return _yAxisTitle; },
-            set: function (value) {
-                if (value == _yAxisTitle) return;
-                _yAxisTitle = value;
-                raisePropertyChanged("yAxisTitle");
-            },
-            configurable: false,
-            enumerable: true
-        });
-
-        var _probesViewModel = undefined;
         Object.defineProperty(this, "probesViewModel", {
             get: function () { return _probesViewModel; },
             configurable: false,
             enumerable: true
         });
 
-        this.initProbes = function (probes) {
-            if (_probesViewModel === undefined) {
-                _probesViewModel = new ProbesVM(probes);
+        var isLegendShown = sessionStorage.getItem("isLegendShown");
+        var _isLegendShown = HasPropertyInStorage(isLegendShown) ? JSON.parse(isLegendShown) : false;
+        Object.defineProperty(this, "isLegendShown", {
+            get: function () {
+                return _isLegendShown;
+            },
+            set: function (value) {
+                if (value == _isLegendShown) return;
+                _isLegendShown = value;
+                sessionStorage.setItem("isLegendShown", JSON.stringify(_isLegendShown));
+                raisePropertyChanged("isLegendShown");
+            },
+            configurable: false,
+            enumerable: true
+        });
 
-                _probesViewModel.subscribe(function (args) {
-                    raisePropertyChanged("probes");
-                });
-            }
-            else {
-                throw "Probes are already initialized";
-            }
-        }
+        var isNavigationPanelOpen = sessionStorage.getItem("isNavigationPanelOpen");
+        var _isNavigationPanelOpen = HasPropertyInStorage(isNavigationPanelOpen) ? JSON.parse(isNavigationPanelOpen) : false;
+        Object.defineProperty(this, "isNavigationPanelOpen", {
+            get: function () {
+                return _isNavigationPanelOpen;
+            },
+            set: function (value) {
+                if (value == _isNavigationPanelOpen) return;
+                _isNavigationPanelOpen = value;
+                sessionStorage.setItem("isNavigationPanelOpen", JSON.stringify(_isNavigationPanelOpen));
+                raisePropertyChanged("isNavigationPanelOpen");
+            },
+            configurable: false,
+            enumerable: true
+        });
 
+        var isLogAxis = sessionStorage.getItem("isLogAxis")
+        var _isLogAxis = HasPropertyInStorage(isLogAxis) ? JSON.parse(isLogAxis) : 0;
+        Object.defineProperty(this, "isLogAxis", {
+            get: function () { return _isLogAxis; },
+            set: function (value) {
+                if (value == _isLogAxis) return;
+                _isLogAxis = value;
+                sessionStorage.setItem("isLogAxis", JSON.stringify(_isLogAxis));
+                raisePropertyChanged("isLogAxis");
+            },
+            configurable: false,
+            enumerable: true
+        });
+
+        var mapType = sessionStorage.getItem("mapType");
+        var _mapType = HasPropertyInStorage(mapType) ? JSON.parse(mapType) : undefined;
+        Object.defineProperty(this, "mapType", {
+            get: function () { return _mapType; },
+            set: function (value) {
+                if (value == _mapType) return;
+                _mapType = value;
+                sessionStorage.setItem("mapType", JSON.stringify(_mapType));
+                raisePropertyChanged("mapType");
+            },
+            configurable: false,
+            enumerable: true
+        });
+
+
+        var xDataTransform = sessionStorage.getItem("xDataTransform");
+        var _xDataTransform = HasPropertyInStorage(xDataTransform) ? JSON.parse(xDataTransform) : undefined;
+        Object.defineProperty(this, "xDataTransform", {
+            get: function () { return _xDataTransform; },
+            set: function (value) {
+                if (value == _xDataTransform) return;
+                _xDataTransform = value;
+                sessionStorage.setItem("xDataTransform", JSON.stringify(_xDataTransform));
+                raisePropertyChanged("xDataTransform");
+            },
+            configurable: false,
+            enumerable: true
+        });
+
+        var yDataTransform = sessionStorage.getItem("yDataTransform");
+        var _yDataTransform = HasPropertyInStorage(yDataTransform) ? JSON.parse(yDataTransform) : undefined;
+        Object.defineProperty(this, "yDataTransform", {
+            get: function () { return _yDataTransform; },
+            set: function (value) {
+                if (value == _yDataTransform) return;
+                _yDataTransform = value;
+                sessionStorage.setItem("yDataTransform", JSON.stringify(_yDataTransform));
+                raisePropertyChanged("yDataTransform");
+            },
+            configurable: false,
+            enumerable: true
+        });
+       
         var _uncertaintyRange = {};
         Object.defineProperty(this, "uncertaintyRange", {
             get: function () { return _uncertaintyRange; },

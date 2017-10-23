@@ -1,3 +1,17 @@
+### 1.5.2 (not released)
+New features:
+ - Chart legend becomes opaque on mouse hover and transparent otherwise. 
+ - Legend in Chart Viewer has tooltip if the name is too long.
+ - Area plot has tooltip.
+ - Legend has the red sign if plot can not be displayed.
+ - New property `opacity` and new binding `iddOpacity` to set area opacity.
+
+Bug fixes: 
+ - First pulled probe is now visible while putting on the chart. 
+ - The function `fitToView()` now doesn't consider not visible plots for fitting to view.
+ - Scrolling now works correctly after log scale transform. 
+ - Probe information for polyline dissapears after zoom/scale/datatransform changes.
+
 ## 1.5.1 (March 24, 2017)
 
 New features:

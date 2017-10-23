@@ -167,7 +167,6 @@ module InteractiveDataDisplay {
         var probesVM = persistentViewState.probesViewModel;
         var _host = hostDiv;
         var probeDivs = [];
-
         var getProbeDiv = function (probe) {
             div[0].style.display = "block";
             var probeDiv = $("<div></div>").addClass("probeCard");
@@ -223,6 +222,7 @@ module InteractiveDataDisplay {
                 probeDiv.appendTo(probeHost);
                 probeDivs.push({ id: probe.id, div: probeDiv, host: probeHost });
             }
+            if (probes.length > 0) hostDiv[0].style.display = "block";
         }
 
         //creating view for existing probes
@@ -318,7 +318,7 @@ module InteractiveDataDisplay {
         constructor(series, segment?);
     }
     export declare class Legend {
-        constructor(_plot, _jqdiv, isCompact?);
+        constructor(_plot, _jqdiv, isCompact?, hasTooltip?);
         remove();
     }
 }
