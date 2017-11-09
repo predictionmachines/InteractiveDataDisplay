@@ -19,7 +19,7 @@
     <script src="../dist/idd.min.js"></script>
 
     <script type="text/javascript">
-        $(document).ready(function () {
+        function initIDD() {
             InteractiveDataDisplay.asPlot("chart").yDataTransform = InteractiveDataDisplay.mercatorTransform;
             InteractiveDataDisplay.asPlot("map").setMap(Microsoft.Maps.MapTypeId.aerial);
 
@@ -57,10 +57,10 @@
                         return;
                 }
             });
-        });
+        };
     </script>
 </head>
-<body>
+<body onLoad="initIDD()">
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
         <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Bing Maps Chart</div>
         <div id="map" data-idd-plot="bingMaps" data-idd-mapkey="--place your key here--">

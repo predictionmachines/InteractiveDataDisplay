@@ -19,13 +19,13 @@
     <script src="../dist/idd.js"></script>
 
     <script type="text/javascript">
-        $(document).ready(function () {
+        function initIDD() {
             InteractiveDataDisplay.asPlot("chart").get("markers").yDataTransform = InteractiveDataDisplay.mercatorTransform;
             InteractiveDataDisplay.asPlot("chart").getAxes("left")[0].dataTransform = InteractiveDataDisplay.mercatorTransform;
-        });
+        };
     </script>
 </head>
-<body>
+<body onLoad="initIDD()">
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
         <div data-idd-placement="top" style="text-align: center; border: 1px solid gray">Bing Maps Chart</div>
         <div data-idd-plot="bingMaps">

@@ -19,16 +19,16 @@
     <script src="../dist/idd.min.js"></script>
 
     <script type="text/javascript">
-        $(document).ready(function () {
+        function initIDD() {
             var chart = InteractiveDataDisplay.asPlot($("#chart"));
 
             //Adding basic navigation
             var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream($("#chart"));
             chart.navigation.gestureSource = gestureSource;
-        });
+        };
     </script>
 </head>
-<body>
+<body onLoad="initIDD()">
     <div id="chart" data-idd-plot="bingMaps"  data-idd-mapkey="--place your key here--" style="width: 800px; height: 600px;">
     </div>
 </body>
