@@ -15,3 +15,5 @@ RELEASE_NOTES.md
 /.vscode/**
 /test/**
 !/dist/**
+/.tscache/**
+/.grunt/**

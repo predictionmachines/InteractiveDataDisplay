@@ -1,6 +1,6 @@
 {
   "name": "interactive-data-display",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "license": "Apache-2.0",
   "homepage": "https://github.com/predictionmachines/InteractiveDataDisplay/wiki",
   "description": "A JavaScript visualization library for dynamic data",
@@ -18,7 +18,7 @@
     "modernizr": "~3.3.1",
     "jqueryui": "~1.11.1",
     "svg.js": "~2.3.6",
-    "filesaver.js": "~0.2.0",
+    "file-saver": "~1.3.3",
     "jquery-mousewheel": "~3.1.13",
     "request": "<=2.81.0"
   },
@@ -37,5 +37,10 @@
   }, 
   "scripts": {
     "test": "grunt default test --verbose"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/predictionmachines/InteractiveDataDisplay.git#v1.5.1"
+  },
+  "author": "Microsoft Research, MSU ITIS Lab"
 }
