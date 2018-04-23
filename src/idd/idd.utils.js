@@ -1,5 +1,7 @@
 ﻿InteractiveDataDisplay = InteractiveDataDisplay || {};
 
+
+
 // Utilities functions 
 InteractiveDataDisplay.Utils =
     {
@@ -358,5 +360,16 @@ InteractiveDataDisplay.Utils =
                 return 11;
             else
                 return 0; //It is not IE
+        },
+
+        lastUsedIntId: 0,
+
+        getLastUsedIntId: function () {
+            return this.lastUsedIntId++;
+        },
+
+        resetLastUsedIntId: function () {
+            this.lastUsedIntId = 0;
+            return this.lastUsedIntId;
         }
     };

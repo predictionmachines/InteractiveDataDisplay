@@ -47,14 +47,14 @@ describe('Utility function', function () {
         " 0.1\t0.1 0.2     0.3  \n" +
         "0.2\t0.2  0.4  0.6\n\n<div>"));
         parseDiv($("<div>" +
-"f 1 2 3\n" +
-" 0.1\t0.1 0.2     0.3  \n" +
-"0.2\t0.2  0.4  0.6<div>"));
+        "f 1 2 3\n" +
+        " 0.1\t0.1 0.2     0.3  \n" +
+        "0.2\t0.2  0.4  0.6<div>"));
 
         parseDiv($("<div>" +
-"f 1 2 3\n" +
-" 0.1\t0.1 0.2     0.3  \n" +
-"0.2\t0.2  0.4  0.6<div>"));
+        "f 1 2 3\n" +
+        " 0.1\t0.1 0.2     0.3  \n" +
+        "0.2\t0.2  0.4  0.6<div>"));
 
         parseDiv($("<div><p>hello</p>\n" +
         "f 1 2 3\n" +
@@ -83,4 +83,56 @@ describe('Utility function', function () {
         expect(typeof data.y === 'undefined').toBeTruthy();
         expect(typeof data.values === 'undefined').toBeTruthy();
     });
+
+    it('InteractiveDataDisplay.Utils.getLastUsedIntId() returns reproducible sequence of unique for the idd instance int IDs', function () {
+        function onlyUnique(value, index, self) {
+            return self.indexOf(value) === index;
+        }
+
+        function arraysAreEqual(arr1, arr2) {
+            if (!arr1 || !arr2)
+                return false;
+            
+            if (arr1.length != arr2.length)
+                return false;
+
+            for (var i = 0, l = arr1.length; i < l; i++) {
+                if (arr1[i] != arr2[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        expect(InteractiveDataDisplay.Utils.resetLastUsedIntId() === 0).toBeTruthy();
+
+        var uniqueIntIDs1 = [];
+        for (var i = 0; i < 5; i++) {
+            uniqueIntIDs1.push(InteractiveDataDisplay.Utils.getLastUsedIntId());
+        }
+
+        for (var i = 0; i < 5; i++) {
+            expect(typeof uniqueIntIDs1[i] === 'number').toBeTruthy();
+
+        }
+
+        expect(arraysAreEqual(uniqueIntIDs1.filter(onlyUnique), uniqueIntIDs1)).toBeTruthy();
+        
+
+        expect(InteractiveDataDisplay.Utils.resetLastUsedIntId() === 0).toBeTruthy();
+
+        var uniqueIntIDs2 = [];
+        for (var i = 0; i < 5; i++) {
+            uniqueIntIDs2.push(InteractiveDataDisplay.Utils.getLastUsedIntId());
+        }
+
+        for (var i = 0; i < 5; i++) {
+            expect(typeof uniqueIntIDs2[i] === 'number').toBeTruthy();
+
+        }
+
+        expect(arraysAreEqual(uniqueIntIDs2.filter(onlyUnique), uniqueIntIDs2)).toBeTruthy();
+
+        expect(arraysAreEqual(uniqueIntIDs1, uniqueIntIDs2)).toBeTruthy();
+    })
 });
