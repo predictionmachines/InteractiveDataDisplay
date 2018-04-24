@@ -1194,7 +1194,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var _labels = [];
     var _ticks = [];
 
-    // if labels and ticks are defined - cashe them
+    // if labels and ticks are defined - cash them
     // if ticks are undefined - they are calculated as an array of integers from 0 to length of labels
     if (params && params.labels) {
         var len = params.labels.length;
