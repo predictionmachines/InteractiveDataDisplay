@@ -364,7 +364,7 @@ InteractiveDataDisplay.Utils =
 
         lastUsedIntId: 0,
 
-        getLastUsedIntId: function () {
+        generateNextIntId: function () {
             return this.lastUsedIntId++;
         },
 

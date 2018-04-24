@@ -84,7 +84,7 @@ describe('Utility function', function () {
         expect(typeof data.values === 'undefined').toBeTruthy();
     });
 
-    it('InteractiveDataDisplay.Utils.getLastUsedIntId() returns reproducible sequence of unique for the idd instance int IDs', function () {
+    it('InteractiveDataDisplay.Utils.generateNextIntId() returns reproducible sequence of unique for the idd instance int IDs', function () {
         function onlyUnique(value, index, self) {
             return self.indexOf(value) === index;
         }
@@ -108,7 +108,7 @@ describe('Utility function', function () {
 
         var uniqueIntIDs1 = [];
         for (var i = 0; i < 5; i++) {
-            uniqueIntIDs1.push(InteractiveDataDisplay.Utils.getLastUsedIntId());
+            uniqueIntIDs1.push(InteractiveDataDisplay.Utils.generateNextIntId());
         }
 
         for (var i = 0; i < 5; i++) {
@@ -123,7 +123,7 @@ describe('Utility function', function () {
 
         var uniqueIntIDs2 = [];
         for (var i = 0; i < 5; i++) {
-            uniqueIntIDs2.push(InteractiveDataDisplay.Utils.getLastUsedIntId());
+            uniqueIntIDs2.push(InteractiveDataDisplay.Utils.generateNextIntId());
         }
 
         for (var i = 0; i < 5; i++) {

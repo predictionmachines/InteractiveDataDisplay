@@ -49,7 +49,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
 
     var textOffset = 3;
 
-    var randInt = InteractiveDataDisplay.Utils.getLastUsedIntId();
+    var randInt = InteractiveDataDisplay.Utils.generateNextIntId();
     // canvas to render ticks
     var canvas = $("<canvas id='canvas_" + randInt + "' style='position:relative; float:left'></canvas>");
     // div to place labels
