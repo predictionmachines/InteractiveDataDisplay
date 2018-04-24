@@ -13,17 +13,17 @@
   ],
   "main": "/dist/idd.js",
   "dependencies": {
-    "jquery": "~3.1.1",
-    "rx": "~4.1.0",
-    "modernizr": "~3.3.1",
-    "jqueryui": "~1.11.1",
-    "svg.js": "~2.3.6",
     "file-saver": "~1.3.3",
-    "jquery-mousewheel": "~3.1.13",
-    "request": "<=2.81.0",
     "jasmine": "~2.99.0",
+    "jquery": "~3.1.1",
+    "jquery-mousewheel": "~3.1.13",
+    "jqueryui": "~1.11.1",
+    "npm-modernizr": "^2.8.3",
+    "request": "<=2.81.0",
     "require-css": "~0.1.8",
-    "requirejs": "~2.1.22"
+    "requirejs": "~2.1.22",
+    "rx": "~4.1.0",
+    "svg.js": "~2.3.6"
   },
   "devDependencies": {
     "bower": "^1.7.6",
