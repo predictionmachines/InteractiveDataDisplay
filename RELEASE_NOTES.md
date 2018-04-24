@@ -1,4 +1,7 @@
-### 1.5.2 (not released)
+### 1.5.2 (April 24, 2018)
+
+Bower away!
+
 New features:
  - Chart legend becomes opaque on mouse hover and transparent otherwise. 
  - Legend in Chart Viewer has tooltip if the name is too long.
@@ -11,6 +14,7 @@ Bug fixes:
  - The function `fitToView()` now doesn't consider not visible plots for fitting to view.
  - Scrolling now works correctly after log scale transform. 
  - Probe information for polyline dissapears after zoom/scale/datatransform changes.
+ - Correct dependency on FileSaver.
 
 ## 1.5.1 (March 24, 2017)
 
