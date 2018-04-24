@@ -43,5 +43,6 @@
   },
   "engines": {
     "yarn": ">= 1.0.0"
-  }
+  },
+  "author": "Microsoft Research, MSU ITIS Lab"
 }
