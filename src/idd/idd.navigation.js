@@ -2,7 +2,17 @@
     var plot = _plot;
     var that = this;
 
-    var setVisibleRegion = _setVisibleRegion;
+    /** Calls externally set function that implements needed side effects.
+     * Fires scaleChanged if not suppressed */
+    var setVisibleRegion = function(plotRect,settings){
+        if((settings == undefined) || (settings['suppressScaleChangeNotification'] === undefined))
+        {
+            var screenWidth = plot.screenSize.width;
+            var scaleToReport = screenWidth/plotRect.width;
+            that.widthScaleChangedCallback(scaleToReport); 
+        }
+        _setVisibleRegion(plotRect,settings);
+    }
 
     var stream = undefined;
     var unsubscriber = undefined;
@@ -20,10 +30,10 @@
         configurable: false 
     });
 
-    //Calculates panned plotRect
+    /** Calculates panned plotRect */
     var panPlotRect = InteractiveDataDisplay.NavigationUtils.calcPannedRect;
 
-    //Calculates zoomed plotRect
+    /** Calculates zoomed plotRect */
     var zoomPlotRect = InteractiveDataDisplay.NavigationUtils.calcZoomedRect;
 
     var getVisible = function () {
@@ -34,21 +44,47 @@
         return { plotRect: vis, screenSize: size, cs: ct };
     }
 
+    //How many screen units in one plot unit of width (units: screen pts/plot pts)
+    Object.defineProperty(this, "widthScale", {
+        get: function () {
+            var scale = plot.coordinateTransform.getScale();
+            return scale.x;
+         },
+        set: function (value) {
+            that.stop();
+            var visRect = plot.visibleRect;
+            var screenWidth = plot.screenSize.width;
+            var plotAspectRatio = visRect.width/visRect.height;
+            var center = {x: visRect.x + visRect.width*0.5, y: visRect.y + visRect.height*0.5};
+            var newPlotRectWidth = screenWidth / value;
+            var newPlotRectHeight = newPlotRectWidth / plotAspectRatio;
+            var newPlotRect = {x: center.x - newPlotRectWidth*0.5, y: center.y - newPlotRectHeight*0.5, width: newPlotRectWidth, height: newPlotRectHeight};            
+            that.setVisibleRect(newPlotRect,false,{'suppressScaleChangeNotification': true});            
+        },
+        configurable: false 
+    });
+
+    this.widthScaleChangedCallback = function(newWidthScale) { }
+    
+
     var subscribeToAnimation = function () {
         if (_animation) {
             return _animation.currentObservable.subscribe(function (args) {
                 if (args.isLast) {
                     plot.isInAnimation = false;
+                    // I wanted to trigger scaleChanged (special key in settings object) only for the last update
+                    // but the experience looks buggy, thus
+                    // triggering on every animation update
                 }
-                setVisibleRegion(args.plotRect, { syncUpdate: args.syncUpdate });
+                var settings = { syncUpdate: args.syncUpdate };
+                setVisibleRegion(args.plotRect, settings);
             }, function (err) {
             }, function () {
             }
             );
         }
     };
-
-
+    
     // Changes the visible rectangle of the plot.
     // visible is { x, y, width, height } in the plot plane, (x,y) is the left-bottom corner
     // if animate is true, uses elliptical zoom animation
@@ -70,7 +106,7 @@
             }
 
             setVisibleRegion(coercedVisisble, settings);
-        }
+        }        
     };
 
     var processGesture = function (gesture) {
@@ -96,7 +132,7 @@
             }
             return;
         }
-
+        
         var newPlotRect = undefined;
         if (gesture.Type == "Pan") {
             newPlotRect = panPlotRect(vis, size, gesture);
@@ -114,7 +150,7 @@
                 newPlotRect.y = vis.y;
             }
 
-            prevCalcedPlotRect = newPlotRect;
+            prevCalcedPlotRect = newPlotRect;            
         }
 
         if (newPlotRect) {
@@ -128,7 +164,7 @@
                 plot.isInAnimation = true;
                 that.animation.animate(getVisible, newPlotRect, { gestureType: gesture.Type, isFirstFrame: firstFrame });
             } else {
-                setVisibleRegion(newPlotRect);
+                setVisibleRegion(newPlotRect);                
             }
         }
     };

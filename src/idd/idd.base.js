@@ -256,8 +256,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _coordinateTransform = _isMaster ? new InteractiveDataDisplay.CoordinateTransform() : undefined;
         var _children = []; // array of Plot containing children plots of this master plot (every child may have its children recursively)
         var _isVisible = true;
-        var _isErrorVisible = false;
-        var _aspectRatio;
+        var _isErrorVisible = false;        
+        var _aspectRatio; //actually scale ratio (xScale/yScale)
         var _isAutoFitEnabled = true;
         var _requestFitToView = false;
         var _requestFitToViewX = false;
@@ -371,6 +371,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
           }
       );
 
+        /// Actually scale ratio (xScale/yScale). Value 1.0 indicates that square in plot coords will be square on screen
         Object.defineProperty(this, "aspectRatio", {
             get: function () { return _isMaster ? _aspectRatio : _master.aspectRatio; },
             set: function (value) {
