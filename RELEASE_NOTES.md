@@ -1,4 +1,10 @@
-### 1.5.2 (April 24, 2018)
+### 1.5.4 (April 24, 2018)
+
+New features:
+  - Chart allows to change its axis type using `Chart.changeXAxis()` or `Chart.changeYAxis()` methods.
+  See sample `ChangeChartAxis.html`.
+
+## 1.5.3 (April 24, 2018)
 
 Bower away!
 

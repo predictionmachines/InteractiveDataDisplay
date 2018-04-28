@@ -41,12 +41,31 @@
         else if (visible == "false")
             _legend.isVisible = false;
     }
+
     var setDefaultGestureSource = function () {
         var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(that.centralPart);
         var bottomAxisGestures = InteractiveDataDisplay.Gestures.applyHorizontalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(bottomAxis));
         var leftAxisGestures = InteractiveDataDisplay.Gestures.applyVerticalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(leftAxis));
 
         that.navigation.gestureSource = gestureSource.merge(bottomAxisGestures.merge(leftAxisGestures));
+    }
+
+    this.changeXAxis = function(axisType, params) {
+        var oldAxis = bottomAxis;
+        bottomAxis = that.addAxis("bottom", axisType, params, bottomAxis[0]);
+        that.removeDiv(oldAxis[0]);
+        oldAxis.axis.destroy();
+        grid.xAxis = this.get(bottomAxis[0]);
+        bottomAxis.axis.dataTransform = that.xDataTransform;
+    }
+
+    this.changeYAxis = function(axisType, params) {
+        var oldAxis = leftAxis;
+        leftAxis = that.addAxis("left", axisType, params, leftAxis[0]);
+        that.removeDiv(oldAxis[0]);
+        oldAxis.axis.destroy();
+        grid.yAxis = this.get(leftAxis[0]);
+        leftAxis.axis.dataTransform = that.yDataTransform;
     }
 
     this.onDataTranformChangedCore = function (arg) {
