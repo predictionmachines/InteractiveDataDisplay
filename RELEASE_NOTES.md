@@ -1,3 +1,9 @@
+### not released
+
+Bug fixed:
+ - IE 11 related: Number.IsFinite usage avoided
+ - Setting aspect value for plot right after initialization does not produce exceptions in Edge
+
 ### 1.5.4 (April 24, 2018)
 
 New features:
@@ -14,9 +20,11 @@ New features:
  - Area plot has tooltip.
  - Legend has the red sign if plot can not be displayed.
  - New property `opacity` and new binding `iddOpacity` to set area opacity.
+ - Navigation now exposes `widthScale` property as an API to build zoom controls
 
 Bug fixes: 
  - First pulled probe is now visible while putting on the chart. 
+ - Axis related IDs are now unique in case of several IDD instances at the page
  - The function `fitToView()` now doesn't consider not visible plots for fitting to view.
  - Scrolling now works correctly after log scale transform. 
  - Probe information for polyline dissapears after zoom/scale/datatransform changes.
