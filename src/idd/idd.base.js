@@ -304,6 +304,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             this.requestsUpdateLayout = false;
         }
 
+        // DG:  Seems that it affects the outputRect calculation during measure phase
+        //      this is a function of parameters (outputRect,screenSize,hasScreenSizeChanged)
         var _constraint = undefined;
 
         var that = this;
@@ -923,7 +925,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     //}
                 }
                 else if (localbb.width != localbb.width || localbb.height != localbb.height || localbb.x != localbb.x || localbb.y != localbb.y ||
-                         !Number.isFinite(localbb.width)|| !Number.isFinite(localbb.height) ||!Number.isFinite(localbb.y) ||!Number.isFinite(localbb.x)) {
+                        // Number.IsFinite is not supported in IE, thus using "isFinite"
+                         !isFinite(localbb.width)|| !isFinite(localbb.height) ||!isFinite(localbb.y) ||!isFinite(localbb.x)) {
                     SetIsErrorVisible.call(this, true);
                 }
             } else {
@@ -1014,6 +1017,16 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.onIsRenderedChanged = function () {
         };
 
+        // DG: It seems that the function recomputes (updates)
+        // plot's _plotRect and _coordinateTransform properties
+        // 
+        // It has side effects of saving screenSize into internal properties _width and _height
+        // which is particularly important during plot initialization:
+        // "fit" must be called before any updateLayout() calls
+        //               
+        // It also MAY compute and return the final output rect to be used in arrange phase
+        // 
+        // plotScreenSizeChanged is passed to _constraint
         this.fit = function (screenSize, finalPath, plotScreenSizeChanged) {
             _width = screenSize.width;
             _height = screenSize.height;
@@ -1103,8 +1116,16 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var oldVisibleRect = that.visibleRect;
                 var screenSize = { width: _host.width(), height: _host.height() };
 
-                if (screenSize.width <= 1 || screenSize.height <= 1)
+                if (screenSize.width <= 1 || screenSize.height <= 1) {                    
+                    // The first updateLayout call performs some late initialization (screenSize can be zero)
+                    // thus we can not just "return" without measure-arrange calls.
+
+                    // first "measure" call sets _width, _height, etc                    
+                    var finalSize = this.measure({width: 1, height: 1}); // I pass ones here to avoid singularities
+                    // first "arrange" call initializes _canvas, etc.
+                    this.arrange(finalSize);
                     return;
+                }
 
                 var plotScreenSizeChanged = that.screenSize.width !== screenSize.width || that.screenSize.height !== screenSize.height;
 
@@ -1167,6 +1188,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         };
 
+        // DG:  Looking at signature only, Why do we need to pass plotScreenSizeChanged here?
+        //      We pass a size and whether this size changed (e.g. whether the first arg differs from prev call)
+        //      If the function has dual responsibility of doing measure AND caching the result
+        //      the responsibility of cache can be separated out
         this.measure = function (availibleSize, plotScreenSizeChanged) {
 
             if (this.mapControl !== undefined) {
@@ -1493,7 +1518,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             this.host.trigger(InteractiveDataDisplay.Event.frameRendered, propertyParams);
         };
 
-        // fires the VisibleRect event
+        // Occurs at a plot when its actual visible rectangle is changed. Handler gets (senderPlot, visibleRect) (in plot coordinates).
+        // Actual visible rectangle can differ from the rectangle provided in Navigation.SetVisibleRect(), since it may be constrained by aspect ratio.
         this.fireVisibleRectChanged = function (propertyParams) {
             clearTooltip();
             this.master.host.trigger(InteractiveDataDisplay.Event.visibleRectChanged, propertyParams);

@@ -390,6 +390,11 @@ InteractiveDataDisplay.Figure = function (div, master) {
 
         var availibleCenterSize = { width: screenSize.width - leftRightWidth, height: screenSize.height - topBottomHeight };
 
+        if (availibleCenterSize.width < 0)
+            availibleCenterSize.width = 0;
+        if (availibleCenterSize.height < 0)
+            availibleCenterSize.height = 0;
+
         if (that.mapControl !== undefined) {
             that.mapControl.setOptions({ width: availibleCenterSize.width, height: availibleCenterSize.height });
         }

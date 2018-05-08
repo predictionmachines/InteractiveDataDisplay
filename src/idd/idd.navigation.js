@@ -1,17 +1,38 @@
-﻿InteractiveDataDisplay.Navigation = function (_plot, _setVisibleRegion) {
+﻿
+//extending basic events
+InteractiveDataDisplay.Event = InteractiveDataDisplay.Event || {};
+InteractiveDataDisplay.Event.widthScaleChanged = jQuery.Event("widthScaleChanged");
+    
+
+InteractiveDataDisplay.Navigation = function (_plot, _setVisibleRegion) {
     var plot = _plot;
     var that = this;
 
-    /** Calls externally set function that implements needed side effects.
-     * Fires scaleChanged if not suppressed */
-    var setVisibleRegion = function(plotRect,settings){
-        if((settings == undefined) || (settings['suppressScaleChangeNotification'] === undefined))
-        {
-            var screenWidth = plot.screenSize.width;
-            var scaleToReport = screenWidth/plotRect.width;
-            that.widthScaleChangedCallback(scaleToReport); 
-        }
-        _setVisibleRegion(plotRect,settings);
+    plot.master.host.on('visibleRectChanged', function(arg) {
+        var screenWidth = plot.screenSize.width;
+        var screenHeight = plot.screenSize.width;            
+            
+        ct = plot.coordinateTransform;
+        vis = ct.getPlotRect({ x: 0, y: 0, width: screenWidth, height: screenHeight });
+
+        var scaleToReport = screenWidth/vis.width;
+        //console.log('navigation: plot x='+vis.x+' y='+vis.y+' w='+vis.width+' h='+vis.height);
+        // console.log('firing scale changed to:'+scaleToReport);
+        plot.master.host.trigger(InteractiveDataDisplay.Event.widthScaleChanged, {'widthScale':scaleToReport});
+    });        
+    
+
+    var getVisible = function () {
+        var size = plot.screenSize;
+        var ct = plot.coordinateTransform;
+        var vis = ct.getPlotRect({ x: 0, y: 0, width: size.width, height: size.height });
+
+        return { plotRect: vis, screenSize: size, cs: ct };
+    }
+
+    /** Calls externally set function that implements needed side effects. */     
+    var setVisibleRegion = function(plotRect,settings){        
+        _setVisibleRegion(plotRect,settings);                
     }
 
     var stream = undefined;
@@ -34,15 +55,7 @@
     var panPlotRect = InteractiveDataDisplay.NavigationUtils.calcPannedRect;
 
     /** Calculates zoomed plotRect */
-    var zoomPlotRect = InteractiveDataDisplay.NavigationUtils.calcZoomedRect;
-
-    var getVisible = function () {
-        var size = plot.screenSize;
-        var ct = plot.coordinateTransform;
-        var vis = ct.getPlotRect({ x: 0, y: 0, width: size.width, height: size.height });
-
-        return { plotRect: vis, screenSize: size, cs: ct };
-    }
+    var zoomPlotRect = InteractiveDataDisplay.NavigationUtils.calcZoomedRect;    
 
     //How many screen units in one plot unit of width (units: screen pts/plot pts)
     Object.defineProperty(this, "widthScale", {
@@ -63,10 +76,7 @@
         },
         configurable: false 
     });
-
-    this.widthScaleChangedCallback = function(newWidthScale) { }
     
-
     var subscribeToAnimation = function () {
         if (_animation) {
             return _animation.currentObservable.subscribe(function (args) {
