@@ -1,10 +1,8 @@
 language: node_js
 node_js:
-- '0.10'
+- 'lts/*'
 before_script:
 - npm install grunt-cli -g
-before_install:
-  npm install -g npm@'>=2.13.5'
 deploy:
   provider: npm
   email: dmitry@itis.cs.msu.ru
