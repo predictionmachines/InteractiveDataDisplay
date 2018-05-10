@@ -200,8 +200,8 @@
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-jasmine');
-    grunt.loadNpmTasks('grunt-base64');
     grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-base64');    
     grunt.loadNpmTasks("grunt-ts");
     grunt.loadNpmTasks('grunt-tsd');
 

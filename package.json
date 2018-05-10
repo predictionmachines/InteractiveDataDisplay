@@ -1,6 +1,6 @@
 {
   "name": "interactive-data-display",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "license": "Apache-2.0",
   "homepage": "https://github.com/predictionmachines/InteractiveDataDisplay/wiki",
   "description": "A JavaScript visualization library for dynamic data",
@@ -25,18 +25,15 @@
     "rx": "~4.1.0",
     "svg.js": "~2.3.6"
   },
-  "devDependencies": {
-    "bower": "^1.7.6",
+  "devDependencies": {    
     "grunt": "^0.4.5",
-    "grunt-base64": "^0.1.0",
-    "grunt-bower-task": "^0.4.0",
+    "grunt-base64": "^0.1.0",    
     "grunt-contrib-concat": "^0.5.1",
     "grunt-contrib-copy": "^0.8.2",
     "grunt-contrib-jasmine": "^1.0.0",
     "grunt-contrib-uglify": "^0.9.1",
     "grunt-ts": "^5.2.0",
-    "grunt-tsd": "^0.1.0",
-    "grunt-wiredep": "^2.0.0"
+    "grunt-tsd": "^0.1.0"
   },
   "scripts": {
     "test": "grunt default test --verbose"
