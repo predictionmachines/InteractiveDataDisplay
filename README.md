@@ -1,7 +1,10 @@
 Interactive Data Display
 ------------------------
 
-[![Build Status](https://travis-ci.org/predictionmachines/InteractiveDataDisplay.svg?branch=master)](https://travis-ci.org/predictionmachines/InteractiveDataDisplay) [![Gitter](https://badges.gitter.im/interactivedatadisplay/Lobby.svg)](https://gitter.im/interactivedatadisplay/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Build Status](https://travis-ci.org/predictionmachines/InteractiveDataDisplay.svg?branch=master)](https://travis-ci.org/predictionmachines/InteractiveDataDisplay)
+![npm](https://img.shields.io/npm/v/interactive-data-display.svg)
+![CDNJS](https://img.shields.io/cdnjs/v/interactive-data-display.svg)
+[![Gitter](https://badges.gitter.im/interactivedatadisplay/Lobby.svg)](https://gitter.im/interactivedatadisplay/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Interactive Data Display for JavaScript (IDD for short) is a set of controls for adding interactive visualization of dynamic data to your application. 
 It allows to create line graphs, bubble charts, heat maps and other complex 2D plots which are very common in scientific software. 
