@@ -1,4 +1,4 @@
-### not released
+### 1.5.5 (May 10, 2018)
 
 Bug fixed:
  - IE 11 related: Number.IsFinite usage avoided
