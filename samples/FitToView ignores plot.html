@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Axes and navigation</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+    <script src="../dist/idd.js"></script>
+
+    <script type="text/javascript">
+
+        function normalDensity(mu,sigma, x) {
+            var sigma_sqr = sigma * sigma;
+            return Math.exp(-(x-mu)*(x-mu)/(2*sigma_sqr))/Math.sqrt(2*Math.PI*sigma_sqr);
+        }
+
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+
+            var densityCurve= document.getElementById("density").plot;
+            var minusSigmaLine = document.getElementById("minusSigma").plot;
+            var plusSigmaLine = document.getElementById("plusSigma").plot;
+            
+            
+            var mu = 2.0;
+            var sigma = 1.0;
+
+            var data = { x:[], y:[] };
+
+            for(var i=0; i<1000;i++) {
+                var x = -3 + 0.01*i;
+                data.x[i] = x;
+                data.y[i] = normalDensity(mu,sigma,x);
+            }
+
+            densityCurve.draw(data);
+
+            // These lines are very long vertical lines.
+            // By setting "isIgnoredByFitToView" to true, we hide the majority of them to see only the parts that is close to the data
+            minusSigmaLine.isIgnoredByFitToView = true; 
+            minusSigmaLine.draw({x: [mu-sigma, mu-sigma], y: [-1000, 1000]});
+
+            plusSigmaLine.isIgnoredByFitToView = true;
+            plusSigmaLine.draw({x: [mu+sigma, mu+sigma], y: [-1000, 1000]});
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;">
+        <div id="density" data-idd-plot="polyline" data-idd-style="stroke: rgb(89,150,255); thickness: 3"></div>
+        <div id="minusSigma" data-idd-plot="polyline" data-idd-style="stroke: rgb(255,0,0); thickness: 1"></div>
+        <div id="plusSigma" data-idd-plot="polyline" data-idd-style="stroke: rgb(0,255,0); thickness: 1"></div>
+    </div>
+</body>
+</html>

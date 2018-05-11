@@ -1,3 +1,8 @@
+### 1.5.6 (not published)
+
+New features:
+ - plot now has `isIgnoredByFitToView` property. Setting it to `true` prevents the plot to be accounted during FitToView visible region recalculation.
+
 ### 1.5.5 (May 10, 2018)
 
 Bug fixed:

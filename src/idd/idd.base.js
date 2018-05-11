@@ -256,8 +256,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _coordinateTransform = _isMaster ? new InteractiveDataDisplay.CoordinateTransform() : undefined;
         var _children = []; // array of Plot containing children plots of this master plot (every child may have its children recursively)
         var _isVisible = true;
-        var _isErrorVisible = false;        
+        var _isErrorVisible = false;
         var _aspectRatio; //actually scale ratio (xScale/yScale)
+        var _isIgnoredByFitToView = false; //if true, the plot's bounding box is not respected during the common bounding box calculation
         var _isAutoFitEnabled = true;
         var _requestFitToView = false;
         var _requestFitToViewX = false;
@@ -276,7 +277,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _suppressNotifyBoundPlots = false;
 
         var _plotRect;
-
 
         if (div) {
             _name = div.attr("data-idd-name") || div.attr("id") || "";
@@ -329,6 +329,16 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 if (_isFlatRenderingOn === value) return;
                 _isFlatRenderingOn = value;
                 that.requestUpdateLayout();
+            }
+        });
+        Object.defineProperty(this, "isIgnoredByFitToView", {
+            get: function() {
+                return _isIgnoredByFitToView;
+            },
+            set: function(value)  {
+                _isIgnoredByFitToView = value;
+                if (_isAutoFitEnabled)
+                    this.requestUpdateLayout();
             }
         });
         Object.defineProperty(this, "master", { get: function () { return _master; }, configurable: false });
@@ -686,6 +696,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // Gets the bounds of inner content of this plot (excluding its children plots)
         // Returns a rectangle {x,y,width,height} in the plot plane (x,y is left-bottom, i.e. less point).
         // This should not be overriden in derived plot objects (caches previous bounding box).
+        // step = 1 indicates that preferred bounds are requested (some plots can be draws within any bounds, e.g. geo map images)
+        // step = 2 indicates that effective bounds to be drawn in are requested (some plots can be draws within any bounds, e.g. geo map images)
         this.getLocalBounds = function (step, computedBounds) {
             if (!_localbbox)
                 _localbbox = this.computeLocalBounds(step, computedBounds);
@@ -695,6 +707,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // Computes bounds of inner content of this plot (excluding its children plots)
         // Returns a rectangle in the plot plane.
         // This should be overriden in derived plot objects.
+        // step = 1 indicates that preferred bounds are requested (some plots can be draws within any bounds, e.g. geo map images)
+        // step = 2 indicates that effective bounds to be drawn in are requested (some plots can be draws within any bounds, e.g. geo map images)
         this.computeLocalBounds = function (step, computedBounds) {
             return undefined;
         };
@@ -720,17 +734,23 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
 
         // Aggregates all bounds of this plot and its children plots
-        // Returns a rectangle in the plot plane.
+        // Returns a rectangle in the plot plane (bounding box).
         this.aggregateBounds = function () {
 
             var plots = that.getPlotsSequence();
             var bounds = undefined;
 
-            //First path: calculating static plot rects
+            // there is tho pass approach here.
+            // Some plots are ready to be drawn in any bounding box (e.g. geo map images), thus they return 'undefined' at the first pass
+            // for such plots second pass is invoked. At second pass these plots must return some BB knowing the BB of others
+
+            //First pass: calculating static plot rects
             var undefinedBBPlots = [];
             var n = plots.length;
             for (var i = 0; i < n; i++) {
                 var plot = plots[i];
+                if(plot.isIgnoredByFitToView)
+                    continue;
                 var plotBounds = plot.getLocalBounds(1);
                 if (plot.isVisible && !plot.isErrorVisible) {
                     if (plotBounds === undefined) {
@@ -741,7 +761,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
             }
 
-            //Second path: calculating final plot rect
+            //Second pass: calculating final plot rect
             n = undefinedBBPlots.length;
             var firstStepBounds = bounds;
             for (var i = 0; i < n; i++) {
