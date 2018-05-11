@@ -843,14 +843,16 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 renderAll = true;
                 that.updateLayout(); // this eventually fires the frameRendered event
             } else {
-                that.isAnimationFrameRequested = false;
+                if (that.screenSize.height != undefined && that.screenSize.width != undefined) {
+                    that.isAnimationFrameRequested = false;
 
-                var screenSize = that.screenSize;
-                var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height }); // (x,y) is left/top            
-                // rectangle in the plot plane which is visible, (x,y) is left/bottom (i.e. less) of the rectangle
+                    var screenSize = that.screenSize;
+                    var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height }); // (x,y) is left/top            
+                    // rectangle in the plot plane which is visible, (x,y) is left/bottom (i.e. less) of the rectangle
 
-                updatePlotsOutputRec(renderAll, _master, plotRect, screenSize);  
-                that.fireFrameRendered();
+                    updatePlotsOutputRec(renderAll, _master, plotRect, screenSize);
+                    that.fireFrameRendered();
+                }
             }
             renderAll = false;          
 
