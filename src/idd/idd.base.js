@@ -443,6 +443,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             set: function (value) {
                 if (_order === value) return;
                 _order = value;
+                this.fireOrderChanged();
             },
             configurable: false
         });
@@ -1694,7 +1695,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     if (plots[i].order < InteractiveDataDisplay.MaxInteger) plots[i].host.css('z-index', plots[i].order);
                 }
             }
-            if (elem) this.fireOrderChanged();
         };
 
         if (div) {

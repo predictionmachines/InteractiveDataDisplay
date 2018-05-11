@@ -300,7 +300,7 @@ InteractiveDataDisplay.Utils =
             enumRec(plot, plotsArray);
             plotsArray.sort(function (a, b) { return b.order - a.order; });
             return plotsArray;
-    },
+        },
 
         reorder: function (p, p_before, isPrev) {
             // seem to be obsolete line. enumPlots() doesn't have side effects

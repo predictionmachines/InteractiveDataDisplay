@@ -52,7 +52,6 @@
                     slide: function (event, ui) {
                         ($("#" + ui.handle.getAttribute("for"))[0]).plot.order = ui.value;
                         ui.handle.innerText = ui.value;
-                        ($("#" + ui.handle.getAttribute("for"))[0]).plot.fireOrderChanged();
                     }
                 });
 
