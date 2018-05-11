@@ -7,31 +7,31 @@ InteractiveDataDisplay.Utils =
     {
         //trim: function (s) { return s.replace(/^[\s\n]+|[\s\n]+$/g, ''); },
 
-        logE10neg : 1.0 / Math.log(10), 
+        logE10neg: 1.0 / Math.log(10),
 
-        log10: (typeof Math.log10 !== "undefined") ? Math.log10 : function(x) { return Math.log(x) * InteractiveDataDisplay.Utils.logE10neg; },
+        log10: (typeof Math.log10 !== "undefined") ? Math.log10 : function (x) { return Math.log(x) * InteractiveDataDisplay.Utils.logE10neg; },
 
-        applyMask: function(mask, array, newLength) {
+        applyMask: function (mask, array, newLength) {
             var n = mask.length;
             var newArr = new Array(newLength);
-            for(var i = 0, j = 0; i < n; i++){
-                if(mask[i] === 0) newArr[j++] = array[i];
+            for (var i = 0, j = 0; i < n; i++) {
+                if (mask[i] === 0) newArr[j++] = array[i];
             }
             return newArr;
         },
-        
-        maskNaN: function(mask, numArray){            
-            for(var n = mask.length; --n>=0; ){
-                 var v = numArray[n];
-                 if(v != v) // NaN
+
+        maskNaN: function (mask, numArray) {
+            for (var n = mask.length; --n >= 0;) {
+                var v = numArray[n];
+                if (v != v) // NaN
                     mask[n] = 1;
             }
         },
 
         //Returns true if value is Array or TypedArray
-        isArray: function(arr) {
-            return arr instanceof Array || 
-                arr instanceof Float64Array || 
+        isArray: function (arr) {
+            return arr instanceof Array ||
+                arr instanceof Float64Array ||
                 arr instanceof Float32Array ||
                 arr instanceof Int8Array ||
                 arr instanceof Int16Array ||
@@ -132,7 +132,7 @@ InteractiveDataDisplay.Utils =
 
         //Computes minimum rect, containing rect1 and rect 2
         unionRects: function (rect1, rect2) {
-            if (rect1 === undefined) 
+            if (rect1 === undefined)
                 return rect2 === undefined ? undefined : { x: rect2.x, y: rect2.y, width: rect2.width, height: rect2.height };
             if (rect2 === undefined)
                 return rect1 === undefined ? undefined : { x: rect1.x, y: rect1.y, width: rect1.width, height: rect1.height };
@@ -168,14 +168,14 @@ InteractiveDataDisplay.Utils =
 
         getDataSourceFunction: function (jqElem, defaultSource) {
             var source = jqElem.attr("data-idd-datasource");
-            if(source == "InteractiveDataDisplay.readTable")
+            if (source == "InteractiveDataDisplay.readTable")
                 return InteractiveDataDisplay.readTable;
-            else if(source == "InteractiveDataDisplay.readCsv")
+            else if (source == "InteractiveDataDisplay.readCsv")
                 return InteractiveDataDisplay.readCsv;
-            else if(source == "InteractiveDataDisplay.readCsv2d")
+            else if (source == "InteractiveDataDisplay.readCsv2d")
                 return InteractiveDataDisplay.readCsv2d;
             else if (source)
-                return function(){
+                return function () {
                     return JSON.parse(source, function (key, value) {
                         if (value === null) {
                             return NaN;
@@ -186,12 +186,12 @@ InteractiveDataDisplay.Utils =
             return defaultSource;
         },
 
-        makeNonEqual: function(range) {
-            if(range.min == range.max){
-                if(range.min == 0) return { min : -1, max : 1}
-                else if(range.min > 0)  return { min : range.min * 0.9, max : range.min * 1.1}
-                else return { min : range.min * 1.1, max : range.min * 0.9}
-            }else return range;
+        makeNonEqual: function (range) {
+            if (range.min == range.max) {
+                if (range.min == 0) return { min: -1, max: 1 }
+                else if (range.min > 0) return { min: range.min * 0.9, max: range.min * 1.1 }
+                else return { min: range.min * 1.1, max: range.min * 0.9 }
+            } else return range;
         },
 
         getMinMax: function (array) {
@@ -253,7 +253,7 @@ InteractiveDataDisplay.Utils =
             }
             return max;
         },
-        
+
         getMinMaxForPair: function (arrayx, arrayy) {
             if (!arrayx || arrayx.length === 0) return undefined;
             if (!arrayy || arrayx.length !== arrayy.length) throw 'Arrays should be equal';
@@ -285,6 +285,9 @@ InteractiveDataDisplay.Utils =
             return { minx: minx, maxx: maxx, miny: miny, maxy: maxy };
         },
 
+        // recursively gathers hierarchical plots into flattened array
+        // reorders this array by plot.order field
+        // returns flattened sorted array
         enumPlots: function (plot) {
             var plotsArray = [];
             var enumRec = function (p, plotsArray) {
@@ -298,10 +301,12 @@ InteractiveDataDisplay.Utils =
             plotsArray.sort(function (a, b) { return b.order - a.order; });
             return plotsArray;
         },
+
         reorder: function (p, p_before, isPrev) {
-            var plots = p.master ? InteractiveDataDisplay.Utils.enumPlots(p.master) : InteractiveDataDisplay.Utils.enumPlots(p);
-            p.order = isPrev ? (p_before.order): (p_before.order + 1);
-            var shift = function (masterPlot,p) {
+            // seem to be obsolete line. enumPlots() doesn't have side effects
+            // var plots = p.master ? InteractiveDataDisplay.Utils.enumPlots(p.master) : InteractiveDataDisplay.Utils.enumPlots(p);
+            p.order = isPrev ? (p_before.order) : (p_before.order + 1);
+            var shift = function (masterPlot, p) {
                 if (masterPlot.order >= p.order && masterPlot != p && masterPlot.order < InteractiveDataDisplay.MaxInteger) masterPlot.order += 1;
                 if (masterPlot.children)
                     masterPlot.children.forEach(function (child) {
@@ -310,7 +315,7 @@ InteractiveDataDisplay.Utils =
             }
             shift(p.master, p);
         },
-    
+
         getMaxOrder: function (p) {
             var z = p && p.order != InteractiveDataDisplay.MaxInteger ? p.order : 0;
             if (p && p.children)
@@ -352,11 +357,11 @@ InteractiveDataDisplay.Utils =
             var Idx = sAgent.indexOf("MSIE");
 
             // If IE, return version number.
-            if (Idx > 0) 
-                return parseInt(sAgent.substring(Idx+ 5, sAgent.indexOf(".", Idx)));
+            if (Idx > 0)
+                return parseInt(sAgent.substring(Idx + 5, sAgent.indexOf(".", Idx)));
 
-                // If IE 11 then look for Updated user agent string.
-            else if (!!navigator.userAgent.match(/Trident\/7\./)) 
+            // If IE 11 then look for Updated user agent string.
+            else if (!!navigator.userAgent.match(/Trident\/7\./))
                 return 11;
             else
                 return 0; //It is not IE

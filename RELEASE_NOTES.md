@@ -1,7 +1,8 @@
-### 1.5.6 (not published)
+### 1.5.6 (May 11, 2018)
 
 New features:
  - plot now has `isIgnoredByFitToView` property. Setting it to `true` prevents the plot to be accounted during FitToView visible region recalculation.
+ - new sample page: order property of the plot is changed by slider
 
 ### 1.5.5 (May 10, 2018)
 
@@ -32,7 +33,7 @@ Bug fixes:
  - Axis related IDs are now unique in case of several IDD instances at the page
  - The function `fitToView()` now doesn't consider not visible plots for fitting to view.
  - Scrolling now works correctly after log scale transform. 
- - Probe information for polyline dissapears after zoom/scale/datatransform changes.
+ - Probe information for polyline disappears after zoom/scale/datatransform changes.
  - Correct dependency on FileSaver.
 
 ## 1.5.1 (March 24, 2017)
@@ -79,7 +80,7 @@ Fixes:
  - Previously function `add` from `InteractiveDataDisplay.DOMPlot` (see `idd.base.js`) failed if `element` had type jQuery Object.
  - Previously function `getInnerText(x)` from `idd.axis.js` failed if `x` was `undefined`.
  - `bower.json` was incorrect.
- - Fixed bug in mouse wheel behaviour.
+ - Fixed bug in mouse wheel behavior.
  
 ### 1.4.3 (October 19, 2016)
 

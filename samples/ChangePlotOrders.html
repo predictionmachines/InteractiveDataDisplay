@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Three plots order change</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css">
+    <style>
+        .order-handle {
+            width: 3em;
+            height: 1.6em;
+            top: 50%;
+            text-align: center;
+            line-height: 1.6em;
+        }
+
+        .ui-slider {
+            margin: 2em;
+        }
+
+        .remove-plot-button {
+            margin: 0em 0em 2em 0em;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
+    <script src="../dist/idd.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot($('#chart'));
+            chart.host.width(800).height(600);
+            chart.requestUpdateLayout();
+
+            for (var i = 1; i <= 3; i++) {
+                $("#orderSlider_" + i).slider({
+                    create: function () {
+                        $("#order-handle_" + i).text($(this).slider("value"));
+                    },
+                    slide: function (event, ui) {
+                        ($("#" + ui.handle.getAttribute("for"))[0]).plot.order = ui.value;
+                        ui.handle.innerText = ui.value;
+                    }
+                });
+
+            }
+        });
+    </script>
+</head>
+<body>
+    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px; margin: 2em 0em 2em 0em;">
+        <div id="p1"
+             data-idd-plot="polyline"
+             data-idd-style="stroke: rgb(89,150,255); thickness: 5">
+            x y
+            0 0
+            0.5 1
+        </div>
+        <div id="p2"
+             data-idd-plot="polyline"
+             data-idd-style="stroke: rgb(89,255,150); thickness: 5">
+            x y
+            0 1
+            0.5 0
+        </div>
+        <div id="p3"
+             data-idd-plot="polyline"
+             data-idd-style="stroke: rgb(255,89,150); thickness:5">
+            x      y
+            0      0.8
+            0.5    0.8
+        </div>
+    </div>
+    <div id="ordersContainerDiv" style="margin: 2em 0em 2em 0em; display: block;">
+        <div id="orderSlider_1">
+            <div id="order-handle_1" class="ui-slider-handle order-handle" for="p1"></div>
+        </div>
+        <div id="orderSlider_2">
+            <div id="order-handle_2" class="ui-slider-handle order-handle" for="p2"></div>
+        </div>
+        <div id="orderSlider_3">
+            <div id="order-handle_3" class="ui-slider-handle order-handle" for="p3"></div>
+        </div>
+    </div>
+</body>
+</html>
