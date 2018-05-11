@@ -1734,7 +1734,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         if (!isCompact) {
             _jqdiv.sortable({ axis: 'y' });
             _jqdiv.on("sortupdate", function (e, ui) {
-                var name = ui.item.data('plot'); //name of plot what's card was moved
+                var name = ui.item.data('plot'); // name of the plot which card was moved
                 var targetIndex;
                 var next_elem, prev_elem;
                 $("li", _jqdiv).each(function (idx, el) {
@@ -1750,7 +1750,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                         if (next_elem) {
                             for (var j = 0; j < plotLegends.length; ++j) {
                                 if (plotLegends[j].plot == next_elem) {
-                                    plotLegends[i].plot.updateOrder(plotLegends[j].plot);
+                                    plotLegends[i].plot.updateOrder(plotLegends[j].plot); // i-th legend item to j-th place in a legend
                                     break;
                                 }
                             }
@@ -1794,6 +1794,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             plotSubs = [];
         }
 
+        /// refills (clears & populates) legend
         var createLegend = function () {
             _jqdiv.empty();
             for (var i = 0, len = plotLegends.length; i < len; i++) {
@@ -1837,6 +1838,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         };
 
+        /// removes particular legend item from current legend
         var removeLegend = function (legend) {
             for (var i = 0; i < _plotLegends.length; i++) {
                 if (_plotLegends[i] == legend) {
@@ -1930,6 +1932,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     updateLegendItem(i, params.isVisible, params.isErrorVisible);
                 }
         }; 
+
+        /// asks plot to generate legend item
+        /// inserts it into current legend
+        /// saves legend item (div) into plotLegends
         var createLegendForPlot = function (plot) {
             var legend = plot.getLegend();
             if (legend) {
