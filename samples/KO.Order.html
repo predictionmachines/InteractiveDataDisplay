@@ -40,8 +40,6 @@
     <script src="../dist/idd_knockout.js"></script>
 
     <script type="text/javascript">
-        var newN = 3;
-
         $(document).ready(function () {
             var chart = InteractiveDataDisplay.asPlot($('#chart'));
             chart.host.width(800).height(600);
@@ -51,39 +49,8 @@
             for (var i = 1; i < 4; i++) {
                 vm["orderObservable" + i] = ko.observable($('#p' + i)[0].plot.order);
             }
-
             
             ko.applyBindings(vm);
-
-            $("#addPolyline").click(function () {
-                newN++;
-
-                var randomColor = function getRandomColor() {
-                    var letters = '0123456789ABCDEF';
-                    var color = '#';
-                    for (var i = 0; i < 6; i++) {
-                        color += letters[Math.floor(Math.random() * 16)];
-                    }
-                    return color + "99";
-                }
-
-                var pN = InteractiveDataDisplay.asPlot($('#chart')).polyline(
-                    "p" + newN,
-                    {
-                        x: [0.028 * newN, 0.028 * newN, 0.028 * newN], y: [0, 0.3 * newN, 0.3 * newN],
-                        stroke: randomColor(),
-                        thickness: 8
-                    }
-                );
-
-                vm["orderObservable" + newN] = ko.observable($('#p' + newN)[0].plot.order);
-
-                var newSliderString = newN + '<input type="range" id="orderSlider_' + newN +
-                    '" data-bind="value: orderObservable' +
-                    newN + ', valueUpdate: \'input\'">';
-                $("#ordersContainerDiv").append(newSliderString);
-                
-            });
         });
     </script>
 </head>
@@ -119,6 +86,5 @@
         2<input type="range" id="orderSlider_2" data-bind="value: orderObservable2, valueUpdate: 'input'">
         3<input type="range" id="orderSlider_3" data-bind="value: orderObservable3, valueUpdate: 'input'">
     </div>
-    <input type="button" id="addPolyline" value="Add polyline" />
 </body>
 </html>
