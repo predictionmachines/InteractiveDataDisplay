@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
-    <title>Three plots order change</title>
+    <title>Plot order is changed via slider, new plots can be added</title>
     <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
 
@@ -18,7 +18,7 @@
         }
 
         .ui-slider {
-            margin: 2em;
+            margin: 0.5em;
         }
 
         .remove-plot-button {
@@ -39,6 +39,8 @@
     <script src="../dist/idd.min.js"></script>
 
     <script type="text/javascript">
+        var newN = 3;
+
         $(document).ready(function () {
             var chart = InteractiveDataDisplay.asPlot($('#chart'));
             chart.host.width(800).height(600);
@@ -47,6 +49,7 @@
             for (var i = 1; i <= 3; i++) {
                 $("#orderSlider_" + i).slider({
                     create: function () {
+                        $(this).slider('value', $('div[data-idd-plot="polyline"]')[i-1].plot.order);
                         $("#order-handle_" + i).text($(this).slider("value"));
                     },
                     slide: function (event, ui) {
@@ -56,6 +59,45 @@
                 });
 
             }
+
+            $("#addPolyline").click(function () {
+                newN++;
+
+                var randomColor = function getRandomColor() {
+                    var letters = '0123456789ABCDEF';
+                    var color = '#';
+                    for (var i = 0; i < 6; i++) {
+                        color += letters[Math.floor(Math.random() * 16)];
+                    }
+                    return color + "99";
+                }
+
+                var pN = InteractiveDataDisplay.asPlot($('#chart')).polyline(
+                    "p" + newN,
+                    {
+                        x: [0.028 * newN, 0.028 * newN, 0.028 * newN], y: [0, 0.3 * newN, 0.3 * newN],
+                        stroke: randomColor(),
+                        thickness: 8
+                    }
+                );
+
+                var newSliderString = newN + '<div id="orderSlider_' + newN +
+                    '" class="ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content">' +
+                    '<div id="order-handle_' + newN + '" class="ui-slider-handle order-handle" for="p' + newN + '"></div>';
+                $("#ordersContainerDiv").append(newSliderString);
+
+                var handle = $("#order-handle_" + newN);
+                $("#orderSlider_" + newN).slider({
+                    create: function () {
+                        $(this).slider('value', $('div[data-idd-name="p' + newN + '"]').last()[0].plot.order);
+                        $("#order-handle_" + $(this)[0].id.slice(-1)).text($(this).slider('value'));
+                    },
+                    slide: function (event, ui) {
+                        $('div[data-idd-name="p' + newN + '"]').last()[0].plot.order = ui.value;
+                        ui.handle.innerText = ui.value;
+                    }
+                });
+            });
         });
     </script>
 </head>
@@ -84,15 +126,16 @@
         </div>
     </div>
     <div id="ordersContainerDiv" style="margin: 2em 0em 2em 0em; display: block;">
-        <div id="orderSlider_1">
+        1<div id="orderSlider_1">
             <div id="order-handle_1" class="ui-slider-handle order-handle" for="p1"></div>
         </div>
-        <div id="orderSlider_2">
+        2<div id="orderSlider_2">
             <div id="order-handle_2" class="ui-slider-handle order-handle" for="p2"></div>
         </div>
-        <div id="orderSlider_3">
+        3<div id="orderSlider_3">
             <div id="order-handle_3" class="ui-slider-handle order-handle" for="p3"></div>
         </div>
     </div>
+    <input type="button" id="addPolyline" value="Add polyline" />
 </body>
 </html>

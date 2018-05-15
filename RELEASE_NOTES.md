@@ -1,3 +1,9 @@
+### 1.5.7 (May 15, 2018)
+
+New features:
+ - added custom binding for plot.order
+ - added sample page KO.Order.html for the binding 
+
 ### 1.5.6 (May 11, 2018)
 
 New features:
