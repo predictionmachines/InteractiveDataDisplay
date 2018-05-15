@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
-    <title>Plot order is changed via slider, new plots can be added</title>
+    <title>Plots order change using KO bindings</title>
     <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
 
@@ -36,7 +36,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
-    <script src="../dist/idd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script>
+    <script src="../dist/idd_knockout.js"></script>
 
     <script type="text/javascript">
         var newN = 3;
@@ -46,19 +47,13 @@
             chart.host.width(800).height(600);
             chart.requestUpdateLayout();
 
-            for (var i = 1; i <= 3; i++) {
-                $("#orderSlider_" + i).slider({
-                    create: function () {
-                        $(this).slider('value', $('div[data-idd-plot="polyline"]')[i-1].plot.order);
-                        $("#order-handle_" + i).text($(this).slider("value"));
-                    },
-                    slide: function (event, ui) {
-                        ($("#" + ui.handle.getAttribute("for"))[0]).plot.order = ui.value;
-                        ui.handle.innerText = ui.value;
-                    }
-                });
-
+            var vm = {};
+            for (var i = 1; i < 4; i++) {
+                vm["orderObservable" + i] = ko.observable($('#p' + i)[0].plot.order);
             }
+
+            
+            ko.applyBindings(vm);
 
             $("#addPolyline").click(function () {
                 newN++;
@@ -81,22 +76,13 @@
                     }
                 );
 
-                var newSliderString = newN + '<div id="orderSlider_' + newN +
-                    '" class="ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content">' +
-                    '<div id="order-handle_' + newN + '" class="ui-slider-handle order-handle" for="p' + newN + '"></div>';
-                $("#ordersContainerDiv").append(newSliderString);
+                vm["orderObservable" + newN] = ko.observable($('#p' + newN)[0].plot.order);
 
-                var handle = $("#order-handle_" + newN);
-                $("#orderSlider_" + newN).slider({
-                    create: function () {
-                        $(this).slider('value', $('div[data-idd-name="p' + newN + '"]').last()[0].plot.order);
-                        $("#order-handle_" + $(this)[0].id.slice(-1)).text($(this).slider('value'));
-                    },
-                    slide: function (event, ui) {
-                        $('div[data-idd-name="p' + newN + '"]').last()[0].plot.order = ui.value;
-                        ui.handle.innerText = ui.value;
-                    }
-                });
+                var newSliderString = newN + '<input type="range" id="orderSlider_' + newN +
+                    '" data-bind="value: orderObservable' +
+                    newN + ', valueUpdate: \'input\'">';
+                $("#ordersContainerDiv").append(newSliderString);
+                
             });
         });
     </script>
@@ -105,36 +91,33 @@
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px; margin: 2em 0em 2em 0em;">
         <div id="p1"
              data-idd-plot="polyline"
-             data-idd-style="stroke: rgb(89,150,255); thickness: 5">
+             data-idd-style="stroke: rgb(89,150,255); thickness: 5"
+             data-bind="iddPlotOrder: orderObservable1">
             x y
             0 0
             0.5 1
         </div>
         <div id="p2"
              data-idd-plot="polyline"
-             data-idd-style="stroke: rgb(89,255,150); thickness: 5">
+             data-idd-style="stroke: rgb(89,255,150); thickness: 5"
+             data-bind="iddPlotOrder: orderObservable2">
             x y
             0 1
             0.5 0
         </div>
         <div id="p3"
              data-idd-plot="polyline"
-             data-idd-style="stroke: rgb(255,89,150); thickness:5">
+             data-idd-style="stroke: rgb(255,89,150); thickness:5"
+             data-bind="iddPlotOrder: orderObservable3">
             x      y
             0      0.8
             0.5    0.8
         </div>
     </div>
     <div id="ordersContainerDiv" style="margin: 2em 0em 2em 0em; display: block;">
-        1<div id="orderSlider_1">
-            <div id="order-handle_1" class="ui-slider-handle order-handle" for="p1"></div>
-        </div>
-        2<div id="orderSlider_2">
-            <div id="order-handle_2" class="ui-slider-handle order-handle" for="p2"></div>
-        </div>
-        3<div id="orderSlider_3">
-            <div id="order-handle_3" class="ui-slider-handle order-handle" for="p3"></div>
-        </div>
+        1<input type="range" id="orderSlider_1" data-bind="value: orderObservable1, valueUpdate: 'input'">
+        2<input type="range" id="orderSlider_2" data-bind="value: orderObservable2, valueUpdate: 'input'">
+        3<input type="range" id="orderSlider_3" data-bind="value: orderObservable3, valueUpdate: 'input'">
     </div>
     <input type="button" id="addPolyline" value="Add polyline" />
 </body>
