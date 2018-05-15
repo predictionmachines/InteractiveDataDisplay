@@ -75,9 +75,47 @@
                 if (plotAttr != null) {
                     if (typeof element.plot != 'undefined') {
                         if(unwrappedName)
+                        {
+                            // first. The plot transform is switch to log scale
                             element.plot.xDataTransform = InteractiveDataDisplay.logTransform;
+
+                            // then, we change the axis to log axis
+                            var master = element.plot.master;
+                            var oldAxis = master.getAxes("bottom")[0];                            
+                            // adding new one
+                            var axis = master.addAxis("bottom", "log", true, oldAxis.host[0]);
+                            // removing the previous axis
+                            master.removeDiv(oldAxis.host[0]);
+                            oldAxis.destroy();
+                            // looking for grid plot to set proper transform
+                            var plots = master.getPlotsSequence();
+                            var grids = plots.filter(function(p) { return ('xAxis' in p)});
+                            grids.forEach(function(grid) {
+                                grid.xAxis = master.get(axis[0]);
+                            });
+                            // plot transform to axis transform
+                            axis.dataTransform = element.plot.xDataTransform;
+                        }
                         else
+                        {
+                            // first. The plot transform is switch to identity scale
                             element.plot.xDataTransform = InteractiveDataDisplay.identityTransform;
+                            // then, we change the axis to identity axis
+                            var master = element.plot.master;
+                            var oldAxis = master.getAxes("bottom")[0];    
+                            // adding new one
+                            var axis = master.addAxis("bottom", "numeric", true, oldAxis.host[0]);
+                            master.removeDiv(oldAxis.host[0]);
+                            oldAxis.destroy();
+                            // looking for grid plot to set proper transform
+                            var plots = master.getPlotsSequence();
+                            var grids = plots.filter(function(p) { return ('xAxis' in p)});
+                            grids.forEach(function(grid) {
+                                grid.xAxis = master.get(axis[0]);
+                            });
+                            // plot transform to axis transform
+                            axis.dataTransform = element.plot.xDataTransform;
+                        }
                     }
                     else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
                         //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element                        
@@ -96,9 +134,45 @@
                 if (plotAttr != null) {
                     if (typeof element.plot != 'undefined') {
                         if(unwrappedName)
+                        {
+                            // first. The plot transform is switch to log scale
                             element.plot.yDataTransform = InteractiveDataDisplay.logTransform;
+                            // then, we change the axis to log axis
+                            var master = element.plot.master;
+                            var oldAxis = master.getAxes("left")[0];
+                            // adding new one
+                            var axis = master.addAxis("left", "log", true, oldAxis.host[0]);
+                            master.removeDiv(oldAxis.host[0]);
+                            oldAxis.destroy();
+                            // looking for grid plot to set proper transform
+                            var plots = master.getPlotsSequence();
+                            var grids = plots.filter(function(p) { return ('yAxis' in p)});
+                            grids.forEach(function(grid) {
+                                grid.yAxis = master.get(axis[0]);
+                            });
+                            // plot transform to axis transform
+                            axis.dataTransform = element.plot.yDataTransform;
+                        }
                         else
+                        {
+                            // first. The plot transform is switch to log scale
                             element.plot.yDataTransform = InteractiveDataDisplay.identityTransform;
+                            // then, we change the axis to log axis
+                            var master = element.plot.master;
+                            var oldAxis = master.getAxes("left")[0];
+                            // adding new one
+                            var axis = master.addAxis("left", "numeric", true, oldAxis.host[0]);
+                            master.removeDiv(oldAxis.host[0]);
+                            oldAxis.destroy();
+                            //looging for grid plot to set proper transform
+                            var plots = master.getPlotsSequence();
+                            var grids = plots.filter(function(p) { return ('yAxis' in p)});
+                            grids.forEach(function(grid) {
+                                grid.yAxis = master.get(axis[0]);
+                            });
+                            // plot transform to axis transform
+                            axis.dataTransform = element.plot.yDataTransform;
+                        }
                     }
                     else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
                         //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element                        

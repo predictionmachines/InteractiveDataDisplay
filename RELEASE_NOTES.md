@@ -1,9 +1,10 @@
 ### 1.5.7 (May 15, 2018)
 
 New features:
- - added custom binding for plot.order
- - added sample page KO.Order.html for the binding 
- - Attribute `data-idd-ignored-by-fit-to-view` can be set to plot's div. If it is present, the corresponding plot is ignored during FitToView visible region recalculation.
+ - added custom KO binding: iddPlotOrder - integer value that controls the plot order
+ - added sample page KO.Order.html for the iddPlotOrder binding 
+ - added custom KO bindings: iddXlog, iddYlog. They boolean value of them controls the log transform of corresponding axis.
+ - added custom KO bindings: iddIgnoredByFitToView. if set to true, the plot is excluded from FitToView visible region calculation.
 
 ### 1.5.6 (May 11, 2018)
 
