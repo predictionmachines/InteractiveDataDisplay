@@ -1,6 +1,8 @@
-### 1.5.7 (not released)
+### 1.5.7 (May 15, 2018)
 
 New features:
+ - added custom binding for plot.order
+ - added sample page KO.Order.html for the binding 
  - Attribute `data-idd-ignored-by-fit-to-view` can be set to plot's div. If it is present, the corresponding plot is ignored during FitToView visible region recalculation.
 
 ### 1.5.6 (May 11, 2018)

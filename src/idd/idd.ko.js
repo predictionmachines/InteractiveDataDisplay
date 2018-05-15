@@ -1,12 +1,12 @@
 
-(function(InteractiveDataDisplay) {
+(function (InteractiveDataDisplay) {
     if (!ko) {
         console.log("Knockout was no found, please load Knockout first");
     } else {
-        var registerBindings = (function() {
+        var registerBindings = (function () {
             function knockoutBindings() {
                 var bindings = {};
-                var plotBinding = function(element, valueAccessor, allBindings, viewModel, bindingContext) {	
+                var plotBinding = function (element, valueAccessor, allBindings, viewModel, bindingContext) {
                     var plotAttr = element.getAttribute("data-idd-plot") || element.parentElement.getAttribute("data-idd-plot");//parent is checking for dom plot
                     if (bindings.hasOwnProperty(plotAttr)) {
                         bindings[plotAttr](element, valueAccessor, allBindings, viewModel, bindingContext);
@@ -16,16 +16,16 @@
                 }
                 this.registerPlotBinding = function (plotName, binding, array) {
                     bindings[plotName] = binding;
-                    array.forEach(function(val) {
-                        ko.bindingHandlers[val] = {update: plotBinding};
+                    array.forEach(function (val) {
+                        ko.bindingHandlers[val] = { update: plotBinding };
                     });
                 }
-            }            
+            }
             return knockoutBindings;
         })();
 
         InteractiveDataDisplay.KnockoutBindings = new registerBindings();
-        
+
         ko.bindingHandlers.iddPlotName = {
             update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
@@ -122,7 +122,7 @@
                 }
             }
         };
-         ko.bindingHandlers.iddEditorColorPalette = {
+        ko.bindingHandlers.iddEditorColorPalette = {
             update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
                 var palette = ko.unwrap(value);
@@ -156,23 +156,40 @@
                         }
                         if (v.fontSize) element.axis.FontSize = v.fontSize;
                         if (typeof v.attachGrid != 'undefined' && v.attachGrid && typeof div[0].plot != 'undefined') {
-                           var plots = div[0].plot.getPlotsSequence();
-                           for (var i = 0; i < plots.length; i++) {
-                               var p = plots[i];
-                               if (p instanceof InteractiveDataDisplay.GridlinesPlot) {
-                                   if (placement == "bottom") {
-                                       p.xAxis = element.axis;
-                                       p.requestUpdateLayout();
-                                   }
-                                   else if (placement == "left") {
-                                       p.yAxis = element.axis;
-                                       p.requestUpdateLayout();
-                                   }
-                                   break;
-                               }
-                           }
+                            var plots = div[0].plot.getPlotsSequence();
+                            for (var i = 0; i < plots.length; i++) {
+                                var p = plots[i];
+                                if (p instanceof InteractiveDataDisplay.GridlinesPlot) {
+                                    if (placement == "bottom") {
+                                        p.xAxis = element.axis;
+                                        p.requestUpdateLayout();
+                                    }
+                                    else if (placement == "left") {
+                                        p.yAxis = element.axis;
+                                        p.requestUpdateLayout();
+                                    }
+                                    break;
+                                }
+                            }
                         }
                     }
+                }
+            }
+        };
+        ko.bindingHandlers.iddPlotOrder = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var unwrappedOrder = ko.unwrap(value);
+                
+                if (typeof element.plot != 'undefined') {
+                    element.plot.order = Number(unwrappedOrder);
+                }
+                else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
+                    //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element
+
+                    //saving plot order in  attribute: will be picked up by initialization
+                    element.setAttribute("data-idd-plot-order", unwrappedOrder);
+
                 }
             }
         };
