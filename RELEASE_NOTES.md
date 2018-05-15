@@ -1,3 +1,8 @@
+### 1.5.7 (not released)
+
+New features:
+ - Attribute `data-idd-ignored-by-fit-to-view` can be set to plot's div. If it is present, the corresponding plot is ignored during FitToView visible region recalculation.
+
 ### 1.5.6 (May 11, 2018)
 
 New features:

@@ -44,3 +44,10 @@ InteractiveDataDisplay.logTransform = new InteractiveDataDisplay.DataTransform(
     { isInDomain: function (x) { return x > 0.00000001; } },
     "log10"
 );
+
+InteractiveDataDisplay.identityTransform = new InteractiveDataDisplay.DataTransform(
+    function (x_d) { return x_d; },
+    function (x_p) { return x_p; },
+    { isInDomain: function (x) { return true } },
+    "identity"
+);

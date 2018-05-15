@@ -46,6 +46,69 @@
                 }
             }
         };
+
+        ko.bindingHandlers.iddIgnoredByFitToView = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var unwrappedName = ko.unwrap(value);
+
+                var plotAttr = element.getAttribute("data-idd-plot");
+                if (plotAttr != null) {
+                    if (typeof element.plot != 'undefined') {
+                        element.plot.isIgnoredByFitToView = unwrappedName;
+                    }
+                    else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
+                        //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element                        
+                        element.setAttribute("data-idd-ignored-by-fit-to-view", unwrappedName);
+
+                    }
+                }
+            }
+        };
+
+        ko.bindingHandlers.iddXlog = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var unwrappedName = ko.unwrap(value);
+
+                var plotAttr = element.getAttribute("data-idd-plot");
+                if (plotAttr != null) {
+                    if (typeof element.plot != 'undefined') {
+                        if(unwrappedName)
+                            element.plot.xDataTransform = InteractiveDataDisplay.logTransform;
+                        else
+                            element.plot.xDataTransform = InteractiveDataDisplay.identityTransform;
+                    }
+                    else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
+                        //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element                        
+                        element.setAttribute("data-idd-X-log", unwrappedName);
+                    }
+                }
+            }
+        };
+
+        ko.bindingHandlers.iddYlog = {
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var unwrappedName = ko.unwrap(value);
+
+                var plotAttr = element.getAttribute("data-idd-plot");
+                if (plotAttr != null) {
+                    if (typeof element.plot != 'undefined') {
+                        if(unwrappedName)
+                            element.plot.yDataTransform = InteractiveDataDisplay.logTransform;
+                        else
+                            element.plot.yDataTransform = InteractiveDataDisplay.identityTransform;
+                    }
+                    else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
+                        //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element                        
+                        element.setAttribute("data-idd-Y-log", unwrappedName);
+
+                    }
+                }
+            }
+        };
+
         ko.bindingHandlers.iddPlotTitles = {
             update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
