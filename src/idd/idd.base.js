@@ -124,6 +124,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                             if (jqAdded.attr("data-idd-plot")) {
                                 jqAdded.removeClass("idd-plot-master").removeClass("idd-plot-dependant");
                                 plot.addChild(initializePlot(jqAdded, master));
+                                plot.assignChildOrder(initializedPlot);
                             };
                         }
                     if (removed.length > 0)
@@ -599,13 +600,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (childPlot.master && (childPlot.master !== childPlot && childPlot.master !== this.master)) throw "Given child plot already added to another plot";
             if (childPlot.master !== this.master)
                 childPlot.onAddedTo(this.master); // changing master
-            if (typeof $(childPlot).attr("data-idd-plot-order") == "undefined")
-                childPlot.order = childPlot.order == InteractiveDataDisplay.MaxInteger ? childPlot.order : (InteractiveDataDisplay.Utils.getMaxOrder(this.master) + 1);
-            else {
-                childPlot.order = $(childPlot).attr("data-idd-plot-order");
-                $(childPlot).removeAttr("data-idd-plot-order");
-            }
-            if (childPlot.order < InteractiveDataDisplay.MaxInteger) childPlot.host.css("z-index", childPlot.order);
             _children.push(childPlot);
             if (this.master._sharedCanvas) {
                 this.master._sharedCanvas.remove();
@@ -629,6 +623,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             this.fireChildrenChanged({ type: "add", plot: childPlot });
             this.requestUpdateLayout();
+        };
+
+        this.assignChildOrder = function (childPlot) {
+            if (typeof childPlot.host.attr("data-idd-plot-order") == "undefined") {
+                if (childPlot.order != InteractiveDataDisplay.MaxInteger)
+                    childPlot.order = InteractiveDataDisplay.Utils.getMaxOrder(this.master) + 1;
+            }
+            else {
+                childPlot.order = childPlot.host.attr("data-idd-plot-order");
+                childPlot.host.removeAttr("data-idd-plot-order");
+            }
+            if (childPlot.order < InteractiveDataDisplay.MaxInteger) childPlot.host.css("z-index", childPlot.order);
         };
 
         // The function is called when this plot is added(removed) to the new master.
@@ -1577,6 +1583,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Polyline(div, this.master);
                 this.addChild(plot);
+                this.assignChildOrder(plot);
             }
             if (data !== undefined) {
                 plot.draw(data);
@@ -1592,6 +1599,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Markers(div, this.master);
                 this.addChild(plot);
+                this.assignChildOrder(plot);
             }
             if (data !== undefined) {
                 plot.draw(data, titles);
@@ -1609,6 +1617,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Area(div, this.master);
                 this.addChild(plot);
+                this.assignChildOrder(plot);
             }
             if (data !== undefined) {
                 plot.draw(data);
@@ -1626,6 +1635,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Heatmap(div, this.master);
                 this.addChild(plot);
+                this.assignChildOrder(plot);
             }
             if (data !== undefined) {
                 plot.draw(data, titles);
@@ -1641,6 +1651,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .appendTo(this.host);
                 plot = new InteractiveDataDisplay.LabelPlot(div, this.master);
                 this.addChild(plot);
+                this.assignChildOrder(plot);
             }
             if (data !== undefined) {
                 plot.draw(data);
@@ -1668,6 +1679,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     var jqElem = $(this); // refers the child DIV
                     if (!jqElem.hasClass("idd-plot-master") && !jqElem.hasClass("idd-plot-dependant") && jqElem.attr("data-idd-plot") !== undefined && jqElem.attr("data-idd-plot") !== "figure" && jqElem.attr("data-idd-plot") !== "chart") { // it shouldn't be initialized and it shouldn't be a master plot (e.g. a figure)
                         that.addChild(initializePlot(jqElem, _master)); // here children of the new child will be initialized recursively
+                        that.assignChildOrder(initializedPlot);
                     }
                 });
         }
