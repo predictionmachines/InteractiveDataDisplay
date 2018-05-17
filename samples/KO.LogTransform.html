@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Markers with Knockout</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">
+		var x_values = [1e-4,2.0,33.0,300,5000] 
+		var y_values = [2.0,3.0,1.0,5.0,4.0]
+		
+        var vm = {
+			X : ko.observable(x_values),
+			Y : ko.observable(y_values),
+
+            xLog: ko.observable(false),
+            yLog: ko.observable(false)
+		}
+		
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+			
+            ko.applyBindings(vm)
+        });
+    </script>
+</head>
+<body>
+    <div style="display: inline-block">
+    <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
+		<div data-idd-plot="markers"
+             data-bind="
+                iddX: X,
+                iddXlog: xLog,
+                iddY: Y,
+                iddYlog: yLog,
+				iddColor: 'black',
+                iddBorder: 'red',
+                iddSize: 15,
+				iddShape: 'circle',
+				iddPlotName: 'Markers'">
+        </div>
+	</div>
+    <div style="float: right; margin: 2em">
+        <p>log X:
+            <input data-bind="checked: xLog" type="checkbox">
+        </p>
+        <p>log Y:
+            <input data-bind="checked: yLog" type="checkbox">
+        </p>
+    </div>
+    </div>
+</body>
+</html>
