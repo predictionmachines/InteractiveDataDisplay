@@ -123,7 +123,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                             var jqAdded = $(added[i]);
                             if (jqAdded.attr("data-idd-plot")) {
                                 jqAdded.removeClass("idd-plot-master").removeClass("idd-plot-dependant");
-                                plot.addChild(initializePlot(jqAdded, master));
+                                var initializedPlot = initializePlot(jqAdded, master)
+                                plot.addChild(initializedPlot);
                                 plot.assignChildOrder(initializedPlot);
                             };
                         }
@@ -151,9 +152,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         else {
             console.warn("MutationObservers are not supported by the browser. DOM changes are not tracked by IDD");
         }
-        
-        if(plot) {
-          return plot;
+
+        if (plot) {
+            return plot;
         };
 
 
@@ -281,18 +282,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         if (div) {
             _name = div.attr("data-idd-name") || div.attr("id") || "";
-            if(div.attr("data-idd-ignored-by-fit-to-view")) {
-                div.removeAttr("data-idd-ignored-by-fit-to-view");
-                _isIgnoredByFitToView = true;
-            }
-            if(div.attr("data-idd-X-log")) {                
-                div.removeAttr("data-idd-X-log");                
-                _xDataTransform = InteractiveDataDisplay.logTransform;
-            }
-            if(div.attr("data-idd-Y-log")) {                
-                div.removeAttr("data-idd-Y-log");                
-                _yDataTransform = InteractiveDataDisplay.logTransform;
-            }
             div[0].plot = this; // adding a reference to the initialized DOM object of the plot, pointing to the plot instance.
 
             // Disables user selection for this element:
@@ -1690,7 +1679,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 .each(function () {
                     var jqElem = $(this); // refers the child DIV
                     if (!jqElem.hasClass("idd-plot-master") && !jqElem.hasClass("idd-plot-dependant") && jqElem.attr("data-idd-plot") !== undefined && jqElem.attr("data-idd-plot") !== "figure" && jqElem.attr("data-idd-plot") !== "chart") { // it shouldn't be initialized and it shouldn't be a master plot (e.g. a figure)
-                        that.addChild(initializePlot(jqElem, _master)); // here children of the new child will be initialized recursively
+                        var initializedPlot = initializePlot(jqElem, _master);
+                        that.addChild(initializedPlot); // here children of the new child will be initialized recursively
                         that.assignChildOrder(initializedPlot);
                     }
                 });
