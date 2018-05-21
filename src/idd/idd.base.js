@@ -282,6 +282,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         if (div) {
             _name = div.attr("data-idd-name") || div.attr("id") || "";
+            if(div.attr("data-idd-ignored-by-fit-to-view")) {
+                div.removeAttr("data-idd-ignored-by-fit-to-view");
+                _isIgnoredByFitToView = true;
+            }
+            if(div.attr("data-idd-X-log")) {                
+                div.removeAttr("data-idd-X-log");                
+                _xDataTransform = InteractiveDataDisplay.logTransform;
+            }
+            if(div.attr("data-idd-Y-log")) {                
+                div.removeAttr("data-idd-Y-log");                
+                _yDataTransform = InteractiveDataDisplay.logTransform;
+            }
             div[0].plot = this; // adding a reference to the initialized DOM object of the plot, pointing to the plot instance.
 
             // Disables user selection for this element:
