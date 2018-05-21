@@ -119,7 +119,6 @@ InteractiveDataDisplay.Gestures.createZoomSubject = function (vc) {
         event.delta = intDelta;
         event.origin = InteractiveDataDisplay.Gestures.getXBrowserMouseOrigin(vc, objEvent);
         vc.trigger(event);
-        
     });
 
     var mouseWheel = Rx.Observable.fromEvent(vc, "xbrowserwheel");

@@ -1,3 +1,8 @@
+### 1.5.8 (May 18, 2018)
+
+Bug fixed:
+ - iddXlog, iddYlog do not brake axes navigation any more.
+
 ### 1.5.7 (May 15, 2018)
 
 New features:

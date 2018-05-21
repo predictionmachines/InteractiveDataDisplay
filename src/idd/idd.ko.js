@@ -74,48 +74,42 @@
                 var plotAttr = element.getAttribute("data-idd-plot");
                 if (plotAttr != null) {
                     if (typeof element.plot != 'undefined') {
+                        
+                        //we change the axis to log axis
+                        var master = element.plot.master;
+                        var oldBottomAxis = master.getAxes("bottom")[0];           
+                        
+                        var bottomAxis;                        
                         if(unwrappedName)
-                        {
+                        {                            
                             // first. The plot transform is switch to log scale
                             element.plot.xDataTransform = InteractiveDataDisplay.logTransform;
-
-                            // then, we change the axis to log axis
-                            var master = element.plot.master;
-                            var oldAxis = master.getAxes("bottom")[0];                            
-                            // adding new one
-                            var axis = master.addAxis("bottom", "log", true, oldAxis.host[0]);
-                            // removing the previous axis
-                            master.removeDiv(oldAxis.host[0]);
-                            oldAxis.destroy();
-                            // looking for grid plot to set proper transform
-                            var plots = master.getPlotsSequence();
-                            var grids = plots.filter(function(p) { return ('xAxis' in p)});
-                            grids.forEach(function(grid) {
-                                grid.xAxis = master.get(axis[0]);
-                            });
-                            // plot transform to axis transform
-                            axis.dataTransform = element.plot.xDataTransform;
+                            // adding new axis
+                            bottomAxis = master.addAxis("bottom", "log", true, oldBottomAxis.host[0]);                                                  
                         }
                         else
-                        {
+                        {   
                             // first. The plot transform is switch to identity scale
-                            element.plot.xDataTransform = InteractiveDataDisplay.identityTransform;
-                            // then, we change the axis to identity axis
-                            var master = element.plot.master;
-                            var oldAxis = master.getAxes("bottom")[0];    
-                            // adding new one
-                            var axis = master.addAxis("bottom", "numeric", true, oldAxis.host[0]);
-                            master.removeDiv(oldAxis.host[0]);
-                            oldAxis.destroy();
-                            // looking for grid plot to set proper transform
-                            var plots = master.getPlotsSequence();
-                            var grids = plots.filter(function(p) { return ('xAxis' in p)});
-                            grids.forEach(function(grid) {
-                                grid.xAxis = master.get(axis[0]);
-                            });
-                            // plot transform to axis transform
-                            axis.dataTransform = element.plot.xDataTransform;
+                            element.plot.xDataTransform = InteractiveDataDisplay.identity;
+                            // adding new axis    
+                            bottomAxis = master.addAxis("bottom", "numeric", true, oldBottomAxis.host[0]);                            
                         }
+                        // removing the previous axis
+                        master.removeDiv(oldBottomAxis.host[0]);
+                        oldBottomAxis.destroy();
+                        // looking for grid plot to set proper transform
+                        var plots = master.getPlotsSequence();
+                        var grids = plots.filter(function(p) { return ('xAxis' in p)});
+                        grids.forEach(function(grid) {
+                            grid.xAxis = master.get(bottomAxis[0]);
+                        });
+                        // plot transform to axis transform
+                        bottomAxis.dataTransform = element.plot.xDataTransform;      
+
+                        //reassembling gesture source with respect to the new added axis
+                        //constructing entirely new combination of gestures from central. left and bottom part results in buggy zoom, so merging into existing gestures
+                        var bottomAxisGestures = InteractiveDataDisplay.Gestures.applyHorizontalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(bottomAxis));                        
+                        element.plot.master.navigation.gestureSource = element.plot.master.navigation.gestureSource.merge(bottomAxisGestures);
                     }
                     else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
                         //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element                        
@@ -133,46 +127,41 @@
                 var plotAttr = element.getAttribute("data-idd-plot");
                 if (plotAttr != null) {
                     if (typeof element.plot != 'undefined') {
+                        // we change the axis to log axis
+                        var master = element.plot.master;
+                        var oldAxis = master.getAxes("left")[0];
+
+                        var leftAxis;
                         if(unwrappedName)
                         {
                             // first. The plot transform is switch to log scale
                             element.plot.yDataTransform = InteractiveDataDisplay.logTransform;
-                            // then, we change the axis to log axis
-                            var master = element.plot.master;
-                            var oldAxis = master.getAxes("left")[0];
                             // adding new one
-                            var axis = master.addAxis("left", "log", true, oldAxis.host[0]);
-                            master.removeDiv(oldAxis.host[0]);
-                            oldAxis.destroy();
-                            // looking for grid plot to set proper transform
-                            var plots = master.getPlotsSequence();
-                            var grids = plots.filter(function(p) { return ('yAxis' in p)});
-                            grids.forEach(function(grid) {
-                                grid.yAxis = master.get(axis[0]);
-                            });
-                            // plot transform to axis transform
-                            axis.dataTransform = element.plot.yDataTransform;
+                            leftAxis = master.addAxis("left", "log", true, oldAxis.host[0]);                            
                         }
                         else
                         {
                             // first. The plot transform is switch to log scale
                             element.plot.yDataTransform = InteractiveDataDisplay.identityTransform;
-                            // then, we change the axis to log axis
-                            var master = element.plot.master;
-                            var oldAxis = master.getAxes("left")[0];
                             // adding new one
-                            var axis = master.addAxis("left", "numeric", true, oldAxis.host[0]);
-                            master.removeDiv(oldAxis.host[0]);
-                            oldAxis.destroy();
-                            //looging for grid plot to set proper transform
-                            var plots = master.getPlotsSequence();
-                            var grids = plots.filter(function(p) { return ('yAxis' in p)});
-                            grids.forEach(function(grid) {
-                                grid.yAxis = master.get(axis[0]);
-                            });
-                            // plot transform to axis transform
-                            axis.dataTransform = element.plot.yDataTransform;
+                            leftAxis = master.addAxis("left", "numeric", true, oldAxis.host[0]);                            
                         }
+                        // removing the previous axis
+                        master.removeDiv(oldAxis.host[0]);
+                        oldAxis.destroy();
+                        // looking for grid plot to set proper transform
+                        var plots = master.getPlotsSequence();
+                        var grids = plots.filter(function(p) { return ('yAxis' in p)});
+                        grids.forEach(function(grid) {
+                            grid.yAxis = master.get(leftAxis[0]);
+                        });
+                        // plot transform to axis transform
+                        leftAxis.dataTransform = element.plot.yDataTransform;
+
+                        //reassembling gesture source with respect to the new aded axis
+                        //constructing entirely new combination of gestures from central. left and bottom part results in buggy zoom, so merging into existing gestures
+                        var leftAxisGestures = InteractiveDataDisplay.Gestures.applyVerticalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(leftAxis));                        
+                        element.plot.master.navigation.gestureSource = element.plot.master.navigation.gestureSource.merge(leftAxisGestures);
                     }
                     else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
                         //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element                        
