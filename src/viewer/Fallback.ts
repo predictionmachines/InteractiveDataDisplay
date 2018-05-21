@@ -10,6 +10,7 @@ module InteractiveDataDisplay {
                 .appendTo(chart.host);
             var plot = new FallbackPlot(div, chart.master);
             chart.addChild(plot);
+            chart.assignChildOrder(plot);
             return [plot];
         },
 

@@ -10,6 +10,7 @@ module InteractiveDataDisplay {
                 .appendTo(chart.host);
             var heatmap = new InteractiveDataDisplay.Heatmap(div, chart.master);
             chart.addChild(heatmap);
+            chart.assignChildOrder(heatmap);
 
             var plots = [heatmap];
             return plots;

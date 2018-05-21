@@ -10,6 +10,7 @@ module InteractiveDataDisplay {
                 .appendTo(chart.host);
             var markerGraph = new InteractiveDataDisplay.Markers(div, chart.master);
             chart.addChild(markerGraph);
+            chart.assignChildOrder(markerGraph);
             return [markerGraph];
         },
 
