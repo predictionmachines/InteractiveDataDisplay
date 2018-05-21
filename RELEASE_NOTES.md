@@ -1,3 +1,8 @@
+### 1.5.9 (May 21, 2018)
+
+Bug fixed:
+ - plot.order can now be assigned either externally (e.g. via binding) or by relevant legend item reordering (in Chart Viewer)
+
 ### 1.5.8 (May 18, 2018)
 
 Bug fixed:
@@ -6,8 +11,8 @@ Bug fixed:
 ### 1.5.7 (May 15, 2018)
 
 New features:
- - added custom KO binding: iddPlotOrder - integer value that controls the plot order
- - added sample page KO.Order.html for the iddPlotOrder binding 
+ - added custom KO binding: iddPlotOrder - integer value that controls the plot order.
+ - added sample page KO.Order.html for the iddPlotOrder binding.
  - added custom KO bindings: iddXlog, iddYlog. They boolean value of them controls the log transform of corresponding axis.
  - added custom KO bindings: iddIgnoredByFitToView. if set to true, the plot is excluded from FitToView visible region calculation.
 

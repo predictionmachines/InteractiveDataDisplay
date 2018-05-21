@@ -10,6 +10,7 @@ module InteractiveDataDisplay {
                 .appendTo(chart.host);
             var bandgraph = new InteractiveDataDisplay.Area(div, chart.master);
             chart.addChild(bandgraph);
+            chart.assignChildOrder(bandgraph);
             return [bandgraph];
         },
 

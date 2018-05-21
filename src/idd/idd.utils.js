@@ -305,9 +305,12 @@ InteractiveDataDisplay.Utils =
         reorder: function (p, p_before, isPrev) {
             // seem to be obsolete line. enumPlots() doesn't have side effects
             // var plots = p.master ? InteractiveDataDisplay.Utils.enumPlots(p.master) : InteractiveDataDisplay.Utils.enumPlots(p);
+            
             p.order = isPrev ? (p_before.order) : (p_before.order + 1);
+
             var shift = function (masterPlot, p) {
-                if (masterPlot.order >= p.order && masterPlot != p && masterPlot.order < InteractiveDataDisplay.MaxInteger) masterPlot.order += 1;
+                if (masterPlot.order >= p.order && masterPlot != p && masterPlot.order < InteractiveDataDisplay.MaxInteger)
+                    masterPlot.order += 1;
                 if (masterPlot.children)
                     masterPlot.children.forEach(function (child) {
                         shift(child, p);

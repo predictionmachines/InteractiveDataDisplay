@@ -123,7 +123,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                             var jqAdded = $(added[i]);
                             if (jqAdded.attr("data-idd-plot")) {
                                 jqAdded.removeClass("idd-plot-master").removeClass("idd-plot-dependant");
-                                plot.addChild(initializePlot(jqAdded, master));
+                                var initializedPlot = initializePlot(jqAdded, master)
+                                plot.addChild(initializedPlot);
+                                plot.assignChildOrder(initializedPlot);
                             };
                         }
                     if (removed.length > 0)
@@ -150,9 +152,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         else {
             console.warn("MutationObservers are not supported by the browser. DOM changes are not tracked by IDD");
         }
-        
-        if(plot) {
-          return plot;
+
+        if (plot) {
+            return plot;
         };
 
 
@@ -611,13 +613,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (childPlot.master && (childPlot.master !== childPlot && childPlot.master !== this.master)) throw "Given child plot already added to another plot";
             if (childPlot.master !== this.master)
                 childPlot.onAddedTo(this.master); // changing master
-            if (typeof $(childPlot).attr("data-idd-plot-order") == "undefined")
-                childPlot.order = childPlot.order == InteractiveDataDisplay.MaxInteger ? childPlot.order : (InteractiveDataDisplay.Utils.getMaxOrder(this.master) + 1);
-            else {
-                childPlot.order = $(childPlot).attr("data-idd-plot-order");
-                $(childPlot).removeAttr("data-idd-plot-order");
-            }
-            if (childPlot.order < InteractiveDataDisplay.MaxInteger) childPlot.host.css("z-index", childPlot.order);
             _children.push(childPlot);
             if (this.master._sharedCanvas) {
                 this.master._sharedCanvas.remove();
@@ -641,6 +636,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             this.fireChildrenChanged({ type: "add", plot: childPlot });
             this.requestUpdateLayout();
+        };
+
+        this.assignChildOrder = function (childPlot) {
+            if (typeof childPlot.host.attr("data-idd-plot-order") == "undefined") {
+                if (childPlot.order != InteractiveDataDisplay.MaxInteger)
+                    childPlot.order = InteractiveDataDisplay.Utils.getMaxOrder(this.master) + 1;
+            }
+            else {
+                childPlot.order = childPlot.host.attr("data-idd-plot-order");
+                childPlot.host.removeAttr("data-idd-plot-order");
+            }
+            if (childPlot.order < InteractiveDataDisplay.MaxInteger) childPlot.host.css("z-index", childPlot.order);
         };
 
         // The function is called when this plot is added(removed) to the new master.
@@ -1589,6 +1596,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Polyline(div, this.master);
                 this.addChild(plot);
+                this.assignChildOrder(plot);
             }
             if (data !== undefined) {
                 plot.draw(data);
@@ -1604,6 +1612,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Markers(div, this.master);
                 this.addChild(plot);
+                this.assignChildOrder(plot);
             }
             if (data !== undefined) {
                 plot.draw(data, titles);
@@ -1621,6 +1630,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Area(div, this.master);
                 this.addChild(plot);
+                this.assignChildOrder(plot);
             }
             if (data !== undefined) {
                 plot.draw(data);
@@ -1638,6 +1648,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .appendTo(this.host);
                 plot = new InteractiveDataDisplay.Heatmap(div, this.master);
                 this.addChild(plot);
+                this.assignChildOrder(plot);
             }
             if (data !== undefined) {
                 plot.draw(data, titles);
@@ -1653,6 +1664,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .appendTo(this.host);
                 plot = new InteractiveDataDisplay.LabelPlot(div, this.master);
                 this.addChild(plot);
+                this.assignChildOrder(plot);
             }
             if (data !== undefined) {
                 plot.draw(data);
@@ -1679,7 +1691,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 .each(function () {
                     var jqElem = $(this); // refers the child DIV
                     if (!jqElem.hasClass("idd-plot-master") && !jqElem.hasClass("idd-plot-dependant") && jqElem.attr("data-idd-plot") !== undefined && jqElem.attr("data-idd-plot") !== "figure" && jqElem.attr("data-idd-plot") !== "chart") { // it shouldn't be initialized and it shouldn't be a master plot (e.g. a figure)
-                        that.addChild(initializePlot(jqElem, _master)); // here children of the new child will be initialized recursively
+                        var initializedPlot = initializePlot(jqElem, _master);
+                        that.addChild(initializedPlot); // here children of the new child will be initialized recursively
+                        that.assignChildOrder(initializedPlot);
                     }
                 });
         }
@@ -1704,8 +1718,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         }, 0);
 
-        this.updateOrder = function (elem, isPrev) {
-            if (elem) InteractiveDataDisplay.Utils.reorder(this, elem, isPrev);
+        this.updateOrder = function (elem, elemIsPrev) {
+            if (elem) InteractiveDataDisplay.Utils.reorder(this, elem, elemIsPrev);
             if (!_isFlatRenderingOn) {
                 var plots = InteractiveDataDisplay.Utils.enumPlots(_master);
                 for (var i = 0; i < plots.length; i++) {
@@ -1733,6 +1747,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var plotLegends = [];
         var plotSubs = [];
         var divStyle = _jqdiv[0].style;
+        var updateIsLegendInduced = false;
+        var that = this;
 
         var _isVisible = true;
         Object.defineProperty(this, "isVisible", {
@@ -1751,31 +1767,32 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         if (!isCompact) {
             _jqdiv.sortable({ axis: 'y' });
             _jqdiv.on("sortupdate", function (e, ui) {
-                var name = ui.item.data('plot'); // name of the plot which card was moved
+                that.updateIsLegendInduced = true; // LM: items order is changed in the legend itself
+                var movedPlot = ui.item.data('plot'); // LM: the plot which card was moved
                 var targetIndex;
                 var next_elem, prev_elem;
                 $("li", _jqdiv).each(function (idx, el) {
-                    if (name == $(el).data('plot')) {
+                    if (movedPlot == $(el).data('plot')) {
                         targetIndex = idx;
                         prev_elem = ($(el)).prev().data('plot');
                         next_elem = ($(el).next()).data('plot');
                         return false;
                     }
-                });//found new index of moved element
-                for (var i = 0; i < plotLegends.length; ++i) {
-                    if (plotLegends[i].plot == name) {
-                        if (next_elem) {
+                }); // found new index of moved element
+                for (var i = 0; i < plotLegends.length; ++i) { // LM: for each item in the legend
+                    if (plotLegends[i].plot == movedPlot) { // LM: find an index of the moved plot in the unchanged plotLegends object
+                        if (next_elem) { // LM: next legend item exists 
                             for (var j = 0; j < plotLegends.length; ++j) {
-                                if (plotLegends[j].plot == next_elem) {
-                                    plotLegends[i].plot.updateOrder(plotLegends[j].plot); // i-th legend item to j-th place in a legend
+                                if (plotLegends[j].plot == next_elem) { // LM: find an index of a next legend item in the unchanged plotLegends object
+                                    movedPlot.updateOrder(plotLegends[j].plot);
                                     break;
                                 }
                             }
                         }
-                        else {
+                        else { // LM: legend item was moved to the end of the legend
                             for (var j = 0; j < plotLegends.length; ++j) {
-                                if (plotLegends[j].plot == prev_elem) {
-                                    plotLegends[i].plot.updateOrder(plotLegends[j].plot, true);
+                                if (plotLegends[j].plot == prev_elem) { // LM: find an index of a previous legend item in the unchanged plotLegends object
+                                    movedPlot.updateOrder(plotLegends[j].plot, true);
                                     break;
                                 }
                             }
@@ -1783,6 +1800,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                         break;
                     }
                 }
+                that.updateIsLegendInduced = false;
             });
         }
 
@@ -1925,7 +1943,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         };
         var orderChangedHandler = function (event, params) {
-            createLegend();
+            if (!that.updateIsLegendInduced)
+                createLegend();
         };
         var plotRemovedHandler = function (event, params) {
             if (_plot == params) _jqdiv.remove();
