@@ -1203,8 +1203,7 @@ InteractiveDataDisplay.Bars = {
         }
     },
     draw: function (marker, plotRect, screenSize, transform, context) {
-        var barWidth = 0.5 * marker.barWidth;
-        var xLeft, xRight, yTop, yBottom;
+        var xLeft, xRight, yTop, yBottom, barWidthScreenX, barWidthScreenY;
         if (marker.orientation == "h") {
             xLeft = transform.dataToScreenX(0);
             xRight = transform.dataToScreenX(marker.x);
@@ -1214,15 +1213,17 @@ InteractiveDataDisplay.Bars = {
                 xLeft = k;
             }
             if (xLeft > screenSize.width || xRight < 0) return;
-            yTop = transform.dataToScreenY(marker.y + barWidth);
-            yBottom = transform.dataToScreenY(marker.y - barWidth);
+            barWidthScreenY = transform.plotToScreenY(marker.barWidth) - transform.plotToScreenY(0.0);
+            yBottom = transform.dataToScreenY(marker.y) - barWidthScreenY / 2.0;
+            yTop = transform.dataToScreenY(marker.y) + barWidthScreenY / 2.0;
             if (yTop > screenSize.height || yBottom < 0) return;
         } else {
-            xLeft = transform.dataToScreenX(marker.x - barWidth);
-            xRight = transform.dataToScreenX(marker.x + barWidth);
+            barWidthScreenX = transform.plotToScreenX(marker.barWidth) - transform.plotToScreenX(0.0);
+            xLeft = transform.dataToScreenX(marker.x) - barWidthScreenX / 2.0;
+            xRight = transform.dataToScreenX(marker.x) + barWidthScreenX / 2.0;
             if (xLeft > screenSize.width || xRight < 0) return;
-            yTop = transform.dataToScreenY(marker.y);
             yBottom = transform.dataToScreenY(0);
+            yTop = transform.dataToScreenY(marker.y);
             if (yTop > yBottom) {
                 var k = yBottom;
                 yBottom = yTop;
