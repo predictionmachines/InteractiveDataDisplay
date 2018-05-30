@@ -61,10 +61,12 @@ InteractiveDataDisplay.Markers = function (div, master) {
         }
         return { arrays: arrays, scalars: scalars, length: n === -1 ? 0 : n };
     }
+
     //return copy of data
     this.getDataCopy = function () {
         return _originalData;
     }
+
     // Draws the data as markers.
     this.draw = function (data, titles) {
         if(data == undefined || data == null) throw "The argument 'data' is undefined or null";
@@ -77,7 +79,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
         else if(typeof data.shape === "string") {
             shape = InteractiveDataDisplay.Markers.shapes[data.shape];
             if(shape == undefined) throw "The given marker shape is unknown";
-        }else if(typeof data.shape === "object" && data.shape != null && typeof data.shape.draw === "function") {
+        } else if(typeof data.shape === "object" && data.shape != null && typeof data.shape.draw === "function") {
             shape = data.shape;
         }
         else throw "The argument 'data' is incorrect: value of the property 'shape' must be a string, a MarkerShape object, undefined or null";

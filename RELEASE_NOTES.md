@@ -1,3 +1,8 @@
+### 1.5.10 (May 29, 2018)
+
+Bug fixed:
+ - iddBarWidth binding for markers works with plot coordinates now
+
 ### 1.5.9 (May 21, 2018)
 
 Bug fixed:

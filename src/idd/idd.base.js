@@ -2230,8 +2230,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             c.height = finalRect.height;
         };
 
-        // Gets the transform functions from data to screen coordinates.
-        // Returns { dataToScreenX, dataToScreenY }
+        // Gets transform functions from data to screen coordinates, from plot to screen coords
+        // Returns { dataToScreenX, dataToScreenY, plotToScreenX, plotToScreenY}
         this.getTransform = function () {
             var ct = this.coordinateTransform;
             var plotToScreenX = ct.plotToScreenX;
@@ -2241,7 +2241,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var dataToScreenX = dataToPlotX ? function (x) { return plotToScreenX(dataToPlotX(x)); } : plotToScreenX;
             var dataToScreenY = dataToPlotY ? function (y) { return plotToScreenY(dataToPlotY(y)); } : plotToScreenY;
 
-            return { dataToScreenX: dataToScreenX, dataToScreenY: dataToScreenY };
+            return {
+                dataToScreenX: dataToScreenX, dataToScreenY: dataToScreenY,
+                plotToScreenX: plotToScreenX,  plotToScreenY: plotToScreenY
+            };
         };
 
         // Gets the transform functions from screen to data coordinates.
