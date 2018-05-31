@@ -1243,12 +1243,29 @@ InteractiveDataDisplay.Bars = {
             context.strokeRect(xLeft, yTop, xRight - xLeft, yBottom - yTop);
         }
     },
-    getBoundingBox: function (marker) {
+    getPlotBoundingBox: function (marker, transforms) {
+        var xLeft, yBottom, xPlot, yPlot, widthPlot, heightPlot;
         var barWidth = marker.barWidth;
-        var xLeft = marker.orientation == "h"? Math.min(0, marker.x) : marker.x - barWidth / 2;
-        var yBottom = marker.orientation == "h" ? marker.y - barWidth / 2 : Math.min(0, marker.y);
-        
-        return marker.orientation == "h" ? {x: xLeft, y: yBottom, width: Math.abs(marker.x), height: barWidth} : { x: xLeft, y: yBottom, width: barWidth, height: Math.abs(marker.y) };
+
+        if (marker.orientation == "h") {
+            xLeft = transforms.dataToPlot(Math.min(0, marker.x));
+            yBottom = transforms.dataToPlot(marker.y - barWidth / 2);
+            widthPlot = transforms.dataToPlot(Math.abs(marker.x));
+            heightPlot = transforms.dataToPlot(barWidth);
+        }
+        else {
+            xLeft = transforms.dataToPlot(marker.x - barWidth / 2);
+            yBottom = transforms.dataToPlot(Math.min(0, marker.y));
+            widthPlot = transforms.dataToPlot(barWidth);
+            heightPlot = transforms.dataToPlot(Math.abs(marker.y));
+        }
+
+        return {
+            x: xPlot,
+            y: yPlot,
+            width: widthPlot,
+            height: heightPlot
+        }
     },
     hitTest: function (marker, transform, ps, pd) {
         var barWidth = marker.barWidth;

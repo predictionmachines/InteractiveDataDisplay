@@ -13,8 +13,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
     var _pushpinsVisible = false;
     var _formatter = {};
     var that = this;
-    
-    var destroyPushpins = function() {
+
+    var destroyPushpins = function () {
         if (that.mapControl == undefined || _markerPushpins == undefined) return;
         _markerPushpins.forEach(function (pp) {
             var index = that.mapControl.entities.indexOf(pp);
@@ -23,12 +23,12 @@ InteractiveDataDisplay.Markers = function (div, master) {
         });
         _markerPushpins = undefined;
     };
-    
-    var createPushpins = function() {
-        if(typeof _data.x == "undefined" || typeof _data.y == "undefined") return;
+
+    var createPushpins = function () {
+        if (typeof _data.x == "undefined" || typeof _data.y == "undefined") return;
         var x = _data.x;
         var y = _data.y;
-        if(InteractiveDataDisplay.Utils.isArray(x) && InteractiveDataDisplay.Utils.isArray(y)){
+        if (InteractiveDataDisplay.Utils.isArray(x) && InteractiveDataDisplay.Utils.isArray(y)) {
             var n = Math.min(x.length, y.length);
             if (n <= InteractiveDataDisplay.MaxMarkersPerAnimationFrame) {
                 _markerPushpins = new Array(n);
@@ -40,20 +40,20 @@ InteractiveDataDisplay.Markers = function (div, master) {
                             anchor: new Microsoft.Maps.Point(5, 5)
                         });
                     _markerPushpins[i] = newPushpin;
-                    that.mapControl.entities.push(newPushpin); 
+                    that.mapControl.entities.push(newPushpin);
                 }
-            }   
+            }
         }
     }
-    
-    var prepareDataRow = function(data) {
+
+    var prepareDataRow = function (data) {
         var arrays = {};
         var scalars = {};
         var n = -1;
         for (var prop in data) {
             var vals = data[prop];
-            if(InteractiveDataDisplay.Utils.isArray(vals)){
-                if(vals.length < n || n === -1) n = vals.length;
+            if (InteractiveDataDisplay.Utils.isArray(vals)) {
+                if (vals.length < n || n === -1) n = vals.length;
                 arrays[prop] = vals;
             } else {
                 scalars[prop] = vals;
@@ -69,33 +69,33 @@ InteractiveDataDisplay.Markers = function (div, master) {
 
     // Draws the data as markers.
     this.draw = function (data, titles) {
-        if(data == undefined || data == null) throw "The argument 'data' is undefined or null";
+        if (data == undefined || data == null) throw "The argument 'data' is undefined or null";
         _originalData = data;
-        
+
         // Determines shape object for the data:        
         var shape;
-        if(typeof data.shape === "undefined" || data.shape == null) 
+        if (typeof data.shape === "undefined" || data.shape == null)
             shape = InteractiveDataDisplay.Markers.shapes["box"];
-        else if(typeof data.shape === "string") {
+        else if (typeof data.shape === "string") {
             shape = InteractiveDataDisplay.Markers.shapes[data.shape];
-            if(shape == undefined) throw "The given marker shape is unknown";
-        } else if(typeof data.shape === "object" && data.shape != null && typeof data.shape.draw === "function") {
+            if (shape == undefined) throw "The given marker shape is unknown";
+        } else if (typeof data.shape === "object" && data.shape != null && typeof data.shape.draw === "function") {
             shape = data.shape;
         }
         else throw "The argument 'data' is incorrect: value of the property 'shape' must be a string, a MarkerShape object, undefined or null";
         _shape = shape;
-        
+
         // Copying data
         var dataFull = $.extend({}, data);
-                
+
         // Preparing data specifically for the given marker shape
-        if(shape.prepare != undefined)
+        if (shape.prepare != undefined)
             shape.prepare(dataFull);
-        
+
         destroyPushpins();
-        _data = dataFull;       
-        _renderData = {};        
-        
+        _data = dataFull;
+        _renderData = {};
+
         this.invalidateLocalBounds();
         this.requestNextFrameOrUpdate();
         this.setTitles(titles, true);
@@ -106,42 +106,56 @@ InteractiveDataDisplay.Markers = function (div, master) {
     this.computeLocalBounds = function (step, computedBounds) {
         var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
         var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
-        
+
         if (_shape && typeof _shape.getBoundingBox !== "undefined" && _data) {
+            if (_data.x.length == 0) return undefined;
             var pattern = prepareDataRow(_data);
             var n = pattern.length;
             var arrays = pattern.arrays;
             var row = pattern.scalars;
-            
-            var found = [];           
+            var found = [];
             var total_bb = undefined;
-            for(var i = 0; i < n; i++){
-                for(var prop in arrays) row[prop] = arrays[prop][i];
-                var bb = _shape.getBoundingBox(row);
-                total_bb = InteractiveDataDisplay.Utils.unionRects (total_bb, bb);
+            if (_shape.hasOwnProperty("getBoundingBox")) {
+                for (var i = 0; i < n; i++) {
+                    for (var prop in arrays) row[prop] = arrays[prop][i];
+                    var bb = _shape.getBoundingBox(row);
+                    total_bb = InteractiveDataDisplay.Utils.unionRects(total_bb, bb);
+                }
+                if (dataToPlotX) {
+                    var l = dataToPlotX(total_bb.x);
+                    var r = dataToPlotX(total_bb.x + total_bb.width);
+                    total_bb.x = l;
+                    total_bb.width = r - l;
+                }
+                if (dataToPlotY) {
+                    var b = dataToPlotY(total_bb.y);
+                    var t = dataToPlotY(total_bb.y + total_bb.height);
+                    total_bb.y = b;
+                    total_bb.height = t - b;
+                }
             }
-            if(dataToPlotX){
-                var l = dataToPlotX(total_bb.x);
-                var r = dataToPlotX(total_bb.x + total_bb.width);
-                total_bb.x = l;
-                total_bb.width = r - l;
-            }
-            if(dataToPlotY){
-                var b = dataToPlotY(total_bb.y);
-                var t = dataToPlotY(total_bb.y + total_bb.height);
-                total_bb.y = b;
-                total_bb.height = t - b;
-            }
+            else
+                if (_shape.hasOwnProperty("getPlotBoundingBox")) {
+                    for (var i = 0; i < n; i++) {
+                        for (var prop in arrays)
+                            row[prop] = arrays[prop][i];
+                        var pbb = _shape.getPlotBoundingBox(row, this.getTransform());
+                        total_bb = InteractiveDataDisplay.Utils.unionRects(total_bb, pbb);
+                    }
+                }
+                else {
+                    throw 'Shape does not have neither getBoundingBox nor getPlotBoundingBox';
+                }
             return total_bb;
         } else if (typeof _data.x != "undefined" && typeof _data.y != "undefined") {
             return InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_data.x, _data.y, dataToPlotX, dataToPlotY);
-        } 
+        }
         return undefined;
     };
 
     // Returns 4 margins in the screen coordinate system
     this.getLocalPadding = function () {
-        if (_shape && typeof _shape.getPadding !== "undefined") 
+        if (_shape && typeof _shape.getPadding !== "undefined")
             return _shape.getPadding(_data);
         var padding = 0;
         return { left: padding, right: padding, top: padding, bottom: padding };
@@ -149,14 +163,14 @@ InteractiveDataDisplay.Markers = function (div, master) {
 
     this.renderCore = function (plotRect, screenSize) {
         InteractiveDataDisplay.Markers.prototype.renderCore.call(this, plotRect, screenSize);
-        if(_shape == undefined) return;
-        
+        if (_shape == undefined) return;
+
         var dt = this.getTransform();
         var drawBasic = !that.master.isInAnimation || that.master.mapControl === undefined;
-        
+
         if (that.mapControl !== undefined) {
             if (_markerPushpins === undefined) createPushpins();
-            if (_markerPushpins !== undefined){
+            if (_markerPushpins !== undefined) {
                 if (that.master.isInAnimation && !_pushpinsVisible) {
                     _markerPushpins.forEach(function (pp) { pp.setOptions({ visible: true }); });
                     _pushpinsVisible = true;
@@ -167,7 +181,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 }
             }
         }
-        
+
         if (drawBasic) {
             var context = this.getContext(true);
             _renderData = _data;
@@ -177,10 +191,10 @@ InteractiveDataDisplay.Markers = function (div, master) {
             var n = pattern.length;
             var arrays = pattern.arrays;
             var row = pattern.scalars;
-            for(var i = 0; i < n; i++){
-                for(var prop in arrays) row[prop] = arrays[prop][i];
+            for (var i = 0; i < n; i++) {
+                for (var prop in arrays) row[prop] = arrays[prop][i];
                 _shape.draw(row, plotRect, screenSize, dt, context, i);
-            }  
+            }
         }
     };
 
@@ -195,15 +209,15 @@ InteractiveDataDisplay.Markers = function (div, master) {
         var t = this.getTransform();
         var ps = { x: t.dataToScreenX(xd), y: t.dataToScreenY(yd) };
         var pd = { x: xd, y: yd };
-        
+
         var pattern = prepareDataRow(_renderData);
         var n = pattern.length;
         var arrays = pattern.arrays;
         var row = pattern.scalars;
-        var found = [];           
-        for(var i = 0; i < n; i++){
-            for(var prop in arrays) row[prop] = arrays[prop][i];
-            if(_shape.hitTest(row, t, ps, pd) && typeof row.indices == "number"){
+        var found = [];
+        for (var i = 0; i < n; i++) {
+            for (var prop in arrays) row[prop] = arrays[prop][i];
+            if (_shape.hitTest(row, t, ps, pd) && typeof row.indices == "number") {
                 // todo: this is a shape-dependent code; needs factorization or a rule of using `indices` property
                 var j = row.indices;
                 var dataRow = {};
@@ -258,8 +272,8 @@ InteractiveDataDisplay.Markers = function (div, master) {
             return $toolTip;
         }
     };
-    
-    this.getLegend = function () {        
+
+    this.getLegend = function () {
         //var div = $("<div class='idd-legend-item'></div>");
         var nameDiv = $("<span></span>");
         var legendDiv = { thumbnail: $("<canvas></canvas>"), content: $("<div></div>") };
@@ -272,7 +286,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
             }
             nameDiv.text(that.name);
         }
-        this.host.bind("appearanceChanged", buildLegend);  
+        this.host.bind("appearanceChanged", buildLegend);
         buildLegend();
         var onLegendRemove = function () {
             that.host.unbind("appearanceChanged", buildLegend);
@@ -280,12 +294,12 @@ InteractiveDataDisplay.Markers = function (div, master) {
             //div.empty();
             //div.removeClass("idd-legend-item");
         };
-        return { name: nameDiv, legend: legendDiv, onLegendRemove: onLegendRemove };  
+        return { name: nameDiv, legend: legendDiv, onLegendRemove: onLegendRemove };
     };
 
     this.buildSvgLegend = function (legendSettings, svg) {
         var that = this;
-        var legendElements = {thumbnail: svg.group(), content: svg.group() };
+        var legendElements = { thumbnail: svg.group(), content: svg.group() };
         legendSettings.height = 30;
         if (_shape && typeof _shape.buildSvgLegendElements != "undefined")
             legendElements = _shape.buildSvgLegendElements(legendSettings, svg, _data, that.getTitle);
@@ -314,10 +328,10 @@ InteractiveDataDisplay.Markers = function (div, master) {
 InteractiveDataDisplay.Markers.prototype = new InteractiveDataDisplay.CanvasPlot;
 
 InteractiveDataDisplay.Markers.defaults = {
-    color : "#4169ed",
-    colorPalette : InteractiveDataDisplay.palettes.grayscale,
-    border : "#000000",
-    size : 10
+    color: "#4169ed",
+    colorPalette: InteractiveDataDisplay.palettes.grayscale,
+    border: "#000000",
+    size: 10
 }
 
 InteractiveDataDisplay.Markers.shapes = InteractiveDataDisplay.Markers.shapes || {};
