@@ -1,3 +1,8 @@
+### 1.5.11 (May 31, 2018)
+
+Bug fixed:
+ - bounding box for Bars is now calculated in plot coordinates
+
 ### 1.5.10 (May 29, 2018)
 
 Bug fixed:
