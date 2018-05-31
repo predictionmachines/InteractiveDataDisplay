@@ -107,7 +107,7 @@ InteractiveDataDisplay.Markers = function (div, master) {
         var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
         var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
 
-        if (_shape && typeof _shape.getBoundingBox !== "undefined" && _data) {
+        if(_shape && (typeof _shape.getBoundingBox !== "undefined" || typeof _shape.getPlotBoundingBox !== "undefined") && _data) {
             if (_data.x.length == 0) return undefined;
             var pattern = prepareDataRow(_data);
             var n = pattern.length;
@@ -135,11 +135,12 @@ InteractiveDataDisplay.Markers = function (div, master) {
                 }
             }
             else
-                if (_shape.hasOwnProperty("getPlotBoundingBox")) {
+                if(_shape.hasOwnProperty("getPlotBoundingBox")) {
+                    var transfrm = that.getTransform();
                     for (var i = 0; i < n; i++) {
                         for (var prop in arrays)
                             row[prop] = arrays[prop][i];
-                        var pbb = _shape.getPlotBoundingBox(row, this.getTransform());
+                        var pbb = _shape.getPlotBoundingBox(row, transfrm);
                         total_bb = InteractiveDataDisplay.Utils.unionRects(total_bb, pbb);
                     }
                 }

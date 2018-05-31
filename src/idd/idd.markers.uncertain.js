@@ -1244,20 +1244,28 @@ InteractiveDataDisplay.Bars = {
         }
     },
     getPlotBoundingBox: function (marker, transforms) {
-        var xLeft, yBottom, xPlot, yPlot, widthPlot, heightPlot;
+        var xPlot, yPlot, widthPlot, heightPlot;
         var barWidth = marker.barWidth;
+        var dataToPlotX = transforms.dataToPlotX;
+        var dataToPlotY = transforms.dataToPlotY;
+
+        if(typeof dataToPlotX === 'undefined')
+            dataToPlotX = function(x) { return x; };
+
+        if(typeof dataToPlotY === 'undefined')
+            dataToPlotY = function(y) { return y; };
 
         if (marker.orientation == "h") {
-            xLeft = transforms.dataToPlot(Math.min(0, marker.x));
-            yBottom = transforms.dataToPlot(marker.y - barWidth / 2);
-            widthPlot = transforms.dataToPlot(Math.abs(marker.x));
-            heightPlot = transforms.dataToPlot(barWidth);
+            xPlot = dataToPlotX(Math.min(0, marker.x));
+            yPlot = dataToPlotY(marker.y) - barWidth / 2;
+            widthPlot = dataToPlotX(Math.abs(marker.x));
+            heightPlot = barWidth;
         }
         else {
-            xLeft = transforms.dataToPlot(marker.x - barWidth / 2);
-            yBottom = transforms.dataToPlot(Math.min(0, marker.y));
-            widthPlot = transforms.dataToPlot(barWidth);
-            heightPlot = transforms.dataToPlot(Math.abs(marker.y));
+            xPlot = dataToPlotX(marker.x) - barWidth / 2;
+            yPlot = dataToPlotY(Math.min(0, marker.y));
+            widthPlot = barWidth;
+            heightPlot = dataToPlotY(Math.abs(marker.y));
         }
 
         return {
