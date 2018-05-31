@@ -2243,6 +2243,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             return {
                 dataToScreenX: dataToScreenX, dataToScreenY: dataToScreenY,
+                dataToPlotX: dataToPlotX, dataToPlotY: dataToPlotY,
                 plotToScreenX: plotToScreenX,  plotToScreenY: plotToScreenY
             };
         };
