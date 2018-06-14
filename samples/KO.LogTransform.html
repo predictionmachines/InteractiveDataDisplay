@@ -18,48 +18,121 @@
     <script src="../dist/idd_knockout.js"></script>
 
     <script type="text/javascript">
-		var x_values = [1e-4,2.0,33.0,300,5000] 
-		var y_values = [2.0,3.0,1.0,5.0,4.0]
-		
-        var vm = {
-			X : ko.observable(x_values),
-			Y : ko.observable(y_values),
+        var x_values = [1e-4, 2.0, 33.0, 300, 5000];
+        var y_values = [2.0, 3.0, 1.0, 5.0, 4.0];
+        var x_labels = ["one x", "two x", "three x", "four x", "five x"];
+        var y_labels = ["one y", "two y", "three y", "four y", "five y"];
+        var x_type = "labels";
+        var y_type = "numeric";
 
-            xLog: ko.observable(false),
-            yLog: ko.observable(false)
-		}
+
+        function AppData() {
+            this.xticks = ko.observable(x_values);
+            this.xlabels = ko.observable(x_labels);
+            this.xlog = ko.observable(false);
+            this.xfontSize = ko.observable(10);            
+            this.xtype = ko.observable(x_type);
+            this.xattachGrid = ko.observable(true);
+            this.xrotate = ko.observable(false);
+            this.xattachNavigation = ko.observable(true);
+
+            this.yticks = ko.observable(y_values);
+            this.ylabels = ko.observable(y_labels);
+            this.ylog = ko.observable(false);
+            this.yfontSize = ko.observable(10);
+            this.ytype = ko.observable(y_type);
+            this.yattachGrid = ko.observable(true);
+            this.yrotate = ko.observable(false);
+            this.yattachNavigation = ko.observable(true);
+
+            this.xAxisSettings = ko.pureComputed(function() {
+                return {
+                    'ticks': this.xticks(),
+                    'labels': this.xlabels(),
+                    'fontSize': this.xfontSize(),
+                    'type': this.xlog() ? "log" : this.xtype(),
+                    'attachGrid': this.xattachGrid(),
+                    'rotate': this.xrotate(),
+                    'attachNavigation': this.xattachNavigation()
+                };
+            }, this);
+
+            this.yAxisSettings = ko.pureComputed(function() {
+                return {
+                    'ticks': this.yticks(),
+                    'labels': this.ylabels(),
+                    'fontSize': this.yfontSize(),
+                    'type': this.ylog() ? "log" : this.ytype(),
+                    'attachGrid': this.yattachGrid(),
+                    'rotate': this.yrotate(),
+                    'attachNavigation': this.yattachNavigation()
+                };
+            }, this)
+        }
+
 		
         $(document).ready(function () {
-            var chart = InteractiveDataDisplay.asPlot($("#chart"));
-			
-            ko.applyBindings(vm)
+            //var plot = InteractiveDataDisplay.asPlot($("div[data-idd-plot='chart']"));
+            var plot = InteractiveDataDisplay.asPlot($("div[data-idd-plot='figure']"));
+            var newAppData = new AppData();
+            ko.applyBindings(newAppData);
+            plot.markers("Bars", { x: [0.5, 1.5, 2.5, 3.5, 4.5], y: [7, 6, 1, 4, 3], barWidth: 0.5, color: ['blue', 'red', 'green', 'orange', 'purple'], shape: 'bars', shadow: 'grey' });
         });
     </script>
 </head>
 <body>
     <div style="display: inline-block">
-    <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
-		<div data-idd-plot="markers"
-             data-bind="
-                iddX: X,
-                iddXlog: xLog,
-                iddY: Y,
-                iddYlog: yLog,
-				iddColor: 'black',
-                iddBorder: 'red',
-                iddSize: 15,
-				iddShape: 'circle',
-				iddPlotName: 'Markers'">
+        <!--<div data-idd-plot="chart" style="width: 600px; height: 400px; float:left"
+                data-bind="iddXAxisSettings: xAxisSettings, iddYAxisSettings: yAxisSettings">
+            <div data-idd-plot="markers" data-bind="iddPlotName: 'Markers'"></div>
+        </div>-->
+        <div data-idd-plot="figure"  style="width: 600px; height: 400px; float:left"
+                data-bind="iddXAxisSettings: xAxisSettings, iddYAxisSettings: yAxisSettings">
+            <div id="sim_bottomaxis" data-idd-axis="labels" data-idd-placement="bottom"></div>
+            <div id="sim_leftaxis" data-idd-axis="numeric" data-idd-placement="left"></div>
         </div>
-	</div>
-    <div style="float: right; margin: 2em">
-        <p>log X:
-            <input data-bind="checked: xLog" type="checkbox">
-        </p>
-        <p>log Y:
-            <input data-bind="checked: yLog" type="checkbox">
-        </p>
-    </div>
+        <div style="float: right; margin: 2em">
+            <p>
+                log X:
+                <input data-bind="checked: xlog" type="checkbox">
+            </p>
+            <p>
+                log Y:
+                <input data-bind="checked: ylog" type="checkbox">
+            </p>
+            <p>
+                font size X:
+                <input data-bind="value: xfontSize" type="text">
+            </p>
+            <p>
+                font size Y:
+                <input data-bind="value: yfontSize" type="text">
+            </p>
+            <p>
+                attach grid X:
+                <input data-bind="checked: xattachGrid" type="checkbox">
+            </p>
+            <p>
+                attach grid Y:
+                <input data-bind="checked: yattachGrid" type="checkbox">
+            </p>
+            <p>
+                attach navigation X:
+                <input data-bind="checked: xattachNavigation" type="checkbox">
+            </p>
+            <p>
+                attach navigation Y:
+                <input data-bind="checked: yattachNavigation" type="checkbox">
+            </p>
+            <p>
+                rotate X:
+                <input data-bind="checked: xrotate" type="checkbox">
+            </p>
+            <p>
+                rotate Y:
+                <input data-bind="checked: yrotate" type="checkbox">
+            </p>
+        </div>
     </div>
 </body>
 </html>
