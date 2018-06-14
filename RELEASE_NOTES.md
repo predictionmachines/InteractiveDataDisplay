@@ -1,3 +1,8 @@
+### 1.5.12 (June 14, 2018)
+
+Bug fixed:
+ - iddXAxisSettings, iddYAxisSettings added
+
 ### 1.5.11 (May 31, 2018)
 
 Bug fixed:
