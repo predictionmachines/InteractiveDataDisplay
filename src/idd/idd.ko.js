@@ -1,22 +1,22 @@
 
-(function (InteractiveDataDisplay) {
-    if (!ko) {
+(function(InteractiveDataDisplay) {
+    if(!ko) {
         console.log("Knockout was no found, please load Knockout first");
     } else {
-        var registerBindings = (function () {
+        var registerBindings = (function() {
             function knockoutBindings() {
                 var bindings = {};
-                var plotBinding = function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var plotBinding = function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                     var plotAttr = element.getAttribute("data-idd-plot") || element.parentElement.getAttribute("data-idd-plot");//parent is checking for dom plot
-                    if (bindings.hasOwnProperty(plotAttr)) {
+                    if(bindings.hasOwnProperty(plotAttr)) {
                         bindings[plotAttr](element, valueAccessor, allBindings, viewModel, bindingContext);
                     } else {
                         throw new Error("There is no bindings registered for " + plotAttr + " plot");
                     }
                 }
-                this.registerPlotBinding = function (plotName, binding, array) {
+                this.registerPlotBinding = function(plotName, binding, array) {
                     bindings[plotName] = binding;
-                    array.forEach(function (val) {
+                    array.forEach(function(val) {
                         ko.bindingHandlers[val] = { update: plotBinding };
                     });
                 }
@@ -27,13 +27,13 @@
         InteractiveDataDisplay.KnockoutBindings = new registerBindings();
 
         ko.bindingHandlers.iddPlotName = {
-            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
                 var unwrappedName = ko.unwrap(value);
 
                 var plotAttr = element.getAttribute("data-idd-plot");
-                if (plotAttr != null) {
-                    if (typeof element.plot != 'undefined') {
+                if(plotAttr != null) {
+                    if(typeof element.plot != 'undefined') {
                         element.plot.name = unwrappedName;
                     }
                     else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
@@ -48,13 +48,13 @@
         };
 
         ko.bindingHandlers.iddIgnoredByFitToView = {
-            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
                 var unwrappedName = ko.unwrap(value);
 
                 var plotAttr = element.getAttribute("data-idd-plot");
-                if (plotAttr != null) {
-                    if (typeof element.plot != 'undefined') {
+                if(plotAttr != null) {
+                    if(typeof element.plot != 'undefined') {
                         element.plot.isIgnoredByFitToView = unwrappedName;
                     }
                     else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
@@ -67,48 +67,46 @@
         };
 
         ko.bindingHandlers.iddXlog = {
-            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
                 var unwrappedName = ko.unwrap(value);
 
                 var plotAttr = element.getAttribute("data-idd-plot");
-                if (plotAttr != null) {
-                    if (typeof element.plot != 'undefined') {
-                        
+                if(plotAttr != null) {
+                    if(typeof element.plot != 'undefined') {
+
                         //we change the axis to log axis
                         var master = element.plot.master;
-                        var oldBottomAxis = master.getAxes("bottom")[0];           
-                        
-                        var bottomAxis;                        
-                        if(unwrappedName)
-                        {                            
+                        var oldBottomAxis = master.getAxes("bottom")[0];
+
+                        var bottomAxis;
+                        if(unwrappedName) {
                             // first. The plot transform is switch to log scale
                             element.plot.xDataTransform = InteractiveDataDisplay.logTransform;
                             // adding new axis
-                            bottomAxis = master.addAxis("bottom", "log", true, oldBottomAxis.host[0]);                                                  
+                            bottomAxis = master.addAxis("bottom", "log", true, oldBottomAxis.host[0]);
                         }
-                        else
-                        {   
+                        else {
                             // first. The plot transform is switch to identity scale
                             element.plot.xDataTransform = InteractiveDataDisplay.identity;
                             // adding new axis    
-                            bottomAxis = master.addAxis("bottom", "numeric", true, oldBottomAxis.host[0]);                            
+                            bottomAxis = master.addAxis("bottom", "numeric", true, oldBottomAxis.host[0]);
                         }
                         // removing the previous axis
                         master.removeDiv(oldBottomAxis.host[0]);
                         oldBottomAxis.destroy();
                         // looking for grid plot to set proper transform
                         var plots = master.getPlotsSequence();
-                        var grids = plots.filter(function(p) { return ('xAxis' in p)});
+                        var grids = plots.filter(function(p) { return ('xAxis' in p) });
                         grids.forEach(function(grid) {
                             grid.xAxis = master.get(bottomAxis[0]);
                         });
                         // plot transform to axis transform
-                        bottomAxis.dataTransform = element.plot.xDataTransform;      
+                        bottomAxis.dataTransform = element.plot.xDataTransform;
 
                         //reassembling gesture source with respect to the new added axis
                         //constructing entirely new combination of gestures from central. left and bottom part results in buggy zoom, so merging into existing gestures
-                        var bottomAxisGestures = InteractiveDataDisplay.Gestures.applyHorizontalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(bottomAxis));                        
+                        var bottomAxisGestures = InteractiveDataDisplay.Gestures.applyHorizontalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(bottomAxis));
                         element.plot.master.navigation.gestureSource = element.plot.master.navigation.gestureSource.merge(bottomAxisGestures);
                     }
                     else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
@@ -120,38 +118,36 @@
         };
 
         ko.bindingHandlers.iddYlog = {
-            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
                 var unwrappedName = ko.unwrap(value);
 
                 var plotAttr = element.getAttribute("data-idd-plot");
-                if (plotAttr != null) {
-                    if (typeof element.plot != 'undefined') {
+                if(plotAttr != null) {
+                    if(typeof element.plot != 'undefined') {
                         // we change the axis to log axis
                         var master = element.plot.master;
                         var oldAxis = master.getAxes("left")[0];
 
                         var leftAxis;
-                        if(unwrappedName)
-                        {
+                        if(unwrappedName) {
                             // first. The plot transform is switch to log scale
                             element.plot.yDataTransform = InteractiveDataDisplay.logTransform;
                             // adding new one
-                            leftAxis = master.addAxis("left", "log", true, oldAxis.host[0]);                            
+                            leftAxis = master.addAxis("left", "log", true, oldAxis.host[0]);
                         }
-                        else
-                        {
+                        else {
                             // first. The plot transform is switch to log scale
                             element.plot.yDataTransform = InteractiveDataDisplay.identityTransform;
                             // adding new one
-                            leftAxis = master.addAxis("left", "numeric", true, oldAxis.host[0]);                            
+                            leftAxis = master.addAxis("left", "numeric", true, oldAxis.host[0]);
                         }
                         // removing the previous axis
                         master.removeDiv(oldAxis.host[0]);
                         oldAxis.destroy();
                         // looking for grid plot to set proper transform
                         var plots = master.getPlotsSequence();
-                        var grids = plots.filter(function(p) { return ('yAxis' in p)});
+                        var grids = plots.filter(function(p) { return ('yAxis' in p) });
                         grids.forEach(function(grid) {
                             grid.yAxis = master.get(leftAxis[0]);
                         });
@@ -160,7 +156,7 @@
 
                         //reassembling gesture source with respect to the new aded axis
                         //constructing entirely new combination of gestures from central. left and bottom part results in buggy zoom, so merging into existing gestures
-                        var leftAxisGestures = InteractiveDataDisplay.Gestures.applyVerticalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(leftAxis));                        
+                        var leftAxisGestures = InteractiveDataDisplay.Gestures.applyVerticalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(leftAxis));
                         element.plot.master.navigation.gestureSource = element.plot.master.navigation.gestureSource.merge(leftAxisGestures);
                     }
                     else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
@@ -173,66 +169,176 @@
         };
 
         ko.bindingHandlers.iddPlotTitles = {
-            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
                 var unwrappedData = ko.unwrap(value);
 
                 var plotAttr = element.getAttribute("data-idd-plot");
-                if (plotAttr != null) {
-                    if (typeof element.plot != 'undefined') {
+                if(plotAttr != null) {
+                    if(typeof element.plot != 'undefined') {
                         element.plot.setTitles(unwrappedData);
                     }
                 }
             }
         };
         ko.bindingHandlers.iddEditorColorPalette = {
-            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
                 var palette = ko.unwrap(value);
 
-                if ($(element).hasClass("idd-colorPaletteEditor")) {
-                    if (typeof element.editor != 'undefined') {
+                if($(element).hasClass("idd-colorPaletteEditor")) {
+                    if(typeof element.editor != 'undefined') {
                         element.editor.palette = palette;
                     }
                 }
             }
         };
-        ko.bindingHandlers.iddAxisSettings = {
-            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+        ko.bindingHandlers.iddXAxisSettings = {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
                 var v = ko.unwrap(value);
 
-                var plotAttr = element.getAttribute("data-idd-axis");
-                if (plotAttr != null && v.type) {
-                    var placement = element.getAttribute("data-idd-placement");
-                    if (typeof element.axis != 'undefined') {
-                        var div = $(element).closest('div[data-idd-plot]');
-                        if (plotAttr != v.type) {
-                            var axisElement = div[0].plot.addAxis(placement, v.type, { labels: v.labels ? v.labels : [], ticks: v.ticks ? v.ticks : [], rotate: v.rotate, rotateAngle: v.rotateAngle }, element);
-                            var bindData = $(element).attr("data-bind");
-                            axisElement.attr("data-bind", bindData);
-                            element.axis.remove();
-                            element = axisElement;
-                        }
-                        else if (plotAttr == "labels") {
-                            element.axis.updateLabels({ labels: v.labels, ticks: v.ticks, rotate: v.rotate, rotateAngle: v.rotateAngle });
-                        }
-                        if (v.fontSize) element.axis.FontSize = v.fontSize;
-                        if (typeof v.attachGrid != 'undefined' && v.attachGrid && typeof div[0].plot != 'undefined') {
-                            var plots = div[0].plot.getPlotsSequence();
-                            for (var i = 0; i < plots.length; i++) {
-                                var p = plots[i];
-                                if (p instanceof InteractiveDataDisplay.GridlinesPlot) {
-                                    if (placement == "bottom") {
-                                        p.xAxis = element.axis;
-                                        p.requestUpdateLayout();
-                                    }
-                                    else if (placement == "left") {
-                                        p.yAxis = element.axis;
-                                        p.requestUpdateLayout();
-                                    }
-                                    break;
+                if(typeof element.plot != 'undefined') {
+                    var master = element.plot.master;
+                    var placementStr = "bottom";
+                    var theAxis = master.getAxes(placementStr)[0].host;
+
+                    var plotAttr = theAxis.attr("data-idd-axis");
+                    if(plotAttr != null && v.type) {
+                        var placement = theAxis.attr("data-idd-placement");
+                        if(typeof theAxis.axis != 'undefined') {
+                            var div = $(theAxis).closest('div[data-idd-plot]');
+                            if(plotAttr != v.type) {
+                                var savedTransform = master.onDataTranformChangedCore; // chart considers only it manages axes elements (incl. divs)
+                                master.onDataTranformChangedCore = function(arg) { } // since we manage the axis we disable chart callback
+                                if(v.type == 'log') {
+                                    master.xDataTransform = InteractiveDataDisplay.logTransform;
                                 }
+                                else {
+                                    master.xDataTransform = InteractiveDataDisplay.identityTransform;
+                                }
+                                master.onDataTranformChangedCore = savedTransform;
+                                var axisElement = div[0].plot.addAxis(
+                                    placement,
+                                    v.type,
+                                    {
+                                        labels: v.labels ? v.labels : [],
+                                        ticks: v.ticks ? v.ticks : [],
+                                        rotate: v.rotate,
+                                        rotateAngle: v.rotateAngle
+                                    },
+                                    theAxis[0]);
+                                theAxis.axis.remove();
+                                theAxis = axisElement;
+                            }
+                            else if(plotAttr == "labels") {
+                                theAxis.axis.updateLabels({ labels: v.labels, ticks: v.ticks, rotate: v.rotate, rotateAngle: v.rotateAngle });
+                            }
+
+                            if(typeof v.fontSize != 'undefined' && v.fontSize) theAxis.axis.FontSize = v.fontSize;
+
+                            if(typeof v.attachGrid != 'undefined' && v.attachGrid && typeof div[0].plot != 'undefined') {
+                                var plots = div[0].plot.getPlotsSequence();
+                                for(var i = 0; i < plots.length; i++) {
+                                    var p = plots[i];
+                                    if(p instanceof InteractiveDataDisplay.GridlinesPlot) {
+                                        p.xAxis = theAxis.axis;
+                                        p.requestUpdateLayout();
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if(typeof v.attachNavigation != 'undefined' && v.attachNavigation && typeof div[0].plot != 'undefined' && typeof master.navigation.gestureSource != 'undefined') {
+                                //reassembling gesture source with respect to the new aded axis
+                                //constructing entirely new combination of gestures from central. left and bottom part results in buggy zoom, so merging into existing gestures
+                                var bottomAxisGestures = InteractiveDataDisplay.Gestures.applyHorizontalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(theAxis));
+                                master.navigation.gestureSource = master.navigation.gestureSource.merge(bottomAxisGestures);
+                            }
+
+                            if(v.type == 'log') {
+                                //axisElement.xDataTransform = InteractiveDataDisplay.logTransform;
+                                theAxis.dataTransform = InteractiveDataDisplay.logTransform;
+                            }
+                            else {
+                                //axisElement.xDataTransform = InteractiveDataDisplay.identityTransform;
+                                theAxis.dataTransform = InteractiveDataDisplay.identityTransform;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        ko.bindingHandlers.iddYAxisSettings = {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var v = ko.unwrap(value);
+
+                if(typeof element.plot != 'undefined') {
+                    var master = element.plot.master;
+                    var placement = "left";
+                    var theAxis = master.getAxes(placement)[0].host;
+
+                    var plotAttr = theAxis.attr("data-idd-axis");
+                    if(plotAttr != null && v.type) {
+                        var placement = theAxis.attr("data-idd-placement");
+                        if(typeof theAxis.axis != 'undefined') {
+                            var div = $(theAxis).closest('div[data-idd-plot]');
+                            if(plotAttr != v.type) {
+                                var savedTransform = master.onDataTranformChangedCore; // chart considers only it manages axes elements (incl. divs)
+                                master.onDataTranformChangedCore = function(arg) { } // since we manage the axis we disable chart callback
+                                if(v.type == 'log') {
+                                    master.yDataTransform = InteractiveDataDisplay.logTransform;
+                                }
+                                else {
+                                    master.yDataTransform = InteractiveDataDisplay.identityTransform;
+                                }
+                                master.onDataTranformChangedCore = savedTransform;
+                                var axisElement = div[0].plot.addAxis(
+                                    placement,
+                                    v.type,
+                                    {
+                                        labels: v.labels ? v.labels : [],
+                                        ticks: v.ticks ? v.ticks : [],
+                                        rotate: v.rotate,
+                                        rotateAngle: v.rotateAngle
+                                    },
+                                    theAxis[0]);
+                                theAxis.axis.remove();
+                                theAxis = axisElement;
+                            }
+                            else if(plotAttr == "labels") {
+                                theAxis.axis.updateLabels({ labels: v.labels, ticks: v.ticks, rotate: v.rotate, rotateAngle: v.rotateAngle });
+                            }
+
+                            if(typeof v.fontSize != 'undefined' && v.fontSize) theAxis.axis.FontSize = v.fontSize;
+
+                            if(typeof v.attachGrid != 'undefined' && v.attachGrid && typeof div[0].plot != 'undefined') {
+                                var plots = div[0].plot.getPlotsSequence();
+                                for(var i = 0; i < plots.length; i++) {
+                                    var p = plots[i];
+                                    if(p instanceof InteractiveDataDisplay.GridlinesPlot) {
+                                        p.yAxis = theAxis.axis;
+                                        p.requestUpdateLayout();
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if(typeof v.attachNavigation != 'undefined' && v.attachNavigation && typeof div[0].plot != 'undefined' && typeof master.navigation.gestureSource != 'undefined') {
+                                //reassembling gesture source with respect to the new aded axis
+                                //constructing entirely new combination of gestures from central. left and bottom part results in buggy zoom, so merging into existing gestures
+                                var leftAxisGestures = InteractiveDataDisplay.Gestures.applyVerticalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(theAxis));
+                                master.navigation.gestureSource = master.navigation.gestureSource.merge(leftAxisGestures);
+                            }
+
+                            if(v.type == 'log') {
+                                //axisElement.yDataTransform = InteractiveDataDisplay.logTransform;
+                                theAxis.dataTransform = InteractiveDataDisplay.logTransform;
+                            }
+                            else {
+                                //axisElement.yDataTransform = InteractiveDataDisplay.identityTransform;
+                                theAxis.dataTransform = InteractiveDataDisplay.identityTransform;
                             }
                         }
                     }
@@ -240,11 +346,11 @@
             }
         };
         ko.bindingHandlers.iddPlotOrder = {
-            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
                 var unwrappedOrder = ko.unwrap(value);
-                
-                if (typeof element.plot != 'undefined') {
+
+                if(typeof element.plot != 'undefined') {
                     element.plot.order = Number(unwrappedOrder);
                 }
                 else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)

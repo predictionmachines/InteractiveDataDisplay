@@ -36,7 +36,7 @@
 
             // Drawing bars
             var bars = InteractiveDataDisplay.asPlot("chart").get("bars");
-            bars.draw({ x: x, y: y, color: color, colorPalette: colorPalette, shape: 'bars', border:'grey', barWidth: (xmax-xmin) / N, shadow: 'grey' }, // data and settings
+            bars.draw({ x: x, y: y, color: color, colorPalette: colorPalette, shape: 'bars', border:'grey', barWidth: (xmax-xmin) / N, shadow: 'grey', orientation: 'h' }, // data and settings
                       { color: "rate" }); // title of the 'color' series in legend and tooltip
         });
     </script>
