@@ -1,3 +1,8 @@
+### 1.5.13 (August 9, 2018)
+
+Bug fixes:
+ - ChartViewer.update() call now redraws the content.
+
 ### 1.5.12 (June 14, 2018)
 
 Bug fixed:

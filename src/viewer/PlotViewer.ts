@@ -413,15 +413,18 @@ module InteractiveDataDisplay {
                 var p = this.currentPlots[id];
                 if (!p.ZIndex) p.ZIndex = ++z;
                 if (!p.Plots) continue;
-                for (var j = 0; j < p.Plots.length; ++j)
-                    p.Plots[j].host.css("z-index", p.ZIndex);//p.ZIndex
+                for (var j = 0; j < p.Plots.length; ++j) {
+                    var plot_j =  p.Plots[j];
+                    plot_j.host.css("z-index", p.ZIndex);//p.ZIndex
+                    plot_j.requestNextFrameOrUpdate();
+                }
             }
 
 
             if (this.persistentViewState.selectedPlots) {
                 this.initiallySelectedPlots = this.persistentViewState.selectedPlots;
                 this.setupPlotsVisibility();
-            }
+            }            
             return this.currentPlots;
         }
 
