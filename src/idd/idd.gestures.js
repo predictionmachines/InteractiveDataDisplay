@@ -113,6 +113,7 @@ InteractiveDataDisplay.Gestures.createPinSubject = function (vc) {
 
 //Subject that converts input mouse events into Zoom gestures 
 InteractiveDataDisplay.Gestures.createZoomSubject = function (vc) {
+    vc.unbind('mousewheel');
     vc.mousewheel(function (objEvent, intDelta) {
         objEvent.preventDefault();
         var event = jQuery.Event("xbrowserwheel");
