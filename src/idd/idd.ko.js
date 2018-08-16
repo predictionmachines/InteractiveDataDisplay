@@ -202,6 +202,8 @@
                     var master = element.plot.master;
                     var placementStr = "bottom";
                     var theAxis = master.getAxes(placementStr)[0].host;
+                    var otherPlacementStr = "left";
+                    var otherAxis = master.getAxes(otherPlacementStr)[0].host;
 
                     var plotAttr = theAxis.attr("data-idd-axis");
                     if(plotAttr != null && v.type) {
@@ -249,11 +251,13 @@
                                 }
                             }
 
-                            if(typeof v.attachNavigation != 'undefined' && v.attachNavigation && typeof div[0].plot != 'undefined' && typeof master.navigation.gestureSource != 'undefined') {
-                                //reassembling gesture source with respect to the new aded axis
+                            if(typeof v.attachNavigation != 'undefined' && v.attachNavigation && typeof div[0].plot != 'undefined') {
+                                //reassembling gesture source with respect to the new added axis
                                 //constructing entirely new combination of gestures from central. left and bottom part results in buggy zoom, so merging into existing gestures
+                                var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(master.centralPart);
                                 var bottomAxisGestures = InteractiveDataDisplay.Gestures.applyHorizontalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(theAxis));
-                                master.navigation.gestureSource = master.navigation.gestureSource.merge(bottomAxisGestures);
+                                var leftAxisGestures = InteractiveDataDisplay.Gestures.applyVerticalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(otherAxis));
+                                master.navigation.gestureSource = gestureSource.merge(bottomAxisGestures.merge(leftAxisGestures));
                             }
 
                             if(v.type == 'log') {
@@ -278,6 +282,8 @@
                     var master = element.plot.master;
                     var placement = "left";
                     var theAxis = master.getAxes(placement)[0].host;
+                    var otherPlacement = "bottom";
+                    var otherAxis = master.getAxes(otherPlacement)[0].host;
 
                     var plotAttr = theAxis.attr("data-idd-axis");
                     if(plotAttr != null && v.type) {
@@ -325,11 +331,13 @@
                                 }
                             }
 
-                            if(typeof v.attachNavigation != 'undefined' && v.attachNavigation && typeof div[0].plot != 'undefined' && typeof master.navigation.gestureSource != 'undefined') {
-                                //reassembling gesture source with respect to the new aded axis
+                            if(typeof v.attachNavigation != 'undefined' && v.attachNavigation && typeof div[0].plot != 'undefined') {
+                                //reassembling gesture source with respect to the new added axis
                                 //constructing entirely new combination of gestures from central. left and bottom part results in buggy zoom, so merging into existing gestures
+                                var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(master.centralPart);
                                 var leftAxisGestures = InteractiveDataDisplay.Gestures.applyVerticalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(theAxis));
-                                master.navigation.gestureSource = master.navigation.gestureSource.merge(leftAxisGestures);
+                                var bottomAxisGestures = InteractiveDataDisplay.Gestures.applyHorizontalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(otherAxis));
+                                master.navigation.gestureSource = gestureSource.merge(bottomAxisGestures.merge(leftAxisGestures));    
                             }
 
                             if(v.type == 'log') {
