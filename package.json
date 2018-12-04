@@ -1,6 +1,6 @@
 {
   "name": "interactive-data-display",
-  "version": "1.5.14",
+  "version": "1.5.15",
   "license": "Apache-2.0",
   "homepage": "https://github.com/predictionmachines/InteractiveDataDisplay/wiki",
   "description": "A JavaScript visualization library for dynamic data",
