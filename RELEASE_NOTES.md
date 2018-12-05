@@ -1,12 +1,13 @@
 ### 1.5.15 (December , 2018)
 
 New features:
- - added a new sample of figure with axes and grid
+ - added a new sample of figure with axes, grid and navigation
+ - added support for the figure's data-idd-navigation-enabled and data-idd-legend-enabled attributes.
 
 ### 1.5.14 (August 16, 2018)
 
 Bug fixes:
- - fixed multiple event subscription to the zoom event
+ - fixed multiple event subscription to the zoom event.
 
 ### 1.5.13 (August 9, 2018)
 
@@ -16,22 +17,22 @@ Bug fixes:
 ### 1.5.12 (June 14, 2018)
 
 Bug fixed:
- - iddXAxisSettings, iddYAxisSettings added
+ - iddXAxisSettings, iddYAxisSettings added.
 
 ### 1.5.11 (May 31, 2018)
 
 Bug fixed:
- - bounding box for Bars is now calculated in plot coordinates
+ - bounding box for Bars is now calculated in plot coordinates.
 
 ### 1.5.10 (May 29, 2018)
 
 Bug fixed:
- - iddBarWidth binding for markers works with plot coordinates now
+ - iddBarWidth binding for markers works with plot coordinates now.
 
 ### 1.5.9 (May 21, 2018)
 
 Bug fixed:
- - plot.order can now be assigned either externally (e.g. via binding) or by relevant legend item reordering (in Chart Viewer)
+ - plot.order can now be assigned either externally (e.g. via binding) or by relevant legend item reordering (in Chart Viewer).
 
 ### 1.5.8 (May 18, 2018)
 
@@ -41,16 +42,16 @@ Bug fixed:
 ### 1.5.7 (May 15, 2018)
 
 New features:
- - added custom KO binding: iddPlotOrder - integer value that controls the plot order.
- - added sample page KO.Order.html for the iddPlotOrder binding.
- - added custom KO bindings: iddXlog, iddYlog. They boolean value of them controls the log transform of corresponding axis.
+ - added custom KO binding: iddPlotOrder - integer value that controls the plot order
+ - added sample page KO.Order.html for the iddPlotOrder binding
+ - added custom KO bindings: iddXlog, iddYlog. They boolean value of them controls the log transform of corresponding axis
  - added custom KO bindings: iddIgnoredByFitToView. if set to true, the plot is excluded from FitToView visible region calculation.
 
 ### 1.5.6 (May 11, 2018)
 
 New features:
- - plot now has `isIgnoredByFitToView` property. Setting it to `true` prevents the plot to be accounted during FitToView visible region recalculation.
- - new sample page: order property of the plot is changed by slider
+ - plot now has `isIgnoredByFitToView` property. Setting it to `true` prevents the plot to be accounted during FitToView visible region recalculation
+ - new sample page: order property of the plot is changed by slider.
 
 ### 1.5.5 (May 10, 2018)
 
