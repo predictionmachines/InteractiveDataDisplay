@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Polyline by Figure</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var plot1 = InteractiveDataDisplay.asPlot($("#figure1"));
+            var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(plot1.centralPart);
+            plot1.navigation.gestureSource = gestureSource;
+            
+            var plot2 = InteractiveDataDisplay.asPlot($("#figure2"));
+            var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(plot2.centralPart);
+            plot2.navigation.gestureSource = gestureSource;
+            
+            var plot3 = InteractiveDataDisplay.asPlot($("#figure3"));
+            var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(plot3.centralPart);
+            plot3.navigation.gestureSource = gestureSource;
+        });
+    </script>
+</head>
+
+<body>
+    <div style="display: inline-grid">
+        
+        <b>Axes and grid lines</b>
+        <div id="figure1" data-idd-plot="figure" style="width: 400px; height: 300px; float:left">
+
+            <div id="grid1" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'
+                data-idd-xaxis='bottom_axis1' data-idd-yaxis='left_axis1'></div>
+
+            <div data-idd-plot="polyline" data-idd-style="stroke: red; thickness: 3">
+                x   y
+                0   0
+                1   1
+                2   2
+            </div>
+
+            <div id="bottom_axis1" data-idd-axis="numeric" data-idd-placement="bottom" style="position: relative;"></div>
+            <div id="left_axis1" data-idd-axis="numeric" data-idd-placement="left" style="position: relative;"></div>
+        </div>
+
+        <b>Bottom axis and grid lines</b>
+        <div id="figure2" data-idd-plot="figure" style="width: 400px; height: 300px; float:left">
+
+            <div id="grid2" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'
+                data-idd-xaxis='bottom_axis2'></div>
+
+            <div data-idd-plot="polyline" data-idd-style="stroke: green; thickness: 3">
+                x   y
+                0   2
+                1   1
+                2   0
+            </div>
+
+            <div id="bottom_axis2" data-idd-axis="numeric" data-idd-placement="bottom" style="position: relative;"></div>
+        </div>
+
+        <b>Axes</b>
+        <div id="figure3" data-idd-plot="figure" style="width: 400px; height: 300px; float:left">
+
+            <div data-idd-plot="polyline" data-idd-style="stroke: blue; thickness: 3">
+                x   y
+                0   1
+                1   2
+                2   0
+            </div>
+
+            <div id="bottom_axis3" data-idd-axis="numeric" data-idd-placement="bottom" style="position: relative;"></div>
+            <div id="left_axis3" data-idd-axis="numeric" data-idd-placement="left" style="position: relative;"></div>
+        </div>
+    </div>
+
+    
+</body>
+</html>

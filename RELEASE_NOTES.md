@@ -1,7 +1,12 @@
+### 1.5.15 (December , 2018)
+
+New features:
+ - added a new sample of figure with axes and grid
+
 ### 1.5.14 (August 16, 2018)
 
 Bug fixes:
- - Fixed multiple event subscription to the zoom event
+ - fixed multiple event subscription to the zoom event
 
 ### 1.5.13 (August 9, 2018)
 
