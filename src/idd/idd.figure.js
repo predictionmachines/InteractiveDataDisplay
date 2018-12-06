@@ -57,14 +57,7 @@ InteractiveDataDisplay.Figure = function (div, master) {
     var topChildren = [];
     var rightChildren = [];
 
-    var addRelativeDiv = function (jqdiv, params, insertBeforeDiv) {
-        var packDiv = $("<div></div>");
-        packDiv.appendTo(that.host).addClass("idd-figure-container");
-        packDiv.content = jqdiv;
-        jqdiv.appendTo(packDiv);
-
-        var placement = jqdiv.attr("data-idd-placement");
-
+    var initAxis = function (jqdiv, params) {
         if (jqdiv.attr("data-idd-axis")) {
             var axis = InteractiveDataDisplay.InitializeAxis(jqdiv, params);
             jqdiv.axis = axis;
@@ -73,6 +66,15 @@ InteractiveDataDisplay.Figure = function (div, master) {
                 else that.master.fitToViewY();
             });
         }
+    }
+
+    var addRelativeDiv = function (jqdiv, params, insertBeforeDiv) {
+        var packDiv = $("<div></div>");
+        packDiv.appendTo(that.host).addClass("idd-figure-container");
+        packDiv.content = jqdiv;
+        jqdiv.appendTo(packDiv);
+
+        var placement = jqdiv.attr("data-idd-placement");
 
         var addDiv = function (packs) {
             if (insertBeforeDiv) {
@@ -165,6 +167,7 @@ InteractiveDataDisplay.Figure = function (div, master) {
         //packing element to figure containers in figure packs
         if (checkElementPosition(jqdiv)) {
             addRelativeDiv(jqdiv);
+            initAxis(jqdiv);
         }
     });
 
@@ -689,6 +692,35 @@ InteractiveDataDisplay.Figure = function (div, master) {
     };    
 
     this.requestUpdateLayout();
+    
+    if(div.attr("data-idd-navigation-enabled") === "true"){
+        var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(this.centralPart);
+        this.navigation.gestureSource = gestureSource;
+    }
+
+    if(div.attr("data-idd-legend-enabled") === "true"){
+        var legendDiv = $("<div></div>").prependTo(this.centralPart); 
+        var _legend = new InteractiveDataDisplay.Legend(this, legendDiv, true);
+        legendDiv.css("float", "right");
+        Object.defineProperty(this, "legend", { get: function () { return _legend; }, configurable: false });
+
+        //Stop event propagation
+        InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
+            legendDiv[0].addEventListener(eventName, function (e) {
+                e.stopPropagation();
+            }, false);
+        });
+
+        var data = {};
+        InteractiveDataDisplay.Utils.readStyle(div, data);
+        var visible = data.isLegendVisible;
+        if (visible) {
+            if (visible == "true")
+                _legend.isVisible = true;
+            else if (visible == "false")
+                _legend.isVisible = false;
+        }
+    }
 }
 
 InteractiveDataDisplay.Figure.prototype = new InteractiveDataDisplay.Plot;
