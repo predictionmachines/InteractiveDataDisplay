@@ -1,6 +1,7 @@
-### 1.5.15 (December , 2018)
+### 1.5.15 (December 10, 2018)
 
 New features:
+ - fixed vertical alignment of vertical axis title. See samples/Titles.html
  - added a new sample of figure with axes, grid and navigation
  - added support for the figure's data-idd-navigation-enabled and data-idd-legend-enabled attributes.
 
