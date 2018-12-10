@@ -121,17 +121,24 @@
     max-width: 20px;
     white-space: nowrap;
     text-align: center;
-    -ms-transform: rotate(-90deg);
-    -moz-transform: rotate(-90deg);
-    -o-transform: rotate(-90deg);
-    -webkit-transform: rotate(-90deg);
-    transform: rotate(-90deg);
     display: table-cell;
     vertical-align: middle;
     font-size: smaller;
     padding-bottom: 7px;
+}
+
+.idd-verticalTitle-inner {
+    position: absolute;
+    top: 50%;
+    left:50%;
+    -ms-transform: translateX(-50%) translateY(-50%) rotate(-90deg);
+    -moz-transform: translateX(-50%) translateY(-50%) rotate(-90deg);
+    -o-transform: translateX(-50%) translateY(-50%) rotate(-90deg);
+    -webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);
+    transform: translateX(-50%) translateY(-50%) rotate(-90deg);    
     
 }
+
 .unselectable
 {
     -moz-user-select: -moz-none;
