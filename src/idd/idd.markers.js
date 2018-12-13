@@ -322,8 +322,13 @@ InteractiveDataDisplay.Markers = function (div, master) {
     // Initialization 
     var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
     var initialData = initializer(div);
-    if (initialData && typeof initialData.y != 'undefined')
-        this.draw(initialData);
+    if (initialData && typeof initialData.y != 'undefined'){
+        barWidthFloat = parseFloat(initialData.barWidth);
+        if(!isNaN(barWidthFloat)){
+            initialData.barWidth = barWidthFloat;
+            this.draw(initialData);
+        }
+    }
 };
 
 InteractiveDataDisplay.Markers.prototype = new InteractiveDataDisplay.CanvasPlot;
