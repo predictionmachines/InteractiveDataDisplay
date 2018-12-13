@@ -280,6 +280,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         var _plotRect;
 
+        // reading property overrides from attributes
+        // Note: data-idd-visible-region attribute is handled at the end of the constructor, as it needs more plot objects to be defined and valid 
         if (div) {
             _name = div.attr("data-idd-name") || div.attr("id") || "";
             if(div.attr("data-idd-ignored-by-fit-to-view")) {
@@ -1289,6 +1291,34 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 that.requestUpdateLayout(settings);
             }
         };
+
+        if(div) {
+            if(div.attr("data-idd-visible-region")) {
+                var regionStr = div.attr("data-idd-visible-region")
+                div.removeAttr("data-idd-ignored-by-fit-to-view")
+                var values = regionStr.split(' ')
+                if(values.length != 4) 
+                    throw "data-idd-visible-region must contain exactly 4 numbers (xmin,xmax,ymin,ymax) separated by single space"
+                var xmin = Number(values[0])
+                var xmax = Number(values[1])
+                var ymin = Number(values[2])
+                var ymax = Number(values[3])
+                if(xmin>xmax)
+                    throw "data-idd-visible-region attribute: xmax is less than xmin"
+                if(ymin>ymax)
+                    throw "data-idd-visible-region attribute: ymax is less than ymin"
+                
+                var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
+                var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
+
+                var plotXmin = dataToPlotX ? dataToPlotX(xmin) : xmin
+                var plotXmax = dataToPlotX ? dataToPlotX(xmax) : xmax
+                var plotYmin = dataToPlotY ? dataToPlotY(ymin) : ymin
+                var plotYmax = dataToPlotY ? dataToPlotY(ymax) : ymax
+                var plotRect = {x:plotXmin, width: plotXmax - plotXmin, y:plotYmin, height: plotYmax - plotYmin}
+                setVisibleRegion(plotRect) // this call will disable fit to view
+            }
+        }
 
         //Disables IsAutoFitEnabled and fits all visible objects into screen with padding
         this.fitToView = function () {

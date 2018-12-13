@@ -14,14 +14,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
-    <script src="../dist/idd_knockout.js"></script>
+    <script src="../dist/idd.js"></script>
 
     <script type="text/javascript">
         $(document).ready(function () {
             var plot1 = InteractiveDataDisplay.asPlot($("#figure1"));            
             var plot2 = InteractiveDataDisplay.asPlot($("#figure2"));            
-            //var plot3 = InteractiveDataDisplay.asPlot($("#figure3"));
+            var plot3 = InteractiveDataDisplay.asPlot($("#figure3"));
         });
     </script>
 </head>
@@ -76,6 +75,31 @@
             <div id="bottom_axis2" data-idd-axis="numeric" data-idd-placement="bottom" style="position: relative;"></div>
             <div id="left_axis2" data-idd-axis="numeric" data-idd-placement="left" style="position: relative;"></div>
         </div>
+
+        <h3>Visible region is set to x=[0.5;1.0] y=[0.2; 0.8]</h3>
+        <div id="figure3" data-idd-plot="figure" style="width: 400px; height: 300px; float:left"
+            data-idd-navigation-enabled="false" data-idd-legend-enabled="true" data-idd-padding="30" data-idd-visible-region="0.5 1.0 0.2 0.8">
+
+            <div id="grid3" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'
+                data-idd-xaxis='bottom_axis3' data-idd-yaxis='left_axis3'></div>
+
+            <div data-idd-plot="polyline" data-idd-style="stroke: red; thickness: 3" id="red line">
+                x   y
+                0   0
+                1   1
+                2   2
+            </div>
+            <div data-idd-plot="polyline" data-idd-style="stroke: green; thickness: 3" id="green line">
+                x   y
+                0   1
+                1   0
+                2   2
+            </div>
+
+            <div id="bottom_axis3" data-idd-axis="numeric" data-idd-placement="bottom" style="position: relative;"></div>
+            <div id="left_axis3" data-idd-axis="numeric" data-idd-placement="left" style="position: relative;"></div>
+        </div>
+
     </div>
 
     

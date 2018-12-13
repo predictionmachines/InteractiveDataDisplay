@@ -1,3 +1,9 @@
+### 1.5.16 (December 13, 2018)
+
+New features:
+ - "data-idd-visible-region" plot attribute can now define the visible are in data coordinates in format "xmin xmax ymin ymax". Specifying the attribute disables fit to view
+ - "data-idd-padding" plot attribute can now override the padding (in pixels) added to the data region during calculation of visible region in case of active "fit to view" mode.
+
 ### 1.5.15 (December 10, 2018)
 
 New features:
