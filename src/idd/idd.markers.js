@@ -326,8 +326,12 @@ InteractiveDataDisplay.Markers = function (div, master) {
         barWidthFloat = parseFloat(initialData.barWidth);
         if(!isNaN(barWidthFloat)){
             initialData.barWidth = barWidthFloat;
-            this.draw(initialData);
         }
+        else{
+            initialData.barWidth = undefined;
+            console.error("barWidth parameter of BarChart plot should be a number")
+        }
+        this.draw(initialData);
     }
 };
 
