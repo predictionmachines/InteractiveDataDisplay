@@ -186,7 +186,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             jqDiv = div;
             div = div[0];
         } else
-            throw "Invalid input parameter! It should be div of id of div of jQuery of div";
+            throw "Invalid input parameter! It should be div or id of div or jQuery of single div";
 
         if (div.plot !== undefined)
             return div.plot;
@@ -269,8 +269,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _isFlatRenderingOn = false;
         var _width, _height;
         var _name = "";
-        var _order = 0;
-        var _padding = InteractiveDataDisplay.Padding;
+        var _order = 0;        
+        var _padding = InteractiveDataDisplay.Padding; //extra padding in pixels which is added to padding computed by the plots
         // Contains user-readable titles for data series of a plot. They should be used in tooltips and legends.
         var _titles = {};
         // The flag is set in setVisibleRegion when it is called at me as a bound plot to notify that another plot is changed his visible.
@@ -293,6 +293,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if(div.attr("data-idd-Y-log")) {                
                 div.removeAttr("data-idd-Y-log");                
                 _yDataTransform = InteractiveDataDisplay.logTransform;
+            }
+            if(div.attr("data-idd-padding")) {
+                _padding = Number(div.attr("data-idd-padding"))
+                div.removeAttr("data-idd-padding");             
             }
             div[0].plot = this; // adding a reference to the initialized DOM object of the plot, pointing to the plot instance.
 
