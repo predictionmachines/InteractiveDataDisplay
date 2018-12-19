@@ -328,8 +328,11 @@ InteractiveDataDisplay.Markers = function (div, master) {
             initialData.barWidth = barWidthFloat;
         }
         else{
+            if(typeof initialData.barWidth == 'undefined')
+                console.error("barWidth parameter of BarChart plot should be set")
+            else
+                console.error("barWidth parameter of BarChart plot should be a number")
             initialData.barWidth = undefined;
-            console.error("barWidth parameter of BarChart plot should be a number")
         }
         this.draw(initialData);
     }
