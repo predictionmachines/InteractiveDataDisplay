@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Labelled axis sample: labels, ticks</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+    <script src="../dist/idd.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var figure2 = InteractiveDataDisplay.asPlot($("#figure2"));
+
+            var line = figure2.get("lines");
+
+            var x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            var y = [8, 7, 3, 4 ,5, 2, 4, 7, 2, 8];
+            line.draw({ x: x, y: y });
+
+            var label = ["a","b","c","d","e","f","g","h","i","j"];
+            var ticks = [1, 3, 5, 7, 9, 2, 4, 6, 8, 10];
+
+            var gestureSource2 = InteractiveDataDisplay.Gestures.getGesturesStream(figure2.host);
+            figure2.navigation.gestureSource = gestureSource2;
+
+            figure2.addAxis("bottom", "labels", { labels: label, ticks: ticks });
+            figure2.addAxis("left", "numeric");
+            var grid2 = figure2.get("grid2");
+            grid2.xAxis = figure2.getAxes("bottom")[0];
+            grid2.yAxis = figure2.getAxes("left")[0];
+        });
+    </script>
+</head>
+<body style="font-family: Segoe UI; font-size: 14px">
+    <div id="figure2" data-idd-plot="figure" data-idd-legend="figure2Legend" style="width: 800px; height: 600px; float:left">
+        <div id="grid2" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px'></div>
+        <div id="figure2Legend" data-idd-placement='center' style="float: right"></div>
+        <div data-idd-name="lines" data-idd-plot="polyline" data-idd-style="stroke: green; thickness: 1px"></div>
+    </div>
+        
+</body>
+</html>
