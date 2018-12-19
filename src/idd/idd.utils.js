@@ -379,5 +379,30 @@ InteractiveDataDisplay.Utils =
         resetLastUsedIntId: function () {
             this.lastUsedIntId = 0;
             return this.lastUsedIntId;
+        },
+
+        
+        base64toByteArray: function(base64str) {
+            var byteCharacters = atob(base64str)
+            var byteNumbers = new Array(byteCharacters.length)
+            for (var i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i)
+            }
+            return new Uint8Array(byteNumbers);
+        },
+
+        byteArrayToTypedArray: function(byteArray,typeStr) {
+            var arrayBuffer = byteArray.buffer
+            var res;
+            switch(typeStr) {
+                case 'uint8': return byteArray;
+                case 'float32': res = new Float32Array(arrayBuffer); break
+                case 'float64': res = new Float64Array(arrayBuffer); break
+                case 'int16': res = new Int16Array(arrayBuffer); break                    
+                case 'int32': res = new Int32Array(arrayBuffer); break                    
+                default:
+                    throw "Unexpected array type: "+typeStr
+            }
+            return res
         }
     };

@@ -135,4 +135,56 @@ describe('Utility function', function () {
 
         expect(arraysAreEqual(uniqueIntIDs1, uniqueIntIDs2)).toBeTruthy();
     })
+
+    it('InteractiveDataDisplay.Utils.base64toByteArray() decodes correctly', function () {
+        var encoded = "SGVsbG8gd29ybGQhIDEyMw==" // "Hello world! 123" ASCII encoding
+        var data = InteractiveDataDisplay.Utils.base64toByteArray(encoded);
+        var str = String.fromCharCode.apply(null, data)
+        expect(str.length == ("Hello world! 123".length)).toBeTruthy();
+        expect(str == "Hello world! 123").toBeTruthy();        
+    });
+
+    it('InteractiveDataDisplay.Utils.byteArrayToTypedArray() decodes int16 array', function () {
+        var encoded = "AAABAAIAAwAEAAUABgAHAAgACQA=" // [0;1;...;8;9] int16 array
+        var data = InteractiveDataDisplay.Utils.base64toByteArray(encoded);
+        var typedArray = InteractiveDataDisplay.Utils.byteArrayToTypedArray(data, "int16")
+        expect(typedArray.length == 10).toBeTruthy();
+        for(var i=0;i<10;i++) {
+            expect(typedArray[i] == i).toBeTruthy();        
+        }
+    });
+
+    it('InteractiveDataDisplay.Utils.byteArrayToTypedArray() decodes int32 array', function () {
+        var encoded = "AAAAAP////8CAAAA/f///wQAAAD7////BgAAAPn///8IAAAA9////w==" // [|0; -1; 2; -3; 4; -5; 6; -7; 8; -9|] int32 array
+        var data = InteractiveDataDisplay.Utils.base64toByteArray(encoded);
+        var typedArray = InteractiveDataDisplay.Utils.byteArrayToTypedArray(data, "int32")
+        expect(typedArray.length == 10).toBeTruthy();
+        for(var i=0;i<10;i++) {
+            var sign = i%2==0 ? 1 : -1
+            expect(typedArray[i] == i*sign).toBeTruthy();        
+        }
+    });
+
+    it('InteractiveDataDisplay.Utils.byteArrayToTypedArray() decodes float32 array', function () {
+        var encoded = "AAAAAAAAgL8AAABAAABAwAAAgEAAAKDAAADAQAAA4MAAAABBAAAQwQ==" // [|0.0f; -1.0f; 2.0f; -3.0f; 4.0f; -5.0f; 6.0f; -7.0f; 8.0f; -9.0f|] float32 array
+        var data = InteractiveDataDisplay.Utils.base64toByteArray(encoded);
+        var typedArray = InteractiveDataDisplay.Utils.byteArrayToTypedArray(data, "float32")
+        expect(typedArray.length == 10).toBeTruthy();
+        for(var i=0;i<10;i++) {
+            var sign = i%2==0 ? 1 : -1
+            expect(typedArray[i] == i*sign).toBeTruthy();        
+        }
+    });
+
+    it('InteractiveDataDisplay.Utils.byteArrayToTypedArray() decodes float64 array', function () {
+        var encoded = "AAAAAAAAAAAAAAAAAADwvwAAAAAAAABAAAAAAAAACMAAAAAAAAAQQAAAAAAAABTAAAAAAAAAGEAAAAAAAAAcwAAAAAAAACBAAAAAAAAAIsA=" // [|0.0; -1.0; 2.0; -3.0; 4.0; -5.0; 6.0; -7.0; 8.0; -9.0|] float64 array
+        var data = InteractiveDataDisplay.Utils.base64toByteArray(encoded);
+        var typedArray = InteractiveDataDisplay.Utils.byteArrayToTypedArray(data, "float64")
+        expect(typedArray.length == 10).toBeTruthy();
+        for(var i=0;i<10;i++) {
+            var sign = i%2==0 ? 1 : -1
+            expect(typedArray[i] == i*sign).toBeTruthy();        
+        }
+    });
+    
 });

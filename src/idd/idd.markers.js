@@ -322,8 +322,17 @@ InteractiveDataDisplay.Markers = function (div, master) {
     // Initialization 
     var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
     var initialData = initializer(div);
-    if (initialData && typeof initialData.y != 'undefined')
+    if (initialData && typeof initialData.y != 'undefined'){
+        barWidthFloat = parseFloat(initialData.barWidth);
+        if(!isNaN(barWidthFloat)){
+            initialData.barWidth = barWidthFloat;
+        }
+        else{
+            initialData.barWidth = undefined;
+            console.error("barWidth parameter of BarChart plot should be a number")
+        }
         this.draw(initialData);
+    }
 };
 
 InteractiveDataDisplay.Markers.prototype = new InteractiveDataDisplay.CanvasPlot;

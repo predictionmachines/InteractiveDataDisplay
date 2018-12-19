@@ -1,3 +1,8 @@
+### 1.5.17 (December 13, 2018)
+
+New features:
+ - fixed bar chart: guarding barWidth value to be treated as number.
+
 ### 1.5.16 (December 13, 2018)
 
 New features:
