@@ -401,7 +401,7 @@ InteractiveDataDisplay.Utils =
                 case 'float32': res = new Float32Array(arrayBuffer); break
                 case 'float64': res = new Float64Array(arrayBuffer); break
                 case 'int16': res = new Int16Array(arrayBuffer); break                    
-                case 'int32': res = new Int32Array(arrayBuffer); break                    
+                case 'int32': res = new Int32Array(arrayBuffer); break
                 default:
                     throw "Unexpected array type: "+typeStr
             }

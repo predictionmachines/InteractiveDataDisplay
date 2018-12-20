@@ -146,10 +146,17 @@ InteractiveDataDisplay.readBase64 = function (jqDiv) {
         var typeStr = a[0]
         var dimensionality = a[1]
         switch(dimensionality) {
-            case '1D':
-                var byteArray = InteractiveDataDisplay.Utils.base64toByteArray(data[1])
-                var result = InteractiveDataDisplay.Utils.byteArrayToTypedArray(byteArray,typeStr)
-                return result            
+            case '1D':                
+                if (typeStr == 'string') {
+                    var csvRow= atob(data[1])
+                    var result = csvRow.split(',')
+                    return result
+                }
+                else {
+                    var byteArray = InteractiveDataDisplay.Utils.base64toByteArray(data[1])
+                    var result = InteractiveDataDisplay.Utils.byteArrayToTypedArray(byteArray,typeStr)
+                    return result            
+                }
             case '2D':
                 // e.g. data is "var_name float64.2D inner_dim_len base64str"
                 var innerDimLen = parseInt(data[1])
