@@ -185,15 +185,14 @@ InteractiveDataDisplay.readBase64 = function (jqDiv) {
         contentData = contentData.trim(); // trim data
         var splitWords = function (line) { return line.split(/\s+/g); };
         var lines = contentData.split(/\n/g);
-        var N = lines.length;
-        result = {}
+        var N = lines.length;        
         for(var i=0; i<N; i++) {
             var words = splitWords(lines[i].trim());
             var name = words[0]
             words.splice(0,1)
             var value = decodeBase64Array(words)
-            result[name] = value
-        }
-        return result
+            data[name] = value
+        }        
     }
+    return data
 }
