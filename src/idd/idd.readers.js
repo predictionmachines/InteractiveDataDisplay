@@ -100,8 +100,6 @@ InteractiveDataDisplay.readCsv = function (jqPlotDiv) {
     return data;
 };
 
-
-
 InteractiveDataDisplay.readCsv2d = function (jqDiv) {
     var data = {};
     InteractiveDataDisplay.Utils.readStyle(jqDiv, data);
@@ -140,3 +138,55 @@ InteractiveDataDisplay.readCsv2d = function (jqDiv) {
     }
     return data;
 };
+
+InteractiveDataDisplay.readBase64 = function (jqDiv) {
+    function decodeBase64Array(data) {
+        // e.g. data is "var_name float64.1D base64str"
+        var a = data[0].split('.')
+        var typeStr = a[0]
+        var dimensionality = a[1]
+        switch(dimensionality) {
+            case '1D':
+                var byteArray = InteractiveDataDisplay.Utils.base64toByteArray(data[1])
+                var result = InteractiveDataDisplay.Utils.byteArrayToTypedArray(byteArray,typeStr)
+                return result            
+            case '2D':
+                // e.g. data is "var_name float64.2D inner_dim_len base64str"
+                var innerDimLen = parseInt(data[1])
+                var byteArray = InteractiveDataDisplay.Utils.base64toByteArray(data[2])
+                var flattened = InteractiveDataDisplay.Utils.byteArrayToTypedArray(byteArray,typeStr)
+                // constructing jagged array with inner (second) dim len "innerDimLen
+                if(flattened.length % innerDimLen != 0)
+                    throw "InnerDimLen is not divisor of decoded flattened array len"
+                var outerDimLen = flattened.length / innerDimLen
+                var result = new Array(outerDimLen)
+                for(var i=0; i<outerDimLen; i++) {
+                    result[i] = flattened.slice(i*innerDimLen,((i+1)*innerDimLen))                    
+                }
+                return result
+            default:
+                throw('Unexpected dimensionality specified ('+(data[0])+')')
+                
+        }
+    }
+
+    var data = {};
+    InteractiveDataDisplay.Utils.readStyle(jqDiv, data);
+
+    var contentData = InteractiveDataDisplay.Utils.getAndClearTextContent(jqDiv);
+    if (contentData) {
+        contentData = contentData.trim(); // trim data
+        var splitWords = function (line) { return line.split(/\s+/g); };
+        var lines = contentData.split(/\n/g);
+        var N = lines.length;
+        result = {}
+        for(var i=0; i<N; i++) {
+            var words = splitWords(lines[i].trim());
+            var name = words[0]
+            words.splice(0,1)
+            var value = decodeBase64Array(words)
+            result[name] = value
+        }
+        return result
+    }
+}

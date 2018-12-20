@@ -172,8 +172,10 @@ InteractiveDataDisplay.Utils =
                 return InteractiveDataDisplay.readTable;
             else if (source == "InteractiveDataDisplay.readCsv")
                 return InteractiveDataDisplay.readCsv;
-            else if (source == "InteractiveDataDisplay.readCsv2d")
+            else if (source == "InteractiveDataDisplay.readCsv2d")            
                 return InteractiveDataDisplay.readCsv2d;
+            else if (source == "InteractiveDataDisplay.readBase64")
+                return InteractiveDataDisplay.readBase64;
             else if (source)
                 return function () {
                     return JSON.parse(source, function (key, value) {
