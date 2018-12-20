@@ -323,14 +323,19 @@ InteractiveDataDisplay.Markers = function (div, master) {
     var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
     var initialData = initializer(div);
     if (initialData && typeof initialData.y != 'undefined'){
-        barWidthFloat = parseFloat(initialData.barWidth);
-        if(!isNaN(barWidthFloat)){
-            initialData.barWidth = barWidthFloat;
-        }
-        else{
-            initialData.barWidth = undefined;
-            console.error("barWidth parameter of BarChart plot should be a number")
-        }
+		if(initialData.shape == 'bars'){
+        	barWidthFloat = parseFloat(initialData.barWidth);
+        	if(!isNaN(barWidthFloat)){
+        	    initialData.barWidth = barWidthFloat;
+        	}
+        	else{
+        	    if(typeof initialData.barWidth == 'undefined')
+        	        console.error("barWidth parameter of BarChart plot should be set")
+        	    else
+        	        console.error("barWidth parameter of BarChart plot should be a number")
+       	    	initialData.barWidth = undefined;
+        	}
+		}
         this.draw(initialData);
     }
 };

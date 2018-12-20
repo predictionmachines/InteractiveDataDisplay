@@ -78,7 +78,11 @@ InteractiveDataDisplay.readCsv = function (jqPlotDiv) {
                 var elems = splitWords(lines[i + 1]);
                 j0 = elems[0] ? 0 : 1;
                 for (var j = j0; j < elems.length; j++) {
-                    data[header[j - j0]][i] = parseFloat(elems[j]);
+                    var parsed = parseFloat(elems[j]);
+                    if(isNaN(parsed))
+                        data[header[j - j0]][i] = elems[j];
+                    else
+                        data[header[j - j0]][i] = parsed;
                 }
             }
 

@@ -11,6 +11,10 @@
             div.axis = new InteractiveDataDisplay.LogarithmicAxis(div);
             return div.axis;
         case "labels":
+            if(typeof params === 'undefined'){
+                var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
+                var params = initializer(div);
+            }
             div.axis = new InteractiveDataDisplay.LabelledAxis(div, params);
             return div.axis;
     }

@@ -282,7 +282,9 @@ InteractiveDataDisplay.Figure = function (div, master) {
 
     this.addAxis = function (placement, axisType, params, insertBeforeDiv) {
         var actualAxisType = axisType === undefined ? 'numeric' : axisType;
-        return addJQDiv('<div data-idd-axis="' + actualAxisType + '"></div>', placement, params, false, insertBeforeDiv);
+        var jqDiv = addJQDiv('<div data-idd-axis="' + actualAxisType + '"></div>', placement, params, false, insertBeforeDiv);
+        initAxis(jqDiv, params);
+        return jqDiv;
     }
 
     var finalSize;
