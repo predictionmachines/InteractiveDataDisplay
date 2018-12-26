@@ -1,3 +1,13 @@
+### 1.5.19 (December 27, 2018)
+
+New features:
+ - Tooltip now shows the labels of label axis (in case of label axis depicts intervals)
+ - Plot coordinates info can be suppressed in tooltip with `data-idd-suppress-tooltip-coords`
+
+ ### 1.5.18 (December 21, 2018)
+ - base64 data source is now suppoerted for specifing the data declaratively
+ - Label axis data can be specified declaratively in the DOM before IDD plot initialization
+
 ### 1.5.17 (December 13, 2018)
 
 New features:

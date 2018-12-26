@@ -277,6 +277,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // I set this flag to suppress echo, i.e. I will not notify bound plots about my new visible rectangle.
         // The flag is reset when any other update request is received.
         var _suppressNotifyBoundPlots = false;
+        var _tooltipSettings = undefined;
 
         var _plotRect;
 
@@ -299,6 +300,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if(div.attr("data-idd-padding")) {
                 _padding = Number(div.attr("data-idd-padding"))
                 div.removeAttr("data-idd-padding");             
+            }
+            if(div.attr("data-idd-suppress-tooltip-coords")) {                
+                div.removeAttr("data-idd-suppress-tooltip-coords");                
+                _tooltipSettings = _tooltipSettings || {}
+                _tooltipSettings.showCursorCoordinates = false
             }
             div[0].plot = this; // adding a reference to the initialized DOM object of the plot, pointing to the plot instance.
 
@@ -499,8 +505,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 configurable: false
             }
         );
-
-        var _tooltipSettings = undefined;
+        
         Object.defineProperty(this, "tooltipSettings",
             {
                 get: function () { return _isMaster ? _tooltipSettings : _master.tooltipSettings; },
@@ -1375,6 +1380,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // Implementation of this method for a particular plot should build and return
         // a tooltip element for the point (xd,yd) in data coordinates, and (xp, yp) in plot coordinates.
         // Method returns <div> element or undefined
+        this.getTooltip = function (xd, yd, xp, yp) {
+            return undefined;
+        };
+
         var foreachDependentPlot = function (plot, f) {
             var myChildren = plot.children;
             var n = myChildren.length;
@@ -1383,9 +1392,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 foreachDependentPlot(child, f);
             }
             f(plot);
-        };
-        this.getTooltip = function (xd, yd, xp, yp) {
-            return undefined;
         };
 
         if (_isMaster) {
@@ -1405,10 +1411,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 clearTooltip();
 
                 var getElements = function () {
-                    var tooltips = [];
-                    var xd, yd;
+                    var tooltips = [];                    
                     var px = origin_p.x, py = origin_p.y;
-
+                    
+                    var xd,yd;
+                    
                     foreachDependentPlot(that, function (child) {
                         var my_xd = child.xDataTransform ? child.xDataTransform.plotToData(px) : px;
                         var my_yd = child.yDataTransform ? child.yDataTransform.plotToData(py) : py;

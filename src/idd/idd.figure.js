@@ -287,6 +287,40 @@ InteractiveDataDisplay.Figure = function (div, master) {
         return jqDiv;
     }
 
+    // Builds a tooltip <div> for a point
+    this.getTooltip = function (xd, yd, xp, yp) {
+        // the Figure is responsible for producing the tooltips for the axes (e.g. label axis)
+        // tooltip must show relevant informative information from the axes
+        // thus, traversing axes, gathering labels that corespond to mouse position
+        var axes = that.getAxes();        
+        var axisTooltipFound = false
+        var labels = new Array()
+        if (axes) {
+            for (var i = 0; i < axes.length; i++) {
+                // we build tooltip only for axes that are able to return tooltip
+                var axis = axes[i]
+                if(axis.getToolTip) {
+                    axisTooltipFound = true
+                    var coord;
+                    if (axes[i].mode=="left" || axes[i].mode=="right")
+                        coord = yd
+                    else
+                        coord = xd
+                    var tooltipValue = axes[i].getToolTip(coord)
+                    if(tooltipValue)
+                        labels.push(tooltipValue)                        
+                }
+            }
+        }
+        if(axisTooltipFound) {
+            var $content = $("<div></div>").addClass('idd-tooltip-compositevalue');            
+            $content.append($("<div>"+labels.join(', ')+"</div>"));
+            return $content
+        }
+        else
+            return undefined
+    }
+
     var finalSize;
     this.measure = function (screenSize) {
 

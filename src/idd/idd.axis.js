@@ -80,7 +80,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
 
     var _width, _height;
     var _size;
-    var _deltaRange;
+    var _deltaRange; // DG: seems to be a ratio between axis screen size and visible data range
     var _canvasHeight;
     var _rotateAngle;
 
@@ -706,6 +706,9 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
 InteractiveDataDisplay.NumericAxis = function (div) {
     this.base = InteractiveDataDisplay.TicksRenderer;
     div[0].axis = this;
+
+    // DG: seems to be data coord -> screen coord transform
+    //     ticks locations are transformed with this function to be put to screen
     this.getCoordinateFromTick = function (x) {
         var delta = this.deltaRange;
         if (isFinite(delta)) {
@@ -745,6 +748,8 @@ InteractiveDataDisplay.LabelledAxis = function (div, params) {
     this.base = InteractiveDataDisplay.TicksRenderer;
     var that = this;
 
+    // DG: seems to be data coord -> screen coord transform
+    //     ticks locations are transformed with this function to be put to screen
     this.getCoordinateFromTick = function (x) {
         var delta = this.deltaRange;
         if (isFinite(delta)) {
@@ -765,10 +770,44 @@ InteractiveDataDisplay.LabelledAxis = function (div, params) {
     };
 
     if (params && params.rotate)
-        this.rotateLabels = true;
+        this.rotateLabels = true;            
 
     this.base(div, new InteractiveDataDisplay.LabelledTickSource(params));
     this.rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
+
+    // returns the string, that depicts the supplied data coordinate (associated label)    
+    this.getToolTip = function(dataCoord) {
+        // the function returns the tooltip only for the named intervals (e.g. when Ticks count is one more than labels count)
+        var dataToPlot = function(x) { return that.dataTransform ? that.dataTransform(x) : x }
+        var plotCoord = dataToPlot(dataCoord)
+                    
+        // finding "invisible" tick (tick hidden, label visible) after unlabeled visible tick
+        var lessThanIndex = undefined
+        var moreThanIndex = undefined
+        for(var i=0; i<that.ticks.length; i++) {
+            var curTick = that.ticks[i]
+            if(curTick.text) // we skip labeled invisible ticks, analyzing only unlabled ones
+                continue
+            var curPlotCoord = dataToPlot(curTick.position)
+            if(curPlotCoord>plotCoord && !moreThanIndex)
+                moreThanIndex = i
+            if(curPlotCoord<plotCoord)
+                lessThanIndex = i                 
+        }
+        if(moreThanIndex && !lessThanIndex) {
+            // left interval bound is out of visible region, right is inside
+            if(that.ticks[moreThanIndex-1] && that.ticks[moreThanIndex-1].text)
+                return that.ticks[moreThanIndex-1].text
+        } else if (lessThanIndex && !moreThanIndex) {
+            // right interval bound is out of visible region, left is inside
+            if(that.ticks[lessThanIndex+1] && that.ticks[lessThanIndex+1].text)
+                return that.ticks[lessThanIndex+1].text
+        } else if (lessThanIndex && moreThanIndex && (moreThanIndex-lessThanIndex == 2)) {
+            // left and right interval bounds are inside visible regions
+            return that.ticks[lessThanIndex+1].text
+        }                   
+        return undefined
+    }
 
     return this;
 }
@@ -1196,7 +1235,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var that = this;
 
     var _labels = [];
-    var _ticks = [];
+    var _ticks = []; // DG: Seems that it is in data coords, as the coords are later processed with getCoordinateFromTick
 
     // if labels and ticks are defined - cash them
     // if ticks are undefined - they are calculated as an array of integers from 0 to length of labels
