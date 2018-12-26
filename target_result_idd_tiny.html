@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/interactive-data-display@1.5.15/dist/idd.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
+<script src="dist/idd.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+            $(".fsharp-idd").each(function(index) {
+                InteractiveDataDisplay.asPlot($(this));
+            });
+            setTimeout(function(){
+                //$(".fsharp-idd").each(function(index) {
+                //    InteractiveDataDisplay.asPlot($(this)).requestUpdateLayout();
+                //});
+
+            }, 3000);
+        });
+</script>
+	<style>
+	body {font-family: "Lato", sans-serif;}
+	
+	ul.tab {
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		border: 2px solid #ccc;
+		background-color: #f1f1f1;
+	}
+
+	/* Float the list items side by side */
+	ul.tab li {float: left;}
+
+	/* Style the links inside the list items */
+	ul.tab1 li a {
+		display: inline-block;
+		color: black;
+		text-align: center;
+		padding: 14px 16px;
+		text-decoration: none;
+		transition: 0.3s;
+		font-size: 17px;
+	}
+  ul.tab2 li a {
+		display: inline-block;
+		color: black;
+		text-align: center;
+		padding: 14px 16px;
+		text-decoration: none;
+		transition: 0.3s;
+		font-size: 15px;
+	}
+	/* Change background color of links on hover */
+	ul.tab li a:hover {
+		background-color: #ddd;
+	}
+
+	/* Create an active/current tablink class */
+	ul.tab li a:focus, .active {
+		background-color: #ccc;
+	}
+
+	/* Style the tab content */
+	.tabcontent {
+		display: none;
+		padding: 12px 12px;
+		border: 2px solid #ccc;
+		border-top: none;
+	}
+
+	/* Style the table cells*/
+	th, td { 
+		padding: 3px;
+		min-width: 50px;
+	}	
+	th {
+		border-top: 2px solid #000;
+		border-bottom: 1px solid #000;
+	}
+	table#pTable {
+		border-collapse: collapse;
+		border-bottom: 2px solid #000;
+	}
+	</style>
+<body>
+
+<h2></h2>
+
+<ul class="tab tab1">	
+	<li><a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Model')">Model</a></li>
+	<li><a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Comparisons')" id="defaultOpen">Comparisons</a></li>
+	<li><a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Posterior marginals')">Posterior marginals</a></li>
+	<li><a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Correlation')">Correlation</a></li>
+	<li><a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'MCMC traces')">MCMC traces</a></li>
+	<li><a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Parameter summary')">Parameter summary</a></li>
+</ul>
+
+<div id="Model" class="tabcontent">
+	<font face="courier"><font color="blue">directive</font> <font color="blue">simulation</font> {final=36; points=250; plots=[(([x] * ([yfp] + [f510])) + yb0); (([x] * ([cfp] + [f430])) + cb0)]; multicore=True; }<br> 
+<font color="blue">directive</font> <font color="blue">simulator</font> sundials<br> 
+<font color="blue">directive</font> <font color="blue">parameters</font> [<br> 
+  C12 = 0;<br> 
+  C6 = 0;<br> 
+  K = 2;<br> 
+  KGR_76 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGR_81 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGS_76 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGS_81 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KR12 = 0,001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KR6 = 0,01, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KS12 = 0,01, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KS6 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  Klas = 1;<br> 
+  Klux = 1;<br> 
+  aCFP = 1000, {interval=Log; distribution=Uniform(1,100000); variation=Random};<br> 
+  aR = 0;<br> 
+  aR33 = 5,89, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aRS100 = 5,89, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aS = 0;<br> 
+  aS175 = 2,97, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aS32 = 2,97, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aYFP = 1000, {interval=Log; distribution=Uniform(1,100000); variation=Random};<br> 
+  autoCFP = 5,74379, {interval=Log; distribution=TruncatedNormal(5,74379,0,0103815702087883,0,001,1000); variation=Random};<br> 
+  autoYFP = 0,175013, {interval=Log; distribution=TruncatedNormal(0,175013,0,00309303087601789,0,001,1000); variation=Random};<br> 
+  c0 = 0,001;<br> 
+  cb0 = 1000, {interval=Real; distribution=Uniform(0,10000); variation=Random};<br> 
+  dCFP = 0,189919, {interval=Log; distribution=TruncatedNormal(0,189919,0,0123150720663746,0,001,1); variation=Random};<br> 
+  dR = 0,1, {interval=Log; distribution=Uniform(0,01,10); variation=Random};<br> 
+  dS = 0,1;<br> 
+  dYFP = 0,0998139, {interval=Log; distribution=TruncatedNormal(0,0998139,0,00473382509182585,0,001,1); variation=Random};<br> 
+  dlasI = 0,1;<br> 
+  dluxI = 0,1;<br> 
+  e76 = 0,01, {interval=Log; distribution=Uniform(0,0001,1); variation=Random};<br> 
+  e81 = 0,01, {interval=Log; distribution=Uniform(0,0001,1); variation=Random};<br> 
+  kC12 = 1;<br> 
+  kC6 = 1;<br> 
+  nR = 0,797, {interval=Real; distribution=Uniform(0,5,2); variation=Random};<br> 
+  nS = 0,797, {interval=Real; distribution=Uniform(0,5,2); variation=Random};<br> 
+  r = 1;<br> 
+  rc = 1000;<br> 
+  tlag = 0;<br> 
+  yb0 = 1000, {interval=Real; distribution=Uniform(0,5000); variation=Random};<br> 
+]<br> 
+<font color="blue">directive</font> <font color="blue">inference</font> {name=target; burnin=400; samples=400; noise_model=proportional}<br> 
+<font color="blue">directive</font> rates [<br> 
+  P76 = (((e76 + (KGR_76 * [boundLuxR])) + (KGS_76 * [boundLasR])) / ((1 + (KGR_76 * [boundLuxR])) + (KGS_76 * [boundLasR])));<br> 
+  P81 = (((e81 + (KGR_81 * [boundLuxR])) + (KGS_81 * [boundLasR])) / ((1 + (KGR_81 * [boundLuxR])) + (KGS_81 * [boundLasR])));<br> 
+  boundLasR = (([lasR] ^ 2) * ((((KS6 * [c6]) ^ nS) + ((KS12 * [c12]) ^ nS)) / (((1 + (KS6 * [c6])) + (KS12 * [c12])) ^ nS)));<br> 
+  boundLuxR = (([luxR] ^ 2) * ((((KR6 * [c6]) ^ nR) + ((KR12 * [c12]) ^ nR)) / (((1 + (KR6 * [c6])) + (KR12 * [c12])) ^ nR)));<br> 
+  capacity = rc;<br> 
+  growth = (([grow] * r) * (1 - ([x] / K)))<br> 
+]<br> 
+<br> 
+<br> 
+<font color="blue">system</font> R33S175_Y81C76 = { <br> 
+<font color="blue">directive</font> <font color="blue">simulation</font> {final=36; points=250; plots=[(([x] * ([yfp] + [f510])) + yb0); (([x] * ([cfp] + [f430])) + cb0)]; }<br> 
+<font color="blue">directive</font> <font color="blue">simulator</font> sundials<br> 
+<font color="blue">directive</font> <font color="blue">parameters</font> [<br> 
+  C12 = 0;<br> 
+  C6 = 0;<br> 
+  K = 2;<br> 
+  KGR_76 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGR_81 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGS_76 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGS_81 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KR12 = 0,001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KR6 = 0,01, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KS12 = 0,01, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KS6 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  Klas = 1;<br> 
+  Klux = 1;<br> 
+  aCFP = 1000, {interval=Log; distribution=Uniform(1,100000); variation=Random};<br> 
+  aR = 0;<br> 
+  aR33 = 5,89, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aRS100 = 5,89, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aS = 0;<br> 
+  aS175 = 2,97, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aS32 = 2,97, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aYFP = 1000, {interval=Log; distribution=Uniform(1,100000); variation=Random};<br> 
+  autoCFP = 5,74379, {interval=Log; distribution=TruncatedNormal(5,74379,0,0103815702087883,0,001,1000); variation=Random};<br> 
+  autoYFP = 0,175013, {interval=Log; distribution=TruncatedNormal(0,175013,0,00309303087601789,0,001,1000); variation=Random};<br> 
+  c0 = 0,001;<br> 
+  cb0 = 1000, {interval=Real; distribution=Uniform(0,10000); variation=Random};<br> 
+  dCFP = 0,189919, {interval=Log; distribution=TruncatedNormal(0,189919,0,0123150720663746,0,001,1); variation=Random};<br> 
+  dR = 0,1, {interval=Log; distribution=Uniform(0,01,10); variation=Random};<br> 
+  dS = 0,1;<br> 
+  dYFP = 0,0998139, {interval=Log; distribution=TruncatedNormal(0,0998139,0,00473382509182585,0,001,1); variation=Random};<br> 
+  dlasI = 0,1;<br> 
+  dluxI = 0,1;<br> 
+  e76 = 0,01, {interval=Log; distribution=Uniform(0,0001,1); variation=Random};<br> 
+  e81 = 0,01, {interval=Log; distribution=Uniform(0,0001,1); variation=Random};<br> 
+  kC12 = 1;<br> 
+  kC6 = 1;<br> 
+  nR = 0,797, {interval=Real; distribution=Uniform(0,5,2); variation=Random};<br> 
+  nS = 0,797, {interval=Real; distribution=Uniform(0,5,2); variation=Random};<br> 
+  r = 1;<br> 
+  rc = 1000;<br> 
+  tlag = 0;<br> 
+  yb0 = 1000, {interval=Real; distribution=Uniform(0,5000); variation=Random};<br> 
+]<br> 
+<font color="blue">directive</font> <font color="blue">inference</font> {name=target; burnin=400; samples=400; noise_model=proportional}<br> 
+<font color="blue">directive</font> <font color="blue">sweeps</font> [<br> 
+  sweep_<font color="blue">data</font>set0_device0 = [aR = [aR33]; aS = [aS175]; (r,K,tlag,rc,C6,C12) = [(1,08004743666844,2,83491639911,0,244871351190972,39,7508127735624,25000,0); (1,16364136161225,2,71998241838471,1,2514535340636,43,8995745014005,8333,33333333333,0); (1,1974569029839,2,63518912679247,1,41826304323672,45,2541256767232,2777,77777777778,0); (1,04630344344114,2,50398183137835,0,770214736490507,48,0134426307168,925,925925925926,0); (1,24123441081613,2,47763930474205,1,60346160769792,47,6982641354667,308,641975308642,0); (1,35597428259363,2,44273410426596,1,85891840361415,48,2833731048545,102,880658436214,0); (1,43140397602829,2,41401673336423,1,77495342768103,47,7613311129158,34,2935528120713,0); (1,49999438253828,2,35538411309731,2,11442718257005,48,0349507406524,11,4311842706904,0); (1,47995511220758,2,32226460970733,2,01617821482426,48,3876217279723,3,81039475689681,0); (1,48364876864658,2,39030895083479,1,70902020480659,46,1529771694325,1,27013158563227,0); (1,12633075918546,2,39121607683884,1,96830996615069E-05,45,380213735418,0,423377195210757,0); (1,12555965795459,2,37039327123114,1,86030507756558E-05,46,5948006939212,0,0); (1,09484540831898,2,47308967749727,0,911010421129164,38,4417078495253,0,25000); (1,094106343169,2,41339869942024,0,776854677848213,38,7006936596465,0,8333,33333333333); (1,24108772126988,2,33264630832628,1,84753370107643,40,2331935292598,0,2777,77777777778); (1,1970572772694,2,26976771240775,1,74539161119593,42,5665958931436,0,925,925925925926); (1,37369584613457,2,25766991118094,2,25447088011337,43,8759426722932,0,308,641975308642); (1,17191299561963,2,26402309756489,0,693134649758703,43,0826332070974,0,102,880658436214); (1,36116854611293,2,19857555960778,1,65068107108985,45,1577278877321,0,34,2935528120713); (1,49999682324306,2,25008039796361,1,9230166241539,44,9411791632096,0,11,4311842706904); (1,16857321536289,2,13340168090519,0,402660357272482,45,6348816779389,0,3,81039475689681); (1,16107426355699,2,23358686150765,0,000239080275220748,43,8535024207345,0,1,27013158563227); (1,09752133360697,2,19214638595824,0,000965178070245883,45,3794840559374,0,0,423377195210757); (1,09145105243095,2,21872311764747,1,46782589288645E-05,46,5524868087714,0,0)]; c0 = [0,002]; dfp = [0,0596784132476553]; f0 = [93,5371997632954]];<br> 
+]<br> 
+<font color="blue">directive</font> <font color="blue">data</font> [R33S175_Y81C76_EYFP_ECFP_proc141021]<br> 
+<font color="blue">directive</font> rates [<br> 
+  P76 = (((e76 + (KGR_76 * [boundLuxR])) + (KGS_76 * [boundLasR])) / ((1 + (KGR_76 * [boundLuxR])) + (KGS_76 * [boundLasR])));<br> 
+  P81 = (((e81 + (KGR_81 * [boundLuxR])) + (KGS_81 * [boundLasR])) / ((1 + (KGR_81 * [boundLuxR])) + (KGS_81 * [boundLasR])));<br> 
+  boundLasR = (([lasR] ^ 2) * ((((KS6 * [c6]) ^ nS) + ((KS12 * [c12]) ^ nS)) / (((1 + (KS6 * [c6])) + (KS12 * [c12])) ^ nS)));<br> 
+  boundLuxR = (([luxR] ^ 2) * ((((KR6 * [c6]) ^ nR) + ((KR12 * [c12]) ^ nR)) / (((1 + (KR6 * [c6])) + (KR12 * [c12])) ^ nR)));<br> 
+  capacity = rc;<br> 
+  growth = (([grow] * r) * (1 - ([x] / K)))<br> 
+]<br> 
+<br> 
+| c0 x<br> 
+| 1 grow @ tlag<br> 
+| C6 c6<br> 
+| C12 c12<br> 
+| ->[([growth] * [x])] x<br> 
+| ->[([capacity] * aR)] luxR<br> 
+| luxR ->{dR}<br> 
+| luxR ->[([growth] * [luxR])]<br> 
+| ->[([capacity] * aS)] lasR<br> 
+| lasR ->{dR}<br> 
+| lasR ->[([growth] * [lasR])]<br> 
+| ->[(([capacity] * aYFP) * [P81])] yfp<br> 
+| yfp ->{dYFP}<br> 
+| yfp ->[([growth] * [yfp])]<br> 
+| ->[(([capacity] * aCFP) * [P76])] cfp<br> 
+| cfp ->{dCFP}<br> 
+| cfp ->[([growth] * [cfp])]<br> 
+| ->[([capacity] * autoYFP)] f510<br> 
+| f510 ->[([growth] * [f510])]<br> 
+| ->[([capacity] * autoCFP)] f430<br> 
+| f430 ->[([growth] * [f430])]<br> 
+}<br> 
+<br> 
+<font color="blue">system</font> R33S32_Y81C76 = { <br> 
+<font color="blue">directive</font> <font color="blue">simulation</font> {final=36; points=250; plots=[(([x] * ([yfp] + [f510])) + yb0); (([x] * ([cfp] + [f430])) + cb0)]; }<br> 
+<font color="blue">directive</font> <font color="blue">simulator</font> sundials<br> 
+<font color="blue">directive</font> <font color="blue">parameters</font> [<br> 
+  C12 = 0;<br> 
+  C6 = 0;<br> 
+  K = 2;<br> 
+  KGR_76 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGR_81 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGS_76 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGS_81 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KR12 = 0,001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KR6 = 0,01, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KS12 = 0,01, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KS6 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  Klas = 1;<br> 
+  Klux = 1;<br> 
+  aCFP = 1000, {interval=Log; distribution=Uniform(1,100000); variation=Random};<br> 
+  aR = 0;<br> 
+  aR33 = 5,89, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aRS100 = 5,89, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aS = 0;<br> 
+  aS175 = 2,97, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aS32 = 2,97, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aYFP = 1000, {interval=Log; distribution=Uniform(1,100000); variation=Random};<br> 
+  autoCFP = 5,74379, {interval=Log; distribution=TruncatedNormal(5,74379,0,0103815702087883,0,001,1000); variation=Random};<br> 
+  autoYFP = 0,175013, {interval=Log; distribution=TruncatedNormal(0,175013,0,00309303087601789,0,001,1000); variation=Random};<br> 
+  c0 = 0,001;<br> 
+  cb0 = 1000, {interval=Real; distribution=Uniform(0,10000); variation=Random};<br> 
+  dCFP = 0,189919, {interval=Log; distribution=TruncatedNormal(0,189919,0,0123150720663746,0,001,1); variation=Random};<br> 
+  dR = 0,1, {interval=Log; distribution=Uniform(0,01,10); variation=Random};<br> 
+  dS = 0,1;<br> 
+  dYFP = 0,0998139, {interval=Log; distribution=TruncatedNormal(0,0998139,0,00473382509182585,0,001,1); variation=Random};<br> 
+  dlasI = 0,1;<br> 
+  dluxI = 0,1;<br> 
+  e76 = 0,01, {interval=Log; distribution=Uniform(0,0001,1); variation=Random};<br> 
+  e81 = 0,01, {interval=Log; distribution=Uniform(0,0001,1); variation=Random};<br> 
+  kC12 = 1;<br> 
+  kC6 = 1;<br> 
+  nR = 0,797, {interval=Real; distribution=Uniform(0,5,2); variation=Random};<br> 
+  nS = 0,797, {interval=Real; distribution=Uniform(0,5,2); variation=Random};<br> 
+  r = 1;<br> 
+  rc = 1000;<br> 
+  tlag = 0;<br> 
+  yb0 = 1000, {interval=Real; distribution=Uniform(0,5000); variation=Random};<br> 
+]<br> 
+<font color="blue">directive</font> <font color="blue">inference</font> {name=target; burnin=400; samples=400; noise_model=proportional}<br> 
+<font color="blue">directive</font> <font color="blue">sweeps</font> [<br> 
+  sweep_<font color="blue">data</font>set1_device1 = [aR = [aR33]; aS = [aS32]; (r,K,tlag,rc,C6,C12) = [(1,14472822573444,2,5849566698088,1,15109777643733,39,7508127735624,25000,0); (0,988190900281697,2,289818059365,0,450204386688981,43,8995745014005,8333,33333333333,0); (0,947487673281174,2,0326356204739,2,10272798218265E-05,45,2541256767232,2777,77777777778,0); (1,00411756469878,1,98275230859202,0,126052814557767,48,0134426307168,925,925925925926,0); (1,03446678077154,1,85712748950743,0,265038123497866,47,6982641354667,308,641975308642,0); (0,996007218254074,1,78263552182235,0,000377866329869289,48,2833731048545,102,880658436214,0); (1,02710261655202,1,65647421544527,0,059306355045213,47,7613311129158,34,2935528120713,0); (1,01992199981263,1,53521928290483,1,87641152184803E-05,48,0349507406524,11,4311842706904,0); (1,01862870474308,1,53695726512019,2,64043117939958E-06,48,3876217279723,3,81039475689681,0); (1,25063995997765,1,93692493570127,6,25525507725508E-06,46,1529771694325,1,27013158563227,0); (1,29354233650814,1,8775824896287,1,60947058651029E-05,45,380213735418,0,423377195210757,0); (0,926152871503185,1,51379196434738,9,0491067615521E-06,46,5948006939212,0,0); (0,860968275716626,2,01090282198208,7,11654043573235E-06,38,4417078495253,0,25000); (0,92738983939659,1,60601565064712,1,17400774932916E-05,38,7006936596465,0,8333,33333333333); (0,962753303686983,1,52431114399438,0,00070780319040591,40,2331935292598,0,2777,77777777778); (1,01133636065385,1,40840944493033,0,167655886039289,42,5665958931436,0,925,925925925926); (1,04717686723377,1,3665431265477,0,414821618690207,43,8759426722932,0,308,641975308642); (0,959242168635171,1,40658859105629,3,15038314447483E-05,43,0826332070974,0,102,880658436214); (1,28839468187911,1,27811774598226,1,2512181430159,45,1577278877321,0,34,2935528120713); (1,04996431326614,1,30183893528095,0,279402414980057,44,9411791632096,0,11,4311842706904); (1,07112691724471,1,38604102867346,0,279134860465776,45,6348816779389,0,3,81039475689681); (1,00192358959391,1,40628785315802,2,90763797766035E-05,43,8535024207345,0,1,27013158563227); (1,00354169686047,1,38223384865042,0,000122024348644348,45,3794840559374,0,0,423377195210757); (0,912158180741903,1,45180262336913,9,47193938407643E-06,46,5524868087714,0,0)]; c0 = [0,002]; dfp = [0,0596784132476553]; f0 = [93,5371997632954]];<br> 
+]<br> 
+<font color="blue">directive</font> <font color="blue">data</font> [R33S32_Y81C76_EYFP_ECFP_proc140916]<br> 
+<font color="blue">directive</font> rates [<br> 
+  P76 = (((e76 + (KGR_76 * [boundLuxR])) + (KGS_76 * [boundLasR])) / ((1 + (KGR_76 * [boundLuxR])) + (KGS_76 * [boundLasR])));<br> 
+  P81 = (((e81 + (KGR_81 * [boundLuxR])) + (KGS_81 * [boundLasR])) / ((1 + (KGR_81 * [boundLuxR])) + (KGS_81 * [boundLasR])));<br> 
+  boundLasR = (([lasR] ^ 2) * ((((KS6 * [c6]) ^ nS) + ((KS12 * [c12]) ^ nS)) / (((1 + (KS6 * [c6])) + (KS12 * [c12])) ^ nS)));<br> 
+  boundLuxR = (([luxR] ^ 2) * ((((KR6 * [c6]) ^ nR) + ((KR12 * [c12]) ^ nR)) / (((1 + (KR6 * [c6])) + (KR12 * [c12])) ^ nR)));<br> 
+  capacity = rc;<br> 
+  growth = (([grow] * r) * (1 - ([x] / K)))<br> 
+]<br> 
+<br> 
+| c0 x<br> 
+| 1 grow @ tlag<br> 
+| C6 c6<br> 
+| C12 c12<br> 
+| ->[([growth] * [x])] x<br> 
+| ->[([capacity] * aR)] luxR<br> 
+| luxR ->{dR}<br> 
+| luxR ->[([growth] * [luxR])]<br> 
+| ->[([capacity] * aS)] lasR<br> 
+| lasR ->{dR}<br> 
+| lasR ->[([growth] * [lasR])]<br> 
+| ->[(([capacity] * aYFP) * [P81])] yfp<br> 
+| yfp ->{dYFP}<br> 
+| yfp ->[([growth] * [yfp])]<br> 
+| ->[(([capacity] * aCFP) * [P76])] cfp<br> 
+| cfp ->{dCFP}<br> 
+| cfp ->[([growth] * [cfp])]<br> 
+| ->[([capacity] * autoYFP)] f510<br> 
+| f510 ->[([growth] * [f510])]<br> 
+| ->[([capacity] * autoCFP)] f430<br> 
+| f430 ->[([growth] * [f430])]<br> 
+}<br> 
+<br> 
+<font color="blue">system</font> RS100S32_Y81C76 = { <br> 
+<font color="blue">directive</font> <font color="blue">simulation</font> {final=36; points=250; plots=[(([x] * ([yfp] + [f510])) + yb0); (([x] * ([cfp] + [f430])) + cb0)]; }<br> 
+<font color="blue">directive</font> <font color="blue">simulator</font> sundials<br> 
+<font color="blue">directive</font> <font color="blue">parameters</font> [<br> 
+  C12 = 0;<br> 
+  C6 = 0;<br> 
+  K = 2;<br> 
+  KGR_76 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGR_81 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGS_76 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGS_81 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KR12 = 0,001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KR6 = 0,01, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KS12 = 0,01, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KS6 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  Klas = 1;<br> 
+  Klux = 1;<br> 
+  aCFP = 1000, {interval=Log; distribution=Uniform(1,100000); variation=Random};<br> 
+  aR = 0;<br> 
+  aR33 = 5,89, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aRS100 = 5,89, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aS = 0;<br> 
+  aS175 = 2,97, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aS32 = 2,97, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aYFP = 1000, {interval=Log; distribution=Uniform(1,100000); variation=Random};<br> 
+  autoCFP = 5,74379, {interval=Log; distribution=TruncatedNormal(5,74379,0,0103815702087883,0,001,1000); variation=Random};<br> 
+  autoYFP = 0,175013, {interval=Log; distribution=TruncatedNormal(0,175013,0,00309303087601789,0,001,1000); variation=Random};<br> 
+  c0 = 0,001;<br> 
+  cb0 = 1000, {interval=Real; distribution=Uniform(0,10000); variation=Random};<br> 
+  dCFP = 0,189919, {interval=Log; distribution=TruncatedNormal(0,189919,0,0123150720663746,0,001,1); variation=Random};<br> 
+  dR = 0,1, {interval=Log; distribution=Uniform(0,01,10); variation=Random};<br> 
+  dS = 0,1;<br> 
+  dYFP = 0,0998139, {interval=Log; distribution=TruncatedNormal(0,0998139,0,00473382509182585,0,001,1); variation=Random};<br> 
+  dlasI = 0,1;<br> 
+  dluxI = 0,1;<br> 
+  e76 = 0,01, {interval=Log; distribution=Uniform(0,0001,1); variation=Random};<br> 
+  e81 = 0,01, {interval=Log; distribution=Uniform(0,0001,1); variation=Random};<br> 
+  kC12 = 1;<br> 
+  kC6 = 1;<br> 
+  nR = 0,797, {interval=Real; distribution=Uniform(0,5,2); variation=Random};<br> 
+  nS = 0,797, {interval=Real; distribution=Uniform(0,5,2); variation=Random};<br> 
+  r = 1;<br> 
+  rc = 1000;<br> 
+  tlag = 0;<br> 
+  yb0 = 1000, {interval=Real; distribution=Uniform(0,5000); variation=Random};<br> 
+]<br> 
+<font color="blue">directive</font> <font color="blue">inference</font> {name=target; burnin=400; samples=400; noise_model=proportional}<br> 
+<font color="blue">directive</font> <font color="blue">sweeps</font> [<br> 
+  sweep_<font color="blue">data</font>set1_device2 = [aR = [aRS100]; aS = [aS32]; (r,K,tlag,rc,C6,C12) = [(1,28869447318943,2,53350882792099,0,847586832864763,39,7508127735624,25000,0); (1,25998357511348,2,42351408600613,1,25549975382479,43,8995745014005,8333,33333333333,0); (1,32919152333734,2,3667769552081,1,7252587260481,45,2541256767232,2777,77777777778,0); (1,24144602925483,2,27439334125125,1,6230588659872,48,0134426307168,925,925925925926,0); (1,48060510104102,2,3592353222628,2,10909664338517,47,6982641354667,308,641975308642,0); (1,43655718898067,2,32098018934185,2,11809880642801,48,2833731048545,102,880658436214,0); (1,45668045556322,2,37764406218839,1,9184691211986,47,7613311129158,34,2935528120713,0); (1,46669160078979,2,34840484820746,1,63499775950294,48,0349507406524,11,4311842706904,0); (1,47942537686683,2,30104112535352,2,25081842807254,48,3876217279723,3,81039475689681,0); (1,17619650193953,2,31510993934298,0,242832333577985,46,1529771694325,1,27013158563227,0); (1,13361927185725,2,34134118766664,1,14654180133644E-05,45,380213735418,0,423377195210757,0); (1,13210869074004,2,35000487825799,1,18205985198392E-05,46,5948006939212,0,0); (1,12720568817857,2,36908968824248,0,144248126458834,38,4417078495253,0,25000); (1,23436389150492,2,30369211741988,0,847651246255989,38,7006936596465,0,8333,33333333333); (1,3506188164975,2,27126299974193,1,33769249904125,40,2331935292598,0,2777,77777777778); (1,32480379620768,2,23839900455145,1,40222909275022,42,5665958931436,0,925,925925925926); (1,4135059407933,2,24201711063593,1,66835991794767,43,8759426722932,0,308,641975308642); (1,41963792854025,2,27026316618062,1,50357360798981,43,0826332070974,0,102,880658436214); (1,29993901633509,2,20509125724138,0,880533092200281,45,1577278877321,0,34,2935528120713); (1,2063647807544,2,23536204128184,0,292070103068299,44,9411791632096,0,11,4311842706904); (1,15403266169967,2,1480286034524,2,77811385803842E-05,45,6348816779389,0,3,81039475689681); (1,14554130515575,2,05979779093092,4,51001925205213E-05,43,8535024207345,0,1,27013158563227); (1,11345667628087,1,98054515743277,3,37831435462657E-05,45,3794840559374,0,0,423377195210757); (1,06121926973029,1,96896542553491,9,19635657564802E-06,46,5524868087714,0,0)]; c0 = [0,002]; dfp = [0,0596784132476553]; f0 = [93,5371997632954]];<br> 
+]<br> 
+<font color="blue">directive</font> <font color="blue">data</font> [RS100S32_Y81C76_EYFP_ECFP_proc140916]<br> 
+<font color="blue">directive</font> rates [<br> 
+  P76 = (((e76 + (KGR_76 * [boundLuxR])) + (KGS_76 * [boundLasR])) / ((1 + (KGR_76 * [boundLuxR])) + (KGS_76 * [boundLasR])));<br> 
+  P81 = (((e81 + (KGR_81 * [boundLuxR])) + (KGS_81 * [boundLasR])) / ((1 + (KGR_81 * [boundLuxR])) + (KGS_81 * [boundLasR])));<br> 
+  boundLasR = (([lasR] ^ 2) * ((((KS6 * [c6]) ^ nS) + ((KS12 * [c12]) ^ nS)) / (((1 + (KS6 * [c6])) + (KS12 * [c12])) ^ nS)));<br> 
+  boundLuxR = (([luxR] ^ 2) * ((((KR6 * [c6]) ^ nR) + ((KR12 * [c12]) ^ nR)) / (((1 + (KR6 * [c6])) + (KR12 * [c12])) ^ nR)));<br> 
+  capacity = rc;<br> 
+  growth = (([grow] * r) * (1 - ([x] / K)))<br> 
+]<br> 
+<br> 
+| c0 x<br> 
+| 1 grow @ tlag<br> 
+| C6 c6<br> 
+| C12 c12<br> 
+| ->[([growth] * [x])] x<br> 
+| ->[([capacity] * aR)] luxR<br> 
+| luxR ->{dR}<br> 
+| luxR ->[([growth] * [luxR])]<br> 
+| ->[([capacity] * aS)] lasR<br> 
+| lasR ->{dR}<br> 
+| lasR ->[([growth] * [lasR])]<br> 
+| ->[(([capacity] * aYFP) * [P81])] yfp<br> 
+| yfp ->{dYFP}<br> 
+| yfp ->[([growth] * [yfp])]<br> 
+| ->[(([capacity] * aCFP) * [P76])] cfp<br> 
+| cfp ->{dCFP}<br> 
+| cfp ->[([growth] * [cfp])]<br> 
+| ->[([capacity] * autoYFP)] f510<br> 
+| f510 ->[([growth] * [f510])]<br> 
+| ->[([capacity] * autoCFP)] f430<br> 
+| f430 ->[([growth] * [f430])]<br> 
+}<br> 
+<br> 
+<font color="blue">system</font> Pcat_Y81C76 = { <br> 
+<font color="blue">directive</font> <font color="blue">simulation</font> {final=36; points=250; plots=[(([x] * ([yfp] + [f510])) + yb0); (([x] * ([cfp] + [f430])) + cb0)]; }<br> 
+<font color="blue">directive</font> <font color="blue">simulator</font> sundials<br> 
+<font color="blue">directive</font> <font color="blue">parameters</font> [<br> 
+  C12 = 0;<br> 
+  C6 = 0;<br> 
+  K = 2;<br> 
+  KGR_76 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGR_81 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGS_76 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KGS_81 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KR12 = 0,001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KR6 = 0,01, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KS12 = 0,01, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  KS6 = 0,0001, {interval=Log; distribution=Uniform(1E-08,1); variation=Random};<br> 
+  Klas = 1;<br> 
+  Klux = 1;<br> 
+  aCFP = 1000, {interval=Log; distribution=Uniform(1,100000); variation=Random};<br> 
+  aR = 0;<br> 
+  aR33 = 5,89, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aRS100 = 5,89, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aS = 0;<br> 
+  aS175 = 2,97, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aS32 = 2,97, {interval=Log; distribution=Uniform(1,100); variation=Random};<br> 
+  aYFP = 1000, {interval=Log; distribution=Uniform(1,100000); variation=Random};<br> 
+  autoCFP = 5,74379, {interval=Log; distribution=TruncatedNormal(5,74379,0,0103815702087883,0,001,1000); variation=Random};<br> 
+  autoYFP = 0,175013, {interval=Log; distribution=TruncatedNormal(0,175013,0,00309303087601789,0,001,1000); variation=Random};<br> 
+  c0 = 0,001;<br> 
+  cb0 = 1000, {interval=Real; distribution=Uniform(0,10000); variation=Random};<br> 
+  dCFP = 0,189919, {interval=Log; distribution=TruncatedNormal(0,189919,0,0123150720663746,0,001,1); variation=Random};<br> 
+  dR = 0,1, {interval=Log; distribution=Uniform(0,01,10); variation=Random};<br> 
+  dS = 0,1;<br> 
+  dYFP = 0,0998139, {interval=Log; distribution=TruncatedNormal(0,0998139,0,00473382509182585,0,001,1); variation=Random};<br> 
+  dlasI = 0,1;<br> 
+  dluxI = 0,1;<br> 
+  e76 = 0,01, {interval=Log; distribution=Uniform(0,0001,1); variation=Random};<br> 
+  e81 = 0,01, {interval=Log; distribution=Uniform(0,0001,1); variation=Random};<br> 
+  kC12 = 1;<br> 
+  kC6 = 1;<br> 
+  nR = 0,797, {interval=Real; distribution=Uniform(0,5,2); variation=Random};<br> 
+  nS = 0,797, {interval=Real; distribution=Uniform(0,5,2); variation=Random};<br> 
+  r = 1;<br> 
+  rc = 1000;<br> 
+  tlag = 0;<br> 
+  yb0 = 1000, {interval=Real; distribution=Uniform(0,5000); variation=Random};<br> 
+]<br> 
+<font color="blue">directive</font> <font color="blue">inference</font> {name=target; burnin=400; samples=400; noise_model=proportional}<br> 
+<font color="blue">directive</font> <font color="blue">sweeps</font> [<br> 
+  sweep_<font color="blue">data</font>set2_device3 = [aR = [1]; aS = [1]; (r,K,tlag,rc,C6,C12) = [(1,20834519968408,2,30597964405146,0,90565519804806,39,7508127735624,25000,0); (1,02213623411141,1,90872412924782,0,349431796110282,43,8995745014005,8333,33333333333,0); (1,08361227986235,1,95395184716422,0,563296095618478,45,2541256767232,2777,77777777778,0); (0,966733757539327,1,66979692669732,4,27180418085558E-05,48,0134426307168,925,925925925926,0); (0,963722880743978,1,56311046652948,9,34196365446697E-05,47,6982641354667,308,641975308642,0); (0,955467206287672,1,55633822668148,2,64469995463283E-05,48,2833731048545,102,880658436214,0); (0,916137731165683,1,60317203271763,5,70451375332668E-06,47,7613311129158,34,2935528120713,0); (1,05280586830831,1,31129580682482,0,360457537353732,48,0349507406524,11,4311842706904,0); (0,952828103598523,1,34616279747371,1,3015076762067E-05,48,3876217279723,3,81039475689681,0); (1,13569207255205,2,20367851020325,9,42842263438138E-06,46,1529771694325,1,27013158563227,0); (1,14833865653578,2,23163458948845,3,57026412138326E-06,45,380213735418,0,423377195210757,0); (0,916796473755846,1,31034377486793,(0 - 6,30516227205099E-06),46,5948006939212,0,0); (0,827243418598758,1,8961743239258,2,05769238330769E-05,38,4417078495253,0,25000); (0,878311132975218,1,56569358524918,4,01594231498365E-06,38,7006936596465,0,8333,33333333333); (0,937869033662311,1,32957419670537,4,7367359037133E-05,40,2331935292598,0,2777,77777777778); (1,07511815967711,1,22978950095907,0,694519919977341,42,5665958931436,0,925,925925925926); (1,28049909142034,1,12271279642149,1,50675918788828,43,8759426722932,0,308,641975308642); (1,29523012558368,1,12091350110768,1,54814057042178,43,0826332070974,0,102,880658436214); (1,33194193486647,1,0906277776307,1,62717428537462,45,1577278877321,0,34,2935528120713); (1,36869710780416,1,05937865518709,1,78260856085837,44,9411791632096,0,11,4311842706904); (1,28645086453518,1,09017912692694,1,48985410244496,45,6348816779389,0,3,81039475689681); (0,936941362190915,1,26538898991233,4,70243784175068E-06,43,8535024207345,0,1,27013158563227); (1,12929277501755,1,13668644678882,1,00362900207022,45,3794840559374,0,0,423377195210757); (0,908985635850582,1,28304637206904,4,316677403014E-06,46,5524868087714,0,0); (0,867189514961553,2,24147947748503,3,83940311914735E-06,35,573353425215,25000,0); (0,936950520347929,1,27819893933097,0,0574649822966165,35,6429229224918,8333,33333333333,0); (1,25872545729296,1,11493928092738,1,53624317866198,37,0519621120129,2777,77777777778,0); (1,3734548718368,1,09438749815735,1,90346034591358,36,7657158295233,925,925925925926,0); (1,40707361599952,1,03053867057398,1,98716983813313,39,4162154873705,308,641975308642,0); (1,33897945913174,1,0028046345358,1,84098487599154,41,8475238090653,102,880658436214,0); (1,40105458030021,1,00848208565411,2,02364490681882,43,8972243411766,34,2935528120713,0); (1,40340015197595,1,02179490844172,1,99490008603697,47,1518680133597,11,4311842706904,0); (1,41681540691642,1,01314016917382,2,08765586834665,47,1003709201545,3,81039475689681,0); (1,38272836326182,1,00337682743147,1,98028447443397,32,1453681933332,1,27013158563227,0); (1,38393245535738,1,02902383898653,1,97410137044448,33,8403949486701,0,423377195210757,0); (0,909891588649721,1,28046149220093,2,96477088884317E-07,51,9319994189998,0,0); (0,750657340789204,2,14525150160782,1,00863328282076E-06,46,3573678088748,0,25000); (0,8086721292891,1,59314145219915,5,78965383871119E-06,46,9593827431656,0,8333,33333333333); (0,907715313766961,1,28159788935697,3,60384769948788E-06,46,1429596265067,0,2777,77777777778); (0,86108100165228,1,37252564446124,4,65348031465094E-06,49,2726847396851,0,925,925925925926); (0,875688030791233,1,30595514556669,4,9130087188981E-07,50,5869248928854,0,308,641975308642); (0,795525847037836,1,56216276698906,7,45748801659716E-07,52,1841669053326,0,102,880658436214); (0,815252431536114,1,45484029330081,4,47966294611801E-08,53,0509014263339,0,34,2935528120713); (0,778249217781475,1,49759519564459,7,34426969861257E-06,54,1017586709645,0,11,4311842706904); (0,785006158324326,1,53535255126645,1,57730505910622E-06,50,7013502287131,0,3,81039475689681); (0,831477612138695,1,39638419834893,1,52630634813771E-05,51,2522447016031,0,1,27013158563227); (0,770536056004561,1,5304962251182,7,8412043249009E-06,49,906078663402,0,0,423377195210757); (0,770677661152897,1,60471997196485,5,95633401177733E-06,56,18806736442,0,0)]; c0 = [0,002]; dfp = [0,0596784132476553]; f0 = [93,5371997632954]];<br> 
+]<br> 
+<font color="blue">directive</font> <font color="blue">data</font> [Pcat_Y81C76_EYFP_ECFP_proc141006]<br> 
+<font color="blue">directive</font> rates [<br> 
+  P76 = (((e76 + (KGR_76 * [boundLuxR])) + (KGS_76 * [boundLasR])) / ((1 + (KGR_76 * [boundLuxR])) + (KGS_76 * [boundLasR])));<br> 
+  P81 = (((e81 + (KGR_81 * [boundLuxR])) + (KGS_81 * [boundLasR])) / ((1 + (KGR_81 * [boundLuxR])) + (KGS_81 * [boundLasR])));<br> 
+  boundLasR = (([lasR] ^ 2) * ((((KS6 * [c6]) ^ nS) + ((KS12 * [c12]) ^ nS)) / (((1 + (KS6 * [c6])) + (KS12 * [c12])) ^ nS)));<br> 
+  boundLuxR = (([luxR] ^ 2) * ((((KR6 * [c6]) ^ nR) + ((KR12 * [c12]) ^ nR)) / (((1 + (KR6 * [c6])) + (KR12 * [c12])) ^ nR)));<br> 
+  capacity = rc;<br> 
+  growth = (([grow] * r) * (1 - ([x] / K)))<br> 
+]<br> 
+<br> 
+| c0 x<br> 
+| 1 grow @ tlag<br> 
+| C6 c6<br> 
+| C12 c12<br> 
+| ->[([growth] * [x])] x<br> 
+| ->[([capacity] * aR)] luxR<br> 
+| luxR ->{dR}<br> 
+| luxR ->[([growth] * [luxR])]<br> 
+| ->[([capacity] * aS)] lasR<br> 
+| lasR ->{dR}<br> 
+| lasR ->[([growth] * [lasR])]<br> 
+| ->[(([capacity] * aYFP) * [P81])] yfp<br> 
+| yfp ->{dYFP}<br> 
+| yfp ->[([growth] * [yfp])]<br> 
+| ->[(([capacity] * aCFP) * [P76])] cfp<br> 
+| cfp ->{dCFP}<br> 
+| cfp ->[([growth] * [cfp])]<br> 
+| ->[([capacity] * autoYFP)] f510<br> 
+| f510 ->[([growth] * [f510])]<br> 
+| ->[([capacity] * autoCFP)] f430<br> 
+| f430 ->[([growth] * [f430])]<br> 
+}<font>
+</div>
+<div id="Comparisons" class="tabcontent">
+	<ul class="tab tab2">
+			<li><a href="javascript:void(0)" class="complinks" onclick="openComparison(event, 'Comparison 1')">Comparison 1</a></li>
+		<li><a href="javascript:void(0)" class="complinks" onclick="openComparison(event, 'Comparison 2')">Comparison 2</a></li>
+		<li><a href="javascript:void(0)" class="complinks" onclick="openComparison(event, 'Comparison 3')">Comparison 3</a></li>
+		<li><a href="javascript:void(0)" class="complinks" onclick="openComparison(event, 'Comparison 4')">Comparison 4</a></li>
+	</ul>
+	<div id="Comparison 1" class="compcontent">
+		<h3>R33S175_Y81C76_EYFP_ECFP_proc141021</h3><table>
+	</table>
+</div>	
+</div>
+<div id="MCMC traces" class="tabcontent">
+	<table>
+	<tr>
+		<td><div data-idd-navigation-enabled="true" data-idd-legend-enabled="false" data-idd-padding="0" style="width: 400px; height: 200px;" data-idd-plot="figure" class="fsharp-idd"><div data-idd-yaxis="6a5af590-9672-42ed-a638-aa94a991cab0" data-idd-xaxis="1d04f9f5-50b0-4b2d-9214-2c19441a5d7d" data-idd-style="stroke: rgb(169,169,169); thickness: 1.0px" data-idd-placement="center" data-idd-plot="grid"></div>
+<div data-idd-style="lineCap: butt; lineJoin: miter; thickness: 1.0" data-idd-plot="polyline">	x	y
+	0.000000	-305881.708318
+	10.000000	-305881.711831
+	20.000000	-305881.711831
+	30.000000	-305882.688339
+	40.000000	-305878.531646
+	50.000000	-305878.513367
+	60.000000	-305878.036031
+	70.000000	-305878.038200
+	80.000000	-305833.484618
+	90.000000	-305833.484618
+	100.000000	-305833.483435
+	110.000000	-305835.831341
+	120.000000	-305833.487070
+	130.000000	-305833.490987
+	140.000000	-280391.832259
+	150.000000	-280384.310525
+	160.000000	-277802.244420
+	170.000000	-277802.311314
+	180.000000	-277802.266226
+	190.000000	-277802.311660
+	200.000000	-277449.760737
+	210.000000	-277449.809037
+	220.000000	-277347.878401
+	230.000000	-277347.845815
+	240.000000	-277578.325702
+	250.000000	-277578.325702
+	260.000000	-277584.450195
+	270.000000	-277584.551717
+	280.000000	-277584.551717
+	290.000000	-277584.551717
+	300.000000	-277584.551717
+	310.000000	-277582.807797
+	320.000000	-277582.807797
+	330.000000	-277582.884852
+	340.000000	-277547.458256
+	350.000000	-277547.458256
+	360.000000	-276633.218890
+	370.000000	-276624.077858
+	380.000000	-273748.099604
+	390.000000	-273748.099604
+</div>
+<div data-idd-placement="top" class="idd-title">likelihood</div>
+<div style="position: relative;" data-idd-placement="bottom" data-idd-axis="numeric" id="1d04f9f5-50b0-4b2d-9214-2c19441a5d7d"></div>
+<div data-idd-placement="bottom" class="idd-horizontalTitle">Sample</div>
+<div style="position: relative;" data-idd-placement="left" data-idd-axis="numeric" id="6a5af590-9672-42ed-a638-aa94a991cab0"></div>
+<div data-idd-placement="left" class="idd-verticalTitle"><div class="idd-verticalTitle-inner">Parameter values</div></div></div></td>
+		</tr>
+</table>
+</div>
+<div id="Parameter summary" class="tabcontent">
+	<table id="pTable">
+	<tr>
+		<th>Parameter name</th>
+		<th>Type</th>
+		<th>Lower bound</th>
+		<th>Upper bound</th>
+		<th>MLE</th>
+		<th>Posterior mean</th>
+		<th>Posterior stdev</th>
+		<th>Posterior l95</th>
+		<th>Posterior l68</th>
+		<th>Posterior median</th>
+		<th>Posterior u68</th>
+		<th>Posterior u95</th>
+	</tr>
+	<tr>
+		<td>sigma</td>
+		<td>log</td>
+		<td>1e-06</td>
+		<td>1e+06</td>
+		<td>1.29e+03</td>
+		<td>2.81e+03</td>
+		<td>1.86e+03</td>
+		<td>1.29e+03</td>
+		<td>1.48e+03</td>
+		<td>1.48e+03</td>
+		<td>5.31e+03</td>
+		<td>5.31e+03</td>
+	</tr>
+	<tr>
+		<td>KGR_76</td>
+		<td>log</td>
+		<td>1e-08</td>
+		<td>1</td>
+		<td>2.08e-07</td>
+		<td>5.8e-07</td>
+		<td>2.62e-07</td>
+		<td>2.17e-08</td>
+		<td>1.68e-07</td>
+		<td>7.08e-07</td>
+		<td>7.08e-07</td>
+		<td>7.08e-07</td>
+	</tr>
+	<tr>
+		<td>KGR_81</td>
+		<td>log</td>
+		<td>1e-08</td>
+		<td>1</td>
+		<td>0.00173</td>
+		<td>0.00171</td>
+		<td>3.17e-05</td>
+		<td>0.00164</td>
+		<td>0.00171</td>
+		<td>0.00173</td>
+		<td>0.00173</td>
+		<td>0.00173</td>
+	</tr>
+	<tr>
+		<td>KGS_76</td>
+		<td>log</td>
+		<td>1e-08</td>
+		<td>1</td>
+		<td>1.21e-05</td>
+		<td>0.00149</td>
+		<td>0.00433</td>
+		<td>5.36e-07</td>
+		<td>1e-05</td>
+		<td>0.000579</td>
+		<td>0.000824</td>
+		<td>0.0189</td>
+	</tr>
+	<tr>
+		<td>KGS_81</td>
+		<td>log</td>
+		<td>1e-08</td>
+		<td>1</td>
+		<td>0.00264</td>
+		<td>0.00135</td>
+		<td>0.00131</td>
+		<td>3.27e-07</td>
+		<td>3.37e-07</td>
+		<td>0.0014</td>
+		<td>0.00264</td>
+		<td>0.00264</td>
+	</tr>
+	<tr>
+		<td>KR12</td>
+		<td>log</td>
+		<td>1e-08</td>
+		<td>1</td>
+		<td>0.000142</td>
+		<td>0.00012</td>
+		<td>4.5e-05</td>
+		<td>3.09e-05</td>
+		<td>3.09e-05</td>
+		<td>0.000142</td>
+		<td>0.000142</td>
+		<td>0.000142</td>
+	</tr>
+	<tr>
+		<td>KR6</td>
+		<td>log</td>
+		<td>1e-08</td>
+		<td>1</td>
+		<td>2.07e-08</td>
+		<td>5.7e-08</td>
+		<td>1.8e-08</td>
+		<td>1.45e-08</td>
+		<td>4.23e-08</td>
+		<td>6.32e-08</td>
+		<td>6.32e-08</td>
+		<td>7.7e-08</td>
+	</tr>
+	<tr>
+		<td>KS12</td>
+		<td>log</td>
+		<td>1e-08</td>
+		<td>1</td>
+		<td>9.16e-06</td>
+		<td>7.26e-06</td>
+		<td>2.22e-05</td>
+		<td>1.11e-08</td>
+		<td>1.11e-08</td>
+		<td>5.62e-08</td>
+		<td>2.64e-06</td>
+		<td>8.37e-05</td>
+	</tr>
+	<tr>
+		<td>KS6</td>
+		<td>log</td>
+		<td>1e-08</td>
+		<td>1</td>
+		<td>7.87e-07</td>
+		<td>5.22e-07</td>
+		<td>1.42e-06</td>
+		<td>2.05e-08</td>
+		<td>3.98e-08</td>
+		<td>6.17e-08</td>
+		<td>7.87e-07</td>
+		<td>6.23e-06</td>
+	</tr>
+	<tr>
+		<td>aCFP</td>
+		<td>log</td>
+		<td>1</td>
+		<td>1e+05</td>
+		<td>46.3</td>
+		<td>46.3</td>
+		<td>0</td>
+		<td>46.3</td>
+		<td>46.3</td>
+		<td>46.3</td>
+		<td>46.3</td>
+		<td>46.3</td>
+	</tr>
+	<tr>
+		<td>aR33</td>
+		<td>log</td>
+		<td>1</td>
+		<td>100</td>
+		<td>17.9</td>
+		<td>12.8</td>
+		<td>6.32</td>
+		<td>4.91</td>
+		<td>4.91</td>
+		<td>17.9</td>
+		<td>17.9</td>
+		<td>17.9</td>
+	</tr>
+	<tr>
+		<td>aRS100</td>
+		<td>log</td>
+		<td>1</td>
+		<td>100</td>
+		<td>2.13</td>
+		<td>2.08</td>
+		<td>0.523</td>
+		<td>1.1</td>
+		<td>1.1</td>
+		<td>2.13</td>
+		<td>2.77</td>
+		<td>2.77</td>
+	</tr>
+	<tr>
+		<td>aS175</td>
+		<td>log</td>
+		<td>1</td>
+		<td>100</td>
+		<td>3.94</td>
+		<td>4.21</td>
+		<td>2.17</td>
+		<td>2.31</td>
+		<td>2.31</td>
+		<td>3.94</td>
+		<td>4.5</td>
+		<td>11.4</td>
+	</tr>
+	<tr>
+		<td>aS32</td>
+		<td>log</td>
+		<td>1</td>
+		<td>100</td>
+		<td>1.23</td>
+		<td>9.82</td>
+		<td>16.9</td>
+		<td>1.23</td>
+		<td>1.23</td>
+		<td>3.42</td>
+		<td>8.69</td>
+		<td>53.3</td>
+	</tr>
+	<tr>
+		<td>aYFP</td>
+		<td>log</td>
+		<td>1</td>
+		<td>1e+05</td>
+		<td>7.57</td>
+		<td>5.34</td>
+		<td>2.34</td>
+		<td>2.68</td>
+		<td>2.68</td>
+		<td>6.17</td>
+		<td>7.57</td>
+		<td>7.57</td>
+	</tr>
+	<tr>
+		<td>autoCFP</td>
+		<td>log</td>
+		<td>0.001</td>
+		<td>1e+03</td>
+		<td>5.74</td>
+		<td>5.74</td>
+		<td>0</td>
+		<td>5.74</td>
+		<td>5.74</td>
+		<td>5.74</td>
+		<td>5.74</td>
+		<td>5.74</td>
+	</tr>
+	<tr>
+		<td>autoYFP</td>
+		<td>log</td>
+		<td>0.001</td>
+		<td>1e+03</td>
+		<td>0.0425</td>
+		<td>0.0592</td>
+		<td>0.0388</td>
+		<td>0.00495</td>
+		<td>0.00495</td>
+		<td>0.0425</td>
+		<td>0.103</td>
+		<td>0.103</td>
+	</tr>
+	<tr>
+		<td>cb0</td>
+		<td>real</td>
+		<td>0</td>
+		<td>1e+04</td>
+		<td>324</td>
+		<td>533</td>
+		<td>70.6</td>
+		<td>324</td>
+		<td>557</td>
+		<td>557</td>
+		<td>557</td>
+		<td>557</td>
+	</tr>
+	<tr>
+		<td>dCFP</td>
+		<td>log</td>
+		<td>0.001</td>
+		<td>1</td>
+		<td>0.0106</td>
+		<td>0.272</td>
+		<td>0.196</td>
+		<td>0.0106</td>
+		<td>0.0383</td>
+		<td>0.284</td>
+		<td>0.558</td>
+		<td>0.558</td>
+	</tr>
+	<tr>
+		<td>dR</td>
+		<td>log</td>
+		<td>0.01</td>
+		<td>10</td>
+		<td>2.68</td>
+		<td>6.43</td>
+		<td>1.26</td>
+		<td>2.68</td>
+		<td>6.84</td>
+		<td>6.84</td>
+		<td>6.84</td>
+		<td>6.84</td>
+	</tr>
+	<tr>
+		<td>dYFP</td>
+		<td>log</td>
+		<td>0.001</td>
+		<td>1</td>
+		<td>0.0499</td>
+		<td>0.0919</td>
+		<td>0.0385</td>
+		<td>0.0499</td>
+		<td>0.0499</td>
+		<td>0.126</td>
+		<td>0.126</td>
+		<td>0.126</td>
+	</tr>
+	<tr>
+		<td>e76</td>
+		<td>log</td>
+		<td>0.0001</td>
+		<td>1</td>
+		<td>0.000304</td>
+		<td>0.00034</td>
+		<td>0.000109</td>
+		<td>0.000304</td>
+		<td>0.000304</td>
+		<td>0.000304</td>
+		<td>0.000304</td>
+		<td>0.000663</td>
+	</tr>
+	<tr>
+		<td>e81</td>
+		<td>log</td>
+		<td>0.0001</td>
+		<td>1</td>
+		<td>0.00103</td>
+		<td>0.000659</td>
+		<td>0.000392</td>
+		<td>0.000185</td>
+		<td>0.000185</td>
+		<td>0.00097</td>
+		<td>0.00097</td>
+		<td>0.00103</td>
+	</tr>
+	<tr>
+		<td>nR</td>
+		<td>real</td>
+		<td>0.5</td>
+		<td>2</td>
+		<td>1.3</td>
+		<td>0.893</td>
+		<td>0.0954</td>
+		<td>0.871</td>
+		<td>0.871</td>
+		<td>0.871</td>
+		<td>0.871</td>
+		<td>1.3</td>
+	</tr>
+	<tr>
+		<td>nS</td>
+		<td>real</td>
+		<td>0.5</td>
+		<td>2</td>
+		<td>1.8</td>
+		<td>1.87</td>
+		<td>0.114</td>
+		<td>1.54</td>
+		<td>1.89</td>
+		<td>1.91</td>
+		<td>1.91</td>
+		<td>1.91</td>
+	</tr>
+	<tr>
+		<td>yb0</td>
+		<td>real</td>
+		<td>0</td>
+		<td>5e+03</td>
+		<td>197</td>
+		<td>197</td>
+		<td>0</td>
+		<td>197</td>
+		<td>197</td>
+		<td>197</td>
+		<td>197</td>
+		<td>197</td>
+	</tr>
+</table>
+</div>
+
+<script>
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+function openComparison(evt, compName) {
+    var i, compcontent, complinks;
+    compcontent = document.getElementsByClassName("compcontent");
+    for (i = 0; i < compcontent.length; i++) {
+        compcontent[i].style.display = "none";
+    }
+    complinks = document.getElementsByClassName("complinks");
+    for (i = 0; i < complinks.length; i++) {
+        complinks[i].className = complinks[i].className.replace(" active", "");
+    }
+    document.getElementById(compName).style.display = "block";
+    evt.currentTarget.className += "active";
+}
+
+document.getElementById("defaultOpen").click();
+</script>
+     
+</body>
+</html>

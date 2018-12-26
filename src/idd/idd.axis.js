@@ -21,7 +21,7 @@
 };
 
 // object that provides functions to render ticks    
-InteractiveDataDisplay.TicksRenderer = function (div, source) {
+InteractiveDataDisplay.TicksRenderer = function (div, source) {    
 
     if (typeof (Modernizr) != 'undefined' && div) {
         if (!Modernizr.canvas) {
@@ -32,6 +32,13 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     if (div && div.hasClass("idd-axis")) return;
     if (div) div[0].axis = this;
     var that = this;
+    
+    if (div) {
+        div.resize(function() {
+            console.log("tick rendered host resized. calling updateSize")
+            that.updateSize();  
+        })
+    }
 
     // link to div element - container of axis
     var _host = div;
@@ -89,7 +96,8 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         var prevSize = _size;
         if (div) {
             var divWidth = div.outerWidth(false);
-            var divHeight = div.outerHeight(false);
+            var divHeight = div.outerHeight(false);            
+            console.log("Axis "+_mode+" update size: host has divWidth "+divWidth+"; divHeight "+divHeight)
             _width = divWidth;
             _height = _rotateAngle ? divWidth * Math.abs(Math.sin(_rotateAngle)) + divHeight * Math.abs(Math.cos(_rotateAngle)) : divHeight;
         }
@@ -97,15 +105,19 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             _size = _width;
             if (_size != prevSize) {
                 canvas[0].width = _size;
-                labelsDiv.css("width", _size);              
+                labelsDiv.css("width", _size);
             }
+            // if(divHeight == 0.0) {
+            //     // horizontal axis host's height can be zero if the parent of the figure has display:hidden
+            //     labelsDiv.css("min-height", "1px");
+            // }
         }
         else {
             _size = _height;
             if (_size != prevSize) {
                 canvas[0].height = _size;
                 labelsDiv.css("height", _size);
-            }
+            }            
         }
         _deltaRange = (_size - 1) / (_range.max - _range.min);
         _canvasHeight = canvas[0].height;
@@ -155,7 +167,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     Object.defineProperty(this, "range", { get: function () { return _range; }, configurable: false });
     Object.defineProperty(this, "ticks", { get: function () { return _ticks; }, configurable: false });
 
-    Object.defineProperty(this, "DesiredSize", { get: function () { return { width: _width, height: _height }; }, configurable: false });
+    Object.defineProperty(this, "DesiredSize", { get: function () { return { width: _width, height: (_height==0)? 100 : _height }; }, configurable: false });
     Object.defineProperty(this, "axisSize", { get: function () { return _size; }, configurable: false });
     Object.defineProperty(this, "deltaRange", { get: function () { return _deltaRange; }, configurable: false });
     Object.defineProperty(this, "FontSize", { 
@@ -211,7 +223,8 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                   if(typeof inner === "string"){
                       var sz = ctx.measureText(inner);
                       width = sz.width;
-                      height = sz.height; // height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
+                      // height = sz.height;
+                      height = (isHorizontal ? h : parseFloat(fontSize)) + 8;
                   }else{ // html element
                       var $div = $("<div></div>").append($(inner)).css({ "display":"block", "visibility":"hidden", "position":"absolute" }).appendTo($("body"));                        
                       width = $div.width();

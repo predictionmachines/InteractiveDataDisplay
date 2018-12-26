@@ -1162,12 +1162,14 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // Makes layout of all children elements of the plot and invalidates the plots' images.
         this.updateLayout = function () {
             this.requestsUpdateLayout = false;
+            console.log("Update layout call")
             if (_isMaster) {
 
                 var oldVisibleRect = that.visibleRect;
                 var screenSize = { width: _host.width(), height: _host.height() };
 
                 if (screenSize.width <= 1 || screenSize.height <= 1) {
+                    console.log("screen size: "+screenSize.width+" x "+screenSize.height)
                     // The first updateLayout call performs some late initialization (screenSize can be zero)
                     // thus we can not just "return" without measure-arrange calls.
 

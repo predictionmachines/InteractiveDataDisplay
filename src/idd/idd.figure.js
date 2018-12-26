@@ -11,7 +11,7 @@ InteractiveDataDisplay.Figure = function (div, master) {
         centralPart.css("z-index", InteractiveDataDisplay.ZIndexNavigationLayer).css("background-color", "rgba(0,0,0,0)");
     }
 
-    var childDivs = div.children().toArray();
+    var childDivs = div.children().toArray();    
 
     /*
     childDivs.forEach(function (child) {
@@ -31,6 +31,12 @@ InteractiveDataDisplay.Figure = function (div, master) {
     centralPart.dblclick(function () {
         that.master.fitToView();
     });
+
+    // not sure. Does this cause layout update loop?
+    // div.resize(function() {
+    //   console.log("host resized. Requesting update layout")
+    //   that.master.requestUpdateLayout();  
+    // })
 
     // returns true if "position" of the element is not "absolute"
     // and changes the style is required.
@@ -289,7 +295,7 @@ InteractiveDataDisplay.Figure = function (div, master) {
 
     var finalSize;
     this.measure = function (screenSize) {
-
+        console.log("figure measure.  screenWidth "+screenSize.width+'; screenHeight '+screenSize.height)
         var plotScreenSizeChanged = that.screenSize.width !== screenSize.width || that.screenSize.height !== screenSize.height;
         var plotRect = this.fit(screenSize);
         //console.log("first step: " + plotRect.y + "," + plotRect.height);
@@ -380,6 +386,8 @@ InteractiveDataDisplay.Figure = function (div, master) {
 
         topBottomHeight = topHeight + bottomHeight;
 
+        console.log('figure first measure: topHeight '+topHeight+'; bottom height '+bottomHeight)
+
         //Measuring left and right slots
         var leftRightWidth = 0;
         var leftWidth = 0;
@@ -392,6 +400,8 @@ InteractiveDataDisplay.Figure = function (div, master) {
         rightWidth = measureVerticalPack(rightChildren, screenSize.height - topBottomHeight, { min: plotRect.y, max: plotRect.y + plotRect.height }, function (width) { return screenSize.width - width; }, topHeight, false);
 
         leftRightWidth = leftWidth + rightWidth;
+
+        console.log('figure first measure: left width '+leftWidth+'; right width '+rightWidth)
 
         var availibleCenterSize = { width: screenSize.width - leftRightWidth, height: screenSize.height - topBottomHeight };
 
@@ -430,6 +440,8 @@ InteractiveDataDisplay.Figure = function (div, master) {
 
         topHeight2 = measureHorizontalPack(topChildren, availibleCenterSize.width, { min: plotRect.x, max: plotRect.x + plotRect.width }, function (height) { return height; }, leftWidth, true);
         bottomHeight2 = measureHorizontalPack(bottomChildren, availibleCenterSize.width, { min: plotRect.x, max: plotRect.x + plotRect.width }, function (height) { return screenSize.height - height; }, leftWidth, false);
+
+        console.log('figure second measure: topHeight '+topHeight2+'; bottom height '+bottomHeight2)
 
         if (topHeight2 != topHeight) {
             var scale = topHeight / topHeight2;
@@ -505,6 +517,8 @@ InteractiveDataDisplay.Figure = function (div, master) {
 
         leftRightWidth2 = leftWidth2 + rightWidth2;
 
+        console.log('figure second measure: left width '+leftWidth2+'; right width '+rightWidth2)
+
         if (leftWidth != leftWidth2) {
             var scale = leftWidth / leftWidth2;
             var offset = 0;
@@ -569,6 +583,7 @@ InteractiveDataDisplay.Figure = function (div, master) {
     };
 
     this.arrange = function (finalRect) {
+        console.log('figure arrange. final rect width '+finalRect.width+'; height '+finalRect.height)
         InteractiveDataDisplay.Figure.prototype.arrange.call(this, finalRect);
         //InteractiveDataDisplay.Utils.arrangeDiv(this.host, finalSize);
     };
