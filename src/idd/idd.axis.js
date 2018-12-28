@@ -858,7 +858,35 @@ InteractiveDataDisplay.TickSource = function () {
                 if(typeof inner !== "string"){
                     $div.append(inner);
                 }else{
-                    $div.text(inner);
+                    var innerParsed = parseFloat(inner);
+                    if(isNaN(innerParsed)){
+                        $div.text(inner);
+                    }
+                    else{
+                        var floatPrecision = 3;
+                        var decPow = 0;
+                        var unsignedInner = Math.abs(innerParsed);
+                        var innerSign = Math.sign(innerParsed);
+                        if(unsignedInner > 1){
+                            while(unsignedInner > 10){
+                                decPow++;
+                                unsignedInner = unsignedInner/10;
+                            }
+                        }
+                        else if(unsignedInner <= 1){
+                            while(unsignedInner < 1 && unsignedInner != 0){
+                                decPow--;
+                                unsignedInner = unsignedInner*10;
+                            }
+                        }
+
+                        var resultStr = "";
+                        if(unsignedInner != 0) resultStr += innerSign*unsignedInner.toPrecision(floatPrecision);
+                        else resultStr = "0";
+                        if(decPow != 0) resultStr += " * 10<sup>" + decPow + "</sup>";
+
+                        $div.append(resultStr);
+                    }
                 }
                 isUsedPool[len] = true;
                 divPool[len] = $div;
