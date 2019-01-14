@@ -825,6 +825,49 @@ InteractiveDataDisplay.TickSource = function () {
     this.start;
     this.finish;
 
+    this.getInScientificNotation = function (floatNumber){
+        var decPow = 0;
+        var unsignedInner = Math.abs(floatNumber);
+        var innerSign = floatNumber < 0 ? -1 : 1;
+        if(unsignedInner > 1){
+            while(unsignedInner >= 10){
+                decPow++;
+                unsignedInner = unsignedInner/10;
+            }
+        }
+        else if(unsignedInner <= 1){
+            while(unsignedInner < 1 && unsignedInner != 0){
+                decPow--;
+                unsignedInner = unsignedInner*10;
+            }
+        }
+
+        var resultStr = "";
+        if(unsignedInner != 0) resultStr += innerSign*unsignedInner;
+        else resultStr = "0";
+        if(decPow != 0) resultStr += "&#215;10<sup>" + decPow + "</sup>";
+        return resultStr;
+    };
+
+    this.insertNumericTick = function (divjq, inner){
+        var precision = 2;
+        divjq.empty();
+        if(typeof inner !== "string"){
+            divjq.append(inner);
+        }else{
+            var innerParsed = parseFloat(inner);
+            if(isNaN(innerParsed)){
+                divjq.text(inner);
+            }
+            else{
+                if(Math.abs(innerParsed) < Math.pow(10,-precision) || Math.abs(innerParsed) >= Math.pow(10,precision+1))
+                    divjq.append(this.getInScientificNotation(innerParsed));
+                else
+                    divjq.text(innerParsed);
+            }
+        }
+    }
+
     // gets first available div (not used) or creates new one
     this.getDiv = function (x) {
         var inner = this.getInner(x);
@@ -842,52 +885,15 @@ InteractiveDataDisplay.TickSource = function () {
                 isUsedPool[i] = true;
                 styles[i].display = "block";
                 inners[i] = inner;
-                var $div = divPool[i];
-                if(typeof inner !== "string"){
-                    $div.empty();
-                    $div.append(inner);
-                }else{
-                    $div.text(inner);
-                }
+                var $div = divPool[i];                
+                this.insertNumericTick($div, inner);
                 var div = $div[0];
                 $div._size = { width: div.offsetWidth, height: div.offsetHeight };
                 return divPool[i];
             }
             else {
                 var $div = $("<div></div>");
-                if(typeof inner !== "string"){
-                    $div.append(inner);
-                }else{
-                    var innerParsed = parseFloat(inner);
-                    if(isNaN(innerParsed)){
-                        $div.text(inner);
-                    }
-                    else{
-                        var floatPrecision = 3;
-                        var decPow = 0;
-                        var unsignedInner = Math.abs(innerParsed);
-                        var innerSign = Math.sign(innerParsed);
-                        if(unsignedInner > 1){
-                            while(unsignedInner > 10){
-                                decPow++;
-                                unsignedInner = unsignedInner/10;
-                            }
-                        }
-                        else if(unsignedInner <= 1){
-                            while(unsignedInner < 1 && unsignedInner != 0){
-                                decPow--;
-                                unsignedInner = unsignedInner*10;
-                            }
-                        }
-
-                        var resultStr = "";
-                        if(unsignedInner != 0) resultStr += innerSign*unsignedInner.toPrecision(floatPrecision);
-                        else resultStr = "0";
-                        if(decPow != 0) resultStr += " * 10<sup>" + decPow + "</sup>";
-
-                        $div.append(resultStr);
-                    }
-                }
+                this.insertNumericTick($div, inner);
                 isUsedPool[len] = true;
                 divPool[len] = $div;
                 inners[len] = inner;
