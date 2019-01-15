@@ -1,11 +1,16 @@
+### 1.5.20 (January 15, 2019)
+
+New features:
+ - added support for data-idd-scientific-notation attribute on numeric axes. With this feature enabled ticks are represented in a form: m × 10ⁿ, where 1≤m≤9 for numbers(modulo): ≥10³ that divisible exactly by 10³, or <10⁻³ 
+
 ### 1.5.19 (December 27, 2018)
 
 New features:
  - Tooltip now shows the labels of label axis (in case of label axis depicts intervals)
  - Plot coordinates info can be suppressed in tooltip with `data-idd-suppress-tooltip-coords`
 
- ### 1.5.18 (December 21, 2018)
- - base64 data source is now suppoerted for specifing the data declaratively
+### 1.5.18 (December 21, 2018)
+ - base64 data source is now supported for specifying the data declaratively
  - Label axis data can be specified declaratively in the DOM before IDD plot initialization
 
 ### 1.5.17 (December 13, 2018)

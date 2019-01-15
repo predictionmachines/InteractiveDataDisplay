@@ -721,8 +721,10 @@ InteractiveDataDisplay.NumericAxis = function (div) {
         }
         else return this.axisSize / 2;
     };
-
-    this.base(div, new InteractiveDataDisplay.NumericTickSource());
+    
+    var tickNumberNotation = div.attr("data-idd-scientific-notation");
+    if(typeof tickNumberNotation !== 'undefined' && tickNumberNotation) this.base(div, new InteractiveDataDisplay.NumericTickSource(true));
+    else this.base(div, new InteractiveDataDisplay.NumericTickSource());
 }
 InteractiveDataDisplay.NumericAxis.prototype = new InteractiveDataDisplay.TicksRenderer;
 
@@ -825,8 +827,61 @@ InteractiveDataDisplay.TickSource = function () {
     this.start;
     this.finish;
 
+    this.getInScientificNotation = function (floatNumber){
+        var decPow = 0;
+        var unsignedInner = Math.abs(floatNumber);
+        var innerSign = floatNumber < 0 ? -1 : 1;
+        if(unsignedInner > 1){
+            var countZerosInner = unsignedInner;
+            while((countZerosInner >= 10) && (countZerosInner%10 == 0)){
+                decPow++;
+                countZerosInner = countZerosInner/10;
+            }
+            if(decPow < 3){
+                decPow = 0;
+            }
+            else{
+                decPow = Math.floor(Math.log10(unsignedInner));
+                unsignedInner = unsignedInner / Math.pow(10, Math.floor(Math.log10(unsignedInner)));
+            }
+        }
+        else if(unsignedInner <= 1){
+            while(unsignedInner < 1 && unsignedInner != 0){
+                decPow--;
+                unsignedInner = unsignedInner*10;
+            }
+        }
+
+        var resultStr = "";
+        if(unsignedInner != 0) resultStr += innerSign*unsignedInner;
+        else resultStr = "0";
+        if(decPow != 0) resultStr += "&#215;10<sup>" + decPow + "</sup>";
+        return resultStr;
+    };
+
+    this.insertNumericTick = function (divjq, inner, inScientificNotation){
+        var precision = 2;
+        divjq.empty();
+        if((typeof inner !== "string") || !inScientificNotation){
+            divjq.append(inner);
+        }
+        else{
+            var innerParsed = parseFloat(inner);
+            if(isNaN(innerParsed)){
+                divjq.text(inner);
+            }
+            else{
+                if(Math.abs(innerParsed) < Math.pow(10,-precision) || Math.abs(innerParsed) >= Math.pow(10,precision+1))
+                    divjq.append(this.getInScientificNotation(innerParsed));
+                else
+                    divjq.text(innerParsed);
+            }
+        }
+    }
+
     // gets first available div (not used) or creates new one
-    this.getDiv = function (x) {
+    this.getDiv = function (x, isScientific) {
+        var isInScientificNotation = (typeof isScientific === "undefined") ? false : isScientific;
         var inner = this.getInner(x);
         var i = inners.indexOf(inner);
         if (i != -1) {
@@ -842,24 +897,15 @@ InteractiveDataDisplay.TickSource = function () {
                 isUsedPool[i] = true;
                 styles[i].display = "block";
                 inners[i] = inner;
-                var $div = divPool[i];
-                if(typeof inner !== "string"){
-                    $div.empty();
-                    $div.append(inner);
-                }else{
-                    $div.text(inner);
-                }
+                var $div = divPool[i];                
+                this.insertNumericTick($div, inner, isInScientificNotation);
                 var div = $div[0];
                 $div._size = { width: div.offsetWidth, height: div.offsetHeight };
                 return divPool[i];
             }
             else {
                 var $div = $("<div></div>");
-                if(typeof inner !== "string"){
-                    $div.append(inner);
-                }else{
-                    $div.text(inner);
-                }
+                this.insertNumericTick($div, inner, isInScientificNotation);
                 isUsedPool[len] = true;
                 divPool[len] = $div;
                 inners[len] = inner;
@@ -924,13 +970,15 @@ InteractiveDataDisplay.TickSource = function () {
 }
 
 // tick source for decimal axis
-InteractiveDataDisplay.NumericTickSource = function () {
+InteractiveDataDisplay.NumericTickSource = function (isInScientificNotation) {    
     this.base = InteractiveDataDisplay.TickSource;
     this.base();
 
     var that = this;
 
     var delta, beta;
+    
+    var isScientific = (typeof isInScientificNotation === "undefined") ? false : isInScientificNotation;
 
     this.getInner = function (x) {
         if (x == 0) return x.toString();
@@ -971,13 +1019,13 @@ InteractiveDataDisplay.NumericTickSource = function () {
             for (var i = 0; i < count; i++) {
                 x = x0 + i * step;
                 if (x >= that.start && x <= that.finish) {
-                    ticks[l] = { position: x, label: that.getDiv(x) };
+                    ticks[l] = { position: x, label: that.getDiv(x, isScientific) };
                     l++;
                 }
             }
         }
         else {
-            ticks[0] = { position: that.start, label: that.getDiv(that.start), invisible: true };
+            ticks[0] = { position: that.start, label: that.getDiv(that.start, isScientific), invisible: true };
         }
 
         that.refreshDivs();
