@@ -832,23 +832,31 @@ InteractiveDataDisplay.TickSource = function () {
         var unsignedInner = Math.abs(floatNumber);
         var innerSign = floatNumber < 0 ? -1 : 1;
         if(unsignedInner > 1){
-            var countZerosInner = unsignedInner;
+            var countZerosInner = unsignedInner;            
             while((countZerosInner >= 10) && (countZerosInner%10 == 0)){
                 decPow++;
                 countZerosInner = countZerosInner/10;
             }
-            if(decPow < 3){
-                decPow = 0;
+            if(decPow < 3){ 
+                decPow = 0; // indicates that scientific notation is not enforced
             }
             else{
                 decPow = Math.floor(Math.log10(unsignedInner));
                 unsignedInner = unsignedInner / Math.pow(10, Math.floor(Math.log10(unsignedInner)));
             }
         }
-        else if(unsignedInner <= 1){
-            while(unsignedInner < 1 && unsignedInner != 0){
-                decPow--;
-                unsignedInner = unsignedInner*10;
+        else if(unsignedInner <= 1 && unsignedInner>0){
+            // close to 0.0        
+            decPow = Math.floor(Math.log10(unsignedInner));
+            if(decPow > -3){ 
+                decPow = 0; // indicates that scientific notation is not enforced
+            }
+            else{
+                decPow = Math.floor(Math.log10(unsignedInner));
+                unsignedInner = unsignedInner / Math.pow(10, Math.floor(Math.log10(unsignedInner)));
+                // to prevent precision related issues like 5.9999999999999 x 10^-4 I round here
+                var m = 1e6;
+                unsignedInner = Math.round(unsignedInner*m)/m;
             }
         }
 
