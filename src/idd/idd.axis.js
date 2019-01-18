@@ -194,7 +194,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
 
     var ticksInfo = [];
 
-    // calculate and cashe positions of ticks and labels' size
+    // calculate and cache positions of ticks and labels' size
     var getPositions = function (ticks) {
         var len = ticks.length;
         ticksInfo = new Array(len);

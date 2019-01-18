@@ -934,6 +934,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             this.requestsUpdateLayout = true;
             if (this.isAnimationFrameRequested) return; // we use already set time out
             this.isAnimationFrameRequested = true; // because update layout includes rendering of all objects
+            //InteractiveDataDisplay.Utils.requestAnimationFrame(that.updateLayout);
             InteractiveDataDisplay.Utils.requestAnimationFrame(updatePlotsOutput);
         };
 
@@ -1166,7 +1167,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         // Makes layout of all children elements of the plot and invalidates the plots' images.
         this.updateLayout = function () {
-            this.requestsUpdateLayout = false;
+            that.requestsUpdateLayout = false;
             if (_isMaster) {
 
                 var oldVisibleRect = that.visibleRect;
@@ -1177,15 +1178,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     // thus we can not just "return" without measure-arrange calls.
 
                     // first "measure" call sets _width, _height, etc                    
-                    var finalSize = this.measure({ width: 1, height: 1 }); // I pass ones here to avoid singularities
+                    var finalSize = that.measure({ width: 1, height: 1 }); // I pass ones here to avoid singularities
                     // first "arrange" call initializes _canvas, etc.
-                    this.arrange(finalSize);
+                    that.arrange(finalSize);
                     return;
                 }
 
                 var plotScreenSizeChanged = that.screenSize.width !== screenSize.width || that.screenSize.height !== screenSize.height;
 
-                var finalSize = this.measure(screenSize, plotScreenSizeChanged);
+                var finalSize = that.measure(screenSize, plotScreenSizeChanged);
                 _requestFitToView = false;
                 _requestFitToViewX = false;
                 _requestFitToViewY = false;
@@ -1202,7 +1203,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
                 // Notifying bound plots about new visible rectangle
                 if (!_suppressNotifyBoundPlots) {
-                    var boundPlots = InteractiveDataDisplay.Binding.getBoundPlots(this);
+                    var boundPlots = InteractiveDataDisplay.Binding.getBoundPlots(that);
                     var lengthH = boundPlots.h.length;
                     var lengthV = boundPlots.v.length;
                     if (lengthH > 0 || lengthV > 0) {

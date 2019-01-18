@@ -18,6 +18,7 @@ InteractiveDataDisplay.Binding = InteractiveDataDisplay.Binding || {};
     };
 
     // edges is array of {plot1, plot2}
+    // returns an array of plots reachable (by edges) from the 'plot'
     var getReachable = function (plot, edges) {
         var reachable = [];
         edges = edges.slice(0); // copy since we will modify the array
@@ -44,8 +45,9 @@ InteractiveDataDisplay.Binding = InteractiveDataDisplay.Binding || {};
         return reachable;
     };
 
+    // Repopulates (clears and rebuilds) plotsReachable array using plot pairs (binding edges) from plotsBinding array
     var buildReachability = function (plotsBinding, plotsReachable) {
-        // building list of plots
+        // Building unique list of plotsBinding, saving to plots
         var plots = [];
         for (var i = 0, length = plotsBinding.length; i < length; i++) {
             var p = plotsBinding[i];
@@ -55,6 +57,7 @@ InteractiveDataDisplay.Binding = InteractiveDataDisplay.Binding || {};
                 plots.push(p.plot2);
         }
 
+        // repopulating plotsReachable
         plotsReachable.splice(0);
         for (var i = 0, length = plots.length; i < length; i++) {
             var reachable = getReachable(plots[i], plotsBinding);
