@@ -548,7 +548,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         );
 
-
+        // DG: Why does master plot base code operates with .map, _mapControl?
+        // Reint
         this.selfMapRefresh = function () {
             if (!_isMaster) {
                 return;
@@ -756,18 +757,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var bb = _localbbox;
             _localbbox = undefined;
             return bb;
-        };
-
-        var getChildrenBounds = function () {
-            var bounds = undefined;
-            var plotsWithUndefinedBounds = [];
-            var n = _children.length;
-            for (var i = 0; i < n; i++) {
-                var plot = _children[i];
-                var plotBounds = plot.aggregateBounds().bounds;
-                bounds = InteractiveDataDisplay.Utils.unionRects(bounds, plotBounds);
-            }
-        };
+        };        
 
         // Aggregates all bounds of this plot and its children plots
         // Returns a rectangle in the plot plane (bounding box).
@@ -865,7 +855,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         // Makes children plots to render (recursive).
         // If renderAll is false, renders only plots with the property requestsRender set to true.
-        var updatePlotsOutput = function () {
+        var updatePlotsOutput = function () {            
             if (_master.flatRendering) { // flat rendering mode
                 renderAll = true;
                 if (_master._sharedCanvas) {
@@ -877,6 +867,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 that.isAnimationFrameRequested = false;
 
                 renderAll = true;
+                // console.log('updating whole layout')
                 that.updateLayout(); // this eventually fires the frameRendered event
             } else {
                 that.isAnimationFrameRequested = false;
@@ -884,7 +875,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 var screenSize = that.screenSize;
                 var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height }); // (x,y) is left/top            
                 // rectangle in the plot plane which is visible, (x,y) is left/bottom (i.e. less) of the rectangle
-
+                // console.log('updating only plots output')
                 updatePlotsOutputRec(renderAll, _master, plotRect, screenSize);
                 that.fireFrameRendered();
             }
@@ -931,10 +922,17 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             renderAll = true;
             _suppressNotifyBoundPlots = settings && settings.suppressNotifyBoundPlots;
             if (this.requestsUpdateLayout) return;
-            this.requestsUpdateLayout = true;
+            if(!settings || !settings.forceOnlyUpdatePlotsOutput) // this is hook for subplots functionality
+                this.requestsUpdateLayout = true;
             if (this.isAnimationFrameRequested) return; // we use already set time out
             this.isAnimationFrameRequested = true; // because update layout includes rendering of all objects
-            //InteractiveDataDisplay.Utils.requestAnimationFrame(that.updateLayout);
+            
+            // DG: You may wonder why the method is called requetUpdateLayout, but
+            //     schedules not this.updateLayout but updatePlotsOutput (see below) instead.
+            //     Seems to be tricky dependent behevior here.
+            //     updatePlotsOutput checks for this.requestsUpdateLayout and decides
+            //     whether to call updateLayout or updatePlotsOutputRec            
+
             InteractiveDataDisplay.Utils.requestAnimationFrame(updatePlotsOutput);
         };
 
@@ -960,6 +958,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // screenSize   {width,height}      Size of the output region to render inside
         // Returns true, if the plot actually has rendered something; otherwise, returns false.
         this.render = function (plotRect, screenSize) {
+            
             var localbb = this.getLocalBounds(); //  {x,y,width,height}
             var nowIsRendered = false;
 

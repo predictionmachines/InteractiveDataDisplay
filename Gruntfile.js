@@ -7,6 +7,7 @@
         "src/idd/idd.boundplots.js",
         "src/idd/idd.formatter.js",
         "src/idd/idd.base.js",
+        "src/idd/idd.subplots.js",
         "src/idd/idd.readers.js",
         "src/idd/idd.axis.js",
         "src/idd/idd.palette.js",
