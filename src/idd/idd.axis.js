@@ -1,4 +1,4 @@
-﻿InteractiveDataDisplay.InitializeAxis = function (div, params) {
+InteractiveDataDisplay.InitializeAxis = function (div, params) {
     
     if (div.hasClass("idd-axis"))
         throw "The div element already is initialized as an axis";
@@ -194,7 +194,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
 
     var ticksInfo = [];
 
-    // calculate and cashe positions of ticks and labels' size
+    // calculate and cache positions of ticks and labels' size
     var getPositions = function (ticks) {
         var len = ticks.length;
         ticksInfo = new Array(len);
@@ -707,6 +707,10 @@ InteractiveDataDisplay.NumericAxis = function (div) {
     this.base = InteractiveDataDisplay.TicksRenderer;
     div[0].axis = this;
 
+    var that = this;
+    var inScientificNotation = true;
+    var precision = 3;
+
     // DG: seems to be data coord -> screen coord transform
     //     ticks locations are transformed with this function to be put to screen
     this.getCoordinateFromTick = function (x) {
@@ -721,10 +725,13 @@ InteractiveDataDisplay.NumericAxis = function (div) {
         }
         else return this.axisSize / 2;
     };
-    
-    var tickNumberNotation = div.attr("data-idd-scientific-notation");
-    if(typeof tickNumberNotation !== 'undefined' && tickNumberNotation) this.base(div, new InteractiveDataDisplay.NumericTickSource(true));
-    else this.base(div, new InteractiveDataDisplay.NumericTickSource());
+
+    var scientificNotationAttr = div.attr("data-idd-scientific-notation");
+    if(typeof scientificNotationAttr !== 'undefined'){
+        if(scientificNotationAttr == "false" || scientificNotationAttr == "disable" || scientificNotationAttr == "disabled") inScientificNotation = false;
+    }
+    else inScientificNotation = false;
+    this.base(div, new InteractiveDataDisplay.NumericTickSource(inScientificNotation));
 }
 InteractiveDataDisplay.NumericAxis.prototype = new InteractiveDataDisplay.TicksRenderer;
 
@@ -826,38 +833,7 @@ InteractiveDataDisplay.TickSource = function () {
 
     this.start;
     this.finish;
-
-    this.getInScientificNotation = function (floatNumber){
-        var decPow = 0;
-        var unsignedInner = Math.abs(floatNumber);
-        var innerSign = floatNumber < 0 ? -1 : 1;
-        if(unsignedInner > 1){
-            var countZerosInner = unsignedInner;
-            while((countZerosInner >= 10) && (countZerosInner%10 == 0)){
-                decPow++;
-                countZerosInner = countZerosInner/10;
-            }
-            if(decPow < 3){
-                decPow = 0;
-            }
-            else{
-                decPow = Math.floor(Math.log10(unsignedInner));
-                unsignedInner = unsignedInner / Math.pow(10, Math.floor(Math.log10(unsignedInner)));
-            }
-        }
-        else if(unsignedInner <= 1){
-            while(unsignedInner < 1 && unsignedInner != 0){
-                decPow--;
-                unsignedInner = unsignedInner*10;
-            }
-        }
-
-        var resultStr = "";
-        if(unsignedInner != 0) resultStr += innerSign*unsignedInner;
-        else resultStr = "0";
-        if(decPow != 0) resultStr += "&#215;10<sup>" + decPow + "</sup>";
-        return resultStr;
-    };
+    this.precision = 3;
 
     this.insertNumericTick = function (divjq, inner, inScientificNotation){
         var precision = 2;
@@ -872,7 +848,7 @@ InteractiveDataDisplay.TickSource = function () {
             }
             else{
                 if(Math.abs(innerParsed) < Math.pow(10,-precision) || Math.abs(innerParsed) >= Math.pow(10,precision+1))
-                    divjq.append(this.getInScientificNotation(innerParsed));
+                    divjq.append(InteractiveDataDisplay.Utils.getInScientificNotation(innerParsed));
                 else
                     divjq.text(innerParsed);
             }
@@ -955,36 +931,97 @@ InteractiveDataDisplay.TickSource = function () {
     // function that increases number of ticks and returns new array
     this.increaseTickCount = function () {
     };
-
-    // rounds value (x) to specific number (n) of decimal digits
-    this.round = function (x, n) {
-        if (n <= 0) {
-            if (-n > 15) return parseFloat(x.toFixed(15));
-            return parseFloat(x.toFixed(-n));
-        }
-        else {
-            var degree = Math.pow(10, n - 1);
-            return Math.round(x / degree) * degree;
-        }
-    };
 }
+
+// rounds value (x) to specific number (n) of decimal digits
+InteractiveDataDisplay.Utils.round = function (x, n) {
+    if (n <= 0) {
+        if (-n > 15) return parseFloat(x.toFixed(15));
+        return parseFloat(x.toFixed(-n));
+    }
+    else {
+        var degree = Math.pow(10, n - 1);
+        return Math.round(x / degree) * degree;
+    }
+};
+
+// Represents a float number in a scientific notation (normalized):
+// m × 10^n, where the exponent n:integer "order of magnitude" (0<|n|), and the coefficient m:real "significand/mantissa" (0<=|m|<10)
+// when n >= prec parameter. Returns original float otherwise.
+// Used when a number is too big or too small to be conveniently written in decimal form.
+InteractiveDataDisplay.Utils.getInScientificNotation = function (floatNumber, prec, returnObject){
+    var decPow = 0;
+    var unsignedInner = Math.abs(floatNumber);
+    var innerSign = floatNumber < 0 ? -1 : 1;
+    var precision = (typeof prec === "undefined") ? 3 : prec;
+    var returnAsObject = (typeof returnObject === "undefined") ? false : returnObject;
+    if(unsignedInner > 1){
+        var countZerosInner = unsignedInner;            
+        while((countZerosInner >= 10) && (countZerosInner%10 == 0)){
+            decPow++;
+            countZerosInner = countZerosInner/10;
+        }
+        if(decPow < precision){ 
+            decPow = 0; // indicates that scientific notation is not enforced
+        }
+        else{
+            decPow = Math.floor(Math.log10(unsignedInner));
+            unsignedInner = unsignedInner / Math.pow(10, Math.floor(Math.log10(unsignedInner)));
+        }
+    }
+    else if(unsignedInner <= 1 && unsignedInner>0){
+        // close to 0.0        
+        decPow = Math.floor(Math.log10(unsignedInner));
+        if(decPow > -1*precision){ 
+            decPow = 0; // indicates that scientific notation is not enforced
+        }
+        else{
+            decPow = Math.floor(Math.log10(unsignedInner));
+            unsignedInner = unsignedInner / Math.pow(10, Math.floor(Math.log10(unsignedInner)));
+            // to prevent precision related issues like 5.9999999999999 x 10^-4 I round here
+            var m = 1e6;
+            unsignedInner = Math.round(unsignedInner*m)/m;
+        }
+    }
+
+    var resultStr = "";
+    if(unsignedInner != 0) resultStr += innerSign*unsignedInner;
+    else resultStr = "0";
+    if(decPow != 0) resultStr += "&#215;10<sup>" + decPow + "</sup>";
+    if(!returnAsObject)
+        return resultStr;
+    else
+        return { "m": innerSign*unsignedInner, "pow": decPow };
+};
 
 // tick source for decimal axis
 InteractiveDataDisplay.NumericTickSource = function (isInScientificNotation) {    
     this.base = InteractiveDataDisplay.TickSource;
     this.base();
+    
+    this.isScientific = (typeof isInScientificNotation === "undefined") ? false : isInScientificNotation;
+
+    var delta, beta;
 
     var that = this;
 
-    var delta, beta;
-    
-    var isScientific = (typeof isInScientificNotation === "undefined") ? false : isInScientificNotation;
-
-    this.getInner = function (x) {
+    this.getInner = function (x, prec) {
+        var minNumOrder = (typeof prec === "undefined") ? InteractiveDataDisplay.minNumOrder : prec;
         if (x == 0) return x.toString();
-        else if (beta >= InteractiveDataDisplay.minNumOrder)
-            return this.round(x / Math.pow(10, beta), -1) + "e+" + beta;
-        return this.round(x, beta).toString();
+        else if (beta >= minNumOrder){
+            var str = InteractiveDataDisplay.Utils.round(x / Math.pow(10, beta), -1) + "e+" + beta;
+            return str;
+        }
+        return InteractiveDataDisplay.Utils.round(x, beta).toString();
+    };
+
+    this.getMPow = function (x, prec) {
+        var minNumOrder = (typeof prec === "undefined") ? 3 : prec;
+        if (x == 0) return { "m": x, "pow": 0 };
+        else if (beta >= minNumOrder){
+            return  { "m": InteractiveDataDisplay.Utils.round(x / Math.pow(10, beta), -1) , "pow": beta };
+        }
+        return { "m": InteractiveDataDisplay.Utils.round(x, beta), "pow": 0 };
     };
 
     this.getTicks = function (_range) {
@@ -997,7 +1034,20 @@ InteractiveDataDisplay.NumericTickSource = function (isInScientificNotation) {
     };
     
     this.renderToSvg = function (tick, svg) {
-        return svg.text(that.getInner(tick.position));
+        if(that.isScientific){
+            var mPow = InteractiveDataDisplay.Utils.getInScientificNotation(tick.position, 3, true);
+            return svg.text(function(add) {
+                add.tspan(mPow.m).dy(18)
+                if(mPow.pow != 0){
+                    add.tspan('\u00D7')
+                    add.tspan('10')
+                    add.tspan(mPow.pow).style("font-size", "0.8em").dy(-10)
+                }
+            })
+        }
+        else{
+            return svg.text(that.getInner(tick.position));
+        }
     }
 
     var createTicks = function () {
@@ -1019,13 +1069,13 @@ InteractiveDataDisplay.NumericTickSource = function (isInScientificNotation) {
             for (var i = 0; i < count; i++) {
                 x = x0 + i * step;
                 if (x >= that.start && x <= that.finish) {
-                    ticks[l] = { position: x, label: that.getDiv(x, isScientific) };
+                    ticks[l] = { position: x, label: that.getDiv(x, that.isScientific) };
                     l++;
                 }
             }
         }
         else {
-            ticks[0] = { position: that.start, label: that.getDiv(that.start, isScientific), invisible: true };
+            ticks[0] = { position: that.start, label: that.getDiv(that.start, that.isScientific), invisible: true };
         }
 
         that.refreshDivs();
@@ -1108,8 +1158,8 @@ InteractiveDataDisplay.NumericTickSource = function (isInScientificNotation) {
             if (max > that.finish) max -= step;
 
             if (min != max) {
-                ticks[0] = { position: min, label: that.getDiv(that.round(min, beta)) };
-                ticks[1] = { position: max, label: that.getDiv(that.round(max, beta)) };
+                ticks[0] = { position: min, label: that.getDiv(InteractiveDataDisplay.Utils.round(min, beta)) };
+                ticks[1] = { position: max, label: that.getDiv(InteractiveDataDisplay.Utils.round(max, beta)) };
             }
             else {
                 beta--;
@@ -1126,7 +1176,7 @@ InteractiveDataDisplay.NumericTickSource = function (isInScientificNotation) {
                 for (var i = 0; i < count; i++) {
                     x = x0 + i * step;
                     if (x >= that.start && x <= that.finish) {
-                        ticks[l] = { position: x, label: that.getDiv(that.round(x, beta)) };
+                        ticks[l] = { position: x, label: that.getDiv(InteractiveDataDisplay.Utils.round(x, beta)) };
                         l++;
                     }
                 }
@@ -1285,7 +1335,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var _labels = [];
     var _ticks = []; // DG: Seems that it is in data coords, as the coords are later processed with getCoordinateFromTick
 
-    // if labels and ticks are defined - cash them
+    // if labels and ticks are defined - cache them
     // if ticks are undefined - they are calculated as an array of integers from 0 to length of labels
     if (params && params.labels) {
         var len = params.labels.length;

@@ -6,7 +6,7 @@
     minLabelSpace: 60, // minimum space (in px) between 2 labels on axis
     minTickSpace: 5, // minimum space (in px) between 2 ticks on axis
     minLogOrder: 4, // minimum order when labels on logarithmic scale are written with supscript
-    minNumOrder: 5, // minimum order when labels on numeric scale are written with supscript
+    minNumOrder: 8, // minimum order when labels on numeric scale are written with supscript
     TooltipDelay: 1, // delay (seconds) between mouse stops over an element and the tooltip appears
     TooltipDuration: 10, // duration (seconds) when tooltip is shown
     CssPrefix: '', // browser-dependent prefix for the set of css styles

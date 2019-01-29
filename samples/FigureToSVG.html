@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
-    <title>Export SVG</title>
+    <title>Export to SVG test</title>
     <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
     <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
 
@@ -18,12 +18,12 @@
 
     <script type="text/javascript">
         $(document).ready(function () {
-            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+            var chart = InteractiveDataDisplay.asPlot($("#figure1"));
         });
         
         var exportSvg = function(){
-            var chart = InteractiveDataDisplay.asPlot($("#chart"));
-            var svg = chart.exportToSvg();
+            var figure1 = InteractiveDataDisplay.asPlot($("#figure1"));
+            var svg = figure1.exportToSvg();
             
             $("#chart_svg").html(svg.svg());   
             $("#output").text(svg.svg());         
@@ -34,9 +34,22 @@
     <div id="chart_svg" style="width: 800px; height: 600px; margin-bottom: 5px; background-color: azure;" onclick="exportSvg(); $('#chart_svg').css('background-color', 'transparent');">
         Every time you click here you get an SVG snapshot of the chart below.
     </div>
-    <div id="chart" data-idd-plot="chart" style="width: 800px; height: 600px;" >
-        <div id="axisr" data-idd-axis="numeric" data-idd-placement="right"></div>
-        <div id="axist" data-idd-axis="numeric" data-idd-placement="top"></div>
+    <div id="figure1" data-idd-plot="figure" style="width: 800px; height: 600px;" data-idd-navigation-enabled="true" data-idd-legend-enabled="true">
+        <div id="grid1" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'
+            data-idd-xaxis='top_axis1' data-idd-yaxis='right_axis1'></div>
+        <!--<div id="bottom_axis1" data-idd-axis="numeric" data-idd-placement="bottom" data-idd-scientific-notation="false"></div>-->
+        <div id="right_axis1" data-idd-axis="numeric" data-idd-placement="left" data-idd-scientific-notation="true"></div>
+        <div id="top_axis1" data-idd-axis="labels" data-idd-placement="top">
+            ticks  labels
+            0   start
+            1   a
+            2   b
+            3   c
+            4   d
+            5   
+        </div>
+
+
         <div id="line" data-idd-name="sin(x)"
             data-idd-plot="polyline" 
             data-idd-style="stroke: rgb(255,150,79); thickness: 3">
@@ -650,8 +663,6 @@
             3   1.76938E-09       
         </div> 
     </div>  
-    <div id="output" />
+    <div id="output" ></div>
 </body>
 </html>
-
-
