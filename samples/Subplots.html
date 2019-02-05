@@ -42,7 +42,7 @@
         });
         
         var exportSvg = function(){
-            var subplots = new InteractiveDataDisplay.SubPlots(document.getElementById('table1'));
+            var subplots = InteractiveDataDisplay.asSubPlots(document.getElementById('table1'));
             var svg = subplots.renderSVG();
             
             $("#table_svg").html(svg.svg());

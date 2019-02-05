@@ -320,8 +320,8 @@ InteractiveDataDisplay.SubPlots = function (table) {
 	}	
 
 	this.renderSVG = function() {
-		var elemsToSVG = $(_host).find("div[data-idd-plot='plot'], div[data-idd-axis]");
-		//var elemsToSVG = $(_host).find("div[data-idd-plot='plot'], div[data-idd-axis], h4");
+		//var elemsToSVG = $(_host).find("div[data-idd-plot='plot'], div[data-idd-axis]");
+		var elemsToSVG = $(_host).find("div[data-idd-plot='plot'], div[data-idd-axis], h4");
 		
 		var svgs = [];
 		var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -338,10 +338,22 @@ InteractiveDataDisplay.SubPlots = function (table) {
 			if(plotOrAxis.is("h4")){
 				var text = svg.text(elemsToSVG[i].innerText);
 				svgs[i] = text.font({
-					family:   'Helvetica'
-				  , size:     40
-				  , anchor:   'middle'
-				  }).move(leftOffsets[i], topOffsets[i]);
+					family:	$(elemsToSVG[i]).css("font-family")
+				  , size:	$(elemsToSVG[i]).css("font-size")
+				  , weight:	$(elemsToSVG[i]).css("font-weight")
+				  })
+
+				switch ($(elemsToSVG[i]).css("text-align")) {
+					case "left":
+						svgs[i].move(leftOffsets[i], topOffsets[i]);
+						break;
+					case "right":
+						svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width() - svgs[i].bbox().w, topOffsets[i]);
+						break;
+					default:
+						svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width()/2 - svgs[i].bbox().w/2, topOffsets[i]);
+				  }
+
 			}
 			else{
 				if(plotOrAxis.attr('data-idd-plot')){
@@ -373,4 +385,16 @@ InteractiveDataDisplay.SubPlots = function (table) {
 		var subplots = initializeSubPlots();
 		return subplots;
 	}
+}
+
+InteractiveDataDisplay.asSubPlots = function (table) {
+	if(!table || table.nodeName!='TABLE')
+		throw "SubPlots must be applied to <table> element"
+
+	if (table.subplots !== undefined)
+		return table.subplots;
+	else {
+		return new InteractiveDataDisplay.SubPlots(table);
+	}
+
 }
