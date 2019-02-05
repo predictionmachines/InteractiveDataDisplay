@@ -30,8 +30,8 @@
         }
     </style>
     <script type="text/javascript">
-        $(document).ready(function () {            
-            var subplots = InteractiveDataDisplay.SubPlots(document.getElementById('table1'))
+        $(document).ready(function () {
+            var subplots = new InteractiveDataDisplay.SubPlots(document.getElementById('table1'));
 
             //plot11.host.on("visibleRectChanged", function(event,newPlotRect) {   
                 
@@ -40,6 +40,13 @@
             //})
             
         });
+        
+        var exportSvg = function(){
+            var subplots = new InteractiveDataDisplay.SubPlots(document.getElementById('table1'));
+            var svg = subplots.renderSVG();
+            
+            $("#table_svg").html(svg.svg());
+        };
     </script>
 </head>
 <body>
@@ -134,6 +141,10 @@
                     </div>
                 </div></td><td></td></tr>
         <tr><td></td><td><div data-idd-axis="numeric" data-idd-placement="bottom" id="bottom_axis1" data-idd-scientific-notation="true" style="width: 600px;"></div></td><td></td><td></td><td><div data-idd-axis="numeric" data-idd-placement="bottom" id="bottom_axis2" data-idd-scientific-notation="true" style="width: 600px;"></div></td><td></td></tr>
-    </table>    
+    </table>
+    
+    <div id="table_svg" style="width: 1249px; height: 688px; margin-top: 5px; background-color: lightgrey;" onclick="exportSvg(); $('#table_svg').css('background-color', 'transparent');">
+        Every time you click here you get an SVG snapshot of subplots above.
+    </div>
 </body>
 </html>

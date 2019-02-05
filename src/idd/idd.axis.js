@@ -651,6 +651,16 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         svg.path(path).stroke(strokeStyle).fill('none');    
     };
 
+    /// Renders an exis to the svg and returns the svg object.
+    this.exportToSvg = function () {
+        if (!SVG.supported) throw "SVG is not supported";
+        
+        var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        var svg = SVG(svgHost).size(_host.width(), _host.height());
+        that.renderToSvg(svg);
+        return svg;
+    };
+
     // append all new label divs to host and add class for them
     var addNewLabels = function (ticks) {
         var label;

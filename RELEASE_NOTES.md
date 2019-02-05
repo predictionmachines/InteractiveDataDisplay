@@ -1,3 +1,9 @@
+### 1.5.21 (February 5, 2019)
+
+New features:
+ - added Subplots
+ - Subplots can be exported as one SVG now.
+
 ### 1.5.20 (January 15, 2019)
 
 New features:
