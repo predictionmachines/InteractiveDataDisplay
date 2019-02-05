@@ -56,6 +56,7 @@ InteractiveDataDisplay.SubplotsTrapPlot.prototype = new InteractiveDataDisplay.P
 // The function must be applied as constructor to a <table> element of 3*N rows (<tr></tr>) and 3*M columns
 // this is because each plot can have slots for axes and titles. This slots are implemented as separate grid cells
 InteractiveDataDisplay.SubPlots = function (table) {
+
 	if(!table || table.nodeName!='TABLE')
 		throw "SubPlots must be applied to <table> element"
 	var _host = table
@@ -79,6 +80,8 @@ InteractiveDataDisplay.SubPlots = function (table) {
 	// If there is no any vertical axis for the synced row, there is no master, thus grid lines are not bound
 	var _rowMasterAxis = []
 	var _colMasterAxis = []
+
+	var that = this;
 
 	var initializeSubPlots = function() {
 		// traversing whole table structure.
@@ -301,8 +304,7 @@ InteractiveDataDisplay.SubPlots = function (table) {
 			} else {
 				// this is binding triggered update
 			}						
-		}
-		
+		}		
 
 		for(var i = 0; i < _trapPlots.length; i++) {
 			var row = _trapPlots[i]
@@ -313,7 +315,86 @@ InteractiveDataDisplay.SubPlots = function (table) {
 				}
 			}
 		}
+
+		_host.subplots = that;
+	}	
+
+	this.renderSVG = function() {
+		//var elemsToSVG = $(_host).find("div[data-idd-plot='plot'], div[data-idd-axis]");
+		var elemsToSVG = $(_host).find("div[data-idd-plot='plot'], div[data-idd-axis], h4");
+		
+		var svgs = [];
+		var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		var svg = SVG(svgHost).size($(_host).width(), $(_host).height());
+		var svgSubPlotsGroup = svg.nested();
+		var leftOffsets = [];
+		var topOffsets = [];
+		for (var i = 0; i < elemsToSVG.length; i++) {
+
+			leftOffsets[i] = $(elemsToSVG[i]).offset().left;
+			topOffsets[i] = $(elemsToSVG[i]).offset().top;
+			
+			var plotOrAxis = $(elemsToSVG[i]);
+			if(plotOrAxis.is("h4")){
+				var text = svg.text(elemsToSVG[i].innerText);
+				svgs[i] = text.font({
+					family:	$(elemsToSVG[i]).css("font-family")
+				  , size:	$(elemsToSVG[i]).css("font-size")
+				  , weight:	$(elemsToSVG[i]).css("font-weight")
+				  })
+
+				switch ($(elemsToSVG[i]).css("text-align")) {
+					case "left":
+						svgs[i].move(leftOffsets[i], topOffsets[i]);
+						break;
+					case "right":
+						svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width() - svgs[i].bbox().w, topOffsets[i]);
+						break;
+					default:
+						svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width()/2 - svgs[i].bbox().w/2, topOffsets[i]);
+				  }
+
+			}
+			else{
+				if(plotOrAxis.attr('data-idd-plot')){
+					var plot = InteractiveDataDisplay.asPlot(plotOrAxis);
+					svgs[i] = plot.exportToSvg();
+
+					var wth = $(elemsToSVG[i]).find("div[data-idd-plot='grid']").width();
+					var ht = $(elemsToSVG[i]).find("div[data-idd-plot='grid']").height();
+					var plotBox = svg.polyline('0,0 '+wth+',0 '+wth+','+ht+' 0,'+ht+' 0,0').fill('none');
+					plotBox.stroke({ color: '#808080', width: 1 }).move(leftOffsets[i], topOffsets[i]);
+					svgSubPlotsGroup.add(plotBox);
+				}
+				else{
+					svgs[i] = plotOrAxis[0].axis.exportToSvg();
+				}
+				svgs[i].move(leftOffsets[i], topOffsets[i]);
+			}
+
+
+			svgSubPlotsGroup.add(svgs[i]);
+		}
+
+		return svgSubPlotsGroup;
 	}
 
-	initializeSubPlots()
+	if (table.subplots !== undefined)
+		return table.subplots;
+	else {
+		var subplots = initializeSubPlots();
+		return subplots;
+	}
+}
+
+InteractiveDataDisplay.asSubPlots = function (table) {
+	if(!table || table.nodeName!='TABLE')
+		throw "SubPlots must be applied to <table> element"
+
+	if (table.subplots !== undefined)
+		return table.subplots;
+	else {
+		return new InteractiveDataDisplay.SubPlots(table);
+	}
+
 }
