@@ -320,9 +320,13 @@ InteractiveDataDisplay.SubPlots = function (table) {
 	}	
 
 	this.renderSVG = function() {
-		//var elemsToSVG = $(_host).find("div[data-idd-plot='plot'], div[data-idd-axis]");
-		var elemsToSVG = $(_host).find("div[data-idd-plot='plot'], div[data-idd-axis], h4");
-		
+		var searchForPlot = "div[data-idd-plot='plot']"; // subplots
+		var searchForAxis = "div[data-idd-axis]"; // axes
+		var searchForPlotTitle = "div.idd-subplot-title"; // titles of subplots
+		var searchForHAxisTitle = "div.idd-horizontalTitle"; // horizontal axis names
+		var searchForVAxisTitle = "div.idd-verticalTitle"; // vertical axis names
+		var elemsToSVG = $(_host).find(searchForPlot+', '+searchForAxis+', '+searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle);
+
 		var svgs = [];
 		var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 		var svg = SVG(svgHost).size($(_host).width(), $(_host).height());
@@ -335,7 +339,8 @@ InteractiveDataDisplay.SubPlots = function (table) {
 			topOffsets[i] = $(elemsToSVG[i]).offset().top;
 			
 			var plotOrAxis = $(elemsToSVG[i]);
-			if(plotOrAxis.is("h4")){
+			if(plotOrAxis.is(searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle)){
+				// subplot title
 				var text = svg.text(elemsToSVG[i].innerText);
 				svgs[i] = text.font({
 					family:	$(elemsToSVG[i]).css("font-family")
@@ -356,27 +361,33 @@ InteractiveDataDisplay.SubPlots = function (table) {
 
 			}
 			else{
-				if(plotOrAxis.attr('data-idd-plot')){
+				if(plotOrAxis.is(searchForPlot)){
+					// subplot
 					var plot = InteractiveDataDisplay.asPlot(plotOrAxis);
 					svgs[i] = plot.exportToSvg();
 
+					// plot border
 					var wth = $(elemsToSVG[i]).find("div[data-idd-plot='grid']").width();
 					var ht = $(elemsToSVG[i]).find("div[data-idd-plot='grid']").height();
 					var plotBox = svg.polyline('0,0 '+wth+',0 '+wth+','+ht+' 0,'+ht+' 0,0').fill('none');
 					plotBox.stroke({ color: '#808080', width: 1 }).move(leftOffsets[i], topOffsets[i]);
 					svgSubPlotsGroup.add(plotBox);
 				}
-				else{
+				else if(plotOrAxis.is(searchForAxis)){
+					// axis
 					svgs[i] = plotOrAxis[0].axis.exportToSvg();
+				}
+				else{
+					throw "Unexpected element type. SVG export failure";
 				}
 				svgs[i].move(leftOffsets[i], topOffsets[i]);
 			}
 
-
+			// adding new svg element to the svg group
 			svgSubPlotsGroup.add(svgs[i]);
 		}
 
-		return svgSubPlotsGroup;
+		return svg;
 	}
 
 	if (table.subplots !== undefined)
