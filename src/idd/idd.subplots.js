@@ -1,11 +1,5 @@
 InteractiveDataDisplay = InteractiveDataDisplay || {}
 
-// Enum
-InteractiveDataDisplay.SubPlotsBindingMode = {
-	NotBound: 0,
-	SelectedColumnsRowsBound: 1,
-	EverythingBound: 2
-}
 
 
 InteractiveDataDisplay.SubplotsTrapPlot = function (div, master) {
@@ -61,9 +55,6 @@ InteractiveDataDisplay.SubPlots = function (table) {
 		throw "SubPlots must be applied to <table> element"
 	var _host = table
 
-	// for now the only mode supported
-	var _mode = InteractiveDataDisplay.SubPlotsBindingMode.EverythingBound
-
 	var _Ncol = 0
 	var _Nrow = 0
 	var _masterPlots = [] //Nrow/3 x Ncol/3 jagged array of plots
@@ -73,13 +64,12 @@ InteractiveDataDisplay.SubPlots = function (table) {
 	var _axes = [] // this one holds the axis objects
 	var _isAxisVertical = [] // the same length as array above
 	var _axisLocationIndices = [] // this one holds indices (array of two numbers) of cell, containing the axis
+	var _horizontalAxes = [] // Nrow/3 x Ncol/3 jagged array of axes. these are back indices: grid cell -> associated horizontal axis
+	var _verticalAxes =[] // Nrow/3 x Ncol/3 jagged array of axes. these are back indices: grid cell -> associated vertical axis
 
-	// in SelectedColumnsRowsBound and EverythingBound modes, each row of plots can have master axis.
-	// The one which is used as a tick provider for a grid lines
-	// In fact any of the axes in synced row can be master axis
-	// If there is no any vertical axis for the synced row, there is no master, thus grid lines are not bound
-	var _rowMasterAxis = []
-	var _colMasterAxis = []
+	// In case of plot bindings, the axes which are used as tick source for the grid lines
+	var verticalMasterAxis = undefined
+	var horizontalMasterAxis = undefined	
 
 	var that = this;
 
@@ -92,12 +82,14 @@ InteractiveDataDisplay.SubPlots = function (table) {
 		// 2. Init plots (e.g. asPlot())
 		// 3. bind plot transforms to axis (e.g. axis.DataTrasform = plot.xTransform)
 		// 4. bind grid lines to axes (e.g. grid.xAxis = axis1)
-		// 5. activate naviation
+		// 5. activate navigation
 		// 6. activate rendering & binding
 		var jqTr = $("tr",_host)
 		_Nrow = jqTr.length
 		_masterPlots = new Array(_Nrow/3)
 		_trapPlots = new Array(_Nrow/3)
+		_verticalAxes = new Array(_Nrow/3)
+		_horizontalAxes = new Array(_Nrow/3)
 
 
 		// common code is separated into this function
@@ -110,9 +102,17 @@ InteractiveDataDisplay.SubPlots = function (table) {
 					console.warn("subplots: working with multiple axes in single slot is not implemented")
 				else {
 					var axis = InteractiveDataDisplay.InitializeAxis(jqAxis, {})
-					_axes.push(axis)					
-					_isAxisVertical.push((rIdx % 3) === 1)			
+					_axes.push(axis)
 					_axisLocationIndices.push([rIdx,cIdx])
+					var isVertical = (rIdx % 3) === 1				
+					_isAxisVertical.push(isVertical)
+					var associatedPlotRow = Math.floor(rIdx/3)
+					var associatedPlotCol = Math.floor(cIdx/3)
+					if(isVertical) {
+						_verticalAxes[associatedPlotRow][associatedPlotCol] = axis
+					} else {
+						_horizontalAxes[associatedPlotRow][associatedPlotCol] = axis
+					}
 				}
 			}
 		}
@@ -128,13 +128,18 @@ InteractiveDataDisplay.SubPlots = function (table) {
 				var pRowIdx = Math.floor(rIndex/3)
 				_masterPlots[pRowIdx] = new Array(_NCol/3)
 				_trapPlots[pRowIdx] = new Array(_NCol/3)
+				_verticalAxes[pRowIdx] = new Array(_NCol/3)
+				_horizontalAxes[pRowIdx] = new Array(_NCol/3)
 				jqTd.each(function(cIndex) {
 					var td = this
 					if((cIndex-1) % 3 == 0) { // col containing plots
 						var jqIdd = $("div[data-idd-plot='plot']",td)
 						// task #2						
-						var pColIdx = Math.floor(cIndex/3)					
-						_masterPlots[pRowIdx][pColIdx] = InteractiveDataDisplay.asPlot(jqIdd)
+						var pColIdx = Math.floor(cIndex/3)
+						var master = InteractiveDataDisplay.asPlot(jqIdd)					
+						_masterPlots[pRowIdx][pColIdx] = master
+						master.subplotRowIdx = pRowIdx
+						master.subplotColIdx = pColIdx
 						_trapPlots[pRowIdx][pColIdx] = InteractiveDataDisplay.asPlot($("div[data-idd-plot='subplots-trap']",td))
 					} else { // col containing left/right slots
 						// task #1
@@ -152,7 +157,7 @@ InteractiveDataDisplay.SubPlots = function (table) {
 	   	})
 	   
 	    // by this point the tasks #1 and #2 (initializations) are done
-		// proceding to bindings (tasks #3 and #4)
+		// proceeding to bindings (tasks #3 and #4)
 
 		// Task #3: binding plots transform to axes
 	    for(var i=0; i < _axes.length; i++) {
@@ -164,80 +169,44 @@ InteractiveDataDisplay.SubPlots = function (table) {
 			var plot = _masterPlots[plotRow][plotCol]
 			if(cellRow % 3 === 1) { // row with plots => left/right slot => yTransform is needed				
 				axis.dataTransform = plot.yDataTransform
-				switch(_mode) {
-					case InteractiveDataDisplay.SubPlotsBindingMode.EverythingBound:
-						// in this mode any vertical axis is master axis for whole the grid and we found it!
-						if(_colMasterAxis.length === 0)
-							_colMasterAxis.push(axis)
-					break;
-					default:
-						throw "not implemented yet"
-				}
+				//TODO: hand vertical axis bindings here
 			}
 			else {// row without plots => bottom/top slots => xTransform is needed
 				axis.dataTransform = plot.xDataTransform
-				switch(_mode) {
-					case InteractiveDataDisplay.SubPlotsBindingMode.EverythingBound:
-						// in this mode any horizontal axis is master axis for thw whole grid and we found it!
-						if(_rowMasterAxis.length === 0)
-							_rowMasterAxis.push(axis)
-					break;
-					default:
-						throw "not implemented yet"
-				}
+				//TODO: hand horizontal axis bindings here
 			}
 	    }
 
 	    // Task #4: binding grid lines to axis ticks
 	    //
-	    // this is tricky, as the plot may not contain axis in its slots
-	    // but the bound axis can be in other slots in the same row or column
-	    // it also depends on the subplots bound mode
-	    $("div[data-idd-plot='grid']").each(function(idx){			
+		// this is tricky, as the plot may not contain axis in its slots
+		// Also the axes can be bound	    
+	    $("div[data-idd-plot='grid']",_host).each(function(idx){			
 			var host = this
 			var grid = host.plot
-			switch(_mode) {
-				case InteractiveDataDisplay.SubPlotsBindingMode.EverythingBound:
-					// in this mode binding to the only master axis
-					if(_rowMasterAxis[0])
-						grid.xAxis = _rowMasterAxis[0]
-					if(_colMasterAxis[0])
-						grid.yAxis = _colMasterAxis[0]
-					
-				break;
-				case InteractiveDataDisplay.SubPlotsBindingMode.SelectedColumnsRowsBound:
-					var master = plot.master
-					// where is this plot in the grid? Looking for indices
-					var plotRow = -1
-					var plotCol = -1
-					for(var i = 0; i < _masterPlots.length && (plotRow === -1); i++) {
-						for(var j =0; j < _Ncol/3; j++) {
-							if(_masterPlots[i][j] === master) {
-								plotRow = i
-								plotCol = j
-								break
-							}
-						}
-					}
-					if(plotRow === -1)
-						throw "grid's master is not among the grid plots. Unsupported grid composition?"
-					throw "not implemented"
-				break;
-				default:
-					throw "not implemented"
-			}
-			
+			var master = grid.master
+			var subplotRowIdx = master.subplotRowIdx
+			var subplotColIdx = master.subplotColIdx
+			var horAxis = _horizontalAxes[subplotRowIdx][subplotColIdx]
+			if(horAxis)
+				grid.xAxis = horAxis
+			var vertAxis = _verticalAxes[subplotRowIdx][subplotColIdx]
+			if(vertAxis)
+				grid.yAxis = vertAxis
 	    })
 		
-		// Task #5: activate naviation
+		// Task #5: activate navigation
 		// we traveres master plots
 		for(var i = 0; i < _masterPlots.length; i++) {
 			var row = _masterPlots[i]
 			for(var j = 0; j < row.length; j++) {
 				var plot = row[j]
-				// attaching gesture source
-				var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream($(plot.host))
-				plot.navigation.gestureSource = gestureSource							
+				var naviEnabled = $(plot.host).attr("data-idd-navigation-enabled")
+				if(naviEnabled && naviEnabled==='true') {
+					// attaching gesture source
+					var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream($(plot.host))
+					plot.navigation.gestureSource = gestureSource
+				}
 			}
 		}
 
@@ -264,41 +233,45 @@ InteractiveDataDisplay.SubPlots = function (table) {
 				xRange = { min: vr.x_min, max: vr.x_max}
 
 				// we need to update all of the bound axes & update visual rects of the bound plots				
-				switch(_mode) {
-					case InteractiveDataDisplay.SubPlotsBindingMode.EverythingBound:
-						// 1) updating bound axes
-						// all of the axes are affected
-						for(var i = 0; i < _axes.length; i++) {
-							var axis = _axes[i]
-							if(_isAxisVertical[i])
-								axis.update(yRange)
-							else
-								axis.update(xRange)
-						}
-
-						// 2) updating bound plots
-						// traversing all of the grid master plots. Calling set visible to everyone except for originator
-						var visRec = {
-							x: vr.x_min,
-							y: vr.y_min,
-							width: vr.x_max - vr.x_min,
-							height: vr.y_max - vr.y_min
-						}
-						for(var i = 0; i < _masterPlots.length; i++) {
-							var row = _masterPlots[i]
-							for(var j = 0; j < row.length; j++) {
-								var plot = row[j]
-								if(plot === this.master)
-									continue // skipping the originator
-								plot.navigation.setVisibleRect(visRec, false, { suppressNotifyBoundPlots: true, forceOnlyUpdatePlotsOutput:true, syncUpdate:true });								
-							}
-						}
-					break;
-					default:
-						throw "not implemented"
-				}
 				
+				// 1) updating bound axes
+				
+				var master = this.master
+				var subplotRowIdx = master.subplotRowIdx
+				var subplotColIdx = master.subplotColIdx
+				
+				var horAxis = _horizontalAxes[subplotRowIdx][subplotColIdx]
+				if(horAxis)
+					horAxis.update(xRange)
+				var vertAxis = _verticalAxes[subplotRowIdx][subplotColIdx]
+				if(vertAxis)
+				vertAxis.update(yRange)
 
+				// for(var i = 0; i < _axes.length; i++) {
+				// 	var axis = _axes[i]
+				// 	if(_isAxisVertical[i])
+				// 		axis.update(yRange)
+				// 	else
+				// 		axis.update(xRange)
+				// }
+
+				// 2) updating bound plots
+				// traversing all of the grid master plots. Calling set visible to everyone except for originator
+				var visRec = {
+					x: vr.x_min,
+					y: vr.y_min,
+					width: vr.x_max - vr.x_min,
+					height: vr.y_max - vr.y_min
+				}
+				// for(var i = 0; i < _masterPlots.length; i++) {
+				// 	var row = _masterPlots[i]
+				// 	for(var j = 0; j < row.length; j++) {
+				// 		var plot = row[j]
+				// 		if(plot === this.master)
+				// 			continue // skipping the originator
+				// 		plot.navigation.setVisibleRect(visRec, false, { suppressNotifyBoundPlots: true, forceOnlyUpdatePlotsOutput:true, syncUpdate:true });								
+				// 	}
+				// }					
 
 				isRendering = false
 			} else {
@@ -319,8 +292,7 @@ InteractiveDataDisplay.SubPlots = function (table) {
 		_host.subplots = that;
 	}	
 
-	this.renderSVG = function() {
-		//var elemsToSVG = $(_host).find("div[data-idd-plot='plot'], div[data-idd-axis]");
+	this.renderSVG = function() {		
 		var elemsToSVG = $(_host).find("div[data-idd-plot='plot'], div[data-idd-axis], h4");
 		
 		var svgs = [];
