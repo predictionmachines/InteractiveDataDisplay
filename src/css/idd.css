@@ -593,4 +593,40 @@
     font-size:smaller;
     cursor: default;
 }
+
+.idd-subplots-slot-left {
+    float: right
+}
+
+.idd-subplots-slot-right {
+    float: left
+}
+
+.idd-subplots-slot-top {
+    vertical-align: bottom;
+}
+
+.idd-subplots-slot-bottom {
+    vertical-align: top;
+}
+
+table.idd-subplots-table {
+    border-spacing: 0;
+}
+
+.idd-subplot-title {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+table.idd-subplots-table td, tr {
+    margin: 0;
+    padding: 0;
+}
+
+div.idd-plot-master.idd-subplot {
+    border: 1px solid gray;
+}
+
 .ui-helper-hidden-accessible { display:none; }
