@@ -108,6 +108,8 @@ InteractiveDataDisplay.SubPlots = function (table) {
 					_isAxisVertical.push(isVertical)
 					var associatedPlotRow = Math.floor(rIdx/3)
 					var associatedPlotCol = Math.floor(cIdx/3)
+					axis.associatedPlotRow = associatedPlotRow
+					axis.associatedPlotCol = associatedPlotCol
 					if(isVertical) {
 						_verticalAxes[associatedPlotRow][associatedPlotCol] = axis
 					} else {
@@ -196,16 +198,49 @@ InteractiveDataDisplay.SubPlots = function (table) {
 	    })
 		
 		// Task #5: activate navigation
-		// we traveres master plots
+		// we traverse master plots
 		for(var i = 0; i < _masterPlots.length; i++) {
 			var row = _masterPlots[i]
 			for(var j = 0; j < row.length; j++) {
 				var plot = row[j]
 				var naviEnabled = $(plot.host).attr("data-idd-navigation-enabled")
 				if(naviEnabled && naviEnabled==='true') {
-					// attaching gesture source
-					var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream($(plot.host))
+					
+					var jqPlot = $(plot.host)
+					jqPlot.dblclick(function () {
+						this.plot.master.fitToView();
+					});	
+
+					var rowIdx = plot.master.subplotRowIdx
+					var colIdx = plot.master.subplotColIdx
+
+					// attaching gesture sources & handling double clicks
+					var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(jqPlot)
+					var horAxis = _horizontalAxes[rowIdx][colIdx]
+					if(horAxis) {
+						var jqAxisHost = horAxis.host
+						var bottomAxisGestures = InteractiveDataDisplay.Gestures.applyHorizontalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(jqAxisHost));
+						gestureSource = gestureSource.merge(bottomAxisGestures)
+
+						jqAxisHost.dblclick(function() {
+							var axis = this.axis
+							_masterPlots[axis.associatedPlotRow][axis.associatedPlotCol].fitToViewX();
+						});
+					}
+					var vertAxis = _verticalAxes[rowIdx][colIdx]
+					if(vertAxis) {
+						var jqAxisHost = vertAxis.host
+						var leftAxisGestures = InteractiveDataDisplay.Gestures.applyVerticalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(jqAxisHost));
+						gestureSource = gestureSource.merge(leftAxisGestures)
+						jqAxisHost.dblclick(function () {
+							var axis = this.axis
+							_masterPlots[axis.associatedPlotRow][axis.associatedPlotCol].fitToViewY();
+						});
+					}					
 					plot.navigation.gestureSource = gestureSource
+
+					
+					
 				}
 			}
 		}
