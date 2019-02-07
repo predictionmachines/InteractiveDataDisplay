@@ -321,16 +321,35 @@ InteractiveDataDisplay.SubPlots = function (table) {
 				  , weight:	$(elemsToSVG[i]).css("font-weight")
 				  })
 
-				switch ($(elemsToSVG[i]).css("text-align")) {
-					case "left":
-						svgs[i].move(leftOffsets[i], topOffsets[i]);
-						break;
-					case "right":
-						svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width() - svgs[i].bbox().w, topOffsets[i]);
-						break;
-					default:
-						svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width()/2 - svgs[i].bbox().w/2, topOffsets[i]);
-				  }
+				
+				if(plotOrAxis.is(searchForVAxisTitle)){
+					// vertical axis title
+					switch ($(elemsToSVG[i]).css("vertical-align")) {
+						case "top":
+							svgs[i].move(leftOffsets[i], topOffsets[i]);
+							break;
+						case "bottom":
+							svgs[i].move(leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height() - svgs[i].bbox().w);
+							svgs[i].rotate(-90, leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height() - svgs[i].bbox().w);
+							break;
+						default:
+							svgs[i].move(leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height()/2 + svgs[i].bbox().w/2);
+							svgs[i].rotate(-90, leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height()/2 + svgs[i].bbox().w/2);
+					}
+				}
+				else{
+					// horizontal axis title
+					switch ($(elemsToSVG[i]).css("text-align")) {
+						case "left":
+							svgs[i].move(leftOffsets[i], topOffsets[i]);
+							break;
+						case "right":
+							svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width() - svgs[i].bbox().w, topOffsets[i]);
+							break;
+						default:
+							svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width()/2 - svgs[i].bbox().w/2, topOffsets[i]);
+					}
+				}
 
 			}
 			else{
