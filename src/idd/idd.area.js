@@ -1,8 +1,7 @@
 ﻿// Area plot takes data with coordinates named 'x', 'y1', 'y2' and a fill colour named 'fill'. 
 InteractiveDataDisplay.Area = function (div, master) {
     var that = this;
-    var defaultFill = "#4169ed";
-    var defaultOpacity = 0.4;
+    var defaultFill = "rgba(65, 105, 237, 0.4)";    
 
     // Initialization (#1)
     var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(div, InteractiveDataDisplay.readCsv);
@@ -16,12 +15,10 @@ InteractiveDataDisplay.Area = function (div, master) {
     var _y1;
     var _y2; // arrays of lower and upper limits of the area
     var _fill = defaultFill;
-    var _opacity = defaultOpacity;
 
     // default styles:
     if (initialData) {
         _fill = typeof initialData.fill != "undefined" ? initialData.fill : defaultFill;
-        _opacity = typeof initialData.opacity != "undefined" ? initialData.opacity : defaultOpacity;
     }
 
     this.draw = function (data) {
@@ -47,7 +44,6 @@ InteractiveDataDisplay.Area = function (div, master) {
 
         // styles:
         _fill = typeof data.fill != "undefined" ? data.fill : defaultFill;
-        _opacity = typeof data.opacity != "undefined" ? data.opacity : defaultOpacity;
         this.invalidateLocalBounds();
 
         this.requestNextFrameOrUpdate();
@@ -99,11 +95,11 @@ InteractiveDataDisplay.Area = function (div, master) {
         InteractiveDataDisplay.Area.prototype.renderCore.call(this, plotRect, screenSize);
         var context = this.getContext(true);
 
-        InteractiveDataDisplay.Area.render.call(this, _x, _y1, _y2, _fill, plotRect, screenSize, context, _opacity);
+        InteractiveDataDisplay.Area.render.call(this, _x, _y1, _y2, _fill, plotRect, screenSize, context);
     };
 
     this.renderCoreSvg = function (plotRect, screenSize, svg) {
-        InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y1, _y2, _fill, _opacity);
+        InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y1, _y2, _fill);
     }
 
     // Clipping algorithms
@@ -128,19 +124,7 @@ InteractiveDataDisplay.Area = function (div, master) {
             this.requestNextFrameOrUpdate();
         },
         configurable: false
-    });
-
-    Object.defineProperty(this, "opacity", {
-        get: function () { return _opacity; },
-        set: function (value) {
-            if (value == _opacity) return;
-            _opacity = value;
-
-            this.fireAppearanceChanged("opacity");
-            this.requestNextFrameOrUpdate();
-        },
-        configurable: false
-    });
+    });    
 
     this.getLegend = function () {
         var that = this;
@@ -148,7 +132,7 @@ InteractiveDataDisplay.Area = function (div, master) {
         canvas[0].width = 40;
         canvas[0].height = 40;
         var ctx = canvas.get(0).getContext("2d");
-        ctx.globalAlpha = 0.5;
+        ctx.globalAlpha = 1;
         ctx.strokeStyle = _fill;
         ctx.fillStyle = _fill;
 
@@ -209,7 +193,9 @@ InteractiveDataDisplay.Area = function (div, master) {
         var that = this;
         legendSettings.height = 30;
         svg.add(svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5));
-        svg.add(svg.polyline([[0, 0], [0, 4.5], [13.5, 18], [18, 18], [18, 13.5], [4.5, 0], [0, 0]]).fill(_fill).opacity(0.5).translate(5, 5));
+        var fillRgba = InteractiveDataDisplay.ColorPalette.colorFromString(_fill)
+        var fillColor = 'rgb('+fillRgba.r+','+fillRgba.g+','+fillRgba.b+')'
+        svg.add(svg.polyline([[0, 0], [0, 4.5], [13.5, 18], [18, 18], [18, 13.5], [4.5, 0], [0, 0]]).fill(fillColor).opacity(fillRgba.a).translate(5, 5));
         var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
         var fontSize = parseFloat(style.getPropertyValue('font-size'));
         var fontFamily = style.getPropertyValue('font-family');
@@ -224,7 +210,7 @@ InteractiveDataDisplay.Area = function (div, master) {
 
 }
 InteractiveDataDisplay.Area.prototype = new InteractiveDataDisplay.CanvasPlot;
-InteractiveDataDisplay.Area.render = function (_x, _y1, _y2, _fill, plotRect, screenSize, context, globalAlpha) {
+InteractiveDataDisplay.Area.render = function (_x, _y1, _y2, _fill, plotRect, screenSize, context) {
     if (_x === undefined || _y1 == undefined || _y2 == undefined)
         return;
     var n = _y1.length;
@@ -234,13 +220,8 @@ InteractiveDataDisplay.Area.render = function (_x, _y1, _y2, _fill, plotRect, sc
     var dataToScreenX = t.dataToScreenX;
     var dataToScreenY = t.dataToScreenY;
 
-    // size of the canvas
-    var w_s = screenSize.width;
-    var h_s = screenSize.height;
-    var xmin = 0, xmax = w_s;
-    var ymin = 0, ymax = h_s;
+    // size of the canvas    
 
-    context.globalAlpha = globalAlpha;
     context.fillStyle = _fill;
 
     //Drawing polygons
@@ -282,7 +263,7 @@ InteractiveDataDisplay.Area.render = function (_x, _y1, _y2, _fill, plotRect, sc
         context.fill();
     }
 };
-InteractiveDataDisplay.Area.renderSvg = function (plotRect, screenSize, svg, _x, _y1, _y2, _fill, globalAlpha) {
+InteractiveDataDisplay.Area.renderSvg = function (plotRect, screenSize, svg, _x, _y1, _y2, _fill) {
     if (_x === undefined || _y1 == undefined || _y2 == undefined) return;
     var n = _y1.length;
     if (n == 0) return;
@@ -319,6 +300,10 @@ InteractiveDataDisplay.Area.renderSvg = function (plotRect, screenSize, svg, _x,
     }
     var segment = [];
     var nPoly = polygons.length;
+    
+    var fillRgba = InteractiveDataDisplay.ColorPalette.colorFromString(_fill)
+    var fillColor = 'rgb('+fillRgba.r+','+fillRgba.g+','+fillRgba.b+')'
+    
     for (var i = 0; i < nPoly; i++) {
         var curPoly = polygons[i];
         segment = [];
@@ -329,8 +314,8 @@ InteractiveDataDisplay.Area.renderSvg = function (plotRect, screenSize, svg, _x,
         for (var j = curPoly[1]; j >= curPoly[0]; j--) {
             segment.push([dataToScreenX(_x[j]), dataToScreenY(_y2[j])]);
         }
-        segment.push([dataToScreenX(_x[curPoly[0]]), dataToScreenY(_y1[curPoly[0]])]);
-        area_g.polyline(segment).fill(_fill).opacity(globalAlpha);
+        segment.push([dataToScreenX(_x[curPoly[0]]), dataToScreenY(_y1[curPoly[0]])]);        
+        area_g.polyline(segment).fill(fillColor).opacity(fillRgba.a);
     }
     area_g.clipWith(area_g.rect(w_s, h_s));
 }

@@ -2641,8 +2641,14 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var i = 0;
 
             var segment;
+
+            var strokeRgba = InteractiveDataDisplay.ColorPalette.colorFromString(_stroke)
+            var strokeColor = 'rgb('+strokeRgba.r+','+strokeRgba.g+','+strokeRgba.b+')'
+    
+
+
             var drawSegment = function () {
-                svg.polyline(segment).style({ fill: "none", stroke: _stroke, "stroke-width": _thickness });
+                svg.polyline(segment).style({ fill: "none", stroke: strokeColor, "stroke-width": _thickness, 'stroke-opacity':strokeRgba.a });
             }
             // Looking for non-missing value
             var nextValuePoint = function () {
@@ -2729,15 +2735,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 drawSegment(); // finishing previous segment (it is broken by missing value)
                 var c = code(x1, y1, xmin, xmax, ymin, ymax);
                 if (c == 0) {
-                    svg.circle(_thickness).translate(x1, y1).fill(_stroke);
+                    svg.circle(_thickness).translate(x1, y1).fill(strokeColor).opacity(strokeRgba.a);
                 }
             } else {
                 drawSegment(); // finishing previous segment (it is broken by missing value)
             }
         }
         this.renderCoreSvg = function (plotRect, screenSize, svg) {
-            InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y_l95, _y_u95, _fill95, 0.5);
-            InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y_l68, _y_u68, _fill68, 0.5);
+            InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y_l95, _y_u95, _fill95);
+            InteractiveDataDisplay.Area.renderSvg.call(this, plotRect, screenSize, svg, _x, _y_l68, _y_u68, _fill68);
             renderLineSvg(plotRect, screenSize, svg);
         };
 
@@ -2943,9 +2949,19 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             svg.add(svg.rect(legendSettings.width, legendSettings.height).fill("white").opacity(0.5));
             var isUncertainData95 = _y_u95 != undefined && _y_l95 != undefined;
             var isUncertainData68 = _y_u68 != undefined && _y_l68 != undefined;
-            if (isUncertainData95) svg.add(svg.polyline([[0, 0], [0, 9], [9, 18], [18, 18], [18, 9], [9, 0], [0, 0]]).fill(_fill95).opacity(0.5).translate(5, 5));
-            if (isUncertainData68) svg.add(svg.polyline([[0, 0], [0, 4.5], [13.5, 18], [18, 18], [18, 13.5], [4.5, 0], [0, 0]]).fill(_fill68).opacity(0.5).translate(5, 5));
-            svg.add(svg.line(0, 0, 18, 18).stroke({ width: _thickness, color: _stroke }).translate(5, 5));
+
+            var strokeRgba = InteractiveDataDisplay.ColorPalette.colorFromString(_stroke)
+            var strokeColor = 'rgb('+strokeRgba.r+','+strokeRgba.g+','+strokeRgba.b+')'
+
+            var fill95Rgba = InteractiveDataDisplay.ColorPalette.colorFromString(_fill95)
+            var fill95Color = 'rgb('+fill95Rgba.r+','+fill95Rgba.g+','+fill95Rgba.b+')'
+
+            var fill68Rgba = InteractiveDataDisplay.ColorPalette.colorFromString(_fill68)
+            var fill68Color = 'rgb('+fill68Rgba.r+','+fill68Rgba.g+','+fill68Rgba.b+')'
+
+            if (isUncertainData95) svg.add(svg.polyline([[0, 0], [0, 9], [9, 18], [18, 18], [18, 9], [9, 0], [0, 0]]).fill(fill95Color).opacity(fill95Rgba.a).translate(5, 5));
+            if (isUncertainData68) svg.add(svg.polyline([[0, 0], [0, 4.5], [13.5, 18], [18, 18], [18, 13.5], [4.5, 0], [0, 0]]).fill(fill68Color).opacity(fill68Rgba.a).translate(5, 5));
+            svg.add(svg.line(0, 0, 18, 18).stroke({ width: _thickness, color: strokeColor }).translate(5, 5));
             var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
             var fontSize = parseFloat(style.getPropertyValue('font-size'));
             var fontFamily = style.getPropertyValue('font-family');
