@@ -33,7 +33,7 @@ describe('palette.js InteractiveDataDisplay.ColorPalette', function () {
 });
 
 describe('palette.js InteractiveDataDisplay.Lexer', function () {
-    it('ColorfromHex method should convert colors from hex value to rgb', function () {
+    it('colorFromString method should convert colors from hex value to rgba', function () {
         // black color
         var color = InteractiveDataDisplay.ColorPalette.colorFromString("#000000");
         expect(color.r).toBe(0);
@@ -68,6 +68,105 @@ describe('palette.js InteractiveDataDisplay.Lexer', function () {
         expect(color.g).toBe(170);
         expect(color.b).toBe(193);
         expect(color.a).toBe(0.5450980392156862);
+    });
+
+    it('colorFromString method should convert colors from names value to rgba', function () {
+        // red color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("red");
+        expect(color.r).toBe(255);
+        expect(color.g).toBe(0);
+        expect(color.b).toBe(0);
+        expect(color.a).toBe(1);
+
+        // white color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("white");
+        expect(color.r).toBe(255);
+        expect(color.g).toBe(255);
+        expect(color.b).toBe(255);
+        expect(color.a).toBe(1);
+
+        // black color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("black");
+        expect(color.r).toBe(0);
+        expect(color.g).toBe(0);
+        expect(color.b).toBe(0);
+        expect(color.a).toBe(1);
+    });
+
+    it('colorFromString method should convert colors from rgb(red, green, blue) value to rgba', function () {
+        // red color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("rgb(255,0,0)");
+        expect(color.r).toBe(255);
+        expect(color.g).toBe(0);
+        expect(color.b).toBe(0);
+        expect(color.a).toBe(1);
+
+        // white color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("rgb(255, 255, 255)");
+        expect(color.r).toBe(255);
+        expect(color.g).toBe(255);
+        expect(color.b).toBe(255);
+        expect(color.a).toBe(1);
+
+        // black color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("rgb(0,0,0)");
+        expect(color.r).toBe(0);
+        expect(color.g).toBe(0);
+        expect(color.b).toBe(0);
+        expect(color.a).toBe(1);
+    });
+
+    it('colorFromString method should convert colors from rgb(red%, green%, blue%) value to rgba', function () {
+        // red color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("rgb(100%,0%,0%)");
+        expect(color.r).toBe(255);
+        expect(color.g).toBe(0);
+        expect(color.b).toBe(0);
+        expect(color.a).toBe(1);
+
+        // white color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("rgb(100%, 100%, 100%)");
+        expect(color.r).toBe(255);
+        expect(color.g).toBe(255);
+        expect(color.b).toBe(255);
+        expect(color.a).toBe(1);
+
+        // black color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("rgb(0%,0%,0%)");
+        expect(color.r).toBe(0);
+        expect(color.g).toBe(0);
+        expect(color.b).toBe(0);
+        expect(color.a).toBe(1);
+    });
+
+    it('colorFromString method should convert colors from rgba(red, green, blue, alpha) value to rgba', function () {
+        // red color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("rgba(255,0,0,1.0)");
+        expect(color.r).toBe(255);
+        expect(color.g).toBe(0);
+        expect(color.b).toBe(0);
+        expect(color.a).toBe(1);
+
+        // white color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("rgba(255, 255, 255, 1.0)");
+        expect(color.r).toBe(255);
+        expect(color.g).toBe(255);
+        expect(color.b).toBe(255);
+        expect(color.a).toBe(1);
+
+        // black color
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("rgba(0,0,0, 1.0)");
+        expect(color.r).toBe(0);
+        expect(color.g).toBe(0);
+        expect(color.b).toBe(0);
+        expect(color.a).toBe(1);
+
+        // red color, tranparent
+        var color = InteractiveDataDisplay.ColorPalette.colorFromString("rgba(255,0,0, 0.2)");
+        expect(color.r).toBe(255);
+        expect(color.g).toBe(0);
+        expect(color.b).toBe(0);
+        expect(color.a).toBe(0.2);
     });
 });
 

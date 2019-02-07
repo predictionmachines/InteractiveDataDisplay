@@ -483,32 +483,88 @@ InteractiveDataDisplay.Lexer = function (paletteString) {
 };
 
 InteractiveDataDisplay.ColorPalette.colorFromString = function (hexColor) {
+    // CSS color can be defined (https://www.w3schools.com/cssref/css_colors_legal.asp)
+    // 
+    // * Predefined/Cross-browser color names
+    // * Hexadecimal colors
+    // * RGB colors
+    // * RGBA colors
+    // * HSL colors
+    // * HSLA colors    
+
     var colours = InteractiveDataDisplay.ColorPalette.getColorNames();
     if (typeof (hexColor) !== "string")
         throw "wrong definition of color: must be a string";
 
     var _r, _g, _b, _a;
+    
+    var parsed = false
 
-    if (colours[hexColor.toLowerCase()]) {
+    if (colours[hexColor.toLowerCase()]) { // handling Predefined/Cross-browser color names
         var hex = colours[hexColor.toLowerCase()];
         hexColor = hex;
     }
-    if (hexColor.charAt(0) == '#') {
+    if (hexColor.charAt(0) == '#') { // handling Hexadecimal colors
+        // #RRGGBB, where the RR (red), GG (green) and BB (blue) hexadecimal integers specify the components of the color. All values must be between 00 and FF
         if (hexColor.length == 7) {
             _a = 1;
             _r = parseInt(hexColor.substring(1, 3), 16);
             _g = parseInt(hexColor.substring(3, 5), 16);
             _b = parseInt(hexColor.substring(5, 7), 16);
         }
-        else if (hexColor.length == 9) {
+        else if (hexColor.length == 9) { // DG: Is #RRGGBBAA supported by CSS?
             _r = parseInt(hexColor.substring(1, 3), 16);
             _g = parseInt(hexColor.substring(3, 5), 16);
             _b = parseInt(hexColor.substring(5, 7), 16);
             _a = parseInt(hexColor.substring(7, 9), 16) / 255.0;
         }
         else throw "wrong definition of hex color";
+        parsed = true
     }
-    else throw "wrong definition of hex color";
+    if (!parsed) { //handling RGB colors
+        // rgb(red, green, blue)
+        // Each parameter (red, green, and blue) defines the intensity of the color and can be an integer between 0 and 255 or a percentage value (from 0% to 100%)
+        // e.g. rgb(0,0,255) and rgb(0%,0%,100%)
+        var rgbByteRegex = /rgb\(\s*(\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\s*\)/
+        var rgbPercentRegex = /rgb\(\s*([0-9]|[1-8][0-9]|9[0-9]|100)%,\s*([0-9]|[1-8][0-9]|9[0-9]|100)%,\s*([0-9]|[1-8][0-9]|9[0-9]|100)%\s*\)/
+    
+        var match = rgbByteRegex.exec(hexColor);
+        if (match !== null) {
+            _a = 1
+            _r = parseInt(match[1])
+            _g = parseInt(match[2])
+            _b = parseInt(match[3])
+            parsed = true
+        }
+        if(!parsed) {
+            match = rgbPercentRegex.exec(hexColor)
+            if (match !== null) {
+                _a = 1
+                _r = Math.round(parseInt(match[1])*2.55)
+                _g = Math.round(parseInt(match[2])*2.55)
+                _b = Math.round(parseInt(match[3])*2.55)
+                parsed = true
+            }
+        }
+    }
+    if (!parsed) { //handling RGBA colors
+        // rgba(red, green, blue, alpha)
+        // The alpha parameter is a number between 0.0 (fully transparent) and 1.0 (fully opaque).
+        // rgba(255, 0, 0, 0.3)
+        var rgbaByteRegex = /rgba\(\s*(\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3}),\s*([0|1]\.?\d+)\)/
+    
+        var match = rgbaByteRegex.exec(hexColor);
+        if (match !== null) {            
+            _r = parseInt(match[1])
+            _g = parseInt(match[2])
+            _b = parseInt(match[3])
+            _a = parseFloat(match[4])
+            parsed = true
+        }        
+    }
+    
+    if(!parsed)
+        throw "Unsupported color definition";
 
     if (isNaN(_r) || isNaN(_g) || isNaN(_b) || isNaN(_a))
         throw "wrong definition of hex color";
