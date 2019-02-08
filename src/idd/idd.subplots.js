@@ -389,16 +389,19 @@ InteractiveDataDisplay.SubPlots = function (table) {
 			}
 			else{
 				if(plotOrAxis.is(searchForPlot)){
-					// subplot
-					var plot = InteractiveDataDisplay.asPlot(plotOrAxis);
-					svgs[i] = plot.exportToSvg();
-
 					// plot border
 					var wth = $(elemsToSVG[i]).parent().width();
 					var ht = $(elemsToSVG[i]).parent().height();
 					var plotBox = svg.polyline('0,0 '+wth+',0 '+wth+','+ht+' 0,'+ht+' 0,0').fill('none');
 					plotBox.stroke({ color: '#808080', width: 1 }).move(leftOffsets[i], topOffsets[i]);
+					plotBox.attr('shape-rendering', 'crispEdges');
 					svgSubPlotsGroup.add(plotBox);
+
+					// subplot
+					var plot = InteractiveDataDisplay.asPlot(plotOrAxis);
+					svgs[i] = plot.exportToSvg();
+					leftOffsets[i] += parseFloat($(elemsToSVG[i]).css('border-width').replace("px","")); 
+					topOffsets[i] += parseFloat($(elemsToSVG[i]).css('border-width').replace("px",""));
 				}
 				else if(plotOrAxis.is(searchForAxis)){
 					// axis
