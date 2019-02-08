@@ -359,8 +359,8 @@ InteractiveDataDisplay.SubPlots = function (table) {
 					svgs[i] = plot.exportToSvg();
 
 					// plot border
-					var wth = $(elemsToSVG[i]).find("div[data-idd-plot='grid']").width();
-					var ht = $(elemsToSVG[i]).find("div[data-idd-plot='grid']").height();
+					var wth = $(elemsToSVG[i]).parent().width();
+					var ht = $(elemsToSVG[i]).parent().height();
 					var plotBox = svg.polyline('0,0 '+wth+',0 '+wth+','+ht+' 0,'+ht+' 0,0').fill('none');
 					plotBox.stroke({ color: '#808080', width: 1 }).move(leftOffsets[i], topOffsets[i]);
 					svgSubPlotsGroup.add(plotBox);

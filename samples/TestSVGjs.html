@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            var svg = SVG(svgHost).size(1000, 800);
+            var svgSubPlotsGroup = svg.nested();
+            
+            var gradient1 = svg.gradient('linear', function(stop) {
+                    stop.at(0, 'red')
+                    stop.at(1, 'orange')
+                })
+            
+            var gradient2 = svg.gradient('linear', function(stop) {
+                    stop.at(0, 'yellow')
+                    stop.at(1, 'green')
+                })
+            
+            var gradient3 = svg.gradient('linear', function(stop) {
+                    stop.at(0, 'blue')
+                    stop.at(1, 'purple')
+                })
+            
+            var gradient4 = svg.gradient('linear', function(stop) {
+                    stop.at(0, 'black')
+                    stop.at(1, 'pink')
+                })
+        
+            var plotBox = svg.polyline('0,0 700,0 700,300 0,300 0,0').fill('none');
+            plotBox.stroke({ color: '#808080', width: 1 });
+        
+            var hline = svg.polyline('0,0 500,0');
+            hline.stroke({ color: 'blue', width: 1 }).move(200, 100);
+
+
+            var rectnr = svg.rect(100, 25).fill(gradient1);
+            rectnr.attr({ color: 'red' }).move(400,300);
+
+            var rect3 = svg.rect(100, 25).fill(gradient4);
+            rect3.stroke({ color: 'pink' }).move(400,400);
+            rect3.rotate(-90, 400, 400);
+
+            /*var rect = svg.rect(100, 25).fill(gradient2);
+            rect.stroke({color: 'black'}).move(400,300);
+            rect.rotate(-90, 400, 300);
+
+
+            var rect3nr = svg.rect(100, 25).fill(gradient3);
+            rect3nr.stroke({color: 'yellow'}).move(400,400);*/
+
+
+            var wht = 100;
+            var hth = 25;
+
+            var xOffset = 500;
+            var yOffset = 250;
+
+            var rect3nr = svg.rect(wht, hth).fill(gradient2);
+            rect3nr.stroke({color: 'yellow'}).move(xOffset, yOffset);
+
+            var rect = svg.rect(wht, hth).fill(gradient3);
+            rect.stroke({color: 'black'}).move(xOffset, yOffset + wht);
+            rect.rotate(-90, xOffset, yOffset + wht);
+
+
+            svgSubPlotsGroup.add(plotBox);
+            svgSubPlotsGroup.add(rectnr);
+            //svgSubPlotsGroup.add(rect3nr);
+            //svgSubPlotsGroup.add(rect);
+            svgSubPlotsGroup.add(rect3);
+            svgSubPlotsGroup.add(hline);
+
+
+            $("#svg").html(svg.svg());
+        });
+    </script>
+</head>
+<body>
+    <div id="svg"></div>
+</body>
+</html>
