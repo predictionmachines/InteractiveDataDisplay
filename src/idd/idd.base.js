@@ -285,10 +285,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // Note: data-idd-visible-region attribute is handled at the end of the constructor, as it needs more plot objects to be defined and valid 
         if (div) {
             _name = div.attr("data-idd-name") || div.attr("id") || "";
-            if(div.attr("data-idd-ignored-by-fit-to-view")) {
-                div.removeAttr("data-idd-ignored-by-fit-to-view");
-                _isIgnoredByFitToView = true;
-            }
+
             if(div.attr("data-idd-X-log")) {                
                 div.removeAttr("data-idd-X-log");                
                 _xDataTransform = InteractiveDataDisplay.logTransform;
@@ -297,15 +294,27 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 div.removeAttr("data-idd-Y-log");                
                 _yDataTransform = InteractiveDataDisplay.logTransform;
             }
-            if(div.attr("data-idd-padding")) {
-                _padding = Number(div.attr("data-idd-padding"))
-                div.removeAttr("data-idd-padding");             
+
+            var style = {};
+            InteractiveDataDisplay.Utils.readStyle(div, style);
+            if(style.hasOwnProperty("padding")) {
+                _padding = Number(style["padding"]);
             }
-            if(div.attr("data-idd-suppress-tooltip-coords")) {                
-                div.removeAttr("data-idd-suppress-tooltip-coords");                
-                _tooltipSettings = _tooltipSettings || {}
-                _tooltipSettings.showCursorCoordinates = false
+            if(style.hasOwnProperty("suppress-tooltip-coords")) {
+                _tooltipSettings = _tooltipSettings || {};
+                _tooltipSettings.showCursorCoordinates = Boolean(style["suppress-tooltip-coords"]);
             }
+            if(style.hasOwnProperty("ignored-by-fit-to-view")) {
+                _isIgnoredByFitToView = Boolean(style["ignored-by-fit-to-view"]);
+            }
+            _tooltipSettings = _tooltipSettings || {};
+            if(style.hasOwnProperty("tooltipDelay")) {
+                _tooltipSettings.tooltipDelay = Number(style["tooltipDelay"]);
+            }
+            else
+                _tooltipSettings.tooltipDelay = InteractiveDataDisplay.TooltipDuration * 1000;
+
+
             div[0].plot = this; // adding a reference to the initialized DOM object of the plot, pointing to the plot instance.
 
             // Disables user selection for this element:
@@ -1473,7 +1482,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     localTooltip.fadeOutTimer = setTimeout(function () {
                         _updateTooltip = undefined;
                         localTooltip.fadeOut('fast');
-                    }, InteractiveDataDisplay.TooltipDuration * 1000);
+                    }, _tooltipSettings.tooltipDelay);
                 });
             };
 
@@ -1506,7 +1515,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 clearTooltip();
 
                 if (that.master.isToolTipEnabled) {
-                    _tooltipTimer = setTimeout(function () { onShowTooltip(originHost, p); }, InteractiveDataDisplay.TooltipDelay * 1000);
+                    _tooltipTimer = setTimeout(function () { onShowTooltip(originHost, p); }, _tooltipSettings.tooltipDelay);
                 }
 
                 var onmousemove_rec = function (plot, origin_s, origin_p) {
