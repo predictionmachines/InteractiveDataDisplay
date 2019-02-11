@@ -1,3 +1,7 @@
+### 1.5.22 (February 11, 2019)
+
+Bug fixes
+
 ### 1.5.21 (February 5, 2019)
 
 New features:

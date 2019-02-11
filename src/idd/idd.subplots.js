@@ -152,7 +152,7 @@ InteractiveDataDisplay.SubPlots = function (table) {
 							if (style) {
 								var isLegendVisible = typeof style.isLegendVisible != "undefined" ? style.isLegendVisible : "true";
 								if(isLegendVisible === "true") {
-									var legendDiv = $("<div></div>").prependTo(jqIdd);
+									var legendDiv = $("<div style='z-index: 10;'></div>").appendTo(jqIdd);
 									var _legend = new InteractiveDataDisplay.Legend(master, legendDiv, true);
 									legendDiv.css("float", "right");									
 
