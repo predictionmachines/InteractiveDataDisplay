@@ -733,30 +733,28 @@ InteractiveDataDisplay.Figure = function (div, master) {
         var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(this.centralPart);
         this.navigation.gestureSource = gestureSource;
     }
+    
+    var legendDiv = $("<div></div>").prependTo(this.centralPart);
+    var _legend = new InteractiveDataDisplay.Legend(this, legendDiv, true);
+    legendDiv.css("float", "right");
+    Object.defineProperty(this, "legend", { get: function () { return _legend; }, configurable: false });
 
-    if(div.attr("data-idd-legend-enabled") === "true"){
-        var legendDiv = $("<div></div>").prependTo(this.centralPart); 
-        var _legend = new InteractiveDataDisplay.Legend(this, legendDiv, true);
-        legendDiv.css("float", "right");
-        Object.defineProperty(this, "legend", { get: function () { return _legend; }, configurable: false });
+    //Stop event propagation
+    InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
+        legendDiv[0].addEventListener(eventName, function (e) {
+            e.stopPropagation();
+        }, false);
+    });
 
-        //Stop event propagation
-        InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
-            legendDiv[0].addEventListener(eventName, function (e) {
-                e.stopPropagation();
-            }, false);
-        });
-
-        var data = {};
-        InteractiveDataDisplay.Utils.readStyle(div, data);
-        var visible = data.isLegendVisible;
-        if (visible) {
-            if (visible == "true")
-                _legend.isVisible = true;
-            else if (visible == "false")
-                _legend.isVisible = false;
-        }
-    }
+    var data = {};
+    InteractiveDataDisplay.Utils.readStyle(div, data);
+    var visible = data.isLegendVisible;
+    if (visible) {
+        if (visible == "true")
+            _legend.isVisible = true;
+        else if (visible == "false")
+            _legend.isVisible = false;
+    }    
 }
 
 InteractiveDataDisplay.Figure.prototype = new InteractiveDataDisplay.Plot;
