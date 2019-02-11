@@ -356,30 +356,52 @@ InteractiveDataDisplay.SubPlots = function (table) {
 				  , weight:	$(elemsToSVG[i]).css("font-weight")
 				  })
 
-				switch ($(elemsToSVG[i]).css("text-align")) {
-					case "left":
-						svgs[i].move(leftOffsets[i], topOffsets[i]);
-						break;
-					case "right":
-						svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width() - svgs[i].bbox().w, topOffsets[i]);
-						break;
-					default:
-						svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width()/2 - svgs[i].bbox().w/2, topOffsets[i]);
-				  }
+				
+				if(plotOrAxis.is(searchForVAxisTitle)){
+					// vertical axis title
+					switch ($(elemsToSVG[i]).css("vertical-align")) {
+						case "top":
+							svgs[i].move(leftOffsets[i], topOffsets[i]);
+							break;
+						case "bottom":
+							svgs[i].move(leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height() - svgs[i].bbox().w);
+							svgs[i].rotate(-90, leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height() - svgs[i].bbox().w);
+							break;
+						default:
+							svgs[i].move(leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height()/2 + svgs[i].bbox().w/2);
+							svgs[i].rotate(-90, leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height()/2 + svgs[i].bbox().w/2);
+					}
+				}
+				else{
+					// horizontal axis title
+					switch ($(elemsToSVG[i]).css("text-align")) {
+						case "left":
+							svgs[i].move(leftOffsets[i], topOffsets[i]);
+							break;
+						case "right":
+							svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width() - svgs[i].bbox().w, topOffsets[i]);
+							break;
+						default:
+							svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width()/2 - svgs[i].bbox().w/2, topOffsets[i]);
+					}
+				}
 
 			}
 			else{
 				if(plotOrAxis.is(searchForPlot)){
+					// plot border
+					var wth = $(elemsToSVG[i]).parent().width();
+					var ht = $(elemsToSVG[i]).parent().height();
+					var plotBox = svg.polyline('0,0 '+wth+',0 '+wth+','+ht+' 0,'+ht+' 0,0').fill('none');
+					plotBox.stroke({ color: '#808080', width: 1 }).move(leftOffsets[i], topOffsets[i]);
+					plotBox.attr('shape-rendering', 'crispEdges');
+					svgSubPlotsGroup.add(plotBox);
+
 					// subplot
 					var plot = InteractiveDataDisplay.asPlot(plotOrAxis);
 					svgs[i] = plot.exportToSvg();
-
-					// plot border
-					var wth = $(elemsToSVG[i]).find("div[data-idd-plot='grid']").width();
-					var ht = $(elemsToSVG[i]).find("div[data-idd-plot='grid']").height();
-					var plotBox = svg.polyline('0,0 '+wth+',0 '+wth+','+ht+' 0,'+ht+' 0,0').fill('none');
-					plotBox.stroke({ color: '#808080', width: 1 }).move(leftOffsets[i], topOffsets[i]);
-					svgSubPlotsGroup.add(plotBox);
+					leftOffsets[i] += parseFloat($(elemsToSVG[i]).css('border-width').replace("px","")); 
+					topOffsets[i] += parseFloat($(elemsToSVG[i]).css('border-width').replace("px",""));
 				}
 				else if(plotOrAxis.is(searchForAxis)){
 					// axis
