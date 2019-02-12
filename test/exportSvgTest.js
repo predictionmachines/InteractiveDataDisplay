@@ -6,6 +6,7 @@
 describe('idd.js exportToSvg', function () {
     var chart;
     var plot;
+    var chartWithTitles;
     var divWidth = 800;
     var divHeight = 600;
     var isPhantomJS = /PhantomJS/.test(window.navigator.userAgent);
@@ -14,6 +15,8 @@ describe('idd.js exportToSvg', function () {
         chart = InteractiveDataDisplay.asPlot($(div));
         var div2 = $("<div id='chart' data-idd-plot='plot' style='width:800px;height:600px'></div>");
         plot = InteractiveDataDisplay.asPlot($(div2));
+        var div3 = $("<div id='chart' data-idd-plot='chart' style='width:800px;height:600px'><div data-idd-placement='top' class='idd-title'>Polyline sample</div><div data-idd-placement='bottom' class='idd-horizontalTitle'>X</div><div data-idd-placement='left' class='idd-verticalTitle' ><div class='idd-verticalTitle-inner'>Y</div></div></div>");
+        chartWithTitles = InteractiveDataDisplay.asPlot($(div3));
     });
     it('polyline export', function () {
         var line = plot.polyline("p1", { x: [1, 2, 3], y: [1, 2, 3] });
@@ -99,6 +102,35 @@ describe('idd.js exportToSvg', function () {
         expect(group2.node.nodeName).toBe("g");
         expect(group2.children().length).toBe(1);
         expect(group2.get(0).node.nodeName).toBe("svg");
+    });
+    it('chart titles export', function () {
+        var svg = chartWithTitles.exportToSvg();
+        expect(svg.node.nodeName).toBe("svg");
+        //chart group
+        var group1 = svg.get(1);
+        expect(group1.node.nodeName).toBe("g");
+        var children = group1.children();
+        expect(children.length).toBe(5); // 4 side slots + central part
+        for (var i = 0; i < 5; i++)
+            expect(children[i].node.nodeName).toBe("g");
+
+        var leftGroupChildern = children[0].children();
+        expect(leftGroupChildern.length).toBe(2); // axis and Y title
+        expect(leftGroupChildern[0].node.nodeName).toBe("g")
+        expect(leftGroupChildern[0].children()[0].node.nodeName).toBe("text")
+        
+        
+
+        var topGroupChildern = children[1].children();
+        expect(topGroupChildern.length).toBe(1); // chart title        
+        expect(topGroupChildern[0].node.nodeName).toBe("g")
+        expect(topGroupChildern[0].children()[0].node.nodeName).toBe("text")
+
+        var bottomGroupChildern = children[2].children();
+        expect(bottomGroupChildern.length).toBe(2); // axis and X title
+        expect(bottomGroupChildern[1].node.nodeName).toBe("g") // note that title is below the axis, so its index is 1
+        expect(bottomGroupChildern[1].children()[0].node.nodeName).toBe("text")
+        
     });
     it("legend export", function () {
         var line = chart.polyline("p1", { x: [1, 2, 3], y: [1, 2, 3] });
