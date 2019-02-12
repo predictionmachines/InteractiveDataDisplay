@@ -619,8 +619,15 @@ InteractiveDataDisplay.Figure = function (div, master) {
             if (textAlign == 'center') textAlign = 'middle';
             if (textAlign == 'left') textAlign = 'start';
             if (textAlign == 'right') textAlign = 'end';
-            var width = $(div).width();
-            var height = $(div).height();
+            var width;
+            var height;
+            if($(div).hasClass('idd-verticalTitle-inner')) { // hack to measure the actual size of the vertical slots
+                width = $(div).parent().width()
+                height = $(div).parent().height()
+            } else {
+                width = $(div).width();
+                height = $(div).height();
+            }
 
             var content = $(div).text().trim();
             var text = svg.text(content).font({ family: fontFamily, size: fontSize, weight: fontWeight, anchor: textAlign });
@@ -651,9 +658,14 @@ InteractiveDataDisplay.Figure = function (div, master) {
                 else {
                     var isText = true;
                     $(child.content).contents().each(function () {
-                        if (this.nodeType != 3) isText = false;
+                        var fChild = this.firstChild
+                        if(fChild) {
+                            if (fChild.nodeType != 3)
+                            isText = false
+                        } else
+                            isText = false
                     });
-                    if (isText) exportTextToSvg(child.content, child_g);
+                    if (isText) exportTextToSvg(child.content.contents(), child_g);
                 }
             }
         }
@@ -712,7 +724,12 @@ InteractiveDataDisplay.Figure = function (div, master) {
                 } else {
                     var isText = true;
                     $(child.content).contents().each(function () {
-                        if (this.nodeType != 3) isText = false;
+                        var fChild = this.firstChild
+                        if(fChild) {
+                            if (fChild.nodeType != 3)
+                            isText = false
+                        } else
+                            isText = false
                     });
                     if (isText) exportTextToSvg(child.content, child_g);
                 }

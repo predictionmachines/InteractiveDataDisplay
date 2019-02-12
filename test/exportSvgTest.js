@@ -117,7 +117,7 @@ describe('idd.js exportToSvg', function () {
         var leftGroupChildern = children[0].children();
         expect(leftGroupChildern.length).toBe(2); // axis and Y title
         expect(leftGroupChildern[0].node.nodeName).toBe("g")
-        expect(leftGroupChildern[0].children()[0].nodeName).toBe("text")
+        expect(leftGroupChildern[0].children()[0].node.nodeName).toBe("text")
         
         
 
