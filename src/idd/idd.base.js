@@ -312,7 +312,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 _tooltipSettings.tooltipDelay = Number(style["tooltipDelay"]);
             }
             else
-                _tooltipSettings.tooltipDelay = InteractiveDataDisplay.TooltipDuration * 1000;
+                _tooltipSettings.tooltipDelay = InteractiveDataDisplay.TooltipDuration * 100;
 
 
             div[0].plot = this; // adding a reference to the initialized DOM object of the plot, pointing to the plot instance.
@@ -1482,7 +1482,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     localTooltip.fadeOutTimer = setTimeout(function () {
                         _updateTooltip = undefined;
                         localTooltip.fadeOut('fast');
-                    }, _tooltipSettings.tooltipDelay);
+                    }, InteractiveDataDisplay.TooltipDuration * 1000);
                 });
             };
 
