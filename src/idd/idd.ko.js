@@ -57,10 +57,10 @@
                     if(typeof element.plot != 'undefined') {
                         element.plot.isIgnoredByFitToView = unwrappedName;
                     }
-                    else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
-                        //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element                        
-                        element.setAttribute("data-idd-ignored-by-fit-to-view", unwrappedName);
-
+                    else {
+                        //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
+                        //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element
+                        InteractiveDataDisplay.Utils.updateStyle(element, style, "ignored-by-fit-to-view", unwrappedName);
                     }
                 }
             }
