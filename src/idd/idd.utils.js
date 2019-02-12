@@ -166,6 +166,23 @@ InteractiveDataDisplay.Utils =
             }
         },
 
+        // Updates one of property values in data-idd-style
+        updateStyle: function (jqElement, styleObj, propName, propVal) {
+            var styleObj = InteractiveDataDisplay.Utils.readStyle(jqElement, styleObj);
+
+            if (!styleObj){
+                styleObj = {};
+            }
+            styleObj[propName] = propVal;
+
+            var updatedStyleStr = "";
+            $.each( styleObj, function( key, value ) {
+                updatedStyleStr += key + ": " + value + "; "; 
+            });
+
+            jqElement.attr("data-idd-style", updatedStyleStr);
+        },
+
         getDataSourceFunction: function (jqElem, defaultSource) {
             var source = jqElem.attr("data-idd-datasource");
             if (source == "InteractiveDataDisplay.readTable")

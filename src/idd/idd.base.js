@@ -285,10 +285,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // Note: data-idd-visible-region attribute is handled at the end of the constructor, as it needs more plot objects to be defined and valid 
         if (div) {
             _name = div.attr("data-idd-name") || div.attr("id") || "";
-            if(div.attr("data-idd-ignored-by-fit-to-view")) {
-                div.removeAttr("data-idd-ignored-by-fit-to-view");
-                _isIgnoredByFitToView = true;
-            }
+
             if(div.attr("data-idd-X-log")) {                
                 div.removeAttr("data-idd-X-log");                
                 _xDataTransform = InteractiveDataDisplay.logTransform;
@@ -297,15 +294,27 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 div.removeAttr("data-idd-Y-log");                
                 _yDataTransform = InteractiveDataDisplay.logTransform;
             }
-            if(div.attr("data-idd-padding")) {
-                _padding = Number(div.attr("data-idd-padding"))
-                div.removeAttr("data-idd-padding");             
+
+            var style = {};
+            InteractiveDataDisplay.Utils.readStyle(div, style);
+            if(style.hasOwnProperty("padding")) {
+                _padding = Number(style["padding"]);
             }
-            if(div.attr("data-idd-suppress-tooltip-coords")) {                
-                div.removeAttr("data-idd-suppress-tooltip-coords");                
-                _tooltipSettings = _tooltipSettings || {}
-                _tooltipSettings.showCursorCoordinates = false
+            if(style.hasOwnProperty("suppress-tooltip-coords")) {
+                _tooltipSettings = _tooltipSettings || {};
+                _tooltipSettings.showCursorCoordinates = Boolean(style["suppress-tooltip-coords"]);
             }
+            if(style.hasOwnProperty("ignored-by-fit-to-view")) {
+                _isIgnoredByFitToView = Boolean(style["ignored-by-fit-to-view"]);
+            }
+            _tooltipSettings = _tooltipSettings || {};
+            if(style.hasOwnProperty("tooltipDelay")) {
+                _tooltipSettings.tooltipDelay = Number(style["tooltipDelay"]);
+            }
+            else
+                _tooltipSettings.tooltipDelay = InteractiveDataDisplay.TooltipDelay * 1000;
+
+
             div[0].plot = this; // adding a reference to the initialized DOM object of the plot, pointing to the plot instance.
 
             // Disables user selection for this element:
@@ -1300,7 +1309,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         if(div) {
             if(div.attr("data-idd-visible-region")) {
                 var regionStr = div.attr("data-idd-visible-region")
-                div.removeAttr("data-idd-ignored-by-fit-to-view")
+                
                 var values = regionStr.split(' ')
                 if(values.length != 4) 
                     throw "data-idd-visible-region must contain exactly 4 numbers (xmin,xmax,ymin,ymax) separated by single space"
@@ -1396,14 +1405,37 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         if (_isMaster) {
             var _tooltipTimer; // descriptor of the set timer to show the tooltip
-            var _tooltip; // <div> element which displays the tooltip
-            var _updateTooltip;
+            var _tooltip; // jQuery of <div> element which displays the tooltip. undefined means that there is no visible tooltip right now
+            var _updateTooltip; // refills the content of the _tooltip. Useful for the tooltips of dynamically updated data
 
             this.enumAll = function (plot, f) {
                 foreachDependentPlot(plot, f);
             };
 
+            var clearTooltip = function () {
+                if (_tooltipTimer) {
+                    clearTimeout(_tooltipTimer);
+                    _tooltipTimer = undefined;
+                }                                
+                _updateTooltip = undefined;
+                if (_tooltip) {
+                    
+                    if (_tooltip.fadeOutTimer) {
+                        clearTimeout(_tooltip.fadeOutTimer);
+                        _tooltip.fadeOutTimer = undefined;
+                    }
 
+                    var removeTooltip = function() {
+                        _tooltip.remove();
+                        _tooltip = undefined;
+                    }
+
+                    if (_tooltipSettings.tooltipDelay === 0) // either immediately or after the animation
+                        removeTooltip()
+                    else
+                        _tooltip.fadeOut('fast', removeTooltip);
+                }
+            };
 
             // Callback function which is called by the tooltip timer
             var onShowTooltip = function (origin_s, origin_p) {
@@ -1448,49 +1480,47 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .css("left", origin_s.x + 15)
                     .css("top", origin_s.y + 15)
                     .css("z-index", InteractiveDataDisplay.ZIndexTooltipLayer);
-                var n = tooltips.length;
-                for (var i = 0; i < n; i++) {
-                    $(tooltips[i]).appendTo(_tooltip).addClass("idd-tooltip-item");
-                }
+                
 
-                // Building content of the tooltip:
-                _updateTooltip = function () {
-                    if (!_tooltip) return;
-                    _tooltip.empty();
-
-                    var tooltips = getElements();
-                    if (tooltips.length === 0) return 0;
-
+                var fillChildrenTooltips = function(tooltips) {
                     var n = tooltips.length;
                     for (var i = 0; i < n; i++) {
                         $(tooltips[i]).appendTo(_tooltip).addClass("idd-tooltip-item");
                     }
-                    return n;
+                }
+
+                fillChildrenTooltips(tooltips)
+
+
+                // Building content of the tooltip:
+                // fills up _tooltip with appropriate up to date content
+                _updateTooltip = function () {
+                    if (!_tooltip) return;
+                    _tooltip.empty();
+
+                    var tooltips = getElements()
+
+                    fillChildrenTooltips(tooltips)
+                    return tooltips.length;
                 }
 
                 var localTooltip = _tooltip;
-                _tooltip.fadeIn('fast', function () {
-                    localTooltip.fadeOutTimer = setTimeout(function () {
-                        _updateTooltip = undefined;
-                        localTooltip.fadeOut('fast');
-                    }, InteractiveDataDisplay.TooltipDuration * 1000);
-                });
-            };
 
-            var clearTooltip = function () {
-                if (_tooltipTimer) {
-                    clearTimeout(_tooltipTimer);
-                    _tooltipTimer = undefined;
+                var activateFadeOutTimer = function() {
+                    localTooltip.fadeOutTimer = setTimeout(
+                        clearTooltip,
+                        InteractiveDataDisplay.TooltipDuration * 1000
+                    )
                 }
-                _updateTooltip = undefined;
-                if (_tooltip) {
-                    if (_tooltip.fadeOutTimer) {
-                        clearTimeout(_tooltip.fadeOutTimer);
-                        _tooltip.fadeOutTimer = undefined;
-                    }
-                    _tooltip.fadeOut('fast', function () { $(this).remove(); });
-                    _tooltip = undefined;
+
+                if(_tooltipSettings.tooltipDelay === 0) // either immediately or after the animation
+                {
+                    _tooltip.show()
+                    activateFadeOutTimer()
                 }
+                else
+                    _tooltip.fadeIn('fast', activateFadeOutTimer);
+                
             };
 
             _centralPart.mousemove(function (event) {
@@ -1506,7 +1536,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 clearTooltip();
 
                 if (that.master.isToolTipEnabled) {
-                    _tooltipTimer = setTimeout(function () { onShowTooltip(originHost, p); }, InteractiveDataDisplay.TooltipDelay * 1000);
+                    var firstOnShowTooltip = function () { onShowTooltip(originHost, p); }
+                    if(_tooltipSettings.tooltipDelay === 0) 
+                        firstOnShowTooltip()
+                    else {
+                        _tooltipTimer = setTimeout(firstOnShowTooltip, _tooltipSettings.tooltipDelay);
+                    }
                 }
 
                 var onmousemove_rec = function (plot, origin_s, origin_p) {
