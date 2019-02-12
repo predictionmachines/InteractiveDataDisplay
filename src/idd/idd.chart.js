@@ -18,29 +18,7 @@
 
     var grid = this.get(gridLines[0]);
     bottomAxis.axis = grid.xAxis = this.get(bottomAxis[0]);
-    leftAxis.axis = grid.yAxis = this.get(leftAxis[0]);
-
-    var legendDiv = $("<div></div>").prependTo(this.centralPart); 
-    var _legend = new InteractiveDataDisplay.Legend(this, legendDiv, true);
-    legendDiv.css("float", "right");
-    Object.defineProperty(this, "legend", { get: function () { return _legend; }, configurable: false });
-
-    //Stop event propagation
-    InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
-        legendDiv[0].addEventListener(eventName, function (e) {
-            e.stopPropagation();
-        }, false);
-    });
-
-    var data = {};
-    InteractiveDataDisplay.Utils.readStyle(div, data);
-    var visible = data.isLegendVisible;
-    if (visible) {
-        if (visible == "true")
-            _legend.isVisible = true;
-        else if (visible == "false")
-            _legend.isVisible = false;
-    }
+    leftAxis.axis = grid.yAxis = this.get(leftAxis[0]);    
 
     var setDefaultGestureSource = function () {
         var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(that.centralPart);
@@ -122,7 +100,6 @@
         this.host.trigger(InteractiveDataDisplay.Event.childrenChanged, propertyName);
     };
 
-    _legend.div = legendDiv;
     this.exportToSvg = function (plotRect, screenSize, svg) {
         if (!SVG.supported) throw "SVG is not supported";
 
@@ -136,8 +113,8 @@
         var legend_g = svg.group();
         var shift = div.width() + 20;
 
-        if (_legend.isVisible) {
-            legend_g.add(this.exportLegendToSvg(legendDiv[0])).translate(shift, 20);
+        if (that.legend.isVisible) {
+            legend_g.add(this.exportLegendToSvg(that.legend.Host[0])).translate(shift, 20);
             svg.size(200 + shift, div.height());
         }
         return svg;

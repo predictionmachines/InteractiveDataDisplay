@@ -136,13 +136,36 @@ InteractiveDataDisplay.SubPlots = function (table) {
 					var td = this
 					if((cIndex-1) % 3 == 0) { // col containing plots
 						var jqIdd = $("div[data-idd-plot='plot']",td)
-						// task #2						
-						var pColIdx = Math.floor(cIndex/3)
-						var master = InteractiveDataDisplay.asPlot(jqIdd)					
-						_masterPlots[pRowIdx][pColIdx] = master
-						master.subplotRowIdx = pRowIdx
-						master.subplotColIdx = pColIdx
-						_trapPlots[pRowIdx][pColIdx] = InteractiveDataDisplay.asPlot($("div[data-idd-plot='subplots-trap']",td))
+						if(jqIdd.length>0) {
+							// the slot contains plot (not the blank slot)
+							// task #2						
+							var pColIdx = Math.floor(cIndex/3)
+							var master = InteractiveDataDisplay.asPlot(jqIdd)					
+							_masterPlots[pRowIdx][pColIdx] = master
+							master.subplotRowIdx = pRowIdx
+							master.subplotColIdx = pColIdx
+							_trapPlots[pRowIdx][pColIdx] = InteractiveDataDisplay.asPlot($("div[data-idd-plot='subplots-trap']",td))
+
+							// controlling legend visibility
+							var style = {};							
+							InteractiveDataDisplay.Utils.readStyle(jqIdd, style);
+							if (style) {
+								var isLegendVisible = typeof style.isLegendVisible != "undefined" ? style.isLegendVisible : "true";
+								if(isLegendVisible === "true") {
+									var legendDiv = $("<div style='z-index: 10;'></div>").appendTo(jqIdd);
+									var _legend = new InteractiveDataDisplay.Legend(master, legendDiv, true);
+									legendDiv.css("float", "right");									
+
+									//Stop event propagation
+									InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
+										legendDiv[0].addEventListener(eventName, function (e) {
+											e.stopPropagation();
+										}, false);
+									});
+								}
+							}
+
+						}
 					} else { // col containing left/right slots
 						// task #1
 						initAxisIfExists(rIndex,cIndex,td)
@@ -203,44 +226,43 @@ InteractiveDataDisplay.SubPlots = function (table) {
 			var row = _masterPlots[i]
 			for(var j = 0; j < row.length; j++) {
 				var plot = row[j]
-				var naviEnabled = $(plot.host).attr("data-idd-navigation-enabled")
-				if(naviEnabled && naviEnabled==='true') {
-					
-					var jqPlot = $(plot.host)
-					jqPlot.dblclick(function () {
-						this.plot.master.fitToView();
-					});	
+				if(plot) { // only for non-blank slots
+					var naviEnabled = $(plot.host).attr("data-idd-navigation-enabled")
+					if(naviEnabled && naviEnabled==='true') {
+						
+						var jqPlot = $(plot.host)
+						jqPlot.dblclick(function () {
+							this.plot.master.fitToView();
+						});	
 
-					var rowIdx = plot.master.subplotRowIdx
-					var colIdx = plot.master.subplotColIdx
+						var rowIdx = plot.master.subplotRowIdx
+						var colIdx = plot.master.subplotColIdx
 
-					// attaching gesture sources & handling double clicks
-					var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(jqPlot)
-					var horAxis = _horizontalAxes[rowIdx][colIdx]
-					if(horAxis) {
-						var jqAxisHost = horAxis.host
-						var bottomAxisGestures = InteractiveDataDisplay.Gestures.applyHorizontalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(jqAxisHost));
-						gestureSource = gestureSource.merge(bottomAxisGestures)
+						// attaching gesture sources & handling double clicks
+						var gestureSource = InteractiveDataDisplay.Gestures.getGesturesStream(jqPlot)
+						var horAxis = _horizontalAxes[rowIdx][colIdx]
+						if(horAxis) {
+							var jqAxisHost = horAxis.host
+							var bottomAxisGestures = InteractiveDataDisplay.Gestures.applyHorizontalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(jqAxisHost));
+							gestureSource = gestureSource.merge(bottomAxisGestures)
 
-						jqAxisHost.dblclick(function() {
-							var axis = this.axis
-							_masterPlots[axis.associatedPlotRow][axis.associatedPlotCol].fitToViewX();
-						});
+							jqAxisHost.dblclick(function() {
+								var axis = this.axis
+								_masterPlots[axis.associatedPlotRow][axis.associatedPlotCol].fitToViewX();
+							});
+						}
+						var vertAxis = _verticalAxes[rowIdx][colIdx]
+						if(vertAxis) {
+							var jqAxisHost = vertAxis.host
+							var leftAxisGestures = InteractiveDataDisplay.Gestures.applyVerticalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(jqAxisHost));
+							gestureSource = gestureSource.merge(leftAxisGestures)
+							jqAxisHost.dblclick(function () {
+								var axis = this.axis
+								_masterPlots[axis.associatedPlotRow][axis.associatedPlotCol].fitToViewY();
+							});
+						}					
+						plot.navigation.gestureSource = gestureSource
 					}
-					var vertAxis = _verticalAxes[rowIdx][colIdx]
-					if(vertAxis) {
-						var jqAxisHost = vertAxis.host
-						var leftAxisGestures = InteractiveDataDisplay.Gestures.applyVerticalBehavior(InteractiveDataDisplay.Gestures.getGesturesStream(jqAxisHost));
-						gestureSource = gestureSource.merge(leftAxisGestures)
-						jqAxisHost.dblclick(function () {
-							var axis = this.axis
-							_masterPlots[axis.associatedPlotRow][axis.associatedPlotCol].fitToViewY();
-						});
-					}					
-					plot.navigation.gestureSource = gestureSource
-
-					
-					
 				}
 			}
 		}
@@ -356,30 +378,52 @@ InteractiveDataDisplay.SubPlots = function (table) {
 				  , weight:	$(elemsToSVG[i]).css("font-weight")
 				  })
 
-				switch ($(elemsToSVG[i]).css("text-align")) {
-					case "left":
-						svgs[i].move(leftOffsets[i], topOffsets[i]);
-						break;
-					case "right":
-						svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width() - svgs[i].bbox().w, topOffsets[i]);
-						break;
-					default:
-						svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width()/2 - svgs[i].bbox().w/2, topOffsets[i]);
-				  }
+				
+				if(plotOrAxis.is(searchForVAxisTitle)){
+					// vertical axis title
+					switch ($(elemsToSVG[i]).css("vertical-align")) {
+						case "top":
+							svgs[i].move(leftOffsets[i], topOffsets[i]);
+							break;
+						case "bottom":
+							svgs[i].move(leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height() - svgs[i].bbox().w);
+							svgs[i].rotate(-90, leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height() - svgs[i].bbox().w);
+							break;
+						default:
+							svgs[i].move(leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height()/2 + svgs[i].bbox().w/2);
+							svgs[i].rotate(-90, leftOffsets[i], topOffsets[i] + $(elemsToSVG[i]).height()/2 + svgs[i].bbox().w/2);
+					}
+				}
+				else{
+					// horizontal axis title
+					switch ($(elemsToSVG[i]).css("text-align")) {
+						case "left":
+							svgs[i].move(leftOffsets[i], topOffsets[i]);
+							break;
+						case "right":
+							svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width() - svgs[i].bbox().w, topOffsets[i]);
+							break;
+						default:
+							svgs[i].move(leftOffsets[i] + $(elemsToSVG[i]).width()/2 - svgs[i].bbox().w/2, topOffsets[i]);
+					}
+				}
 
 			}
 			else{
 				if(plotOrAxis.is(searchForPlot)){
+					// plot border
+					var wth = $(elemsToSVG[i]).parent().width();
+					var ht = $(elemsToSVG[i]).parent().height();
+					var plotBox = svg.polyline('0,0 '+wth+',0 '+wth+','+ht+' 0,'+ht+' 0,0').fill('none');
+					plotBox.stroke({ color: '#808080', width: 1 }).move(leftOffsets[i], topOffsets[i]);
+					plotBox.attr('shape-rendering', 'crispEdges');
+					svgSubPlotsGroup.add(plotBox);
+
 					// subplot
 					var plot = InteractiveDataDisplay.asPlot(plotOrAxis);
 					svgs[i] = plot.exportToSvg();
-
-					// plot border
-					var wth = $(elemsToSVG[i]).find("div[data-idd-plot='grid']").width();
-					var ht = $(elemsToSVG[i]).find("div[data-idd-plot='grid']").height();
-					var plotBox = svg.polyline('0,0 '+wth+',0 '+wth+','+ht+' 0,'+ht+' 0,0').fill('none');
-					plotBox.stroke({ color: '#808080', width: 1 }).move(leftOffsets[i], topOffsets[i]);
-					svgSubPlotsGroup.add(plotBox);
+					leftOffsets[i] += parseFloat($(elemsToSVG[i]).css('border-width').replace("px","")); 
+					topOffsets[i] += parseFloat($(elemsToSVG[i]).css('border-width').replace("px",""));
 				}
 				else if(plotOrAxis.is(searchForAxis)){
 					// axis

@@ -1791,7 +1791,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     };
 
     var _plotLegends = [];
-    //Legend with hide/show function
+    // Legend with hide/show function
+    // _plot - where to find the children for gathering legend info from
+    // _jqdiv - where to put generated legend items
     InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact, hasTooltip) {
         // Inner legends for this legend.
         var plotLegends = [];
@@ -1810,6 +1812,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             },
             configurable: false
         });
+
+        Object.defineProperty(this, "Host", {
+            get: function() { return _jqdiv }
+        })
 
         if (isCompact) _jqdiv.addClass("idd-legend-compact");
         else _jqdiv.addClass("idd-legend");
