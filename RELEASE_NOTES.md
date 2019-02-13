@@ -1,6 +1,16 @@
+### 1.5.23 (TBD)
+
+Resolved issues:
+ - 175: Vertical labels are not exported to SVG for chart export
+ 
+ - moved padding, suppress-tooltip-coords, ignored-by-fit-to-view Plot settings to the data-idd-style attribute value
+ - added tooltipDelay property to the data-idd-style. User can now set duration of a delay(sec) for the tooltip appearance
+
 ### 1.5.22 (February 11, 2019)
 
 Bug fixes
+ - rgba color format parsing support
+ - Area and polyline plots now properly exports SVG with transparency. Fixes #172
 
 ### 1.5.21 (February 5, 2019)
 
