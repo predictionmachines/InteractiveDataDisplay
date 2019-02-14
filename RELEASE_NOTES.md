@@ -1,3 +1,11 @@
+### 1.6.0 (TBD)
+
+Braking changes:
+ - The subplots table is defined with <div> and nested <table> now
+
+New features:
+ - External legend for subplots: requirement by predictionmachines/FSharpIDD#19
+
 ### 1.5.23 (February 14, 2019)
 
 Resolved issues:

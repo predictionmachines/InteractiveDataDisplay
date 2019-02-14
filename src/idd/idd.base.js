@@ -1038,7 +1038,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
 
             var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            var svg = SVG(svgHost).size(200, _host.height());
+            var svg = SVG(svgHost).size(200, $(legendDiv).height());
             var legend_g = svg.group();
             var plots = InteractiveDataDisplay.Utils.enumPlots(this);
             var commonSettings = { width: 170, height: 0 };
@@ -1064,7 +1064,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
             }
             if (lastLine != undefined) lastLine.remove();
-            legend_g.clipWith(legend_g.rect(180, commonSettings.height + 10));
+            legend_g.clipWith(legend_g.rect(180, commonSettings.height + 10));            
             return svg;
         };
 
@@ -1820,13 +1820,15 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     // Legend with hide/show function
     // _plot - where to find the children for gathering legend info from
     // _jqdiv - where to put generated legend items
-    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact, hasTooltip) {
+    // isNotSortable - dragging the legend items is prohibited. Not is for compatibility reason
+    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact, hasTooltip,isNotSortable) {
         // Inner legends for this legend.
         var plotLegends = [];
         var plotSubs = [];
         var divStyle = _jqdiv[0].style;
         var updateIsLegendInduced = false;
         var that = this;
+        that.div = _jqdiv
 
         var _isVisible = true;
         Object.defineProperty(this, "isVisible", {
@@ -1846,7 +1848,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         if (isCompact) _jqdiv.addClass("idd-legend-compact");
         else _jqdiv.addClass("idd-legend");
         _jqdiv.addClass("unselectable");
-        if (!isCompact) {
+        if (!isNotSortable) {
             _jqdiv.sortable({ axis: 'y' });
             _jqdiv.on("sortupdate", function (e, ui) {
                 that.updateIsLegendInduced = true; // LM: items order is changed in the legend itself
@@ -2115,6 +2117,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
         _plot.host.bind("plotRemoved", plotRemovedHandler);
         _plot.host.bind("orderChanged", orderChangedHandler);
+        _jqdiv[0].legend = that
         createLegend();
         _jqdiv.dblclick(function (event) {
             event.stopImmediatePropagation();

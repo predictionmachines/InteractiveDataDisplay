@@ -752,7 +752,7 @@ InteractiveDataDisplay.Figure = function (div, master) {
     }
     
     var legendDiv = $("<div></div>").prependTo(this.centralPart);
-    var _legend = new InteractiveDataDisplay.Legend(this, legendDiv, true);
+    var _legend = new InteractiveDataDisplay.Legend(this, legendDiv, true, undefined, true);
     legendDiv.css("float", "right");
     Object.defineProperty(this, "legend", { get: function () { return _legend; }, configurable: false });
 
