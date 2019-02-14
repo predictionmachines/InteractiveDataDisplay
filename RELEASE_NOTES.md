@@ -1,4 +1,4 @@
-### 1.5.23 (TBD)
+### 1.5.23 (February 14, 2019)
 
 Resolved issues:
  - 175: Vertical labels are not exported to SVG for chart export
