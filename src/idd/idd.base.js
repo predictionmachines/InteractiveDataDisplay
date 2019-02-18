@@ -1393,7 +1393,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.getTooltip = function (xd, yd, xp, yp) {
             return undefined;
         };
-        
+
         var foreachDependentPlot = function (plot, f) {
             var myChildren = plot.children;
             var n = myChildren.length;
@@ -1412,27 +1412,30 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             this.enumAll = function (plot, f) {
                 foreachDependentPlot(plot, f);
             };
+            
+            /// Instantly removes the supplied toolip and cancels any timers scheduled by it
+            var destroyTooltipInstance = function(jqTooltip) {
+                if (jqTooltip) {
+                    
+                    if (jqTooltip.fadeOutTimer) {
+                        clearTimeout(jqTooltip.fadeOutTimer);
+                        jqTooltip.fadeOutTimer = undefined;
+                    }
 
-            var clearTooltip = function () {
+                    jqTooltip.remove();
+                    jqTooltip = undefined;
+                }
+            }
+
+            // aborts (or cancels) the tooltip in any tooltip phase
+            var clearTooltip = function () {                
                 if (_tooltipTimer) {
                     clearTimeout(_tooltipTimer);
                     _tooltipTimer = undefined;
-                }                                
+                }                           
+
                 _updateTooltip = undefined;
-                if (_tooltip) {
-                    
-                    if (_tooltip.fadeOutTimer) {
-                        clearTimeout(_tooltip.fadeOutTimer);
-                        _tooltip.fadeOutTimer = undefined;
-                    }
-
-                    var removeTooltip = function() {
-                        _tooltip.remove();
-                        _tooltip = undefined;
-                    }
-
-                    removeTooltip()
-                }
+                destroyTooltipInstance(_tooltip)
             };
 
             // Callback function which is called by the tooltip timer
@@ -1502,34 +1505,36 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
                 var localTooltip = _tooltip;
                 
-
-                /*var activateFadeOutTimer = function() {
-                    localTooltip.fadeOutTimer = setTimeout(
-                        clearTooltip,
-                        InteractiveDataDisplay.TooltipDuration * 1000
-                    )
-                }
-
-                if(_tooltipSettings.tooltipDelay === 0) // either immediately or after the animation
-                {
-                    _tooltip.show()
-                    activateFadeOutTimer()
-                }
-                else
-                    _tooltip.fadeIn('fast', activateFadeOutTimer);
-*/
-
-                
-                var activateFadeOut = function () {
+                function activateFadeOut () {
                     _updateTooltip = undefined;
                     localTooltip.fadeOut('fast');
                 }
 
-                var afterFadeIn = function () {
-                    localTooltip.fadeOutTimer = setTimeout( activateFadeOut, InteractiveDataDisplay.TooltipDuration * 1000 );
+                function removeCertainTooltip (){
+                    if (localTooltip.fadeOutTimer) {
+                        clearTimeout(localTooltip.fadeOutTimer)
+                        localTooltip.fadeOutTimer = undefined
+                    }
+                    //_updateTooltip = undefined
+                    localTooltip.remove()
+                    localTooltip = undefined
                 }
 
-                _tooltip.fadeIn('fast', afterFadeIn);
+                var afterFadeIn = function () {
+                    if(_tooltipSettings.tooltipDelay === 0) {
+                        localTooltip.show()
+                        localTooltip.fadeOutTimer = setTimeout( removeCertainTooltip, InteractiveDataDisplay.TooltipDuration * 1000 )
+                    }
+                    else {
+                        localTooltip.fadeOutTimer = setTimeout( activateFadeOut, InteractiveDataDisplay.TooltipDuration * 1000 )
+                    }
+
+                }
+
+                if(_tooltipSettings.tooltipDelay === 0)
+                    afterFadeIn()
+                else
+                    _tooltip.fadeIn('fast', afterFadeIn)
             };
 
             _centralPart.mousemove(function (event) {
@@ -1542,11 +1547,32 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     y: ct.screenToPlotY(originCentralPart.y)
                 };
 
-                clearTooltip();
+                // Handling tooltip
+                // Mouse move can accure in different tooltip lifetime phases (states):
+                // 1) First mouse move over master plot (e.g. mouse entered the plot area)
+                // 2) While the tooltipDelay timer is active (the delay before tooltip appearence after the mouse stopped moving)
+                // 3) While the ttoltipDuration timer is active (the tooltip is on the screen)                
+
+                // Handling phase 2.
+                // We need to reset the tooltip delay timer, thus clearing the timer. It will be rescheduled below
+                if (_tooltipTimer) {
+                    clearTimeout(_tooltipTimer);
+                    _tooltipTimer = undefined;
+                }
+
+                // Handling phase 3
+                // we save the current tooltip to destroy it right after we create the new one
+                var prevTooltip = _tooltip
 
                 if (that.master.isToolTipEnabled) {
-                    _tooltipTimer = setTimeout(function () { onShowTooltip(originHost, p); }, _tooltipSettings.tooltipDelay );
+                    // Tooltip timer is scheduled in all three phases
+                    if(_tooltipSettings.tooltipDelay === 0)
+                        onShowTooltip(originHost, p)
+                    else
+                        _tooltipTimer = setTimeout(function () { onShowTooltip(originHost, p); }, _tooltipSettings.tooltipDelay );
                 }
+
+                destroyTooltipInstance(prevTooltip)
 
                 var onmousemove_rec = function (plot, origin_s, origin_p) {
                     if (plot.onMouseMove) {
