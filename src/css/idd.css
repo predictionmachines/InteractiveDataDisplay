@@ -620,6 +620,20 @@ table.idd-subplots-table {
     padding: 0;
 }
 
+div.idd-subplots {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+div.idd-subplots > div.idd-legend div.idd-legend-isselected-false {
+    display: none
+}
+
+div.idd-subplots > div.idd-legend div.idd-legend-isselected-true {
+    display: none
+}
+
 table.idd-subplots-table td, tr {
     margin: 0;
     padding: 0;

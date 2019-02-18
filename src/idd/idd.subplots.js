@@ -49,16 +49,21 @@ InteractiveDataDisplay.SubplotsTrapPlot.prototype = new InteractiveDataDisplay.P
 // subplots are grid like structure of plots (lets say N x M plots)
 // The function must be applied as constructor to a <table> element of 3*N rows (<tr></tr>) and 3*M columns
 // this is because each plot can have slots for axes and titles. This slots are implemented as separate grid cells
-InteractiveDataDisplay.SubPlots = function (table) {
-
+InteractiveDataDisplay.SubPlots = function (div) {
+	if(!div)
+		throw "SubPlots must be applied to <div> element"
+	if(div.children.length !== 1)
+		throw "SubPlots div must contain exactly one child element which is table"
+	var table = div.children[0]
 	if(!table || table.nodeName!='TABLE')
-		throw "SubPlots must be applied to <table> element"
-	var _host = table
+		throw "SubPlots div must contain exactly one child element which is table"
+	var _div = div
+	var _table = table
 
 	var _Ncol = 0
 	var _Nrow = 0
 	var _masterPlots = [] //Nrow/3 x Ncol/3 jagged array of plots
-	var _trapPlots = []// Nrow/3 x Ncol/3 jagged array of SubplotsTrapPlot plots (see task #6 below)
+	var _trapPlots = [] // Nrow/3 x Ncol/3 jagged array of SubplotsTrapPlot plots (see task #6 below)
 
 	// these two arrays modified simultaniously, have same length
 	var _axes = [] // this one holds the axis objects
@@ -71,6 +76,11 @@ InteractiveDataDisplay.SubPlots = function (table) {
 	var verticalMasterAxis = undefined
 	var horizontalMasterAxis = undefined	
 
+	var _extLegendPlacement = undefined
+	var _extLegendRowIdx = undefined
+	var _extLegendColIdx = undefined
+	var _extLegend = undefined
+	
 	var that = this;
 
 	var initializeSubPlots = function() {
@@ -84,7 +94,7 @@ InteractiveDataDisplay.SubPlots = function (table) {
 		// 4. bind grid lines to axes (e.g. grid.xAxis = axis1)
 		// 5. activate navigation
 		// 6. activate rendering & binding
-		var jqTr = $("tr",_host)
+		var jqTr = $("tr",_table)
 		_Nrow = jqTr.length
 		_masterPlots = new Array(_Nrow/3)
 		_trapPlots = new Array(_Nrow/3)
@@ -181,7 +191,47 @@ InteractiveDataDisplay.SubPlots = function (table) {
 			}			
 	   	})
 	   
-	    // by this point the tasks #1 and #2 (initializations) are done
+		// by this point the tasks #1 and #2 (initializations) are done
+		
+		var extLegendAttr = _div.getAttribute("data-idd-ext-legend")	
+		if(extLegendAttr) {
+			var splitted = extLegendAttr.split(" ")
+			if(splitted.length !== 3)
+				throw "data-idd-ext-legend attribute bust contain string in format 'placement plotRowIdx plotColIdx'"
+			var placement = splitted[0]
+			_extLegendRowIdx = parseInt(splitted[1])
+			_extLegendColIdx = parseInt(splitted[2])
+
+			var legendSource = _masterPlots[_extLegendRowIdx][_extLegendColIdx]
+			var legendDiv = $("<div></div>")
+			switch(placement.trim().toLowerCase()) {
+				case "left":
+				case "top":
+					legendDiv.prependTo(_div)
+					break
+				case "right":
+				case "bottom":
+					legendDiv.appendTo(_div)
+					break
+				default:
+					throw "Unexpected external legend placement"
+			}
+			switch(placement.trim().toLowerCase()) {
+				case "left":
+				case "right":
+					$(_div).css("flex-direction","row")
+					break
+				case "top":
+				case "bottom":
+					$(_div).css("flex-direction","column")
+					break
+				default:
+					throw "Unexpected external legend placement"
+			}
+			_extLegend = new InteractiveDataDisplay.Legend(legendSource, legendDiv,false,undefined, true);
+		}
+
+
 		// proceeding to bindings (tasks #3 and #4)
 
 		// Task #3: binding plots transform to axes
@@ -206,7 +256,7 @@ InteractiveDataDisplay.SubPlots = function (table) {
 	    //
 		// this is tricky, as the plot may not contain axis in its slots
 		// Also the axes can be bound	    
-	    $("div[data-idd-plot='grid']",_host).each(function(idx){			
+	    $("div[data-idd-plot='grid']",_table).each(function(idx){			
 			var host = this
 			var grid = host.plot
 			var master = grid.master
@@ -346,7 +396,7 @@ InteractiveDataDisplay.SubPlots = function (table) {
 			}
 		}
 
-		_host.subplots = that;
+		_div.subplots = that;
 	}	
 
 	this.renderSVG = function() {
@@ -355,20 +405,23 @@ InteractiveDataDisplay.SubPlots = function (table) {
 		var searchForPlotTitle = "div.idd-subplot-title"; // titles of subplots
 		var searchForHAxisTitle = "div.idd-horizontalTitle"; // horizontal axis names
 		var searchForVAxisTitle = "div.idd-verticalTitle"; // vertical axis names
-		var elemsToSVG = $(_host).find(searchForPlot+', '+searchForAxis+', '+searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle);
+		var searchForLegend = "div.idd-legend" // legend which is used in subplots
+		var elemsToSVG = $(_div).find(searchForPlot+', '+searchForAxis+', '+searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle + ', '+searchForLegend)
 
-		var svgs = [];
-		var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-		var svg = SVG(svgHost).size($(_host).width(), $(_host).height());
-		var svgSubPlotsGroup = svg.nested();
-		var leftOffsets = [];
-		var topOffsets = [];
+		var svgs = []
+		var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+		var svg = SVG(svgHost).size($(_div).width(), $(_div).height())
+		var svgSubPlotsGroup = svg.nested()
+		var leftOffsets = []
+		var topOffsets = []
+		var subplotsOffset = $(_div).offset()
 		for (var i = 0; i < elemsToSVG.length; i++) {
-
-			leftOffsets[i] = $(elemsToSVG[i]).offset().left;
-			topOffsets[i] = $(elemsToSVG[i]).offset().top;
+			// offsets are calculated for all of the elements
+			leftOffsets[i] = $(elemsToSVG[i]).offset().left - subplotsOffset.left
+			topOffsets[i] = $(elemsToSVG[i]).offset().top - subplotsOffset.top + 1 // dont know why the 1 offset is needed, without it 1px border at the edge is not visible
 			
-			var plotOrAxis = $(elemsToSVG[i]);
+			var plotOrAxis = $(elemsToSVG[i]); // plotOrAxis or legend actually...
+			// text containing divs are handled specially
 			if(plotOrAxis.is(searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle)){
 				// subplot title
 				var text = svg.text(elemsToSVG[i].innerText);
@@ -429,6 +482,9 @@ InteractiveDataDisplay.SubPlots = function (table) {
 					// axis
 					svgs[i] = plotOrAxis[0].axis.exportToSvg();
 				}
+				else if(plotOrAxis.is(searchForLegend)) {
+					svgs[i] = _masterPlots[_extLegendRowIdx][_extLegendColIdx].exportLegendToSvg(plotOrAxis[0])
+				}
 				else{
 					throw "Unexpected element type. SVG export failure";
 				}
@@ -441,23 +497,15 @@ InteractiveDataDisplay.SubPlots = function (table) {
 
 		return svg;
 	}
-
-	if (table.subplots !== undefined)
-		return table.subplots;
-	else {
-		var subplots = initializeSubPlots();
-		return subplots;
-	}
+	
+	initializeSubPlots()
 }
 
-InteractiveDataDisplay.asSubPlots = function (table) {
-	if(!table || table.nodeName!='TABLE')
-		throw "SubPlots must be applied to <table> element"
-
-	if (table.subplots !== undefined)
-		return table.subplots;
+InteractiveDataDisplay.asSubPlots = function (div) {	
+	if (div && div.subplots !== undefined)
+		return div.subplots;
 	else {
-		return new InteractiveDataDisplay.SubPlots(table);
+		return new InteractiveDataDisplay.SubPlots(div);
 	}
 
 }
