@@ -309,7 +309,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
             _tooltipSettings = _tooltipSettings || {};
             if(style.hasOwnProperty("tooltipDelay")) {
-                _tooltipSettings.tooltipDelay = Number(style["tooltipDelay"]);
+                _tooltipSettings.tooltipDelay = Number(style["tooltipDelay"]) * 1000;
             }
             else
                 _tooltipSettings.tooltipDelay = InteractiveDataDisplay.TooltipDelay * 1000;
@@ -1389,10 +1389,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // Implementation of this method for a particular plot should build and return
         // a tooltip element for the point (xd,yd) in data coordinates, and (xp, yp) in plot coordinates.
         // Method returns <div> element or undefined
+
         this.getTooltip = function (xd, yd, xp, yp) {
             return undefined;
         };
-
+        
         var foreachDependentPlot = function (plot, f) {
             var myChildren = plot.children;
             var n = myChildren.length;
@@ -1430,10 +1431,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                         _tooltip = undefined;
                     }
 
-                    if (_tooltipSettings.tooltipDelay === 0) // either immediately or after the animation
-                        removeTooltip()
-                    else
-                        _tooltip.fadeOut('fast', removeTooltip);
+                    removeTooltip()
                 }
             };
 
@@ -1443,11 +1441,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 clearTooltip();
 
                 var getElements = function () {
-                    var tooltips = [];                    
+                    var tooltips = [];
+                    var xd, yd;
                     var px = origin_p.x, py = origin_p.y;
-                    
-                    var xd,yd;
-                    
+
                     foreachDependentPlot(that, function (child) {
                         var my_xd = child.xDataTransform ? child.xDataTransform.plotToData(px) : px;
                         var my_yd = child.yDataTransform ? child.yDataTransform.plotToData(py) : py;
@@ -1480,7 +1477,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     .css("left", origin_s.x + 15)
                     .css("top", origin_s.y + 15)
                     .css("z-index", InteractiveDataDisplay.ZIndexTooltipLayer);
-                
 
                 var fillChildrenTooltips = function(tooltips) {
                     var n = tooltips.length;
@@ -1491,7 +1487,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
                 fillChildrenTooltips(tooltips)
 
-
                 // Building content of the tooltip:
                 // fills up _tooltip with appropriate up to date content
                 _updateTooltip = function () {
@@ -1501,12 +1496,14 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     var tooltips = getElements()
 
                     fillChildrenTooltips(tooltips)
+
                     return tooltips.length;
                 }
 
                 var localTooltip = _tooltip;
+                
 
-                var activateFadeOutTimer = function() {
+                /*var activateFadeOutTimer = function() {
                     localTooltip.fadeOutTimer = setTimeout(
                         clearTooltip,
                         InteractiveDataDisplay.TooltipDuration * 1000
@@ -1520,7 +1517,19 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
                 else
                     _tooltip.fadeIn('fast', activateFadeOutTimer);
+*/
+
                 
+                var activateFadeOut = function () {
+                    _updateTooltip = undefined;
+                    localTooltip.fadeOut('fast');
+                }
+
+                var afterFadeIn = function () {
+                    localTooltip.fadeOutTimer = setTimeout( activateFadeOut, InteractiveDataDisplay.TooltipDuration * 1000 );
+                }
+
+                _tooltip.fadeIn('fast', afterFadeIn);
             };
 
             _centralPart.mousemove(function (event) {
@@ -1536,12 +1545,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 clearTooltip();
 
                 if (that.master.isToolTipEnabled) {
-                    var firstOnShowTooltip = function () { onShowTooltip(originHost, p); }
-                    if(_tooltipSettings.tooltipDelay === 0) 
-                        firstOnShowTooltip()
-                    else {
-                        _tooltipTimer = setTimeout(firstOnShowTooltip, _tooltipSettings.tooltipDelay);
-                    }
+                    _tooltipTimer = setTimeout(function () { onShowTooltip(originHost, p); }, _tooltipSettings.tooltipDelay );
                 }
 
                 var onmousemove_rec = function (plot, origin_s, origin_p) {
