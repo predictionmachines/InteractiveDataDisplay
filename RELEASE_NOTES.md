@@ -1,13 +1,11 @@
-### 1.6.0 (TBD)
-
-Braking changes:
- - The subplots table is defined with <div> and nested <table> now
+### 1.5.24 (February 19, 2019)
 
 New features:
  - External legend for subplots: requirement by predictionmachines/FSharpIDD#19
  
 Bug fix:
  - Tooltip delay is fixed
+ - Legend is hidden in the Figure by default, but visible in the Chart by default
 
 ### 1.5.23 (February 14, 2019)
 
