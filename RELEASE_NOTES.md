@@ -5,6 +5,9 @@ Braking changes:
 
 New features:
  - External legend for subplots: requirement by predictionmachines/FSharpIDD#19
+ 
+Bug fix:
+ - Tooltip delay is fixed
 
 ### 1.5.23 (February 14, 2019)
 
@@ -15,7 +18,7 @@ Reengineering:
  - moved padding, suppress-tooltip-coords, ignored-by-fit-to-view Plot settings to the data-idd-style attribute value
 
 New features:
- - added tooltipDelay property to the data-idd-style. User can now set duration of a delay(sec) for the tooltip appearance
+ - added tooltipDelay property to the data-idd-style. User can now set duration of a delay(sec) before the tooltip appearance
 
 ### 1.5.22 (February 11, 2019)
 
