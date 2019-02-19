@@ -475,8 +475,8 @@ InteractiveDataDisplay.SubPlots = function (div) {
 					// subplot
 					var plot = InteractiveDataDisplay.asPlot(plotOrAxis);
 					svgs[i] = plot.exportToSvg();
-					leftOffsets[i] += parseFloat($(elemsToSVG[i]).css('border-width').replace("px","")); 
-					topOffsets[i] += parseFloat($(elemsToSVG[i]).css('border-width').replace("px",""));
+					leftOffsets[i] += parseFloat($(elemsToSVG[i]).css('border-left-width').replace("px","")); 
+					topOffsets[i] += parseFloat($(elemsToSVG[i]).css('border-top-width').replace("px",""));
 				}
 				else if(plotOrAxis.is(searchForAxis)){
 					// axis
