@@ -1,3 +1,9 @@
+### 1.5.25 (February 19, 2019)
+
+Bug fixes:
+ - Fixed #174: SVG export of subplots in Edge and FF
+ - Legend clipping
+
 ### 1.5.24 (February 19, 2019)
 
 New features:
