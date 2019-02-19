@@ -120,6 +120,14 @@
         return svg;
     };
 
+    var data = {};
+    InteractiveDataDisplay.Utils.readStyle(div, data);
+    var visible = data.isLegendVisible;    
+    if (!visible) {
+        // the default legend visibility is "true" for the chart
+        that.legend.isVisible = true
+    }
+
     setDefaultGestureSource();
 };
 

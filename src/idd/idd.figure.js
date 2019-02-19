@@ -766,12 +766,15 @@ InteractiveDataDisplay.Figure = function (div, master) {
     var data = {};
     InteractiveDataDisplay.Utils.readStyle(div, data);
     var visible = data.isLegendVisible;
+    
     if (visible) {
         if (visible == "true")
             _legend.isVisible = true;
         else if (visible == "false")
             _legend.isVisible = false;
-    }    
+    } else {
+        _legend.isVisible = false // by default in the Figure
+    }
 }
 
 InteractiveDataDisplay.Figure.prototype = new InteractiveDataDisplay.Plot;
