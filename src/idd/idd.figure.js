@@ -695,9 +695,11 @@ InteractiveDataDisplay.Figure = function (div, master) {
                 if (child.content.axis) {
                     child.content.axis.renderToSvg(child_g);
                 } else {
-                    var vertTitle = $("div.idd-verticalTitle-inner",child.content)
-                    var isText = (vertTitle.length === 1) && (vertTitle[0].children.length === 0)
-                    if (isText) exportTextToSvg(vertTitle, child_g)
+                    var isText = true;
+                    $(child.content).contents().each(function () {
+                        if (this.nodeType != 3) isText = false;
+                    });
+                    if (isText) exportTextToSvg(child.content, child_g);
                 }
             }
         }
@@ -713,16 +715,9 @@ InteractiveDataDisplay.Figure = function (div, master) {
                 if (child.content.axis) {
                     child.content.axis.renderToSvg(child_g);
                 } else {
-                    var isText = true;
-                    $(child.content).contents().each(function () {
-                        var fChild = this.firstChild
-                        if(fChild) {
-                            if (fChild.nodeType != 3)
-                            isText = false
-                        } else
-                            isText = false
-                    });
-                    if (isText) exportTextToSvg(child.content, child_g);
+                    var vertTitle = $("div.idd-verticalTitle-inner",child.content)
+                    var isText = (vertTitle.length === 1) && (vertTitle[0].children.length === 0)
+                    if (isText) exportTextToSvg(vertTitle, child_g)
                 }
             }
         }
