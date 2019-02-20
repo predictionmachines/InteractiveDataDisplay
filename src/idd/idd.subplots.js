@@ -410,25 +410,26 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 			}
 		}
 
-		_div.subplots = that;
+		_subplotsDiv.subplots = that;
 	}	
 
 	this.renderSVG = function() {
 		var searchForPlot = "div[data-idd-plot='plot']"; // subplots
 		var searchForAxis = "div[data-idd-axis]"; // axes
-		var searchForPlotTitle = "div.idd-subplot-title"; // titles of subplots
+		var searchForPlotTitle = "div.idd-subplot-title"; // titles of each subplots
 		var searchForHAxisTitle = "div.idd-horizontalTitle"; // horizontal axis names
 		var searchForVAxisTitle = "div.idd-verticalTitle"; // vertical axis names
 		var searchForLegend = "div.idd-legend" // legend which is used in subplots
-		var elemsToSVG = $(_div).find(searchForPlot+', '+searchForAxis+', '+searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle + ', '+searchForLegend)
+		var searchSubplotsTitle = "div.idd-subplots-title" // title of subplots as a group
+		var elemsToSVG = $(_subplotsDiv).find(searchForPlot+', '+searchForAxis+', '+searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle+', '+searchForLegend+', '+searchSubplotsTitle)
 
 		var svgs = []
 		var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-		var svg = SVG(svgHost).size($(_div).width(), $(_div).height())
+		var svg = SVG(svgHost).size($(_subplotsDiv).width(), $(_subplotsDiv).height())
 		var svgSubPlotsGroup = svg.nested()
 		var leftOffsets = []
 		var topOffsets = []
-		var subplotsOffset = $(_div).offset()
+		var subplotsOffset = $(_subplotsDiv).offset()
 		for (var i = 0; i < elemsToSVG.length; i++) {
 			// offsets are calculated for all of the elements
 			leftOffsets[i] = $(elemsToSVG[i]).offset().left - subplotsOffset.left
@@ -436,7 +437,7 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 			
 			var plotOrAxis = $(elemsToSVG[i]); // plotOrAxis or legend actually...
 			// text containing divs are handled specially
-			if(plotOrAxis.is(searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle)){
+			if(plotOrAxis.is(searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle+', '+searchSubplotsTitle)){
 				// subplot title
 				var text = svg.text(elemsToSVG[i].innerText);
 				svgs[i] = text.font({
