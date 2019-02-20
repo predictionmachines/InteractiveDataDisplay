@@ -1038,7 +1038,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var plotRect = that.coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
 
             var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            var svg = SVG(svgHost).size(200, $(legendDiv).height());
+            // hack
+            // calculating non-compact legend expected height
+
+            var svg = SVG(svgHost);
             var legend_g = svg.group();
             var plots = InteractiveDataDisplay.Utils.enumPlots(this);
             var commonSettings = { width: 170, height: 0 };
@@ -1064,6 +1067,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
             }
             if (lastLine != undefined) lastLine.remove();
+            svg.size(200, commonSettings.height + 10)
             legend_g.clipWith(legend_g.rect(180, commonSettings.height + 10));            
             return svg;
         };
