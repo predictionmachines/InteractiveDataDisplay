@@ -49,16 +49,30 @@ InteractiveDataDisplay.SubplotsTrapPlot.prototype = new InteractiveDataDisplay.P
 // subplots are grid like structure of plots (lets say N x M plots)
 // The function must be applied as constructor to a <table> element of 3*N rows (<tr></tr>) and 3*M columns
 // this is because each plot can have slots for axes and titles. This slots are implemented as separate grid cells
-InteractiveDataDisplay.SubPlots = function (div) {
-	if(!div)
+InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
+	if(!subplotsDiv)
 		throw "SubPlots must be applied to <div> element"
+	if(subplotsDiv.children.length !== 1 && subplotsDiv.children.length !== 2)
+		throw "SubPlots div must contain one or two child elements: optional element div (subplots title) and mandatory element table"
+	var div = $(subplotsDiv).children().last()[0]
+	if(!div)
+		throw "SubPlots div should contain at least one <div> element"
 	if(div.children.length !== 1)
-		throw "SubPlots div must contain exactly one child element which is table"
+		throw "SubPlots child div must contain exactly one child element which is a <table>"
 	var table = div.children[0]
 	if(!table || table.nodeName!='TABLE')
-		throw "SubPlots div must contain exactly one child element which is table"
+		throw "SubPlots child div must contain exactly one child element which is a <table>"
 	var _div = div
 	var _table = table
+
+	var _subplotsDiv = subplotsDiv;
+	$(_subplotsDiv).css("display", "flex")
+	$(_subplotsDiv).css("flex-direction", "column")
+	$(_div).addClass("idd-subplots-legendholder")
+	if(subplotsDiv.children.length === 2){
+		var _titleDiv = $(subplotsDiv).children()[0]
+		$(_titleDiv).addClass("idd-subplots-title")
+	}
 
 	var _Ncol = 0
 	var _Nrow = 0
@@ -193,7 +207,7 @@ InteractiveDataDisplay.SubPlots = function (div) {
 	   
 		// by this point the tasks #1 and #2 (initializations) are done
 		
-		var extLegendAttr = _div.getAttribute("data-idd-ext-legend")	
+		var extLegendAttr = _div.getAttribute("data-idd-ext-legend")
 		if(extLegendAttr) {
 			var splitted = extLegendAttr.split(" ")
 			if(splitted.length !== 3)
@@ -396,25 +410,26 @@ InteractiveDataDisplay.SubPlots = function (div) {
 			}
 		}
 
-		_div.subplots = that;
+		_subplotsDiv.subplots = that;
 	}	
 
 	this.renderSVG = function() {
 		var searchForPlot = "div[data-idd-plot='plot']"; // subplots
 		var searchForAxis = "div[data-idd-axis]"; // axes
-		var searchForPlotTitle = "div.idd-subplot-title"; // titles of subplots
+		var searchForPlotTitle = "div.idd-subplot-title"; // titles of each subplots
 		var searchForHAxisTitle = "div.idd-horizontalTitle"; // horizontal axis names
 		var searchForVAxisTitle = "div.idd-verticalTitle"; // vertical axis names
 		var searchForLegend = "div.idd-legend" // legend which is used in subplots
-		var elemsToSVG = $(_div).find(searchForPlot+', '+searchForAxis+', '+searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle + ', '+searchForLegend)
+		var searchSubplotsTitle = "div.idd-subplots-title" // title of subplots as a group
+		var elemsToSVG = $(_subplotsDiv).find(searchForPlot+', '+searchForAxis+', '+searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle+', '+searchForLegend+', '+searchSubplotsTitle)
 
 		var svgs = []
 		var svgHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-		var svg = SVG(svgHost).size($(_div).width(), $(_div).height())
+		var svg = SVG(svgHost).size($(_subplotsDiv).width(), $(_subplotsDiv).height())
 		var svgSubPlotsGroup = svg.nested()
 		var leftOffsets = []
 		var topOffsets = []
-		var subplotsOffset = $(_div).offset()
+		var subplotsOffset = $(_subplotsDiv).offset()
 		for (var i = 0; i < elemsToSVG.length; i++) {
 			// offsets are calculated for all of the elements
 			leftOffsets[i] = $(elemsToSVG[i]).offset().left - subplotsOffset.left
@@ -422,7 +437,7 @@ InteractiveDataDisplay.SubPlots = function (div) {
 			
 			var plotOrAxis = $(elemsToSVG[i]); // plotOrAxis or legend actually...
 			// text containing divs are handled specially
-			if(plotOrAxis.is(searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle)){
+			if(plotOrAxis.is(searchForPlotTitle+', '+searchForHAxisTitle+', '+searchForVAxisTitle+', '+searchSubplotsTitle)){
 				// subplot title
 				var text = svg.text(elemsToSVG[i].innerText);
 				svgs[i] = text.font({

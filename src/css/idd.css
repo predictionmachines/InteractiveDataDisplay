@@ -620,6 +620,12 @@ table.idd-subplots-table {
     padding: 0;
 }
 
+.idd-subplots-title {
+    text-align: center;
+    margin: 1em;
+    font-weight: bold;
+}
+
 div.idd-subplots {
     display: flex;
     justify-content: flex-start;
@@ -641,6 +647,12 @@ table.idd-subplots-table td, tr {
 
 div.idd-plot-master.idd-subplot {
     border: 1px solid gray;
+}
+
+div.idd-subplots-legendholder{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 .ui-helper-hidden-accessible { display:none; }
