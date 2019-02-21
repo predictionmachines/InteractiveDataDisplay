@@ -142,6 +142,15 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 				}
 			}
 		}
+		
+		var _dataIddStyle = {}
+		_dataIddStyle = InteractiveDataDisplay.Utils.readStyle($(_div), _dataIddStyle)
+		if(_dataIddStyle && _dataIddStyle["subplots-margin"]){
+			$(_div).find("td div.idd-subplots-margin-left").css("padding-left", _dataIddStyle["subplots-margin"])
+			$(_div).find("tr").find("td div.idd-subplots-margin-left:first").css("padding-left", "")
+			$(_div).find("td div.idd-subplots-margin-bottom").css("padding-bottom", _dataIddStyle["subplots-margin"])
+			$(_div).find("tr").last().find("td div.idd-subplots-margin-bottom").css("padding-bottom", "")
+		}
 
 		jqTr.each(function(rIndex) {
 			var jqTd = $("td",this)			
@@ -409,6 +418,8 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 				}
 			}
 		}
+
+
 
 		_subplotsDiv.subplots = that;
 	}	
