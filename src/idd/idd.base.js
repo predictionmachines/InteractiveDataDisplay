@@ -3541,6 +3541,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             for (var i = 0, len = ticks.length; i < len; i++) {
                 if (!ticks[i].invisible) {
                     v = _xAxis.getCoordinateFromTick(ticks[i].position);
+                    if ((v<0) || (v > screenSize.width))
+                        continue // skipping out of visible region lines
                     svg.polyline([[v, 0], [v, screenSize.height - 1]]).stroke(style).fill('none');
                 }
             }
@@ -3551,6 +3553,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             for (var i = 0, len = ticks.length; i < len; i++) {
                 if (!ticks[i].invisible) {
                     v = (screenSize.height - 1) - _yAxis.getCoordinateFromTick(ticks[i].position);
+                    if ((v<0) || (v > screenSize.height))
+                        continue // skipping out of visible region lines
                     svg.polyline([[0, v], [screenSize.width - 1, v]]).stroke(style).fill('none');
                 }
             }

@@ -22,6 +22,7 @@
 {
     overflow: hidden;
     cursor: default;
+    /* border: dashed blue 1px; */
 }
 
 .idd-axis-label
@@ -33,6 +34,7 @@
     font-size: small;
     left: 0;
     top: 0;
+    /* border: dashed red 1px; */
 }
 
 .idd-figure-container

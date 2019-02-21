@@ -1,4 +1,4 @@
-InteractiveDataDisplay.InitializeAxis = function (div, params) {
+﻿InteractiveDataDisplay.InitializeAxis = function (div, params) {
     
     if (div.hasClass("idd-axis"))
         throw "The div element already is initialized as an axis";
@@ -82,31 +82,33 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     var _size;
     var _deltaRange; // DG: seems to be a ratio between axis screen size and visible data range
     var _canvasHeight;
-    var _rotateAngle;
+    var _rotateAngle; // angle in radians of label tilt
 
     // checks if size of host element changed and refreshes size of canvas and labels' div
     this.updateSize = function () {
         var prevSize = _size;
         if (div) {
             var divWidth = div.outerWidth(false);
-            var divHeight = div.outerHeight(false);
-            _width = divWidth;
-            _height = _rotateAngle ? divWidth * Math.abs(Math.sin(_rotateAngle)) + divHeight * Math.abs(Math.cos(_rotateAngle)) : divHeight;
-        }
-        if (isHorizontal) {
-            _size = _width;
-            if (_size != prevSize) {
-                canvas[0].width = _size;
-                labelsDiv.css("width", _size);              
+            var divHeight = div.outerHeight(false);        
+            if (isHorizontal) {            
+                _width = divWidth;
+                // height is set in render function (with respect to label sizes and rotations)
+                _size = _width;
+                if (_size != prevSize) {
+                    canvas[0].width = _size;
+                    labelsDiv.css("width", _width);
+                }
             }
-        }
-        else {
-            _size = _height;
-            if (_size != prevSize) {
-                canvas[0].height = _size;
-                labelsDiv.css("height", _size);
+            else {
+                _height = divHeight;
+                // width is set in render function (with respect to label sizes and rotations)
+                _size = _height;
+                if (_size != prevSize) {
+                    canvas[0].height = _size;
+                    labelsDiv.css("height", _height);
+                }
             }
-        }
+        }   
         _deltaRange = (_size - 1) / (_range.max - _range.min);
         _canvasHeight = canvas[0].height;
     };
@@ -171,7 +173,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     });
     // Get or set label angle in degrees, from -90 to 90.
     Object.defineProperty(this, "rotateAngle", {
-        get: function () { return _rotateAngle; },
+        get: function () { return _rotateAngle / Math.PI * 180.0; },
         set: function (value) {
             _rotateAngle = value * Math.PI / 180;
             _tickSource.invalidate();
@@ -194,12 +196,11 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
 
     var ticksInfo = [];
 
-    // calculate and cache positions of ticks and labels' size
+    // calculate and cache (to the "ticksInfo") positions of ticks and labels' size
     var getPositions = function (ticks) {
         var len = ticks.length;
         ticksInfo = new Array(len);
         var size, width, height;
-        var h = isHorizontal ? _canvasHeight : 0;
         for (var i = 0; i < len; i++) {
             var tick = ticks[i];
             if (tick.label) {
@@ -219,8 +220,9 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                       $div.remove();
                   }
                 }
-                height = _rotateAngle ? width * Math.abs(Math.sin(_rotateAngle)) + height * Math.abs(Math.cos(_rotateAngle)) : height;                
-                ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: width, height: height, hasLabel: true };
+                var rotatedWidth = _rotateAngle ? width * Math.abs(Math.cos(_rotateAngle)) + height * Math.abs(Math.sin(_rotateAngle)): width;
+                var rotatedHeight = _rotateAngle ? width * Math.abs(Math.sin(_rotateAngle)) + height * Math.abs(Math.cos(_rotateAngle)) : height;                
+                ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: rotatedWidth, height: rotatedHeight, hasLabel: true };
             } else { // no label
                 ticksInfo[i] = { position: that.getCoordinateFromTick(tick.position), width: 0, height: 0, hasLabel: false };
             }
@@ -228,6 +230,8 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     };
 
     // private function to check whether ticks overlay each other
+    // DG: what result of 1 mean?
+    // -1 - means that the tick labels overlap
     var checkLabelsArrangement = function (ticks) {
 
         var delta, deltaSize;
@@ -343,7 +347,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             }
         }
         if (_rotateAngle) {
-            _ticks = _tickSource.updateTransform(result, _rotateAngle * 180/ Math.PI);
+            _ticks = _tickSource.updateTransform(result, _rotateAngle, isHorizontal);
         }
         minTicks = false;
         if (_tickSource.getMinTicks) {
@@ -381,7 +385,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             if (text_size != old_text_size && text_size != 0) {
                 labelsDiv.css("height", text_size);
                 canvas[0].height = canvasSize;
-                _height = text_size + canvasSize;
+                _height = text_size + canvasSize; // labels div + ticks canvas
                 _host.css("height", _height);
                 this.sizeChanged = true;
             }
@@ -414,35 +418,79 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             else ctx.fillRect(InteractiveDataDisplay.tickLength, 0, 1, _size);
         }
 
+        // DG: Do we need to draw base line for "left" and "top" modes ?
+
         // render ticks and labels (if necessary)
         // if range is single point - render only label in the middle of axis
         var x, shift;
+        // x denotes the location of the label on the axis
+        // but as renderer wants to have top-left corner of the label, we shift the label from X to the left
+        // thus shift is usually the half size of the label (thus centre of the label is at the X)
+        // but at the boundaries the shift may be coerced not to clip the labels (if there is space abailable)
         for (var i = 0; i < len; i++) {
-            x = ticksInfo[i].position;
+            var curTick = _ticks[i] // position in _ticks are plot coords
+            var curTickInfo = ticksInfo[i] // positions in tickInfo are screen offsets (0 - is axis bound)
+            x = curTickInfo.position;
+            
+            var nextTickInfo = undefined
+            var prevTickInfo = undefined                  
+            if(i>0) {
+                prevTickInfo = ticksInfo[i-1]
+            }
+            if(i<len-1) {
+                nextTickInfo = ticksInfo[i+1]
+            }
+            var isIntervalLabel = prevTickInfo && nextTickInfo && !prevTickInfo.hasLabel && !nextTickInfo.hasClass && curTickInfo.hasLabel && curTick.invisible
+
             if (isHorizontal) {
-                shift = ticksInfo[i].width / 2;
+                shift = curTickInfo.width / 2;
                 if (minTicks) {
                     if (i == 0) shift *= 2;
                     else if (i == len - 1) shift = 0;
                 }
                 else {
-                    if (i == 0 && x < shift) shift = 0;
-                    else if (i == len - 1 && x + shift > _size) shift *= 2;
+                    // if (i == 0 && x < shift) shift = 0;
+                    //  else
+                    // if (i == len - 1 && x + shift > _size) shift *= 2;
                 }
 
-                if (!_ticks[i].invisible) ctx.fillRect(x, 1, 1, InteractiveDataDisplay.tickLength);
-                if (_ticks[i].label) {
-                    
-                    if (!_rotateAngle || result == 1)
-                        _ticks[i].label.css("left", x - shift);
-                    else if (_rotateAngle > 0) 
-                        _ticks[i].label.css("left", x);
-                    else {
-                        _ticks[i].label.css("left", x - ticksInfo[i].width);
-                    }
+                if (!curTick.invisible) ctx.fillRect(x, 1, 1, InteractiveDataDisplay.tickLength);
+
+                if (curTick.label) {
+                    var finalLeft = undefined
+                    var w = curTickInfo.width // the width of the div after the label rotation is applied
+                    var beforeRotationW = curTick.label._size.width // this is plain width (before the CSS rotation is applied)
+                    if(isIntervalLabel) {                                            
+                        if(prevTickInfo.position <0 ) { // part of the interval is clipped by the visible rect, we can recenter the label
+                            if(nextTickInfo.position >= w) { // is it possible to fit the whole label?
+                                // placing the label in the centre of the vacant area                                
+                                var vacantSpaceMiddleCoord = (0.0 + nextTickInfo.position) * 0.5 // we want that the label centre be at this coord      
+                                finalLeft = vacantSpaceMiddleCoord - beforeRotationW*0.5 // we need to shift to the left as layout wants us to specify leftmost point                                            
+                            } else {
+                                // sticking the label maximum to the right (to the next interval bound)                                
+                                finalLeft = nextTickInfo.position - (w+beforeRotationW)*0.5
+                            }
+                        } else if (nextTickInfo.position > _size) { 
+                            // part of interval is clipped by the visible rect from right side
+                            // we can recentre the label
+                            if(_size - prevTickInfo.position >= w) { // is it possible to fit the whole label?
+                                // placing the label in the centre of the vacant area
+                                var vacantSpaceMiddleCoord = (prevTickInfo.position + _size) * 0.5 // we want that the label centre be at this coord                                
+                                finalLeft = vacantSpaceMiddleCoord - beforeRotationW*0.5
+                            } else {
+                                // sticking the label maximum to the left (to the previous interval bound)
+                                finalLeft = prevTickInfo.position - (beforeRotationW - w)*0.5
+                            }
+                        }
+                        else
+                            finalLeft = x - beforeRotationW/2
+                    } else {
+                            finalLeft = x - beforeRotationW/2
+                    }                
+                    curTick.label.css("left", finalLeft)                    
                 }
             }
-            else {
+            else { // vertical
                 x = (_size - 1) - x;
                 shift = ticksInfo[i].height / 2;
                 if (minTicks) {
@@ -450,15 +498,56 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                     else if (i == len - 1) shift *= 2;
                 }
                 else {
-                    if (i == 0 && x + shift > _size) shift *= 2;
-                    else if (i == len - 1 && x < shift) shift = 0;
+                    // if (i == 0 && x + shift > _size) shift *= 2;
+                    // else if (i == len - 1 && x < shift) shift = 0;
                 }
 
                 if (!_ticks[i].invisible) ctx.fillRect(1, x, InteractiveDataDisplay.tickLength, 1);
-                if (_ticks[i].label) {
-                    _ticks[i].label.css("top", x - shift);
-                    if (_mode == "left") 
-                        _ticks[i].label.css("left", text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width));
+                // if (_ticks[i].label) {
+                //     _ticks[i].label.css("top", x - shift);
+                //     if (_mode == "left") 
+                //         _ticks[i].label.css("left", text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width));
+                // }
+                if (curTick.label) {
+                    var h = curTickInfo.height // the height of the div after the label rotation is applied
+                    var beforeRotationH = curTick.label._size.height // this is plain height (before the CSS rotation is applied)                
+                    if(isIntervalLabel) {                                            
+                        if(prevTickInfo.position <0 ) { // part of the interval is clipped by the visible rect, we can recenter the label
+                            // interval goes downward
+                            if(nextTickInfo.position >= h) { // is it possible to fit the whole label?
+                                // placing the label in the centre of the vacant area
+                                var vacantSpaceMiddleCoord = (0.0 + nextTickInfo.position) * 0.5
+                                var topCornerBeforeRotation = vacantSpaceMiddleCoord + beforeRotationH*0.5
+                                var cssCoords = (_size-1) - topCornerBeforeRotation // switching to CSS coords system ("top") property
+                                curTick.label.css("top", cssCoords)
+                            } else {
+                                // sticking the label maximum to the top (to the next interval bound)
+                                var topCornerBeforeRotation = nextTickInfo.position - (h-beforeRotationH)*0.5
+                                var cssCoords = (_size-1) - topCornerBeforeRotation // switching to CSS coords system ("top") property
+                                curTick.label.css("top", cssCoords)
+                            }
+                        } else if (nextTickInfo.position > _size) { 
+                            // part of interval is clipped by the visible rect from right side
+                            // interval partially gone upward
+                            // we can recentre the label
+                            if(_size - prevTickInfo.position >= h) { // is it possible to fit the whole label?
+                                // placing the label in the centre of the vacant area
+                                var vacantSpaceMiddleCoord = (prevTickInfo.position + _size) * 0.5
+                                var topCornerBeforeRotation = vacantSpaceMiddleCoord + beforeRotationH*0.5
+                                var cssCoords = (_size-1) - topCornerBeforeRotation // switching to CSS coords system ("top") property
+                                curTick.label.css("top", cssCoords)
+                            } else {
+                                // sticking the label maximum to the bottom (to the previous interval bound)
+                                var topCornerBeforeRotation = prevTickInfo.position + (h+beforeRotationH)*0.5
+                                var cssCoords = (_size-1) - topCornerBeforeRotation // switching to CSS coords system ("top") property
+                                curTick.label.css("top", cssCoords)
+                            }
+                        }
+                        else
+                            curTick.label.css("top", x - beforeRotationH/2)    
+                    } else {
+                        curTick.label.css("top", x - beforeRotationH/2)
+                    }                
                 }
             }
         }
@@ -485,6 +574,17 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     };
     
     this.renderToSvg = function (svg) {
+        var axisDivHeight = that.host.height()
+        var axisDivWidth = that.host.width()
+
+        // TODO: add clipping to clip the labels that span 
+        // var origSvg = svg
+        // var clip = svg.clip()
+        // var clipRect = svg.rect(0,0,axisDivWidth,axisDivHeight)
+        // var groupForClip = svg.group()
+        // clip.add(groupForClip)
+        // svg = clip
+
         var path = "";
         var drawHLine = function(x,y,w) {
             path += "M" + x + " " + y + "h" + w; 
@@ -516,7 +616,9 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 drawVLine(baseline,0,_size);
                 textShift = 0;
             }
-        }      
+        }        
+
+        svg.size(axisDivWidth,axisDivHeight)
         
         // render ticks and labels (if necessary)
         // if range is single point - render only label in the middle of axis
@@ -539,94 +641,82 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 _fontSize = style ? parseFloat(style.getPropertyValue('font-size')): undefined; 
             }
         }
+        var axisDocumentOffset = that.host.offset()
+        var labelsDivDocumentOffset = labelsDiv.offset()
+        // these two are labels divs offset relative to its parent: axis div
+        var labelsDivRelativeX = labelsDivDocumentOffset.left - axisDocumentOffset.left
+        var labelsDivRelativeY = labelsDivDocumentOffset.top - axisDocumentOffset.top
         for (var i = 0; i < len; i++) {
             x = ticksInfo[i].position;
-            if (isHorizontal) { // horizontal (top and bottom)
-                shift = ticksInfo[i].width / 2;
-                if (minTicks) {
-                    if (i == 0) shift *= 2;
-                    else if (i == len - 1) shift = 0;
-                }
-                else {
-                    if (i == 0 && x < shift) shift = 0;
-                    else if (i == len - 1 && x + shift > _size) shift *= 2;
-                }
-
+            if(!_ticks[i].label  && ((x < 0) || (x > _size))) // the tick is out of visible range
+                continue
+            var rotWidth = ticksInfo[i].width // width, height after rotation applied        
+            
+            if (isHorizontal) { // horizontal (top and bottom)                
                 if (!_ticks[i].invisible) {
                     if(_mode == "top") drawVLine(x, baseline, -InteractiveDataDisplay.tickLength);
                     else drawVLine(x, 0, InteractiveDataDisplay.tickLength); // bottom long tick
                 }
                 
-                if (_ticks[i].label)
+                if (_ticks[i].label) {                    
                     var style = _ticks[i].label instanceof jQuery ? window.getComputedStyle(_ticks[i].label[0], null) : window.getComputedStyle(_ticks[i].label, null);
-                    var transform = style ? style.getPropertyValue('transform') : undefined;
-                    var b = transform ? transform.split(',')[1] : undefined;
-                    var angle = b ? Math.round(Math.asin(b) * (180 / Math.PI)) : 0;
-                    if (angle == 0 || !_rotateAngle) {
-                        _tickSource.renderToSvg(_ticks[i], svg)
-                          .translate(x - shift, textShift)
-                          .font({
-                              family: fontFamily,
-                              size: _fontSize
-                          });
-                    } else if (_rotateAngle) {
-                        if (_rotateAngle > 0) {
-                            var text = _tickSource.renderToSvg(_ticks[i], svg)
-                                .translate(x, textShift)
-                                .rotate(angle, 0, 0)
-                                .font({
-                                    family: fontFamily,
-                                    size: _fontSize
-                                });
-                        } else if (_rotateAngle < 0) {
-                            var text = _tickSource.renderToSvg(_ticks[i], svg)
-                            .translate(x - ticksInfo[i].width, textShift)
-                            .rotate(angle, ticksInfo[i].width, 0)
-                            .font({
-                                family: fontFamily,
-                                size: _fontSize
-                            });
-                        }
-                    }
+                    // transform reflects rotation and vertical displasement for horizontal axis
+
+                    
+                    var left = parseFloat(style.getPropertyValue("Left")) // horizontal displacement is controlled by Left style
+                    var top = 0
+                    if (_ticks[i].label.normalShift)
+                        top = _ticks[i].label.normalShift // this was saved here (by updateTransform function) to avoid extraction from computedStyle. pure Y shift
+
+                    var labelSvg = _tickSource.renderToSvg(_ticks[i], svg)
+                        .font({
+                            family: fontFamily,
+                            size: _fontSize
+                        })
+                        
+                    // transforms seem to be prepended (first added - last applied)
+                    // applying horizontal translation
+                    labelSvg.transform({x: left + labelsDivRelativeX})
+                    // applying vertical translation
+                    labelSvg.transform({y: top + labelsDivRelativeY - 1}, true) // true means prepend transform, not replace it
+                    // rotation if needed (applied first)
+                    if (_rotateAngle)
+                        labelSvg.transform({ rotation: that.rotateAngle}, true)                
+                }
             }
             else { // vertical (left and right)
-                x = (_size - 1) - x;
-                shift = ticksInfo[i].height * 0.66;
-                if (minTicks) {
-                    if (i == 0) shift = 0;
-                    else if (i == len - 1) shift *= 2;
-                }
-                else {
-                    if (i == 0 && x + shift > _size) shift *= 2;
-                    else if (i == len - 1 && x < shift) shift = 0;
-                }
+                x = (_size - 1) - x;                
 
                 if (!_ticks[i].invisible)
                     if(_mode == "left") drawHLine(baseline, x, -InteractiveDataDisplay.tickLength);
                     else drawHLine(0, x, InteractiveDataDisplay.tickLength);
                     
                 if (_ticks[i].label) {
-                    var leftShift = 0;                    
-                    if (_mode == "left")
-                        leftShift = text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width) + textShift;
-                    if (this.rotateLabels) {
-                        _tickSource.renderToSvg(_ticks[i], svg)
-                            .translate(leftShift - textShift - ticksInfo[i].height, x - shift)
-                            .rotate(-90)
-                            .font({
-                                family: fontFamily,
-                                size: _fontSize
-                            });       
-                    } else {
-                        _tickSource.renderToSvg(_ticks[i], svg)
-                            .translate(leftShift + textShift, x - shift)
-                            .font({
-                                family: fontFamily,
-                                size: _fontSize
-                            });
-                    }
+                    var style = _ticks[i].label instanceof jQuery ? window.getComputedStyle(_ticks[i].label[0], null) : window.getComputedStyle(_ticks[i].label, null);
+                    // transform reflects rotation and vertical displacement for horizontal axis
+
+                    
+                    var left = 0
+                    if(_ticks[i].label.normalShift)
+                        left = _ticks[i].label.normalShift // this was saved here (by updateTransform function) to avoid extraction from computedStyle. pure X shift
+                    var top = parseFloat(style.getPropertyValue("Top")) // vertical displacement is controlled by Top style
+                    
+                    var labelSvg = _tickSource.renderToSvg(_ticks[i], svg)
+                        .font({
+                            family: fontFamily,
+                            size: _fontSize
+                        })
+                        
+                    // transforms seem to be prepended (first added - last applied)
+                    // applying horizontal translation
+                    labelSvg.transform({x: left + labelsDivRelativeX})
+                    // applying vertical translation
+                    labelSvg.transform({y: top + labelsDivRelativeY}, true) // true means prepend transform, not replace it
+                    // rotation if needed (applied first)
+                    if (_rotateAngle)
+                        labelSvg.transform({ rotation: that.rotateAngle}, true)                      
                 }
-            }
+            }       
         }
         
         // get and draw minor ticks
@@ -648,7 +738,10 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
             }
         } 
-        svg.path(path).stroke(strokeStyle).fill('none');    
+        svg.path(path).stroke(strokeStyle).fill('none');
+
+        // svg = origSvg        
+        // clipRect.clipWith(clip) 
     };
 
     /// Renders an exis to the svg and returns the svg object.
@@ -953,7 +1046,7 @@ InteractiveDataDisplay.Utils.round = function (x, n) {
         var degree = Math.pow(10, n - 1);
         return Math.round(x / degree) * degree;
     }
-};
+}
 
 // Represents a float number in a scientific notation (normalized):
 // m × 10^n, where the exponent n:integer "order of magnitude" (0<|n|), and the coefficient m:real "significand/mantissa" (0<=|m|<10)
@@ -1421,6 +1514,8 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
         return createTicks();
     };
 
+    /// returns a "ticks" array, containing positions, div, text, etc
+    /// uses _ticks var as input
     var createTicks = function () {
 
         var ticks = [];
@@ -1456,43 +1551,46 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
                 m += currStep;
             }
         }
-
-            // otherwise render label between two neighboring ticks
+            // otherwise render label between two neighbouring ticks
         else {
             var m1 = 0;
+            // some pregenerated _ticks may be to the left of visible range
+            // finding the index (m1) of the first one which is visible
             while (_ticks[m1] < that.start) m1++;
-            if (m1 > 0) m1--;
+            if (m1 > 0) m1--; // one step back, m1 contains the first out of screen tick to the left
+            // m1 is either the leftmostmost visible tick or the first out of screen to the left
 
+            // finding m2 index
+            // again, m2 is either rightmost visible tick index or the first out of screen tick to the right of visible range
             var m2 = _ticks.length - 1;
             while (_ticks[m2] > that.finish) m2--;
             if (m2 < _ticks.length - 1) m2++;
 
             var count = m2 - m1 + 1;
             var l = 0;
-            
-            var value2 = _ticks[m1];
-
+                        
+            var nextBoundPos = _ticks[m1]; // _tick contains the position of named interval bounds
             for (var i = 0; i < count; i++) {
-                value = value2;
-                if (value >= that.start && value <= that.finish) {
-                    ticks[l] = { position: value };
+                boundPos = nextBoundPos
+                //if (boundPos >= that.start && boundPos <= that.finish) {
+                    ticks[l] = { position: boundPos }; // visible tick at interval bound
                     l++;
-                }
+                //}
                 m1++;
-                value2 = _ticks[m1];
+                var nextBoundPos = _ticks[m1]; // the next bound after the just added
                 var scale = 1;
                 if (step > 1) scale /= step;
-                if (i != count - 1) {
-                    var v = (Math.min(value2, that.finish) + Math.max(value, that.start)) / 2;
-                    if (v >= that.start && v <= that.finish) {
-                        var div = that.getDiv(_labels[m1 - 1]);
-                        if (rotateLabels) {
-                            div.addClass('idd-verticalText');
-                            div.css("transform", "rotate(-90deg) scale(" + scale + ", " + scale + ")");
-                        }
-                        ticks[l] = { position: v, label: div, invisible: true, text: _labels[m1-1] };
-                        l++;
+                if (i != count - 1) { // if not last                    
+                    // it is invisible 
+                    var lebelPos = (boundPos + nextBoundPos) / 2;                    
+                    var div = that.getDiv(_labels[m1 - 1]);
+                    if (rotateLabels) { // DG: Is rotate labels sitll used? We have rotate angle now
+                        div.addClass('idd-verticalText');
+                        div.css("transform", "rotate(-90deg) scale(" + scale + ", " + scale + ")");
                     }
+                    ticks[l] = { position: lebelPos, label: div, invisible: true, text: _labels[m1-1] };
+                    // ticks[l] = { position: lebelPos, label: div, text: _labels[m1-1] };
+                    l++;                    
                 }
             }
         }
@@ -1511,38 +1609,40 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
         return createTicks();
     };
     
-    this.updateTransform = function (result, rotateAngle) {
+    /// result - returned by checkLabelsArrangement
+    /// due to rotation the position correction can be needed
+    this.updateTransform = function (result, rotateAngle, isHorizontal) {
         var ticks = createTicks();
         for (var i = 0; i < ticks.length; i++) {
             if (ticks[i].label) {
                 var div = ticks[i].label;
-                if (result == -1) {
-                    div.css("-webkit-transform", 'rotate(' + rotateAngle + 'deg)');
-                    div.css("-moz-transform", 'rotate(' + rotateAngle + 'deg)');
-                    div.css("-ms-transform", 'rotate(' + rotateAngle + 'deg)');
-                    div.css("-o-transform", 'rotate(' + rotateAngle + 'deg)');
-                    div.css("transform", 'rotate(' + rotateAngle + 'deg)');
-                    if (rotateAngle > 0) {
-                        div.css("transform-origin", 'left top');
-                        div.css("-webkit-transform-origin", 'left top');
-                        div.css("-moz-transform-origin", 'left top');
-                        div.css("-ms-transform-origin", 'left top');
-                        div.css("-o-transform-origin", 'left top');
-                    }
-                    else {
-                        div.css("transform-origin", 'right top');
-                        div.css("-webkit-transform-origin", 'right top');
-                        div.css("-moz-transform-origin", 'right top');
-                        div.css("-ms-transform-origin", 'right top');
-                        div.css("-o-transform-origin", 'right top');
-                    }
-                } else if (result == 1) {
-                    div.css("-webkit-transform", '');
-                    div.css("-moz-transform", '');
-                    div.css("-ms-transform", '');
-                    div.css("-o-transform", '');
-                    div.css("transform", '');
+                
+                var degRotAngle = rotateAngle/Math.PI*180.0                
+
+                var w = div._size.width // the sizes is prior to rotation
+                var h = div._size.height
+
+                var posAngle = Math.abs(rotateAngle)
+                var sinA = Math.sin(posAngle)
+                var cosA = Math.cos(posAngle)                
+
+                // transforms are applied from right to left
+                var transformValue ='rotate(' + degRotAngle + 'deg)'
+                if(isHorizontal) {
+                    var vertShift = 0.5 * (w*sinA+ h*cosA - h)
+                    var transformValue = 'translateY('+vertShift+'px)' + transformValue
+                    div.normalShift = vertShift // saving shift in a direction normal to axis (to be used is SVG export, to avoid extracting this info from matrix of transform series)
+                } else {                                        
+                    var horShift =  - 0.5*(w - (w*cosA+h*sinA))
+                    var transformValue = 'translateX('+horShift+'px)' + transformValue
+                    div.normalShift = horShift // saving shift in a direction normal to axis (to be used is SVG export, to avoid extracting this info from matrix of transform sereis)
                 }
+                
+                div.css("-webkit-transform", transformValue);
+                div.css("-moz-transform", transformValue);
+                div.css("-ms-transform", transformValue);
+                div.css("-o-transform", transformValue);
+                div.css("transform", transformValue);                                
             }
         }
         return ticks;
