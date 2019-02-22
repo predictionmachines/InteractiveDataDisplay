@@ -1,3 +1,8 @@
+### 1.5.28 (February 22, 2019)
+
+New features:
+ - Visibility of plots with a same name can be managed via legend
+
 ### 1.5.27 (February 21, 2019)
 
 New features:
