@@ -142,6 +142,17 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 				}
 			}
 		}
+		
+		var _dataIddStyle = {}
+		_dataIddStyle = InteractiveDataDisplay.Utils.readStyle($(_div), _dataIddStyle)
+		var subplotsMargin = undefined
+		if(_dataIddStyle && _dataIddStyle["subplots-margin"]){
+			subplotsMargin = _dataIddStyle["subplots-margin"]
+			$(_div).find("td div.idd-subplots-margin-left").css("padding-left", _dataIddStyle["subplots-margin"])
+			$(_div).find("tr").find("td div.idd-subplots-margin-left:first").css("padding-left", "")
+			$(_div).find("td div.idd-subplots-margin-bottom").css("padding-bottom", _dataIddStyle["subplots-margin"])
+			$(_div).find("tr").last().find("td div.idd-subplots-margin-bottom").css("padding-bottom", "")
+		}
 
 		jqTr.each(function(rIndex) {
 			var jqTd = $("td",this)			
@@ -232,17 +243,29 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 			}
 			switch(placement.trim().toLowerCase()) {
 				case "left":
+					$(_div).css("flex-direction", "row")
+					if(subplotsMargin)
+						legendDiv.css("margin-right", subplotsMargin)
+					break
 				case "right":
-					$(_div).css("flex-direction","row")
+					$(_div).css("flex-direction", "row")
+					if(subplotsMargin)
+						legendDiv.css("margin-left", subplotsMargin)
 					break
 				case "top":
+					$(_div).css("flex-direction", "column")
+					if(subplotsMargin)
+						legendDiv.css("margin-bottom", subplotsMargin)
+					break
 				case "bottom":
-					$(_div).css("flex-direction","column")
+					$(_div).css("flex-direction", "column")
+					if(subplotsMargin)
+						legendDiv.css("margin-top", subplotsMargin)
 					break
 				default:
 					throw "Unexpected external legend placement"
 			}
-			_extLegend = new InteractiveDataDisplay.Legend(legendSource, legendDiv,false,undefined, true);
+			_extLegend = new InteractiveDataDisplay.Legend(legendSource, legendDiv, false, undefined, true);
 		}
 
 
@@ -409,6 +432,8 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 				}
 			}
 		}
+
+
 
 		_subplotsDiv.subplots = that;
 	}	

@@ -1,8 +1,7 @@
-### 1.5.25 (February 19, 2019)
+### 1.5.27 (February 21, 2019)
 
-Bug fixes:
- - Fixed #174: SVG export of subplots in Edge and FF
- - Legend clipping
+New features:
+ - Margin between subplots and margin between subplots and an external legend can be set 
 
 ### 1.5.26 (February 20, 2019)
 
