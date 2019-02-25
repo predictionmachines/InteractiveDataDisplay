@@ -433,7 +433,28 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 			}
 		}
 
+		var visibleChangedHandler = function (event, params) {
+			for(var i = 0; i < _masterPlots.length; i++) {
+				for(var j = 0; j < _masterPlots[i].length; j++) {
+					var plotsSeq = _masterPlots[i][j].getPlotsSequence();
+					for(var k = 0; k < plotsSeq.length; k++) {
+						if(plotsSeq[k].name === params.name)
+							if(plotsSeq[k].isVisible !== params.isVisible)
+							plotsSeq[k].isVisible = params.isVisible
+					}
+				}
+			}
+		}
 
+		var _commonVisibilityEnabled = $(_div).attr("data-idd-common-visibility")
+		if(_commonVisibilityEnabled && (_commonVisibilityEnabled === "true" || _commonVisibilityEnabled === "enabled")){
+			for(var i = 0; i < _masterPlots.length; i++) {
+				for(var j = 0; j < _masterPlots[i].length; j++) {
+					if(_masterPlots[i][j])
+						_masterPlots[i][j].host.bind("visibleChanged", visibleChangedHandler);
+				}
+			}
+		}
 
 		_subplotsDiv.subplots = that;
 	}	
