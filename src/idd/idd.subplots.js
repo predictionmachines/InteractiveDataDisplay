@@ -94,6 +94,17 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 	var _extLegendRowIdx = undefined
 	var _extLegendColIdx = undefined
 	var _extLegend = undefined
+
+	var _syncVisualRectH = $(_div).attr('data-idd-horizontal-binding')
+	var _syncVisualRectV = $(_div).attr('data-idd-vertical-binding')
+	if (typeof _syncVisualRectH !== typeof undefined && (_syncVisualRectH === "true" || _syncVisualRectH === "enabled"))
+		_syncVisualRectH = true
+	else
+		_syncVisualRectH = false
+	if (typeof _syncVisualRectV !== typeof undefined && (_syncVisualRectV === "true" || _syncVisualRectV === "enabled"))
+		_syncVisualRectV = true
+	else
+		_syncVisualRectV = false
 	
 	var that = this;
 
@@ -123,7 +134,7 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 			var axisCount = jqAxis.length
 			if(axisCount>0) {
 				if(axisCount>1)
-					console.warn("subplots: working with multiple axes in single slot is not implemented")
+					console.warn("subplots: work with multiple axes in a single slot is not implemented")
 				else {
 					var axis = InteractiveDataDisplay.InitializeAxis(jqAxis, {})
 					_axes.push(axis)
@@ -272,7 +283,7 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 		// proceeding to bindings (tasks #3 and #4)
 
 		// Task #3: binding plots transform to axes
-	    for(var i=0; i < _axes.length; i++) {
+	  for(var i=0; i < _axes.length; i++) {
 			var axis = _axes[i]
 			var cellRow = _axisLocationIndices[i][0]
 			var cellCol = _axisLocationIndices[i][1]
@@ -287,13 +298,13 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 				axis.dataTransform = plot.xDataTransform
 				//TODO: hand horizontal axis bindings here
 			}
-	    }
+	  }
 
-	    // Task #4: binding grid lines to axis ticks
-	    //
+		// Task #4: binding grid lines to axis ticks
+	  //
 		// this is tricky, as the plot may not contain axis in its slots
 		// Also the axes can be bound	    
-	    $("div[data-idd-plot='grid']",_table).each(function(idx){			
+		$("div[data-idd-plot='grid']",_table).each(function(idx){
 			var host = this
 			var grid = host.plot
 			var master = grid.master
@@ -302,10 +313,40 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 			var horAxis = _horizontalAxes[subplotRowIdx][subplotColIdx]
 			if(horAxis)
 				grid.xAxis = horAxis
+			else if(_syncVisualRectH){
+
+				function findHorizontalAxisIndexInColumn(horizontalAxesArr, columnIndex){
+					for (var rowN = 0; rowN < horizontalAxesArr.length; rowN++){
+						if(horizontalAxesArr[rowN] && horizontalAxesArr[rowN][columnIndex])
+							return rowN;
+					}
+						return -1;
+				}
+		
+				var horizontalAxisRow = findHorizontalAxisIndexInColumn(_horizontalAxes, subplotColIdx)
+
+				if(horizontalAxisRow !== -1)
+					grid.xAxis = _horizontalAxes[horizontalAxisRow][subplotColIdx]
+			}
+
 			var vertAxis = _verticalAxes[subplotRowIdx][subplotColIdx]
 			if(vertAxis)
 				grid.yAxis = vertAxis
-	    })
+			else if(_syncVisualRectV){
+				function findVerticalAxisIndexInRow(row) {
+					for (var i = 0; i < row.length; i++) {
+						if(row[i])
+							return i;
+					}
+					return -1;
+				}
+		
+				var verticalAxisColumn = findVerticalAxisIndexInRow(_verticalAxes[subplotRowIdx])
+				if(verticalAxisColumn !== -1)
+					grid.yAxis = _verticalAxes[subplotRowIdx][verticalAxisColumn]
+			}
+		
+		})
 		
 		// Task #5: activate navigation
 		// we traverse master plots
@@ -384,38 +425,60 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 				var subplotRowIdx = master.subplotRowIdx
 				var subplotColIdx = master.subplotColIdx
 				
-				var horAxis = _horizontalAxes[subplotRowIdx][subplotColIdx]
-				if(horAxis)
-					horAxis.update(xRange)
-				var vertAxis = _verticalAxes[subplotRowIdx][subplotColIdx]
-				if(vertAxis)
-				vertAxis.update(yRange)
+				if(!_syncVisualRectH){
+					var horAxis = _horizontalAxes[subplotRowIdx][subplotColIdx]
+					if(horAxis)
+						horAxis.update(xRange)
+				}
+				if(!_syncVisualRectV){
+					var vertAxis = _verticalAxes[subplotRowIdx][subplotColIdx]
+					if(vertAxis)
+					vertAxis.update(yRange)
+				}
 
-				// for(var i = 0; i < _axes.length; i++) {
-				// 	var axis = _axes[i]
-				// 	if(_isAxisVertical[i])
-				// 		axis.update(yRange)
-				// 	else
-				// 		axis.update(xRange)
-				// }
+				for(var i = 0; i < _axes.length; i++) {
+					var axis = _axes[i]
+					if(_isAxisVertical[i] && _syncVisualRectV)
+						axis.update(yRange)
+					else if(!_isAxisVertical[i] && _syncVisualRectH)
+						axis.update(xRange)
+				}
+
 
 				// 2) updating bound plots
 				// traversing all of the grid master plots. Calling set visible to everyone except for originator
-				var visRec = {
-					x: vr.x_min,
-					y: vr.y_min,
-					width: vr.x_max - vr.x_min,
-					height: vr.y_max - vr.y_min
+				
+				if(_syncVisualRectH || _syncVisualRectV){
+					for(var i = 0; i < _masterPlots.length; i++) {
+						var row = _masterPlots[i]
+						for(var j = 0; j < row.length; j++) {
+							var plot = row[j]
+							if(plot === this.master)
+								continue // skipping the originator
+							
+							if(_syncVisualRectH){
+								var visRec = {
+									x: vr.x_min,
+									width: vr.x_max - vr.x_min
+									
+									,y: plot.visibleRect.y,
+									height: plot.visibleRect.height
+								}
+							}
+							if(_syncVisualRectV){
+								var visRec = {
+									y: vr.y_min,
+									height: vr.y_max - vr.y_min
+			
+									,x: plot.visibleRect.x,
+									width: plot.visibleRect.width
+								}
+							}
+
+							plot.navigation.setVisibleRect(visRec, false, { suppressNotifyBoundPlots: true, forceOnlyUpdatePlotsOutput:true, syncUpdate:true });								
+						}
+					}
 				}
-				// for(var i = 0; i < _masterPlots.length; i++) {
-				// 	var row = _masterPlots[i]
-				// 	for(var j = 0; j < row.length; j++) {
-				// 		var plot = row[j]
-				// 		if(plot === this.master)
-				// 			continue // skipping the originator
-				// 		plot.navigation.setVisibleRect(visRec, false, { suppressNotifyBoundPlots: true, forceOnlyUpdatePlotsOutput:true, syncUpdate:true });								
-				// 	}
-				// }					
 
 				isRendering = false
 			} else {
