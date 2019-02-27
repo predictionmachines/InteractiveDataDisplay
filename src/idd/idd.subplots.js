@@ -456,23 +456,15 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 							if(plot === this.master)
 								continue // skipping the originator
 							
+							var visRec = plot.visibleRect
+
 							if(_syncVisualRectH){
-								var visRec = {
-									x: vr.x_min,
-									width: vr.x_max - vr.x_min
-									
-									,y: plot.visibleRect.y,
-									height: plot.visibleRect.height
-								}
+								visRec.x = vr.x_min
+								visRec.width = vr.x_max - vr.x_min
 							}
 							if(_syncVisualRectV){
-								var visRec = {
-									y: vr.y_min,
-									height: vr.y_max - vr.y_min
-			
-									,x: plot.visibleRect.x,
-									width: plot.visibleRect.width
-								}
+								visRec.y = vr.y_min
+								visRec.height = vr.y_max - vr.y_min
 							}
 
 							plot.navigation.setVisibleRect(visRec, false, { suppressNotifyBoundPlots: true, forceOnlyUpdatePlotsOutput:true, syncUpdate:true });								
