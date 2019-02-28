@@ -199,7 +199,7 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 								var isLegendVisible = typeof style.isLegendVisible != "undefined" ? style.isLegendVisible : "true";
 								if(isLegendVisible === "true") {
 									var legendDiv = $("<div style='z-index: 10;'></div>").appendTo(jqIdd);
-									var _legend = new InteractiveDataDisplay.Legend(master, legendDiv, true);
+									var _legend = new InteractiveDataDisplay.Legend(master, legendDiv, true, true, true);
 									legendDiv.css("float", "right");									
 
 									//Stop event propagation
@@ -493,7 +493,7 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 				for(var j = 0; j < _masterPlots[i].length; j++) {
 					var plotsSeq = _masterPlots[i][j].getPlotsSequence();
 					for(var k = 0; k < plotsSeq.length; k++) {
-						if(plotsSeq[k].name === params.name)
+						if(params.name.length > 0 && plotsSeq[k].name === params.name)
 							if(plotsSeq[k].isVisible !== params.isVisible)
 							plotsSeq[k].isVisible = params.isVisible
 					}
