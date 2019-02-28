@@ -153,17 +153,6 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 				}
 			}
 		}
-		
-		var _dataIddStyle = {}
-		_dataIddStyle = InteractiveDataDisplay.Utils.readStyle($(_div), _dataIddStyle)
-		var subplotsMargin = undefined
-		if(_dataIddStyle && _dataIddStyle["subplots-margin"]){
-			subplotsMargin = _dataIddStyle["subplots-margin"]
-			$(_div).find("td div.idd-subplots-margin-left").css("padding-left", _dataIddStyle["subplots-margin"])
-			$(_div).find("tr").find("td div.idd-subplots-margin-left:first").css("padding-left", "")
-			$(_div).find("td div.idd-subplots-margin-bottom").css("padding-bottom", _dataIddStyle["subplots-margin"])
-			$(_div).find("tr").last().find("td div.idd-subplots-margin-bottom").css("padding-bottom", "")
-		}
 
 		jqTr.each(function(rIndex) {
 			var jqTd = $("td",this)			
@@ -226,7 +215,21 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 				})
 			}			
 	   	})
-	   
+	   		
+		var _dataIddStyle = {}
+		_dataIddStyle = InteractiveDataDisplay.Utils.readStyle($(_div), _dataIddStyle)
+		var subplotsMargin = undefined
+		if(_dataIddStyle && _dataIddStyle["subplots-margin"]){
+			subplotsMargin = _dataIddStyle["subplots-margin"]
+			$(_div).find("td div.idd-subplots-margin-left").css("padding-left", subplotsMargin)
+			$(_div).find("tr").find("td div.idd-subplots-margin-left:first").css("padding-left", "")
+			$(_div).find("td div.idd-subplots-margin-bottom").css("padding-bottom", subplotsMargin)
+			$(_div).find("tr").last().find("td div.idd-subplots-margin-bottom").css("padding-bottom", "")
+		}
+		else{
+			subplotsMargin = $(_div).find("td div.idd-axis").parent().css("padding-left")
+		}
+
 		// by this point the tasks #1 and #2 (initializations) are done
 		
 		var extLegendAttr = _div.getAttribute("data-idd-ext-legend")

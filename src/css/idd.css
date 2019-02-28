@@ -656,3 +656,30 @@ div.idd-subplots-legendholder{
 }
 
 .ui-helper-hidden-accessible { display:none; }
+
+.idd-subplots .idd-legend {
+    background-color: transparent;
+    box-shadow: none;
+    border: none;
+}
+
+.idd-subplots .idd-legend-item{
+    box-shadow: none;
+    border: none;
+    border-bottom: solid 2px #f2f2f2;
+    margin-bottom: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    width: 190px;
+}
+
+.idd-subplots .idd-legend-item:last-child {
+    border-bottom: none;
+}
+
+.idd-subplots .idd-legend-item-title{
+    padding-bottom: 10px;
+    padding-left: 0px;
+    padding-top: 10px;
+    padding-right: 0px;
+}
