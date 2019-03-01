@@ -5,6 +5,11 @@ New features:
  - Margin between subplots and margin between subplots and an external legend can be set 
  - Axes sync is enabled in subplots
 
+Bug fixes:
+ - Tilted label axis bug fix. #161
+ - Label axis positioning bug fix. #164
+ - Palette editor z-index bug fix.
+
 ### 1.5.26 (February 20, 2019)
 
 New features:

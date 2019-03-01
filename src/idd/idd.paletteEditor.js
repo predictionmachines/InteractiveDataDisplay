@@ -266,6 +266,7 @@ InteractiveDataDisplay.ColorPaletteEditor = function ($div, palette) {
                 }
             });
         }
+
         $marker.click(function(e){ // <-- prompts a user to choose new color for the marker
             chooseColor(xp, point.rightColor ? point.rightColor : point.leftColor, 
                 function(hsla) {  // <-- new color is chosen for the marker
@@ -297,10 +298,23 @@ InteractiveDataDisplay.ColorPaletteEditor = function ($div, palette) {
         });
         $markers.remove();
 
-        for(var i = 0; i < _palette.points.length; i++){
-            var leftX = i == 0 ? _palette.range.min : _palette.points[i-1].x;
-            var rightX = i == _palette.points.length-1 ? _palette.range.max : _palette.points[i+1].x;
-            addMarker(_palette.points[i], leftX, rightX, i > 0 && i < _palette.points.length - 1);
+        // leftmost and rightmost markers are added separatly before others to have the lowes Z-index
+        if(_palette.points.length>0) { 
+            var leftX = _palette.range.min
+            var rightX = _palette.points[1].x
+            addMarker(_palette.points[0], leftX, rightX,false);
+        }
+        if(_palette.points.length>1) {
+            var leftX = _palette.points[_palette.points.length-2].x;
+            var rightX = _palette.range.max
+            addMarker(_palette.points[_palette.points.length-1], leftX, rightX,false);
+        }
+
+        // now adding all the others
+        for(var i = 1; i < _palette.points.length-1; i++){
+            var leftX = _palette.points[i-1].x;
+            var rightX =  _palette.points[i+1].x;
+            addMarker(_palette.points[i], leftX, rightX, true);
         }
     }
 
