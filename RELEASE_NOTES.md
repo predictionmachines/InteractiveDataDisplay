@@ -1,12 +1,9 @@
-### 1.5.28 (February 22, 2019)
+ ### 1.5.27 (MArch 1, 2019)
 
 New features:
- - Visibility of plots with a same name can be managed via legend
-
-### 1.5.27 (February 21, 2019)
-
-New features:
+ - Visibility of plots with a same name can be managed via legend in subplot
  - Margin between subplots and margin between subplots and an external legend can be set 
+ - Axes sync is enabled in subplots
 
 ### 1.5.26 (February 20, 2019)
 
