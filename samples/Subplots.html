@@ -31,7 +31,7 @@
     </style>
     <script type="text/javascript">
         $(document).ready(function () {
-            var subplots = InteractiveDataDisplay.asSubPlots(document.getElementById('table1'));
+            var subplots = InteractiveDataDisplay.asSubPlots($("div.idd-subplots")[0]);
 
             //plot11.host.on("visibleRectChanged", function(event,newPlotRect) {   
                 
@@ -42,7 +42,7 @@
         });
         
         var exportSvg = function(){
-            var subplots = InteractiveDataDisplay.asSubPlots(document.getElementById('table1'));
+            var subplots = InteractiveDataDisplay.asSubPlots($("div.idd-subplots")[0]);
             var svg = subplots.renderSVG();
             
             $("#table_svg").html(svg.svg());
@@ -50,109 +50,132 @@
     </script>
 </head>
 <body>
-    <table id='table1'>
-        <tr><td></td><td><div class="idd-subplot-title">Plot 11 individual title</div class="idd-subplot-title"></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td><div data-idd-axis="numeric" data-idd-placement="left" id="left_axis1"  data-idd-scientific-notation="true" style="height: 300px;"></div></td>
-            <td>
-                <div id="plot11" data-idd-plot="plot" data-idd-navigation-enabled="true" data-idd-style="isLegendVisible:false; tooltipDelay:0;" style="width: 600px; height: 300px;">
-                    <div data-idd-plot='subplots-trap'></div>
-                    <div id="grid11" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'></div>
-                    <div data-idd-plot="polyline">
-                        x   y
-                        0   0
-                        0.1 0.031410759
-                        0.2 0.06279052
-                        0.3 0.094108313
-                        0.4 0.125333234
-                        0.5 0.156434465
-                        0.6 0.187381315
-                        0.7 0.218143241
-                        0.8 0.248689887
-                        0.9 0.278991106
-                        1   0.309016994
-                        1.1 0.33873792
-                        1.2 0.368124553
-                        1.3 0.397147891
-                        1.4 0.425779291
-                    </div>
-                </div>
-            </td>
-            <td></td><td></td>
-            <td><div id="plot12" data-idd-plot="plot" data-idd-navigation-enabled="true" data-idd-style="isLegendVisible:false;" style="width: 600px; height: 300px;">
-                <div data-idd-plot='subplots-trap'></div>
-                <div id="grid12" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'></div>
-                <div data-idd-plot="markers">
-                    x   y
-                    0   0
-                    0.1 0.031410759
-                    0.2 0.06279052
-                    0.3 0.094108313
-                    0.4 0.125333234
-                    0.5 0.156434465
-                    0.6 0.187381315
-                    0.7 0.218143241
-                    0.8 0.248689887
-                    0.9 0.278991106
-                    1   0.309016994
-                    1.1 0.33873792
-                    1.2 0.368124553
-                    1.3 0.397147891
-                    1.4 0.425779291
-                </div>
-            </div></td>
-            <td></td>
-        </tr>
-        <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td></td><td></td><td></td><td></td><td><div class="idd-subplot-title">plot 22 individual title</div class="idd-subplot-title"></td><td></td></tr>
-        <tr><td><div data-idd-axis="numeric" data-idd-placement="left" id="left_axis2" data-idd-scientific-notation="true" style="height: 300px;"></div></td>
-            <td><div id="plot21" data-idd-plot="plot" data-idd-navigation-enabled="true" data-idd-style="isLegendVisible:false;" style="width: 600px; height: 300px;">
-                <div data-idd-plot='subplots-trap'></div>
-                <div id="grid21" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'></div>
-                <div data-idd-plot="markers">
-                    x   y
-                    0   0
-                    0.1 0.031410759
-                    0.2 0.06279052
-                    0.3 0.094108313
-                    0.4 0.125333234
-                    0.5 0.156434465
-                    0.6 0.187381315
-                    0.7 0.218143241
-                    0.8 0.248689887
-                    0.9 0.278991106
-                    1   0.309016994
-                    1.1 0.33873792
-                    1.2 0.368124553
-                    1.3 0.397147891
-                    1.4 0.425779291
-                </div>
-            </div></td>
-            <td></td><td></td><td><div id="plot22" data-idd-plot="plot" data-idd-navigation-enabled="true" data-idd-style="isLegendVisible:false;" style="width: 600px; height: 300px;">
-                <div data-idd-plot='subplots-trap'></div>
-                <div id="grid22" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'></div>
-                <div data-idd-plot="polyline">
-                    x   y
-                    0   0
-                    0.1 0.031410759
-                    0.2 0.06279052
-                    0.3 0.094108313
-                    0.4 0.125333234
-                    0.5 0.156434465
-                    0.6 0.187381315
-                    0.7 0.218143241
-                    0.8 0.248689887
-                    0.9 0.278991106
-                    1   0.309016994
-                    1.1 0.33873792
-                    1.2 0.368124553
-                    1.3 0.397147891
-                    1.4 0.425779291
-                </div>
-            </div></td>
-            <td></td>
-        </tr>
-        <tr><td></td><td><div data-idd-axis="numeric" data-idd-placement="bottom" id="bottom_axis1" data-idd-scientific-notation="true" style="width: 600px;"></div></td><td></td><td></td><td><div data-idd-axis="numeric" data-idd-placement="bottom" id="bottom_axis2" data-idd-scientific-notation="true" style="width: 600px;"></div></td><td></td></tr>
-    </table>
+    <div class='idd-subplots'>
+        <div>Subplots</div>
+        <div data-idd-style="subplots-margin: 0px;">
+            <table class='idd-subplots-table'>
+                <tr><td></td><td><div class="idd-subplot-title">Plot 11 individual title</div class="idd-subplot-title"></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td><div data-idd-axis="numeric" data-idd-placement="left" id="left_axis1"  data-idd-scientific-notation="true" style="height: 300px;"></div></td>
+                    <td>
+                        <div id="plot11" data-idd-plot="plot" data-idd-navigation-enabled="true" data-idd-style="isLegendVisible:true; tooltipDelay:0;" style="width: 600px; height: 300px;">
+                            <div data-idd-plot='subplots-trap'></div>
+                            <div id="grid11" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'></div>
+                            <div data-idd-plot="polyline" data-idd-name="Polyline2">
+                                x   y
+                                0   0
+                                0.1 0.031410759
+                                0.2 0.06279052
+                                0.3 0.094108313
+                                0.4 0.125333234
+                                0.5 0.156434465
+                                0.6 0.187381315
+                                0.7 0.218143241
+                                0.8 0.248689887
+                                0.9 0.278991106
+                                1   0.309016994
+                                1.1 0.33873792
+                                1.2 0.368124553
+                                1.3 0.397147891
+                                1.4 0.425779291
+                            </div>
+                        </div>
+                    </td>
+                    <td></td><td></td>
+                    <td><div id="plot12" data-idd-plot="plot" data-idd-navigation-enabled="true" data-idd-style="isLegendVisible:false;" style="width: 600px; height: 300px;">
+                        <div data-idd-plot='subplots-trap'></div>
+                        <div id="grid12" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'></div>
+                        <div data-idd-plot="markers">
+                            x   y
+                            0   0
+                            0.1 0.031410759
+                            0.2 0.06279052
+                            0.3 0.094108313
+                            0.4 0.125333234
+                            0.5 0.156434465
+                            0.6 0.187381315
+                            0.7 0.218143241
+                            0.8 0.248689887
+                            0.9 0.278991106
+                            1   0.309016994
+                            1.1 0.33873792
+                            1.2 0.368124553
+                            1.3 0.397147891
+                            1.4 0.425779291
+                        </div>
+                    </div></td>
+                    <td></td>
+                </tr>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td><div class="idd-subplot-title">plot 22 individual title</div class="idd-subplot-title"></td><td></td></tr>
+                <tr><td><div data-idd-axis="numeric" data-idd-placement="left" id="left_axis2" data-idd-scientific-notation="true" style="height: 300px;"></div></td>
+                    <td><div id="plot21" data-idd-plot="plot" data-idd-navigation-enabled="true" data-idd-style="isLegendVisible:true;" style="width: 600px; height: 300px;">
+                        <div data-idd-plot='subplots-trap'></div>
+                        <div id="grid21" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'></div>
+                        <div data-idd-plot="markers" data-idd-name="markers1">
+                            x   y
+                            0   0
+                            0.1 0.031410759
+                            0.2 0.06279052
+                            0.3 0.094108313
+                            0.4 0.125333234
+                            0.5 0.156434465
+                            0.6 0.187381315
+                            0.7 0.218143241
+                            0.8 0.248689887
+                            0.9 0.278991106
+                            1   0.309016994
+                            1.1 0.33873792
+                            1.2 0.368124553
+                            1.3 0.397147891
+                            1.4 0.425779291
+                        </div>                        
+                        <div data-idd-plot="polyline" data-idd-name="Polyline2">
+                                x   y
+                                1   0
+                                1.1 0.031410759
+                                1.2 0.06279052
+                                1.3 0.094108313
+                                1.4 0.125333234
+                                1.5 0.156434465
+                                1.6 0.187381315
+                                1.7 0.218143241
+                                1.8 0.248689887
+                                1.9 0.278991106
+                                2   0.309016994
+                                2.1 0.33873792
+                                2.2 0.368124553
+                                2.3 0.397147891
+                                2.4 0.425779291
+                            </div>
+                    </div></td>
+                    <td></td><td></td><td><div id="plot22" data-idd-plot="plot" data-idd-navigation-enabled="true" data-idd-style="isLegendVisible:false;" style="width: 600px; height: 300px;">
+                        <div data-idd-plot='subplots-trap'></div>
+                        <div id="grid22" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'></div>
+                        <div data-idd-plot="polyline">
+                            x   y
+                            0   0
+                            0.1 0.031410759
+                            0.2 0.06279052
+                            0.3 0.094108313
+                            0.4 0.125333234
+                            0.5 0.156434465
+                            0.6 0.187381315
+                            0.7 0.218143241
+                            0.8 0.248689887
+                            0.9 0.278991106
+                            1   0.309016994
+                            1.1 0.33873792
+                            1.2 0.368124553
+                            1.3 0.397147891
+                            1.4 0.425779291
+                        </div>
+                    </div></td>
+                    <td></td>
+                </tr>
+                <tr><td></td><td><div data-idd-axis="numeric" data-idd-placement="bottom" id="bottom_axis1" data-idd-scientific-notation="true" style="width: 600px;"></div></td><td></td><td></td><td><div data-idd-axis="numeric" data-idd-placement="bottom" id="bottom_axis2" data-idd-scientific-notation="true" style="width: 600px;"></div></td><td></td></tr>
+            </table>
+        </div>
+    </div>
     
     <div id="table_svg" style="width: 1249px; height: 688px; margin-top: 5px; background-color: lightgrey;" onclick="exportSvg(); $('#table_svg').css('background-color', 'transparent');">
         Every time you click here you get an SVG snapshot of subplots above.
