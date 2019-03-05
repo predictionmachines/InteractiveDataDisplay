@@ -1854,14 +1854,16 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     // Legend with hide/show function
     // _plot - where to find the children for gathering legend info from
     // _jqdiv - where to put generated legend items
-    // isNotSortable - dragging the legend items is prohibited. Not is for compatibility reason
-    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact, hasTooltip,isNotSortable) {
+    // isSortable - can drag legend items and change their positinions
+    // if isCompact is undefined, legend is assumed to be not compact and sortable unless indicated otherwise by isSortable param
+    // if isSortable is undefined, legend is assumed to be sortable if it is also not compact and non-sortable otherwise (compact)
+    InteractiveDataDisplay.Legend = function (_plot, _jqdiv, isCompact, hasTooltip, isSortable) {
         // Inner legends for this legend.
-        var plotLegends = [];
-        var plotSubs = [];
-        var divStyle = _jqdiv[0].style;
-        var updateIsLegendInduced = false;
-        var that = this;
+        var plotLegends = []
+        var plotSubs = []
+        var divStyle = _jqdiv[0].style
+        var updateIsLegendInduced = false
+        var that = this
         that.div = _jqdiv
 
         var _isVisible = true;
@@ -1879,19 +1881,23 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             get: function() { return _jqdiv }
         })
 
+        var legendIsSortable = isSortable
+        if(isCompact === undefined && isSortable === undefined)
+            legendIsSortable = true
+        else if(isCompact === false && isSortable === undefined)
+            legendIsSortable = true
+
         if (isCompact) _jqdiv.addClass("idd-legend-compact");
         else _jqdiv.addClass("idd-legend");
         _jqdiv.addClass("unselectable");
-        if (!isNotSortable) {
+        if (legendIsSortable) {
             _jqdiv.sortable({ axis: 'y' });
             _jqdiv.on("sortupdate", function (e, ui) {
                 that.updateIsLegendInduced = true; // LM: items order is changed in the legend itself
                 var movedPlot = ui.item.data('plot'); // LM: the plot which card was moved
-                var targetIndex;
                 var next_elem, prev_elem;
                 $("li", _jqdiv).each(function (idx, el) {
                     if (movedPlot == $(el).data('plot')) {
-                        targetIndex = idx;
                         prev_elem = ($(el)).prev().data('plot');
                         next_elem = ($(el).next()).data('plot');
                         return false;

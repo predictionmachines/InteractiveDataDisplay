@@ -182,14 +182,14 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 							_trapPlots[pRowIdx][pColIdx] = InteractiveDataDisplay.asPlot($("div[data-idd-plot='subplots-trap']",td))
 
 							// controlling legend visibility
-							var style = {};							
+							var style = {};
 							InteractiveDataDisplay.Utils.readStyle(jqIdd, style);
 							if (style) {
 								var isLegendVisible = typeof style.isLegendVisible != "undefined" ? style.isLegendVisible : "true";
 								if(isLegendVisible === "true") {
 									var legendDiv = $("<div style='z-index: 10;'></div>").appendTo(jqIdd);
-									var _legend = new InteractiveDataDisplay.Legend(master, legendDiv, true, true, true);
-									legendDiv.css("float", "right");									
+									var _legend = new InteractiveDataDisplay.Legend(master, legendDiv, true);
+									legendDiv.css("float", "right");
 
 									//Stop event propagation
 									InteractiveDataDisplay.Gestures.FullEventList.forEach(function (eventName) {
