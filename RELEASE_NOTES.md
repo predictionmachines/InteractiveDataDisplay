@@ -1,4 +1,10 @@
- ### 1.5.27 (MArch 1, 2019)
+### 1.5.28 (March 7, 2019)
+
+Bug fixes:
+ - Subplots alignment fix
+ - Legend exception fix
+
+ ### 1.5.27 (March 1, 2019)
 
 New features:
  - Visibility of plots with a same name can be managed via legend in subplot

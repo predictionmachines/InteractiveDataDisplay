@@ -66,7 +66,6 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 	var _table = table
 
 	var _subplotsDiv = subplotsDiv;
-	$(_subplotsDiv).css("display", "flex")
 	$(_subplotsDiv).css("flex-direction", "column")
 	$(_div).addClass("idd-subplots-legendholder")
 	if(subplotsDiv.children.length === 2){
