@@ -2009,55 +2009,57 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         var childrenChangedHandler = function (event, params) {
 
-            if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
-                if (containsLegendFor(params.plot)) {
-                    return;
-                }
-                subscribeToChanges(params.plot);
-                createLegendForPlot(params.plot);
-            }
-            else if (params.type === "remove") {
-                var removeLegendItem = function (i) {
-                    var legend = plotLegends[i];
-                    plotLegends.splice(i, 1);
-                    removeLegend(legend);
-                    if (legend.onLegendRemove) legend.onLegendRemove();
-                    legend[0].innerHTML = "";
-                    if (isCompact) legend.removeClass("idd-legend-item-compact");
-                    else legend.removeClass("idd-legend-item");
-                    _jqdiv[0].removeChild(legend[0]);
-                    var childDivs = legend.plot.children;
-                    childDivs.forEach(function (childPlot) {
-                        for (var j = 0, len = plotLegends.length; j < len; j++)
-                            if (plotLegends[j].plot === childPlot) {
-                                removeLegendItem(plotLegends[j]);
-                            }
-                    });
-                    $(legend[0]).css("display", "none");
-                    if (plotLegends.length == 0) divStyle.display = "none";
-                };
-
-                for (var i = 0, len = plotLegends.length; i < len; i++)
-                    if (plotLegends[i].plot === params.plot) {
-                        removeLegendItem(i);
-                        break;
+            if(params !== undefined){
+                if (params.type === "add" && _jqdiv[0].hasChildNodes() && params.plot.master == _plot.master) {
+                    if (containsLegendFor(params.plot)) {
+                        return;
                     }
-                unsubscribeFromChanges(params.plot);
-            }
-            else {
-                _jqdiv[0].innerHTML = "";
-                divStyle.display = "none";
-                len = plotLegends.length;
-                for (i = 0; i < len; i++) {
-                    removeLegend(plotLegends[i]);
-                    if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
-                    plotLegends[i][0].innerHTML = "";
-                    if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
-                    else plotLegends[i].removeClass("idd-legend-item");
+                    subscribeToChanges(params.plot);
+                    createLegendForPlot(params.plot);
                 }
-                unsubscribeAll();
-                plotLegends = [];
-                createLegend();
+                else if (params.type === "remove") {
+                    var removeLegendItem = function (i) {
+                        var legend = plotLegends[i];
+                        plotLegends.splice(i, 1);
+                        removeLegend(legend);
+                        if (legend.onLegendRemove) legend.onLegendRemove();
+                        legend[0].innerHTML = "";
+                        if (isCompact) legend.removeClass("idd-legend-item-compact");
+                        else legend.removeClass("idd-legend-item");
+                        _jqdiv[0].removeChild(legend[0]);
+                        var childDivs = legend.plot.children;
+                        childDivs.forEach(function (childPlot) {
+                            for (var j = 0, len = plotLegends.length; j < len; j++)
+                                if (plotLegends[j].plot === childPlot) {
+                                    removeLegendItem(plotLegends[j]);
+                                }
+                        });
+                        $(legend[0]).css("display", "none");
+                        if (plotLegends.length == 0) divStyle.display = "none";
+                    };
+
+                    for (var i = 0, len = plotLegends.length; i < len; i++)
+                        if (plotLegends[i].plot === params.plot) {
+                            removeLegendItem(i);
+                            break;
+                        }
+                    unsubscribeFromChanges(params.plot);
+                }
+                else {
+                    _jqdiv[0].innerHTML = "";
+                    divStyle.display = "none";
+                    len = plotLegends.length;
+                    for (i = 0; i < len; i++) {
+                        removeLegend(plotLegends[i]);
+                        if (plotLegends[i].onLegendRemove) plotLegends[i].onLegendRemove();
+                        plotLegends[i][0].innerHTML = "";
+                        if (isCompact) plotLegends[i].removeClass("idd-legend-item-compact");
+                        else plotLegends[i].removeClass("idd-legend-item");
+                    }
+                    unsubscribeAll();
+                    plotLegends = [];
+                    createLegend();
+                }
             }
         };
         var orderChangedHandler = function (event, params) {
