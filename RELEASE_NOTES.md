@@ -1,3 +1,8 @@
+### 1.5.29 (March 8, 2019)
+
+Hot-fix:
+ - Axis initialization using custom data readers in subplots
+
 ### 1.5.28 (March 7, 2019)
 
 Bug fixes:

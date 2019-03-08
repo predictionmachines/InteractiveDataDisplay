@@ -135,7 +135,7 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 				if(axisCount>1)
 					console.warn("subplots: work with multiple axes in a single slot is not implemented")
 				else {
-					var axis = InteractiveDataDisplay.InitializeAxis(jqAxis, {})
+					var axis = InteractiveDataDisplay.InitializeAxis(jqAxis)
 					_axes.push(axis)
 					_axisLocationIndices.push([rIdx,cIdx])
 					var isVertical = (rIdx % 3) === 1				
