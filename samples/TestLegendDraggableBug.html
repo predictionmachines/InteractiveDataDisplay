@@ -19,17 +19,51 @@
 
     <script type="text/javascript">
         $(document).ready(function () {
-            var plot = InteractiveDataDisplay.asPlot($("#figure1"));
-            var legendDiv = $('#legend1');
-            var legend = new InteractiveDataDisplay.Legend(plot, legendDiv, true);
+            var plot = InteractiveDataDisplay.asPlot($("#plot1"));
+            //var legendDiv = $('#legend1');
+            //var legend = new InteractiveDataDisplay.Legend(plot, legendDiv, true);
         });
     </script>
 </head>
 
 <body>
     <div style="display: inline-grid">
-        
-        <div id="figure1" data-idd-plot="figure" style="width: 400px; height: 300px; float:left"
+        <div id="plot1" data-idd-plot="plot" data-idd-navigation-enabled="true" data-idd-style="isLegendVisible:false;" style="width: 600px; height: 300px;">
+            <div id="grid12" data-idd-plot='grid' data-idd-placement='center' data-idd-style='stroke: DarkGray; thickness: 1px;'></div>
+            <div data-idd-plot="markers">
+                x   y
+                0   0
+                0.1 0.031410759
+                0.2 0.06279052
+                0.3 0.094108313
+                0.4 0.125333234
+                0.5 0.156434465
+                0.6 0.187381315
+                0.7 0.218143241
+                0.8 0.248689887
+                0.9 0.278991106
+                1   0.309016994
+                1.1 0.33873792
+                1.2 0.368124553
+                1.3 0.397147891
+                1.4 0.425779291
+            </div>
+            <div data-idd-plot="polyline" data-idd-style="stroke: red; thickness: 3" id="red line">
+                x   y
+                0   0
+                1   1
+                2   2
+            </div>
+            <div data-idd-plot="polyline" data-idd-style="stroke: green; thickness: 3" id="green line">
+                x   y
+                0   1
+                1   0
+                2   2
+            </div>
+        </div>
+
+
+        <!--<div id="plot1" data-idd-plot="plot" style="width: 400px; height: 300px; float:left"
             data-idd-navigation-enabled="true" data-idd-legend-enabled="true">
             <div id="legend1" style="width:auto; height:auto;"></div>
 
@@ -51,7 +85,7 @@
 
             <div id="bottom_axis1" data-idd-axis="numeric" data-idd-placement="bottom" style="position: relative;"></div>
             <div id="left_axis1" data-idd-axis="numeric" data-idd-placement="left" style="position: relative;"></div>
-        </div>
+        </div>-->
     </div>
 
     
