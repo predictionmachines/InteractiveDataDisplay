@@ -41,8 +41,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     if (div) _mode = div.attr("data-idd-placement");
     if (_mode != "top" && _mode != "bottom" && _mode != "left" && _mode != "right")
         _mode == "bottom";
-    var isHorizontal = (_mode == "top" || _mode == "bottom");
-    this.rotateLabels = false;
+    var isHorizontal = (_mode == "top" || _mode == "bottom");    
 
     // _range of axis in plot coordinates
     var _range = { min: 0, max: 1 };
@@ -196,7 +195,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
 
     var ticksInfo = [];
 
-    // calculate and cache (to the "ticksInfo") positions of ticks and labels' size
+    // calculates and saves (to the "ticksInfo") positions of ticks and labels' size
     var getPositions = function (ticks) {
         var len = ticks.length;
         ticksInfo = new Array(len);
@@ -230,8 +229,8 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
     };
 
     // private function to check whether ticks overlay each other
-    // DG: what result of 1 mean?
     // -1 - means that the tick labels overlap
+    // 1 - labels do not overlay each other and there is enough space to increase their count
     var checkLabelsArrangement = function (ticks) {
 
         var delta, deltaSize;
@@ -350,7 +349,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             _ticks = _tickSource.updateTransform(result, _rotateAngle, isHorizontal);
         }
         minTicks = false;
-        if (_tickSource.getMinTicks) {
+        if (_tickSource.getMinTicks) { // DG: MinTicks are not small ticks. They are kind of "backup" representation if main tick alignment algorithm fails
             if (newResult == -1 && iterations > InteractiveDataDisplay.maxTickArrangeIterations || _ticks.length < 2) {
                 newTicks = _tickSource.getMinTicks();
                 if (newTicks.length > 0) {
@@ -426,7 +425,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         // x denotes the location of the label on the axis
         // but as renderer wants to have top-left corner of the label, we shift the label from X to the left
         // thus shift is usually the half size of the label (thus centre of the label is at the X)
-        // but at the boundaries the shift may be coerced not to clip the labels (if there is space abailable)
+        // but at the boundaries the shift may be coerced not to clip the labels (if there is space available)
         for (var i = 0; i < len; i++) {
             var curTick = _ticks[i] // position in _ticks are plot coords
             var curTickInfo = ticksInfo[i] // positions in tickInfo are screen offsets (0 - is axis bound)
@@ -443,17 +442,6 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
             var isIntervalLabel = prevTickInfo && nextTickInfo && !prevTickInfo.hasLabel && !nextTickInfo.hasClass && curTickInfo.hasLabel && curTick.invisible
 
             if (isHorizontal) {
-                shift = curTickInfo.width / 2;
-                if (minTicks) {
-                    if (i == 0) shift *= 2;
-                    else if (i == len - 1) shift = 0;
-                }
-                else {
-                    // if (i == 0 && x < shift) shift = 0;
-                    //  else
-                    // if (i == len - 1 && x + shift > _size) shift *= 2;
-                }
-
                 if (!curTick.invisible) ctx.fillRect(x, 1, 1, InteractiveDataDisplay.tickLength);
 
                 if (curTick.label) {
@@ -491,23 +479,10 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
                 }
             }
             else { // vertical
-                x = (_size - 1) - x;
-                shift = ticksInfo[i].height / 2;
-                if (minTicks) {
-                    if (i == 0) shift = 0;
-                    else if (i == len - 1) shift *= 2;
-                }
-                else {
-                    // if (i == 0 && x + shift > _size) shift *= 2;
-                    // else if (i == len - 1 && x < shift) shift = 0;
-                }
+                x = (_size - 1) - x;                
 
                 if (!_ticks[i].invisible) ctx.fillRect(1, x, InteractiveDataDisplay.tickLength, 1);
-                // if (_ticks[i].label) {
-                //     _ticks[i].label.css("top", x - shift);
-                //     if (_mode == "left") 
-                //         _ticks[i].label.css("left", text_size - (this.rotateLabels ? ticksInfo[i].height : ticksInfo[i].width));
-                // }
+
                 if (curTick.label) {
                     var h = curTickInfo.height // the height of the div after the label rotation is applied
                     var beforeRotationH = curTick.label._size.height // this is plain height (before the CSS rotation is applied)                
@@ -744,7 +719,7 @@ InteractiveDataDisplay.TicksRenderer = function (div, source) {
         // clipRect.clipWith(clip) 
     };
 
-    /// Renders an exis to the svg and returns the svg object.
+    /// Renders an axis to the svg and returns the svg object.
     this.exportToSvg = function () {
         if (!SVG.supported) throw "SVG is not supported";
         
@@ -875,14 +850,9 @@ InteractiveDataDisplay.LabelledAxis = function (div, params) {
     };
 
     this.updateLabels = function (params) {
-        this.tickSource = new InteractiveDataDisplay.LabelledTickSource(params);
-        if (params && params.rotate)
-            this.rotateLabels = true;
+        this.tickSource = new InteractiveDataDisplay.LabelledTickSource(params);        
         this.rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
-    };
-
-    if (params && params.rotate)
-        this.rotateLabels = true;            
+    };        
 
     this.base(div, new InteractiveDataDisplay.LabelledTickSource(params));
     this.rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
@@ -1454,10 +1424,8 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     }
 
     var step = 1;
-    var min, max;
-    var delta = _ticks.length - _labels.length;
-
-    var rotateLabels = params && params.rotate ? params.rotate : false;
+    var min, max; // indicies of leftmost and rightmost ticks to draw (imposed by visible region)
+    var isIntervalLabels = _ticks.length - _labels.length > 0 // whether the labels depict the intervals between ticks
 
     this.getInner = function (x) {
         var hasNewLines = typeof x === "string" && x.indexOf("\n") !== -1;
@@ -1477,10 +1445,13 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
         return svg.text(text);
     }
 
+    // not only returns ticks array (containing positions, div, text, etc), but also tunes "step","min" and "max" closure variable 
+    // mixed responsibility :-(
     this.getTicks = function (_range) {
         InteractiveDataDisplay.LabelledTickSource.prototype.getTicks.call(this, _range);
         step = 1;
-        if (delta <= 0) {
+        if (!isIntervalLabels) { // labels annotate ticks
+            // binary search to find leftmost tick to show
             var i1 = 0;
             var i2 = _ticks.length - 1;
             var value = (this.start) | 0;
@@ -1491,8 +1462,10 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
                     else i2 = mid;
                 }
             }
+            // leftmost visible tick is saved to "min"
             min = i1;
 
+            // binary search to find rightmost visible tick to show
             i1 = 0;
             i2 = _ticks.length - 1;
             value = (this.finish) | 0 + 1;
@@ -1503,12 +1476,13 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
                     else i2 = mid;
                 }
             }
-            max = i2;
+            max = i2; // rightmost visible tick is saved to "max"
 
             if (max > min) {
-                var tempStep = (_ticks.length - 1) / (max - min);
+                var tempStep = (_ticks.length - 1) / (max - min); // how many times the visible interval smaller than interval covering all of the labels
                 while (step < tempStep) step *= 2;
             }
+
         }
 
         return createTicks();
@@ -1519,11 +1493,12 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     var createTicks = function () {
 
         var ticks = [];
-
-        // if length of labels and ticks are equal - render each label under specific tick
-        if (delta <= 0) {
+        
+        if (!isIntervalLabels) {
 
             var currStep = Math.floor((_ticks.length - 1) / step);
+
+            // currStep = 1
 
             if (currStep > _ticks.length - 1)
                 currStep = _ticks.length - 1;
@@ -1532,8 +1507,8 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
 
             var m = 0;
             var value = (that.start) | 0;
-            while (_ticks[m] < value) m += currStep;
-            if (m - currStep >= 0 && _ticks[m] > value) m -= currStep;
+            while (_ticks[m] < value) m += currStep; // finding the first tick index "m" that is in visible range
+            if (m - currStep >= 0 && _ticks[m] > value) m -= currStep; // and doing one step back if possible ("m" holds the first out of visible region to the left tick index)
 
             var count = (max - min + 1);
 
@@ -1541,17 +1516,13 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
             for (var i = 0; i < count; i++) {
                 value = _ticks[m];
                 if (value >= that.start && value <= that.finish) {
-                    var div = that.getDiv(_labels[m]);
-                    if (rotateLabels) {
-                        div.addClass('idd-verticalText');
-                    }
+                    var div = that.getDiv(_labels[m]);                    
                     ticks[l] = { position: value, label: div, text: _labels[m] };
                     l++;
                 }
                 m += currStep;
             }
-        }
-            // otherwise render label between two neighbouring ticks
+        }            
         else {
             var m1 = 0;
             // some pregenerated _ticks may be to the left of visible range
@@ -1578,16 +1549,11 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
                 //}
                 m1++;
                 var nextBoundPos = _ticks[m1]; // the next bound after the just added
-                var scale = 1;
-                if (step > 1) scale /= step;
+                
                 if (i != count - 1) { // if not last                    
                     // it is invisible 
                     var lebelPos = (boundPos + nextBoundPos) / 2;                    
-                    var div = that.getDiv(_labels[m1 - 1]);
-                    if (rotateLabels) { // DG: Is rotate labels sitll used? We have rotate angle now
-                        div.addClass('idd-verticalText');
-                        div.css("transform", "rotate(-90deg) scale(" + scale + ", " + scale + ")");
-                    }
+                    var div = that.getDiv(_labels[m1 - 1]);                    
                     ticks[l] = { position: lebelPos, label: div, invisible: true, text: _labels[m1-1] };
                     // ticks[l] = { position: lebelPos, label: div, text: _labels[m1-1] };
                     l++;                    
@@ -1599,13 +1565,13 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     };
 
     this.decreaseTickCount = function () {
-        if (delta <= 0) step /= 2;
-        else step++;
+        if (!isIntervalLabels) step /= 2;
+        else step++; // this one has no effect now, as createTicks for labelled intervals ignores "step"
         return createTicks();
     };
     this.increaseTickCount = function () {
-        if (delta <= 0) step *= 2;
-        else step--;
+        if (!isIntervalLabels) step *= 2;
+        else step--; // this one has no effect now, as createTicks for labelled intervals ignores "step"
         return createTicks();
     };
     
@@ -1652,7 +1618,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     this.getSmallTicks = function (ticks) {
         var smallTicks = [];
 
-        if (delta <= 0) {
+        if (!isIntervalLabels) {
             var l = 0;
             var k = 0;
             for (var i = 0; i < _ticks.length; i++) {
@@ -1670,17 +1636,13 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     this.getMinTicks = function () {
         var ticks = [];
 
-        if (delta <= 0 && _labels.length > 0) {
-            var div = that.getDiv(_labels[0]);
-            if (rotateLabels) {
-                div.addClass('idd-verticalText');
-            }
+        // return createTicks()
+
+        if (!isIntervalLabels && _labels.length > 0) {
+            var div = that.getDiv(_labels[0]);            
             ticks[0] = { position: _ticks[0], label: div, text: _labels[0] };
 
-            div = that.getDiv(_labels[_labels.length - 1]);
-            if (rotateLabels) {
-                div.addClass('idd-verticalText');
-            }
+            div = that.getDiv(_labels[_labels.length - 1]);            
             ticks[1] = { position: _ticks[_ticks.length - 1], label: div, text: _labels[_labels.length - 1] };
             that.refreshDivs();
         }
