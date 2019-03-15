@@ -860,6 +860,8 @@ InteractiveDataDisplay.LabelledAxis = function (div, params) {
     this.base = InteractiveDataDisplay.TicksRenderer;
     var that = this;
 
+    var areAllLabelsVisibleAttr = true;
+
     // DG: seems to be data coord -> screen coord transform
     //     ticks locations are transformed with this function to be put to screen
     this.getCoordinateFromTick = function (x) {
@@ -882,7 +884,15 @@ InteractiveDataDisplay.LabelledAxis = function (div, params) {
     };
 
     if (params && params.rotate)
-        this.rotateLabels = true;            
+        this.rotateLabels = true;
+    
+    var allLabelsVisibleAttr = div.attr("data-idd-force-labels-visibility");
+    if(typeof allLabelsVisibleAttr !== 'undefined'){
+        if(allLabelsVisibleAttr == "false" || allLabelsVisibleAttr == "disable" || allLabelsVisibleAttr == "disabled") areAllLabelsVisibleAttr = false;
+    }
+    else areAllLabelsVisibleAttr = false;
+    if(params === undefined) params = {}
+    params["forceLabelsVisibility"] = areAllLabelsVisibleAttr
 
     this.base(div, new InteractiveDataDisplay.LabelledTickSource(params));
     this.rotateAngle = params && params.rotateAngle ? params.rotateAngle : 0;
@@ -1437,6 +1447,12 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
 
     var _labels = [];
     var _ticks = []; // DG: Seems that it is in data coords, as the coords are later processed with getCoordinateFromTick
+
+    // false - display only labels that are suitable for such zoom level and range
+    // true - display all labels regardless of the zoom level
+    var forceAllLabelsVisibility = false;
+    if(params && params.forceLabelsVisibility)
+        forceAllLabelsVisibility = params.forceLabelsVisibility
 
     // if labels and ticks are defined - cache them
     // if ticks are undefined - they are calculated as an array of integers from 0 to length of labels
