@@ -1,12 +1,25 @@
-### 1.5.28 (February 22, 2019)
+### 1.5.29 (March 8, 2019)
+
+Hot-fix:
+ - Axis initialization using custom data readers in subplots
+
+### 1.5.28 (March 7, 2019)
+
+Bug fixes:
+ - Subplots alignment fix
+ - Legend exception fix
+
+ ### 1.5.27 (March 1, 2019)
 
 New features:
- - Visibility of plots with a same name can be managed via legend
-
-### 1.5.27 (February 21, 2019)
-
-New features:
+ - Visibility of plots with a same name can be managed via legend in subplot
  - Margin between subplots and margin between subplots and an external legend can be set 
+ - Axes sync is enabled in subplots
+
+Bug fixes:
+ - Tilted label axis bug fix. #161
+ - Label axis positioning bug fix. #164
+ - Palette editor z-index bug fix.
 
 ### 1.5.26 (February 20, 2019)
 

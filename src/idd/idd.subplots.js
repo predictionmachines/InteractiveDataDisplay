@@ -66,7 +66,6 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 	var _table = table
 
 	var _subplotsDiv = subplotsDiv;
-	$(_subplotsDiv).css("display", "flex")
 	$(_subplotsDiv).css("flex-direction", "column")
 	$(_div).addClass("idd-subplots-legendholder")
 	if(subplotsDiv.children.length === 2){
@@ -136,7 +135,7 @@ InteractiveDataDisplay.SubPlots = function (subplotsDiv) {
 				if(axisCount>1)
 					console.warn("subplots: work with multiple axes in a single slot is not implemented")
 				else {
-					var axis = InteractiveDataDisplay.InitializeAxis(jqAxis, {})
+					var axis = InteractiveDataDisplay.InitializeAxis(jqAxis)
 					_axes.push(axis)
 					_axisLocationIndices.push([rIdx,cIdx])
 					var isVertical = (rIdx % 3) === 1				

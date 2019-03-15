@@ -148,8 +148,9 @@ InteractiveDataDisplay.readBase64 = function (jqDiv) {
         switch(dimensionality) {
             case '1D':                
                 if (typeStr == 'string') {
-                    var csvRow= atob(data[1])
-                    var result = csvRow.split(',')
+                    var encoded = data[1]
+                    var encodedArray = encoded.split(',')                    
+                    var result= encodedArray.map(atob)
                     return result
                 }
                 else {
