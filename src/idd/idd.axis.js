@@ -1440,7 +1440,7 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     }
 
     var step = 1;
-    var min, max; // indicies of leftmost and rightmost ticks to draw (imposed by visible region)
+    var min, max; // indices of leftmost and rightmost ticks to draw (imposed by visible region)
     var isIntervalLabels = _ticks.length - _labels.length > 0 // whether the labels depict the intervals between ticks
 
     this.getInner = function (x) {
@@ -1514,7 +1514,8 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
 
             var currStep = Math.floor((_ticks.length - 1) / step);
 
-            // currStep = 1
+            if(forceAllLabelsVisibility) // forcing every label to be present
+                currStep = 1
 
             if (currStep > _ticks.length - 1)
                 currStep = _ticks.length - 1;
@@ -1652,7 +1653,8 @@ InteractiveDataDisplay.LabelledTickSource = function (params) {
     this.getMinTicks = function () {
         var ticks = [];
 
-        // return createTicks()
+        if(forceAllLabelsVisibility) // there is no "min" representation if all of the labels visibility is requested
+            return createTicks()
 
         if (!isIntervalLabels && _labels.length > 0) {
             var div = that.getDiv(_labels[0]);            
