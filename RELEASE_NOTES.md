@@ -1,3 +1,11 @@
+### 1.5.30 (March 15, 2019)
+
+Fixes:
+ - Regression of legend behaviour of legend in Figure and Chart (e.g. not specifing all of the Legend constructor parameters)
+
+New features:
+ - Ability to force the display of all labels on the axis (even if the overlay) for the labelled axis
+
 ### 1.5.29 (March 8, 2019)
 
 Hot-fix:
