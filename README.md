@@ -45,6 +45,12 @@ Interactive Data Display is available as Bower package. You can download IDD as 
 
 `bower install idd`
 
+Using in offline projects
+-------------------------
+
+Interactive Data Display is available as self contained script.
+You may use idd.selfcontained.js in small or offline projects. This script contains all IDD dependencies inside and easy to import.
+
 Licensing
 ---------
 
