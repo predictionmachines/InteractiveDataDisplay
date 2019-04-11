@@ -196,6 +196,47 @@
                 }
             }
         },
+        webpack: {
+            config: {
+                mode: 'production',
+                entry: [
+                    './src/idd/idd.selfcontained.js'
+                ],
+                output: {
+                    filename: 'idd.selfcontained.js'
+                },
+                optimization: {
+                    minimize: true
+                },
+                stats: {
+                    warnings: false
+                },
+                module: {
+                    rules: [
+                        {
+                        test: /\.css$/,
+                        use: [
+                            'style-loader',
+                            'css-loader'
+                            ]
+                        },
+                        {
+                            test: /\.(jpe?g|png|ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
+                            use: {
+                                loader: 'base64-inline-loader',
+                                options: {
+                                    limit: 3000,
+                                    name: '[name].[ext]',
+
+                                    fallback: "file-loader",
+                                    name: '[name].[ext]',
+                                }
+                            } 
+                        },
+                    ]
+                }
+            }
+        },
     });
 
     grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -205,8 +246,9 @@
     grunt.loadNpmTasks('grunt-base64');    
     grunt.loadNpmTasks("grunt-ts");
     grunt.loadNpmTasks('grunt-tsd');
+    grunt.loadNpmTasks('grunt-webpack');
 
     grunt.registerTask('update-tsd', ['tsd']);
-    grunt.registerTask('default', ['concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:styles', 'concat:dist_ko', 'ts:dist', 'concat:dist', 'uglify', 'copy', 'concat:umd', 'concat:umdTs', 'ts:testGlobal', 'ts:test', 'jasmine']);
+    grunt.registerTask('default', ['concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:styles', 'concat:dist_ko', 'ts:dist', 'concat:dist', 'uglify', 'copy', 'concat:umd', 'concat:umdTs', 'ts:testGlobal', 'ts:test', 'jasmine', 'webpack']);
     grunt.registerTask('test', ['jasmine']);
 };
