@@ -200,10 +200,10 @@
             config: {
                 mode: 'production',
                 entry: [
-                    './src/idd/idd.assembled.js'
+                    './src/idd/idd.selfcontained.js'
                 ],
                 output: {
-                    filename: 'idd.assembled.js'
+                    filename: 'idd.selfcontained.js'
                 },
                 optimization: {
                     minimize: true
