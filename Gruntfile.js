@@ -1,6 +1,4 @@
-﻿const path = require('path');
-
-module.exports = function (grunt) {
+﻿module.exports = function (grunt) {
 
 	//the following files are to be included in every bundle
 	coreSrcFiles = [
@@ -205,8 +203,7 @@ module.exports = function (grunt) {
                     './src/idd/idd.assembled.js'
                 ],
                 output: {
-                    filename: 'idd.assembled.js',
-                    path: path.resolve(__dirname, 'dist')
+                    filename: 'idd.assembled.js'
                 },
                 optimization: {
                     minimize: true
