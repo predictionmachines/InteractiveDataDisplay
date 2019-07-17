@@ -1,3 +1,8 @@
+### 1.5.31 (July 17, 2019)
+
+New features:
+ - new bundle idd.webpack.js file distributed with release. It uses dependecy names that match npm packages. It is also referencess CSS dependency directly without "css!" requireJS extension.
+
 ### 1.5.30 (March 15, 2019)
 
 Fixes:
