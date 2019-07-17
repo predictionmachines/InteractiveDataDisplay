@@ -1,0 +1,21 @@
+﻿(function(root, factory) {
+	'use strict';
+	//Define as an AMD Module if possible
+	if (typeof define === 'function' && define.amd) {
+		//AMD
+		define(['jquery', 'rx', 'svg.js', 'file-saver', './idd.webpack.css', 'jquery-ui', 'jquery-mousewheel'], 
+				function ($, Rx, SVG, filesaver) {
+					var expr = factory(root, $, Rx, SVG, filesaver);
+					return {"InteractiveDataDisplay": expr.InteractiveDataDisplay, "Plot": expr.Plot};
+				});
+		} else if (typeof exports == 'object') {
+			//Node, CommonJS-like
+			var $ = root.jQuery = require('jquery');
+		    require('jquery-mousewheel')($);
+		    require('jqueryui');
+			var filesaver = require('file-saver');
+			module.exports = factory(root, $, require('rx'), require('svg.js'), filesaver.saveAs);
+		} else {
+			console.error("idd.webpack.js cannot be used without RequireJS or CommonJS compatible bundler");
+		}
+	})( typeof window !== "undefined" ? window : this, function(window, $, Rx, SVG, saveAs) {

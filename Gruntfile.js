@@ -101,6 +101,12 @@
 					.concat(["src/idd/wrapper_footer.txt"]),
                 dest: "dist/idd.umd.js",
             },
+            dist_webpack: {
+                src: ["src/idd/wrapper_header_webpack.txt"]
+					.concat(coreSrcFiles)
+					.concat(["src/idd/wrapper_footer.txt"]),
+                dest: "dist/idd.webpack.js",
+            },
             umdTs: {
                 dest: "dist/idd.umd.d.ts",
                 src: ["src/viewer/chartViewer.d.ts"],
@@ -139,6 +145,7 @@
                 files: [
                     { src: "src/viewer/chartViewer.d.ts", dest: "dist/idd.d.ts" },
                     { src: "dist/idd.css", dest: "dist/idd.umd.css" },
+                    { src: "dist/idd.css", dest: "dist/idd.webpack.css" },
                     { expand: true, src: "src/icons/*", dest: "dist/icons/", flatten: true },
                     { src: 'idd.heatmapworker.js', dest: 'dist/idd.heatmapworker.js' }
                 ]
@@ -207,6 +214,6 @@
     grunt.loadNpmTasks('grunt-tsd');
 
     grunt.registerTask('update-tsd', ['tsd']);
-    grunt.registerTask('default', ['concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:styles', 'concat:dist_ko', 'ts:dist', 'concat:dist', 'uglify', 'copy', 'concat:umd', 'concat:umdTs', 'ts:testGlobal', 'ts:test', 'jasmine']);
+    grunt.registerTask('default', ['concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:styles', 'concat:dist_ko', 'ts:dist', 'concat:dist_webpack','concat:dist', 'uglify', 'copy', 'concat:umd', 'concat:umdTs', 'ts:testGlobal', 'ts:test', 'jasmine']);
     grunt.registerTask('test', ['jasmine']);
 };
