@@ -1,3 +1,8 @@
+### 1.5.32 (July 18, 2019)
+
+New features:
+ - Adding idd.webpack.d.ts to the distribution
+
 ### 1.5.31 (July 17, 2019)
 
 New features:

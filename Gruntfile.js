@@ -113,6 +113,13 @@
                 options: {
                     footer: "export = { InteractiveDataDisplay, Plot };"
                 }
+            },
+            webpackTs: {
+                dest: "dist/idd.webpack.d.ts",
+                src: ["src/viewer/chartViewer.d.ts"],
+                options: {
+                    footer: "export = { InteractiveDataDisplay, Plot };"
+                }
             }
         },
         uglify: {
@@ -214,6 +221,6 @@
     grunt.loadNpmTasks('grunt-tsd');
 
     grunt.registerTask('update-tsd', ['tsd']);
-    grunt.registerTask('default', ['concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:styles', 'concat:dist_ko', 'ts:dist', 'concat:dist_webpack','concat:dist', 'uglify', 'copy', 'concat:umd', 'concat:umdTs', 'ts:testGlobal', 'ts:test', 'jasmine']);
+    grunt.registerTask('default', ['concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:styles', 'concat:dist_ko', 'ts:dist', 'concat:dist_webpack','concat:dist', 'uglify', 'copy', 'concat:umd', 'concat:umdTs','concat:webpackTs', 'ts:testGlobal', 'ts:test', 'jasmine']);
     grunt.registerTask('test', ['jasmine']);
 };
