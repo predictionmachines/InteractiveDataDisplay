@@ -1,6 +1,6 @@
 {
   "name": "interactive-data-display",
-  "version": "1.5.33",
+  "version": "1.5.34",
   "license": "Apache-2.0",
   "homepage": "https://github.com/predictionmachines/InteractiveDataDisplay/wiki",
   "description": "A JavaScript visualization library for dynamic data",
@@ -11,7 +11,8 @@
     "chart",
     "plot"
   ],
-  "main": "/dist/idd.webpack.js",
+  "types": "dist/idd.webpack.d.ts",
+  "main": "dist/idd.webpack.js",
   "dependencies": {
     "file-saver": "~1.3.3",
     "jasmine": "~2.99.0",

@@ -1,12 +1,19 @@
+### 1.5.34 (July 30, 2019)
+
+Bugfix:
+ - Proper path to the main file.
+Features:
+ - adding idd.webpack.d.ts types to package.json
+
 ### 1.5.33 (July 30, 2019)
 
 New features:
- - idd.webpack.js is now used as an main file in NPM package
+ - idd.webpack.js is now used as an main file in NPM package.
 
 ### 1.5.32 (July 18, 2019)
 
 New features:
- - Adding idd.webpack.d.ts to the distribution
+ - Adding idd.webpack.d.ts to the distribution.
 
 ### 1.5.31 (July 17, 2019)
 
