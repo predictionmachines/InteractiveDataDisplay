@@ -1,3 +1,8 @@
+### 1.5.33 (July 30, 2019)
+
+New features:
+ - idd.webpack.js is now used as an main file in NPM package
+
 ### 1.5.32 (July 18, 2019)
 
 New features:
