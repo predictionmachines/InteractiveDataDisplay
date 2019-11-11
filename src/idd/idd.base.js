@@ -2411,6 +2411,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _stroke = '#4169ed';
         var _lineCap = 'butt';
         var _lineJoin = 'miter';
+        var _lineDash = [];
 
         // default styles:
         if (initialData) {
@@ -2420,6 +2421,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _lineJoin = typeof initialData.lineJoin != "undefined" ? initialData.lineJoin : _lineJoin;
             _fill68 = typeof initialData.fill68 != "undefined" ? initialData.fill68 : _fill68;
             _fill95 = typeof initialData.fill95 != "undefined" ? initialData.fill95 : _fill95;
+            _lineDash = typeof initialData.lineDash != "undefined" ? initialData.lineDash : _lineDash;
         }
 
         this.draw = function (data) {
@@ -2533,6 +2535,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _lineJoin = typeof data.lineJoin != "undefined" ? data.lineJoin : _lineJoin;
             _fill68 = typeof data.fill68 != "undefined" ? data.fill68 : _fill68;
             _fill95 = typeof data.fill95 != "undefined" ? data.fill95 : _fill95;
+            _lineDash = typeof data.lineDash != "undefined" ? data.lineDash : _lineDash;
 
             this.invalidateLocalBounds();
 
@@ -2605,6 +2608,30 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             context.lineWidth = _thickness;
             context.lineCap = _lineCap;
             context.lineJoin = _lineJoin;
+
+            switch (_lineDash){
+                case "dot":
+                    _lineDash = [_thickness, 2 * _thickness];
+                    break;
+                case "dash":
+                    _lineDash = [3 * _thickness, 2 * _thickness];
+                    break;
+                case "dash dot":
+                    _lineDash = [3 * _thickness, 2 * _thickness, _thickness, 2 * _thickness];
+                    break;
+                case "long dash":
+                    _lineDash = [8 * _thickness, 2 * _thickness];
+                    break;
+                case "long dash dot":
+                        _lineDash = [8 * _thickness, 2 * _thickness, _thickness, 2 * _thickness];
+                    break;
+                case "long dash dot dot":
+                    _lineDash = [8 * _thickness, 2 * _thickness, _thickness, 2 * _thickness, _thickness, 2 * _thickness];
+                    break;
+                default:
+                    break;
+            }
+            context.setLineDash(_lineDash);
 
             context.beginPath();
             var x1, x2, y1, y2;
@@ -2731,10 +2758,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var strokeRgba = InteractiveDataDisplay.ColorPalette.colorFromString(_stroke)
             var strokeColor = 'rgb('+strokeRgba.r+','+strokeRgba.g+','+strokeRgba.b+')'
     
-
-
             var drawSegment = function () {
-                svg.polyline(segment).style({ fill: "none", stroke: strokeColor, "stroke-width": _thickness, 'stroke-opacity':strokeRgba.a });
+                svg.polyline(segment).style({ fill: "none", stroke: strokeColor, "stroke-width": _thickness, 'stroke-opacity': strokeRgba.a, 'stroke-linecap': _lineCap}).attr("stroke-dasharray", _lineDash).attr("stroke-linejoin", _lineJoin);
             }
             // Looking for non-missing value
             var nextValuePoint = function () {
@@ -2917,6 +2942,20 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             },
             configurable: false
         });
+
+        Object.defineProperty(this, "lineDash", {
+            get: function () { return _lineDash; },
+            set: function (value) {
+                if (value == _lineDash) return;
+                _lineDash = value;
+
+                this.fireAppearanceChanged("lineDash");
+                this.requestNextFrameOrUpdate();
+            },
+            configurable: false
+        });
+
+
         this.getLegend = function () {
             var canvas = $("<canvas></canvas>");
 

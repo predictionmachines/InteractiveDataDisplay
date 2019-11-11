@@ -1,4 +1,3 @@
-
 (function (InteractiveDataDisplay) {
     if (!ko) {
         console.log("Knockout was no found, please load Knockout first");
@@ -61,6 +60,8 @@
                 data.fill68 = ko.unwrap(allBindings.get('iddFill68'));
             if (allBindings.has('iddFill95'))
                 data.fill95 = ko.unwrap(allBindings.get('iddFill95'));
+            if (allBindings.has('iddLineDash'))
+                data.lineDash = ko.unwrap(allBindings.get('iddLineDash'));
 
             var plotAttr = element.getAttribute("data-idd-plot");
             if (plotAttr != null) {
@@ -76,6 +77,6 @@
 
         InteractiveDataDisplay.KnockoutBindings.registerPlotBinding("polyline", updatePolyline, ['iddX', 'iddY', 'iddYMedian', 'iddLower68', 'iddUpper68', 'iddLower95',
             'iddUpeer95', 'iddFill68', 'iddFill95', 'iddStroke', 'iddThickness',
-            'iddLineCap', 'iddLineJoin'])
+            'iddLineCap', 'iddLineJoin', 'iddLineDash'])
     }
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))
