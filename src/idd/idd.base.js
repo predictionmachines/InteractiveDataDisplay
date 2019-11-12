@@ -2631,7 +2631,14 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 default:
                     break;
             }
-            context.setLineDash(_lineDash);
+            var dashArray = [];
+            for (var i = 0; i < _lineDash.length; i=i+2){
+                if(typeof _lineDash[i] === "number" && typeof _lineDash[i+1] === "number"){
+                    dashArray.push(_lineDash[i]);
+                    dashArray.push(_lineDash[i+1]);
+                }
+            }
+            context.setLineDash(dashArray);
 
             context.beginPath();
             var x1, x2, y1, y2;
