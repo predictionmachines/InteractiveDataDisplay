@@ -370,5 +370,24 @@
                 }
             }
         };
+        ko.bindingHandlers.iddVisibleRegion = {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var unwrappedVal = ko.unwrap(value);
+
+
+                var plotAttr = element.getAttribute("data-idd-plot");
+                if(plotAttr != null) {
+                    if(typeof element.plot != 'undefined') {
+                        element.plot.visibleRegion(unwrappedVal)
+                    }
+                    else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
+                        //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element                        
+                        element.setAttribute("data-idd-visible-region", unwrappedVal);
+
+                    }
+                }
+            }
+        }
     }
 })(InteractiveDataDisplay || (InteractiveDataDisplay = {}))

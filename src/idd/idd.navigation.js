@@ -110,12 +110,12 @@ InteractiveDataDisplay.Navigation = function (_plot, _setVisibleRegion) {
             that.animation.animate(getVisible, visible); 
         }
         else {
-            var coercedVisisble = visible;
+            var coercedVisible = visible;
             if (that.animation && that.animation.constraint) {
-                coercedVisisble = that.animation.constraint(coercedVisisble);
+                coercedVisible = that.animation.constraint(coercedVisible);
             }
 
-            setVisibleRegion(coercedVisisble, settings);
+            setVisibleRegion(coercedVisible, settings);
         }        
     };
 

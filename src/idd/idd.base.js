@@ -557,6 +557,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         );
 
+
         // DG: Why does master plot base code operates with .map, _mapControl?
         // Reint
         this.selfMapRefresh = function () {
@@ -1300,7 +1301,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 that.isAutoFitEnabled = false;
             }
 
-
             _plotRect = plotRect;
 
             if (settings !== undefined && settings.syncUpdate !== undefined && settings.syncUpdate === true) {
@@ -1310,31 +1310,33 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
         };
 
+        this.visibleRegion = function (regionStr) {
+            var values = regionStr.split(' ')
+            if(values.length != 4) 
+                throw "data-idd-visible-region must contain exactly 4 numbers (xmin,xmax,ymin,ymax) separated by single space"
+            var xmin = Number(values[0])
+            var xmax = Number(values[1])
+            var ymin = Number(values[2])
+            var ymax = Number(values[3])
+            if(xmin>xmax)
+                throw "data-idd-visible-region attribute: xmax is less than xmin"
+            if(ymin>ymax)
+                throw "data-idd-visible-region attribute: ymax is less than ymin"
+            
+            var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
+            var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
+
+            var plotXmin = dataToPlotX ? dataToPlotX(xmin) : xmin
+            var plotXmax = dataToPlotX ? dataToPlotX(xmax) : xmax
+            var plotYmin = dataToPlotY ? dataToPlotY(ymin) : ymin
+            var plotYmax = dataToPlotY ? dataToPlotY(ymax) : ymax
+            var plotRect = {x:plotXmin, width: plotXmax - plotXmin, y:plotYmin, height: plotYmax - plotYmin}
+            setVisibleRegion(plotRect) // this call will disable fit to view
+        }
+
         if(div) {
             if(div.attr("data-idd-visible-region")) {
-                var regionStr = div.attr("data-idd-visible-region")
-                
-                var values = regionStr.split(' ')
-                if(values.length != 4) 
-                    throw "data-idd-visible-region must contain exactly 4 numbers (xmin,xmax,ymin,ymax) separated by single space"
-                var xmin = Number(values[0])
-                var xmax = Number(values[1])
-                var ymin = Number(values[2])
-                var ymax = Number(values[3])
-                if(xmin>xmax)
-                    throw "data-idd-visible-region attribute: xmax is less than xmin"
-                if(ymin>ymax)
-                    throw "data-idd-visible-region attribute: ymax is less than ymin"
-                
-                var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
-                var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
-
-                var plotXmin = dataToPlotX ? dataToPlotX(xmin) : xmin
-                var plotXmax = dataToPlotX ? dataToPlotX(xmax) : xmax
-                var plotYmin = dataToPlotY ? dataToPlotY(ymin) : ymin
-                var plotYmax = dataToPlotY ? dataToPlotY(ymax) : ymax
-                var plotRect = {x:plotXmin, width: plotXmax - plotXmin, y:plotYmin, height: plotYmax - plotYmin}
-                setVisibleRegion(plotRect) // this call will disable fit to view
+                this.visibleRegion(div.attr("data-idd-visible-region"))
             }
         }
 
