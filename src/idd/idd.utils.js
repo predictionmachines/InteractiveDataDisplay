@@ -136,11 +136,20 @@ InteractiveDataDisplay.Utils =
                 return rect2 === undefined ? undefined : { x: rect2.x, y: rect2.y, width: rect2.width, height: rect2.height };
             if (rect2 === undefined)
                 return rect1 === undefined ? undefined : { x: rect1.x, y: rect1.y, width: rect1.width, height: rect1.height };
+            
+            var minX = 0;
+            var maxX = 0;
+            if( isNaN(rect1.x) && isNaN(rect2.x) ) { minX = 0; maxX = 0; }
+            else if(isNaN(rect1.x)) { minX = rect2.x; maxX = rect2.x + rect2.width; }
+            else if(isNaN(rect2.x)) { minX = rect1.x; maxX = rect1.x + rect1.width; }
+            else { minX = Math.min(rect1.x, rect2.x); maxX = Math.max(rect1.x + rect1.width, rect2.x + rect2.width); }
 
-            var minX = Math.min(rect1.x, rect2.x);
-            var minY = Math.min(rect1.y, rect2.y);
-            var maxX = Math.max(rect1.x + rect1.width, rect2.x + rect2.width);
-            var maxY = Math.max(rect1.y + rect1.height, rect2.y + rect2.height);
+            var minY = 0;
+            var maxY = 0;
+            if( isNaN(rect1.y) && isNaN(rect2.y) ) { minY = 0; maxY = 0; }
+            else if(isNaN(rect1.y)) { minY = rect2.y; maxY = rect2.y + rect2.height; }
+            else if(isNaN(rect2.y)) { minY = rect1.y; maxY = rect1.y + rect1.height; }
+            else { minY = Math.min(rect1.y, rect2.y); maxY = Math.max(rect1.y + rect1.height, rect2.y + rect2.height); }
 
             return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
         },
