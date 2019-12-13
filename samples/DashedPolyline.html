@@ -24,26 +24,25 @@
         var state = 1;
         var isVisible = true;
 
-        var xData = [0, 0.3, 0.8];
-
         $(document).ready(function () {
 
             chart = InteractiveDataDisplay.asPlot($("#chart"));
             polyline1 = chart.get("line1");
             polyline1.draw({
-                x: xData,
+                x: [0, 0.3, 0.8],
                 y: [-1, 1, 0.0],
                 thickness: 4,
                 lineCap: 'round',
                 lineJoin: 'round',
-                lineDash: [5, 10]
+                lineDash: [5, 10],
+                stroke: 'turquoise'
             });       
         });
     </script>
 </head>
 <body>
     <div id="chart" data-idd-plot="chart" style="width: 800px; height: 400px; margin: 50px 0 0 0">
-        <div id="line1" data-idd-plot="polyline" data-idd-style="stroke: blue"></div>
+        <div id="line1" data-idd-plot="polyline"></div>
     </div>
 </body>
 </html>
