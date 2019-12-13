@@ -25,7 +25,7 @@
     </script>
 </head>
 <body>
-    <div style="display: inline-block">
+    <div>
         <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
             <div data-idd-plot="polyline"
                 data-idd-name="Line 1"
@@ -59,6 +59,11 @@
                     iddThickness: 2
                     ">				
             </div>
+        </div>
+        <div style="display: inline-block; margin: 30px;">
+            <p>IDD binding iddIgnoredByFitToViewX for the <font color="red">red line "Line 1"</font> is set to true. That's why one cannot see its leftmost part.</p>
+            <p>IDD binding iddIgnoredByFitToViewY for the <font color="green">green line "Line 2"</font> is set to true. That's why one cannot see its upper part.</p>
+            <p><font color="blue">Blue line "Line 3"</font> is fully respected by fit to view. That's why one can see the whole polyline.</p>
         </div>
     </div>
 </body>
