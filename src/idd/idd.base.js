@@ -2453,6 +2453,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _stroke = '#4169ed';
         var _lineCap = 'butt';
         var _lineJoin = 'miter';
+        var _lineDash = [];
 
         // default styles:
         if (initialData) {
@@ -2462,6 +2463,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _lineJoin = typeof initialData.lineJoin != "undefined" ? initialData.lineJoin : _lineJoin;
             _fill68 = typeof initialData.fill68 != "undefined" ? initialData.fill68 : _fill68;
             _fill95 = typeof initialData.fill95 != "undefined" ? initialData.fill95 : _fill95;
+            _lineDash = typeof initialData.lineDash != "undefined" ? initialData.lineDash : _lineDash;
         }
 
         this.draw = function (data) {
@@ -2575,6 +2577,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _lineJoin = typeof data.lineJoin != "undefined" ? data.lineJoin : _lineJoin;
             _fill68 = typeof data.fill68 != "undefined" ? data.fill68 : _fill68;
             _fill95 = typeof data.fill95 != "undefined" ? data.fill95 : _fill95;
+            _lineDash = typeof data.lineDash != "undefined" ? data.lineDash : _lineDash;
 
             this.invalidateLocalBounds();
 
@@ -2624,6 +2627,40 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             $("<div></div>").addClass('idd-tooltip-name').text((this.name || "polyline")).appendTo($toolTip);
             return $toolTip;
         };
+
+        var getArrayToSetLineDash = function (ld) {
+            switch (ld){
+                case "dot":
+                    ld = [_thickness, 2 * _thickness];
+                    break;
+                case "dash":
+                    ld = [3 * _thickness, 2 * _thickness];
+                    break;
+                case "dash dot":
+                    ld = [3 * _thickness, 2 * _thickness, _thickness, 2 * _thickness];
+                    break;
+                case "long dash":
+                    ld = [8 * _thickness, 2 * _thickness];
+                    break;
+                case "long dash dot":
+                    ld = [8 * _thickness, 2 * _thickness, _thickness, 2 * _thickness];
+                    break;
+                case "long dash dot dot":
+                    ld = [8 * _thickness, 2 * _thickness, _thickness, 2 * _thickness, _thickness, 2 * _thickness];
+                    break;
+                default:
+                    break;
+            }
+            var dashArray = [];
+            for (var i = 0; i < ld.length; i=i+2){
+                if(typeof ld[i] === "number" && typeof ld[i+1] === "number"){
+                    dashArray.push(ld[i]);
+                    dashArray.push(ld[i+1]);
+                }
+            }
+            return dashArray;
+        }
+
         var renderLine = function (_x, _y, _stroke, _thickness, plotRect, screenSize, context) {
             if (_x === undefined || _y == undefined)
                 return;
@@ -2646,6 +2683,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             context.lineWidth = _thickness;
             context.lineCap = _lineCap;
             context.lineJoin = _lineJoin;
+            
+            context.setLineDash(getArrayToSetLineDash(_lineDash));
 
             context.beginPath();
             var x1, x2, y1, y2;
@@ -2772,10 +2811,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var strokeRgba = InteractiveDataDisplay.ColorPalette.colorFromString(_stroke)
             var strokeColor = 'rgb('+strokeRgba.r+','+strokeRgba.g+','+strokeRgba.b+')'
     
-
-
             var drawSegment = function () {
-                svg.polyline(segment).style({ fill: "none", stroke: strokeColor, "stroke-width": _thickness, 'stroke-opacity':strokeRgba.a });
+                svg.polyline(segment).style({ fill: "none", stroke: strokeColor, "stroke-width": _thickness, 'stroke-opacity': strokeRgba.a, 'stroke-linecap': _lineCap}).attr("stroke-dasharray", getArrayToSetLineDash(_lineDash)).attr("stroke-linejoin", _lineJoin);
             }
             // Looking for non-missing value
             var nextValuePoint = function () {
@@ -2958,6 +2995,20 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             },
             configurable: false
         });
+
+        Object.defineProperty(this, "lineDash", {
+            get: function () { return _lineDash; },
+            set: function (value) {
+                if (value == _lineDash) return;
+                _lineDash = value;
+
+                this.fireAppearanceChanged("lineDash");
+                this.requestNextFrameOrUpdate();
+            },
+            configurable: false
+        });
+
+
         this.getLegend = function () {
             var canvas = $("<canvas></canvas>");
 
@@ -3001,6 +3052,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
             ctx.strokeStyle = _stroke;
             ctx.lineWidth = _thickness;
+            ctx.setLineDash(getArrayToSetLineDash(_lineDash));
             ctx.moveTo(0, 0);
             ctx.lineTo(40, 40);
             ctx.stroke();
@@ -3024,7 +3076,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                         ctx.globalAlpha = 0.5;
                         ctx.strokeStyle = _fill95;
                         ctx.fillStyle = _fill95;
-
                         ctx.beginPath();
                         ctx.moveTo(0, 0);
                         ctx.lineTo(0, 20);
@@ -3053,6 +3104,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                         ctx.stroke();
                         ctx.closePath();
                     }
+                    ctx.setLineDash(getArrayToSetLineDash(_lineDash));
                     ctx.strokeStyle = _stroke;
                     ctx.lineWidth = _thickness;
                     ctx.moveTo(0, 0);
@@ -3088,7 +3140,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             if (isUncertainData95) svg.add(svg.polyline([[0, 0], [0, 9], [9, 18], [18, 18], [18, 9], [9, 0], [0, 0]]).fill(fill95Color).opacity(fill95Rgba.a).translate(5, 5));
             if (isUncertainData68) svg.add(svg.polyline([[0, 0], [0, 4.5], [13.5, 18], [18, 18], [18, 13.5], [4.5, 0], [0, 0]]).fill(fill68Color).opacity(fill68Rgba.a).translate(5, 5));
-            svg.add(svg.line(0, 0, 18, 18).stroke({ width: _thickness, color: strokeColor }).translate(5, 5));
+            svg.add(svg.line(0, 0, 18, 18).stroke({ width: _thickness, color: strokeColor }).translate(5, 5).attr("stroke-dasharray", getArrayToSetLineDash(_lineDash)));
             var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
             var fontSize = parseFloat(style.getPropertyValue('font-size'));
             var fontFamily = style.getPropertyValue('font-family');
