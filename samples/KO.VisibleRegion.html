@@ -24,8 +24,15 @@
         var vm = {
 			X : ko.observable(x_values),
 			Y : ko.observable(y_values),
-            VR: ko.observable("-5 5 -5 5")
+            x_left: ko.observable(-5),
+            x_right: ko.observable(5),
+            y_low: ko.observable(-5),
+            y_high: ko.observable(5)
         }
+
+        vm.visibleRegionString = ko.pureComputed(function () {
+                return vm.x_left() + " " + vm.x_right() + " " + vm.y_low() + " " + vm.y_high();
+            }, vm)
 
         $(document).ready(function () {
             var chart = InteractiveDataDisplay.asPlot($("#chart"));
@@ -36,7 +43,7 @@
 </head>
 <body>
     <div style="display: inline-block">
-    <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left" data-bind="iddVisibleRegion: VR" data-idd-navigation-enabled="true">
+    <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left" data-bind="iddVisibleRegion: visibleRegionString" data-idd-navigation-enabled="true">
 		<div data-idd-plot="polyline"
              data-idd-name="Line 1"
              data-bind="
@@ -49,8 +56,12 @@
         </div>
 	</div>
     <div style="float: right; margin: 2em">
-        <p>Enter visible region in a notation: leftmost_x rightmost_x lowest_y highest_y 
-            <input data-bind="value: VR"></select><button>Apply</button>
+        <p>Set visible region
+            <p>Left boundary: <input data-bind="value: x_left" /></p>
+            <p>Right boundary: <input data-bind="value: x_right" /></p>
+            <p>Lower boundary: <input data-bind="value: y_low" /></p>
+            <p>Upper boundary: <input data-bind="value: y_high" /></p>
+            <button>Apply</button>
         </p>  
     </div>
     </div>
