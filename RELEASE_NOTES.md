@@ -1,3 +1,8 @@
+### 1.5.37 (December 17, 2019)
+
+New feature:
+ - Added iddVisibleRegion ko.binding ("x_left x_right y_low y_high" string). It allows to set a visible region for a chart.
+
 ### 1.5.34 (July 30, 2019)
 
 Bugfix:
@@ -18,12 +23,12 @@ New features:
 ### 1.5.31 (July 17, 2019)
 
 New features:
- - new bundle idd.webpack.js file distributed with release. It uses dependecy names that match npm packages. It is also referencess CSS dependency directly without "css!" requireJS extension.
+ - new bundle idd.webpack.js file distributed with release. It uses dependency names that match npm packages. It is also references CSS dependency directly without "css!" requireJS extension.
 
 ### 1.5.30 (March 15, 2019)
 
 Fixes:
- - Regression of legend behaviour of legend in Figure and Chart (e.g. not specifing all of the Legend constructor parameters)
+ - Regression of legend behavior of legend in Figure and Chart (e.g. not specifying all of the Legend constructor parameters)
 
 New features:
  - Ability to force the display of all labels on the axis (even if the overlay) for the labelled axis
