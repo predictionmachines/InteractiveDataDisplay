@@ -17,10 +17,19 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
     <script src="../dist/idd_knockout.js"></script>
 
-    <script type="text/javascript">		
+    <script type="text/javascript">
+        var vm = {
+            IsFirstLineIgnoredByFitToViewByX: ko.observable(false),
+            IsFirstLineIgnoredByFitToViewByY: ko.observable(false),
+            IsSecondLineIgnoredByFitToViewByX: ko.observable(false),
+            IsSecondLineIgnoredByFitToViewByY: ko.observable(false),
+            IsThirdLineIgnoredByFitToViewByX: ko.observable(false),
+            IsThirdLineIgnoredByFitToViewByY: ko.observable(false)
+        }
         $(document).ready(function () {
-            var chart = InteractiveDataDisplay.asPlot($("#chart"));
-            ko.applyBindings();
+            var chart1 = InteractiveDataDisplay.asPlot($("#chart"));
+            var chart2 = InteractiveDataDisplay.asPlot($("#chart2"));
+            ko.applyBindings(vm);
         });
     </script>
 </head>
@@ -64,6 +73,51 @@
             <p>IDD binding iddIgnoredByFitToViewX for the <font color="red">red line "Line 1"</font> is set to true. That's why one cannot see its leftmost part.</p>
             <p>IDD binding iddIgnoredByFitToViewY for the <font color="green">green line "Line 2"</font> is set to true. That's why one cannot see its upper part.</p>
             <p><font color="blue">Blue line "Line 3"</font> is fully respected by fit to view. That's why one can see the whole polyline.</p>
+        </div>
+    </div>
+    <div>
+        <div id="chart2" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
+            <div data-idd-plot="polyline"
+                data-idd-name="First Line"
+                id="Line21"
+                data-bind="
+                    iddX: [-10.0, 20.0, 30.0, 40.0, 50.0],
+                    iddY: [2.0, 15.0, 3.0, 15.0, 2.0],
+                    iddStroke: 'Red',
+                    iddThickness: 3,
+                    iddIgnoredByFitToViewX: IsFirstLineIgnoredByFitToViewByX,
+                    iddIgnoredByFitToViewY: IsFirstLineIgnoredByFitToViewByY
+                    ">				
+            </div>
+            <div data-idd-plot="polyline"
+                data-idd-name="Second line"
+                id="Line22"
+                data-bind="
+                    iddX: [2.0, 15.0, 3.0, 15.0, 2.0],
+                    iddY: [10.0, 20.0, 30.0, 40.0, 50.0],
+                    iddStroke: 'Green',
+                    iddThickness: 3,
+                    iddIgnoredByFitToViewX: IsSecondLineIgnoredByFitToViewByX,
+                    iddIgnoredByFitToViewY: IsSecondLineIgnoredByFitToViewByY
+                    ">				
+            </div>
+            <div data-idd-plot="polyline"
+                data-idd-name="Third line"
+                id="Line23"
+                data-bind="
+                    iddX: [50.0, 60.0, 70.0, 80.0, 90.0],
+                    iddY: [-10.0, 5.0, 0.0, 20.0, 10.0],
+                    iddStroke: 'Blue',
+                    iddThickness: 3,
+                    iddIgnoredByFitToViewX: IsThirdLineIgnoredByFitToViewByX,
+                    iddIgnoredByFitToViewY: IsThirdLineIgnoredByFitToViewByY
+                    ">				
+            </div>
+        </div>
+        <div style="display: inline-block; margin: 30px;">
+            <div><font color="red">First</font> polyline is ignored by fit-to-view by: X axis <input type="checkbox" data-bind="checked: IsFirstLineIgnoredByFitToViewByX"/>  Y axis <input type="checkbox" data-bind="checked: IsFirstLineIgnoredByFitToViewByY" /></div>
+            <div><font color="green">Second</font> polyline is ignored by fit-to-view by: X axis <input type="checkbox" data-bind="checked: IsSecondLineIgnoredByFitToViewByX"/>  Y axis <input type="checkbox" data-bind="checked: IsSecondLineIgnoredByFitToViewByY" /></div>
+            <div><font color="blue">Third</font> polyline is ignored by fit-to-view by: X axis <input type="checkbox" data-bind="checked: IsThirdLineIgnoredByFitToViewByX"/>  Y axis <input type="checkbox" data-bind="checked: IsThirdLineIgnoredByFitToViewByY" /></div>         
         </div>
     </div>
 </body>
