@@ -261,6 +261,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _isErrorVisible = false;
         var _aspectRatio; //actually scale ratio (xScale/yScale)
         var _isIgnoredByFitToView = false; //if true, the plot's bounding box is not respected during the common bounding box calculation
+        var _isIgnoredByFitToViewX = false; //if true, the plot's bounding box is not respected during the common bounding box calculation by X axis
+        var _isIgnoredByFitToViewY = false; //if true, the plot's bounding box is not respected during the common bounding box calculation by Y axis
         var _isAutoFitEnabled = true;
         var _requestFitToView = false;
         var _requestFitToViewX = false;
@@ -306,6 +308,12 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
             if(style.hasOwnProperty("ignored-by-fit-to-view")) {
                 _isIgnoredByFitToView = Boolean(style["ignored-by-fit-to-view"]);
+            }
+            if(style.hasOwnProperty("ignored-by-fit-to-view-x")) {
+                _isIgnoredByFitToViewX = Boolean(style["ignored-by-fit-to-view-x"]);
+            }
+            if(style.hasOwnProperty("ignored-by-fit-to-view-y")) {
+                _isIgnoredByFitToViewY = Boolean(style["ignored-by-fit-to-view-y"]);
             }
             _tooltipSettings = _tooltipSettings || {};
             if(style.hasOwnProperty("tooltipDelay")) {
@@ -372,6 +380,26 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             },
             set: function (value) {
                 _isIgnoredByFitToView = value;
+                if (_isAutoFitEnabled)
+                    this.requestUpdateLayout();
+            }
+        });
+        Object.defineProperty(this, "isIgnoredByFitToViewX", {
+            get: function () {
+                return _isIgnoredByFitToViewX;
+            },
+            set: function (value) {
+                _isIgnoredByFitToViewX = value;
+                if (_isAutoFitEnabled)
+                    this.requestUpdateLayout();
+            }
+        });
+        Object.defineProperty(this, "isIgnoredByFitToViewY", {
+            get: function () {
+                return _isIgnoredByFitToViewY;
+            },
+            set: function (value) {
+                _isIgnoredByFitToViewY = value;
                 if (_isAutoFitEnabled)
                     this.requestUpdateLayout();
             }
@@ -791,7 +819,21 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     if (plotBounds === undefined) {
                         undefinedBBPlots.push(plot);
                     } else {
-                        bounds = InteractiveDataDisplay.Utils.unionRects(bounds, plotBounds);
+                        var plotBoundsReplica = {
+                            x: plotBounds.x,
+                            y: plotBounds.y,
+                            width: plotBounds.width,
+                            height: plotBounds.height
+                        }
+                        if (plot.isIgnoredByFitToViewX) {
+                            plotBoundsReplica.x = NaN;
+                            plotBoundsReplica.width = NaN;
+                        }
+                        if (plot.isIgnoredByFitToViewY) {
+                            plotBoundsReplica.y = NaN;
+                            plotBoundsReplica.height = NaN;
+                        }
+                        bounds = InteractiveDataDisplay.Utils.unionRects(bounds, plotBoundsReplica);
                     }
                 }
             }
@@ -2555,7 +2597,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var l95 = InteractiveDataDisplay.Utils.getBoundingBoxForArrays(_x, _y_l95, dataToPlotX, dataToPlotY);
 
             return InteractiveDataDisplay.Utils.unionRects(mean, InteractiveDataDisplay.Utils.unionRects(u68, InteractiveDataDisplay.Utils.unionRects(l68, InteractiveDataDisplay.Utils.unionRects(u95, l95))));
-
         };
 
         // Returns 4 margins in the screen coordinate system

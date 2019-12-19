@@ -62,6 +62,7 @@ InteractiveDataDisplay.Figure = function (div, master) {
             var axis = InteractiveDataDisplay.InitializeAxis(jqdiv, params);
             jqdiv.axis = axis;
             jqdiv.dblclick(function () {
+                var placement = this.getAttribute("data-idd-placement"); // worked until Dec 2019 without this line
                 if (placement == "bottom" || placement == "top") that.master.fitToViewX();
                 else that.master.fitToViewY();
             });

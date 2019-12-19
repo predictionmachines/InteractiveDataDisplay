@@ -66,6 +66,46 @@
             }
         };
 
+        ko.bindingHandlers.iddIgnoredByFitToViewX = {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var unwrappedName = ko.unwrap(value);
+
+                var plotAttr = element.getAttribute("data-idd-plot");
+                if(plotAttr != null) {
+                    if(typeof element.plot != 'undefined') {
+                        element.plot.isIgnoredByFitToViewX = unwrappedName;
+                    }
+                    else {
+                        //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
+                        //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element
+                        
+                        InteractiveDataDisplay.Utils.updateStyle(element, style, "ignored-by-fit-to-view-x", unwrappedName);
+                    }
+                }
+            }
+        };
+
+        ko.bindingHandlers.iddIgnoredByFitToViewY = {
+            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+                var value = valueAccessor();
+                var unwrappedName = ko.unwrap(value);
+
+                var plotAttr = element.getAttribute("data-idd-plot");
+                if(plotAttr != null) {
+                    if(typeof element.plot != 'undefined') {
+                        element.plot.isIgnoredByFitToViewY = unwrappedName;
+                    }
+                    else {
+                        //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
+                        //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element
+                        
+                        InteractiveDataDisplay.Utils.updateStyle(element, style, "ignored-by-fit-to-view-y", unwrappedName);
+                    }
+                }
+            }
+        };
+
         ko.bindingHandlers.iddXlog = {
             update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
