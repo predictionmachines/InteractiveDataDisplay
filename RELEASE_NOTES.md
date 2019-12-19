@@ -1,4 +1,4 @@
-### 1.5.35 (December 13, 2019)
+### 1.5.35 (December 19, 2019)
 
 New features:
  - added iddIgnoredByFitToViewX/iddIgnoredByFitToViewY knockout bindings so that a plot can be not respected by fit to view along one of the axes.
