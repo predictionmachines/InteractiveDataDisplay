@@ -1,11 +1,7 @@
-### 1.5.36 (December 13, 2019)
+### 1.5.35 (December 13, 2019)
 
 New features:
  - added iddIgnoredByFitToViewX/iddIgnoredByFitToViewY knockout bindings so that a plot can be not respected by fit to view along one of the axes.
-
-### 1.5.35 (November 12, 2019)
-
-New features:
  - Added dash lines support. Choose from dash patterns: "dot", "dash", "dash dot", "long dash", "long dash dot", "long dash dot dot"; or define a set of number pairs: [ dash_length1, space1, dash_length2, space2, ... ]. Knockout binding - iddLineDash.
 
 ### 1.5.34 (July 30, 2019)
