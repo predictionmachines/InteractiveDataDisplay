@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>Dashed polyline with Knockout</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">
+		var x_values = [2.0,3.0,4.0,5.0]
+		var y1_values = [1.0,5.0,1.0,2.0]
+		var y2_values = [8.0,12.0,8.0,9.0]
+		var sd_values = [0.2,0.3,0.5,1.1]
+		
+		var ub_68 = y1_values.map(function(elem,i) { return elem + sd_values[i] });
+		var lb_68 = y1_values.map(function(elem,i) { return elem - sd_values[i] });
+		var ub_95 = y1_values.map(function(elem,i) { return elem + sd_values[i]*2 });
+		var lb_95 = y1_values.map(function(elem,i) { return elem - sd_values[i]*2 });
+		
+        var vm = {
+			X : ko.observable(x_values),
+			Y1 : ko.observable(y1_values),
+			Y2 : ko.observable(y2_values),
+
+            ActiveColour : ko.observable("Green"),            
+            ColoursToChoose: ["Red","Green","Blue","Black"],
+
+            Thickness: ko.observable(1),
+
+            LineCap: ko.observable("butt"),
+            LineCapsToChoose: ["butt","round","square"],
+
+            LineJoin: ko.observable("round"),
+            LineJoinsToChoose: ["bevel", "round", "miter"],
+
+            LineDashManual: ko.observable([1,1]),
+            LineDashManualChoice: [ [2,2], [10, 5], [10, 5, 2, 5], [25, 10], [25, 10, 2, 10], [25, 10, 2, 10, 2, 10], [], [3.7, 10.6], [2, 6, "a", 9, 8, 3] ],
+
+            LineDashWords: ko.observable("dot"),
+            LineDashWordsChoice: [ "dot", "dash", "dash dot", "long dash", "long dash dot", "long dash dot dot", "", "3 a 6 7" ],
+
+			ub_68: ub_68,
+			lb_68: lb_68,
+			ub_95: ub_95,
+			lb_95: lb_95
+		}
+		
+        $(document).ready(function () {
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+			
+            ko.applyBindings(vm)
+        });
+        
+        var exportSvg = function(){
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));
+            var svg = chart.exportToSvg();
+            
+            $("#chart_svg").html(svg.svg());   
+            $("#output").text(svg.svg());         
+        };
+    </script>
+</head>
+<body>
+    <div style="display: inline-block">
+        <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
+            <div data-idd-plot="polyline"
+                data-idd-name="Line"
+                data-bind="
+                    iddX: X,
+                    iddY: Y2,
+                    iddStroke: ActiveColour,
+                    iddThickness: Thickness,
+                    iddLineCap: LineCap,
+                    iddLineJoin: LineJoin,
+                    iddLineDash: LineDashWords">				
+            </div>
+            <div data-idd-plot="polyline"
+                data-idd-name="Line with a band"
+                data-bind="
+                    iddX: X,
+                    iddStroke: ActiveColour,
+                    iddThickness: Thickness,
+                    iddLineCap: LineCap,
+                    iddLineJoin: LineJoin,
+                    iddLineDash: LineDashManual,
+                    iddYMedian: Y1,
+                    iddLower68: lb_68,
+                    iddUpper68: ub_68,
+                    iddLower95: lb_95,
+                    iddUpper95: ub_95,
+                    iddFill95: 'rgb(190, 255, 212)',
+                    iddFill68: 'aquamarine'
+                    ">				
+            </div>
+        </div>
+        <div style="float: right; margin: 2em">
+            <p>Colour:
+                <select data-bind="options: ColoursToChoose, value: ActiveColour"></select>
+            </p>        
+            <p>Thickness:
+                <input data-bind="value: Thickness" type="number" min="1" max="30">
+            </p>
+            <p>Line join:
+                <select data-bind="options: LineJoinsToChoose, value: LineJoin"></select>
+            </p>
+            <p>Line cap:
+                <select data-bind="options: LineCapsToChoose, value: LineCap"></select>
+            </p>
+            <p>Line dash set by one of special words for the upper polyline:
+                <select data-bind="options: LineDashWordsChoice, value: LineDashWords"></select>
+            </p>
+            <p>Line dash set by [dash length, space] for the lower polyline:
+                <select data-bind="options: LineDashManualChoice, value: LineDashManual"></select>
+            </p>
+        </div>
+        <div id="chart_svg" style="width: 600px; height: 400px; margin-bottom: 5px; background-color: azure;" onclick="exportSvg(); $('#chart_svg').css('background-color', 'transparent');">
+            Every time you click here you get an SVG snapshot of the chart above.
+        </div>
+    </div>
+</body>
+</html>
