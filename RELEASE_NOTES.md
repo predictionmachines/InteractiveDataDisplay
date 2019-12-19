@@ -1,9 +1,9 @@
-### 1.5.36 (December 17, 2019)
+### 1.5.36 (December , 2019)
 
 New feature:
  - Added iddVisibleRegion ko.binding ("x_left x_right y_low y_high" string). It allows to set a visible region for a chart.
 
-### 1.5.35 (December 13, 2019)
+### 1.5.35 (December 19, 2019)
 
 New features:
  - added iddIgnoredByFitToViewX/iddIgnoredByFitToViewY knockout bindings so that a plot can be not respected by fit to view along one of the axes.
