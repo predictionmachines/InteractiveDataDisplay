@@ -1,7 +1,8 @@
-### 1.5.36 (December , 2019)
+### 1.5.36 (January TBD, 2020)
 
-New feature:
- - Added iddVisibleRegion ko.binding ("x_left x_right y_low y_high" string). It allows to set a visible region for a chart.
+New features:
+ - Added Boundary line plot. It represents infinite horizontal or vertical lines that are not presented in a legend. A boundary line name is displayed alongside on the canvas.
+ - Added iddVisibleRegion ko.binding ("x_left x_right y_low y_high" string) that allows to set a visible region for a chart. Can contain 'auto' values.
 
 ### 1.5.35 (December 19, 2019)
 

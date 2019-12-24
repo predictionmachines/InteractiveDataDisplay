@@ -115,6 +115,7 @@ InteractiveDataDisplay.Navigation = function (_plot, _setVisibleRegion) {
                 coercedVisible = that.animation.constraint(coercedVisible);
             }
 
+            if(!settings) settings = { fromSetVisibleRect: true };
             setVisibleRegion(coercedVisible, settings);
         }        
     };

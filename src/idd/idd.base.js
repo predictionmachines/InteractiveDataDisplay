@@ -281,6 +281,9 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _suppressNotifyBoundPlots = false;
         var _tooltipSettings = undefined;
 
+        // Region (in plot coordinates) that is interesting to the user to see
+        // It is usually set to explicit value via navigation.SetVisibleRect (user has requested instant navigation)
+        // or it's set by FitToView to include all of the data (except for explicitly ignored by fit-to-view)
         var _plotRect;
 
         // reading property overrides from attributes
@@ -353,6 +356,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         var that = this;
         var _plotInstanceId = _plotCounter++;
+
+        // 4-value array [x1, x2, y1, y2] that adds constraints to the visible region (padding excluded)
+        // some of the values can be 'auto'
+        var _autoFitConstraints = undefined;
 
         // Plot properties
         Object.defineProperty(this, "instanceId", { get: function () { return _plotInstanceId; }, configurable: false });
@@ -465,11 +472,96 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             set: function (value) {
                 if (_isMaster) {
                     if (_isAutoFitEnabled === value) return;
-                    _isAutoFitEnabled = value;
-                    if (_isAutoFitEnabled) {
-                        this.requestUpdateLayout();
-                    } else {
+
+                    _autoFitConstraints = undefined;
+
+                    if (typeof value === "boolean")
+                        _isAutoFitEnabled = value;
+                    else {
+                        if (typeof value === "object") {
+                            if(value.length != 4) {
+                                throw "isAutoFitEnabled property can be assigned by boolean or 4-value object"
+                            }
+
+                            value[0] = !isNaN(Number(value[0])) ? Number(value[0]) : "auto";
+                            value[1] = !isNaN(Number(value[1])) ? Number(value[1]) : "auto";
+                            value[2] = !isNaN(Number(value[2])) ? Number(value[2]) : "auto";
+                            value[3] = !isNaN(Number(value[3])) ? Number(value[3]) : "auto";
+
+                            var allAuto = true;
+                            for(var i = 0; i < 4; i++) {
+                                if(value[i] != "auto") allAuto = false;
+                            }
+
+                            if(allAuto) _isAutoFitEnabled = true;
+                            else {
+                                var hasAuto = false;
+                                for(var i = 0; i < 4; i++) {
+                                    if(value[i] == "auto") hasAuto = true;
+                                }
+
+                                if(hasAuto) _isAutoFitEnabled = true;
+                                else {
+                                    _isAutoFitEnabled = false;
+                                }
+
+                                if(value[0] >= value[1]) {
+                                    if(value[0] != "auto" && value[1] != "auto") {
+                                        if(isNaN(value[0])) {
+                                            value[0] = value[1] - 1;
+                                        }
+                                        else if(!isNaN(value[1])) {
+                                            if(value[0] == value[1]) {
+                                                value[1] = value[0] + 1;
+                                            }
+                                            else {
+                                                var swap =  value[0];
+                                                value[0] = value[1];
+                                                value[1] = swap;
+                                            }
+                                        }
+                                        else {
+                                            value[1] = value[0] + 1;
+                                        }
+                                        console.log("data-idd-visible-region attribute: xmax is less or equal than xmin. It's [" + value[0] + ".." + value[1] + "] on x axis now");
+                                    }
+                                }
+                                if(value[2] >= value[3]) {
+                                    if(value[2] != "auto" && value[3] != "auto") {
+                                        if(isNaN(value[2])) {
+                                            value[2] = value[3] - 1;
+                                        }
+                                        else if(!isNaN(value[3])) {
+                                            if(value[2] == value[3]) {
+                                                value[3] = value[2] + 1;
+                                            }
+                                            else {
+                                                var swap =  value[2];
+                                                value[2] = value[3];
+                                                value[3] = swap;
+                                            }
+                                        }
+                                        else {
+                                            value[3] = value[2] + 1;
+                                        }
+                                        console.log("data-idd-visible-region attribute: ymax is less or equal than ymin. It's [" + value[2] + ".." + value[3] + "] on y axis now");
+                                    }
+                                }
+
+                                _autoFitConstraints = value;
+                            }
+                        }
+                        else {
+                            throw "value of the unknown type was assigned to the isAutoFitEnabled property"
+                        }
+                    }
+
+                    if (!_isAutoFitEnabled && typeof value === "boolean"){
+                        // if isAutoFitEnabled is assigned with false
                         _plotRect = that.visibleRect;
+                    }
+                    else {
+                        this.requestUpdateLayout();
                     }
                     this.host.trigger(InteractiveDataDisplay.Event.isAutoFitChanged);
                 }
@@ -1129,6 +1221,27 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.onIsRenderedChanged = function () {
         };
 
+        var _autoFitConstraintsToXWidthYHeight = function (xWidthYHeight, afConstraints) {
+            var result = xWidthYHeight;
+            if(afConstraints[0] != "auto"){
+                result.width = result.x + result.width - parseFloat(afConstraints[0]);
+                if(result.width <= 0) result.width = 1;
+                result.x = parseFloat(afConstraints[0]);
+            }
+            if(afConstraints[1] != "auto"){
+                result.width = parseFloat(afConstraints[1]) - result.x;
+            }
+            if(afConstraints[2] != "auto"){
+                result.height = result.y + result.height - parseFloat(afConstraints[2]);
+                if(result.height <= 0) result.height = 1;
+                result.y = parseFloat(afConstraints[2]);
+            }
+            if(afConstraints[3] != "auto"){
+                result.height = parseFloat(afConstraints[3]) - result.y;
+            }
+            return result;
+        }
+
         // DG: It seems that the function recomputes (updates)
         // plot's _plotRect and _coordinateTransform properties
         // 
@@ -1144,19 +1257,25 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             _height = screenSize.height;
 
             var outputRect = undefined;
+            var aggregated = _master.aggregateBounds();
+            var bounds = aggregated.bounds;
+            var padding = aggregated.isDefault ? { left: 0, top: 0, bottom: 0, right: 0 } : _master.aggregatePadding();
 
             if (_isAutoFitEnabled || _requestFitToView) {
-                var aggregated = _master.aggregateBounds();
-                var bounds = aggregated.bounds;
+                // fit-to-view is called
+                // or 0 to 3 constraints are set
+
                 if (bounds.x != bounds.x) bounds.x = 0;
                 if (bounds.y != bounds.y) bounds.y = 0;
                 if (bounds.width != bounds.width) bounds.width = 1;
                 if (bounds.height != bounds.height) bounds.height = 1;
                 // todo: this is an exceptional situation which should be properly handled
-                _plotRect = bounds;
-                var padding = aggregated.isDefault ? { left: 0, top: 0, bottom: 0, right: 0 } : _master.aggregatePadding();
-                _coordinateTransform = InteractiveDataDisplay.Utils.calcCSWithPadding(_plotRect, screenSize, padding, _master.aspectRatio);
 
+                if(_autoFitConstraints) bounds = _autoFitConstraintsToXWidthYHeight(bounds, _autoFitConstraints);
+
+                _plotRect = bounds;
+
+                _coordinateTransform = InteractiveDataDisplay.Utils.calcCSWithPadding(_plotRect, screenSize, padding, _master.aspectRatio);
 
                 outputRect = _coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
 
@@ -1165,42 +1284,68 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     _coordinateTransform = new InteractiveDataDisplay.CoordinateTransform(outputRect, { left: 0, top: 0, width: _width, height: _height }, _master.aspectRatio);
                 }
             }
-            else {
+            else if (_requestFitToViewX || _requestFitToViewY){
+                // if fit-to-view by one of the axis is called
+
                 var paddingX = undefined;
                 var paddingY = undefined;
-                var aggregatedPadding = undefined;
-                var aggregated = undefined;
 
-                if (_requestFitToViewX === true || _requestFitToViewY === true) {
-                    aggregated = _master.aggregateBounds();
-                    aggregatedPadding = aggregated.isDefault ? { left: 0, top: 0, bottom: 0, right: 0 } : _master.aggregatePadding();
-                }
+                if(_autoFitConstraints) _plotRect = _autoFitConstraintsToXWidthYHeight(_plotRect, _autoFitConstraints);
 
                 if (_requestFitToViewX === true) {
-                    _plotRect.width = aggregated.bounds.width;
-                    _plotRect.x = aggregated.bounds.x;
-                    paddingX = aggregated.isDefault ? { left: 0, top: 0, bottom: 0, right: 0 } : aggregatedPadding;
+                    _plotRect.width = bounds.width;
+                    _plotRect.x = bounds.x;
+                    paddingX = aggregated.isDefault ? { left: 0, top: 0, right: 0, bottom: 0 } : padding;
                 }
 
                 if (_requestFitToViewY === true) {
-                    _plotRect.height = aggregated.bounds.height;
-                    _plotRect.y = aggregated.bounds.y;
-                    paddingY = aggregated.isDefault ? { left: 0, top: 0, bottom: 0, right: 0 } : aggregatedPadding;
+                    _plotRect.height = bounds.height;
+                    _plotRect.y = bounds.y;
+                    paddingY = aggregated.isDefault ? { left: 0, top: 0, right: 0, bottom: 0 } : padding;
                 }
 
-                var padding = undefined;
-                if (paddingX !== undefined || paddingY !== undefined) {
+                if(!_autoFitConstraints || (_autoFitConstraints[0] == "auto" && _autoFitConstraints[1] == "auto" && _autoFitConstraints[2] == "auto" && _autoFitConstraints[3] == "auto"))
                     padding = {
-                        left: paddingX !== undefined ? paddingX.left : 0,
-                        top: paddingY !== undefined ? paddingY.top : 0,
-                        bottom: paddingY !== undefined ? paddingY.bottom : 0,
-                        right: paddingX !== undefined ? paddingX.right : 0
+                        left: paddingX ? paddingX.left : 0,
+                        top: paddingY ? paddingY.top : 0,
+                        right: paddingX ? paddingX.right : 0,
+                        bottom: paddingY ? paddingY.bottom : 0
                     }
+                else
+                    padding = {
+                        left: paddingX ? paddingX.left : padding.left,
+                        top: paddingY ? paddingY.top : padding.top,
+                        right: paddingX ? paddingX.right : padding.right,
+                        bottom: paddingY ? paddingY.bottom : padding.bottom
+                    }
+                
+                _coordinateTransform = InteractiveDataDisplay.Utils.calcCSWithPadding(_plotRect, screenSize, padding, _master.aspectRatio);
+
+                outputRect = _coordinateTransform.getPlotRect({ x: 0, y: 0, width: screenSize.width, height: screenSize.height });
+
+                if (_constraint !== undefined && finalPath === true) {
+                    outputRect = _constraint(outputRect, screenSize, plotScreenSizeChanged);
+                    _coordinateTransform = new InteractiveDataDisplay.CoordinateTransform(outputRect, { left: 0, top: 0, width: _width, height: _height }, _master.aspectRatio);
                 }
 
-                if (padding !== undefined) {
+                _plotRect = outputRect;
+            }
+            else {
+                // after pan/zoom
+                // or auto fit mode is disabled (all 4 constraints in _autoFitConstraints are set)
+                if (bounds.x != bounds.x) bounds.x = 0;
+                if (bounds.y != bounds.y) bounds.y = 0;
+                if (bounds.width != bounds.width) bounds.width = 1;
+                if (bounds.height != bounds.height) bounds.height = 1;
+
+                if(_autoFitConstraints) _plotRect = _autoFitConstraintsToXWidthYHeight(_plotRect, _autoFitConstraints);
+                
+                if((padding.left === 0 && padding.top === 0 && padding.right === 0 && padding.bottom === 0) || _autoFitConstraints){
+                    // on pan/zoom at zero-padding chart
                     _coordinateTransform = InteractiveDataDisplay.Utils.calcCSWithPadding(_plotRect, screenSize, padding, _master.aspectRatio);
-                } else {
+                }
+                else {
+                    // on non-zero-padding chart
                     _coordinateTransform = new InteractiveDataDisplay.CoordinateTransform(_plotRect, { left: 0, top: 0, width: _width, height: _height }, _master.aspectRatio);
                 }
 
@@ -1342,6 +1487,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             if (that.isAutoFitEnabled) {
                 that.isAutoFitEnabled = false;
             }
+            _autoFitConstraints = undefined;
 
             _plotRect = plotRect;
 
@@ -1392,6 +1538,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 this.navigation.stop();
 
                 _requestFitToView = true;
+                _autoFitConstraints = undefined;
                 this.requestUpdateLayout();
             }
         };
@@ -1401,10 +1548,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 _master.fitToViewX();
             }
             else {
-                this.isAutoFitEnabled = false;
                 this.navigation.stop();
 
                 _requestFitToViewX = true;
+                
+                if(_autoFitConstraints) {
+                    _autoFitConstraints[0] = "auto";
+                    _autoFitConstraints[1] = "auto";
+                }
+                else {
+                    _autoFitConstraints = undefined
+                }
+                
                 this.requestUpdateLayout();
             }
         };
@@ -1414,10 +1569,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 _master.fitToViewY();
             }
             else {
-                this.isAutoFitEnabled = false;
                 this.navigation.stop();
 
                 _requestFitToViewY = true;
+                
+                if(_autoFitConstraints) {
+                    _autoFitConstraints[2] = "auto";
+                    _autoFitConstraints[3] = "auto";
+                }
+                else {
+                    _autoFitConstraints = undefined
+                }
+                
                 this.requestUpdateLayout();
             }
         };
@@ -1727,15 +1890,18 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         this.fireVisibleChanged = function (propertyParams) {
             this.host.trigger(InteractiveDataDisplay.Event.isVisibleChanged, propertyParams);
         };
+
         this.firePlotRemoved = function (propertyParams) {
             this.host.trigger(InteractiveDataDisplay.Event.plotRemoved, propertyParams);
             foreachDependentPlot(propertyParams, function (child) {
                 child.host.trigger(InteractiveDataDisplay.Event.plotRemoved, child);
             });
         };
+        
         this.fireOrderChanged = function (propertyParams) {
             this.host.trigger(InteractiveDataDisplay.Event.orderChanged, propertyParams);
         };
+
         //--------------------------------------------------------------------------------------
         // Plot factories
 

@@ -410,7 +410,7 @@
                 }
             }
         };
-        ko.bindingHandlers.iddVisibleRegion = {
+        ko.bindingHandlers.iddAutoFitBounds = {
             update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
                 var unwrappedVal = ko.unwrap(value);
@@ -419,27 +419,20 @@
                 if(plotAttr != null) {
                     if(typeof element.plot != 'undefined') {
                         var values = unwrappedVal.split(' ')
-                   
-                        if(values.length != 4) 
-                            throw "data-idd-visible-region must contain exactly 4 numbers (xmin,xmax,ymin,ymax) separated by single space"
-                        var xmin = Number(values[0])
-                        var xmax = Number(values[1])
-                        var ymin = Number(values[2])
-                        var ymax = Number(values[3])
-                        if(xmin>xmax)
-                            throw "data-idd-visible-region attribute: xmax is less than xmin"
-                        if(ymin>ymax)
-                            throw "data-idd-visible-region attribute: ymax is less than ymin"
-                        
-                        var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
-                        var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
-            
-                        var plotXmin = dataToPlotX ? dataToPlotX(xmin) : xmin
-                        var plotXmax = dataToPlotX ? dataToPlotX(xmax) : xmax
-                        var plotYmin = dataToPlotY ? dataToPlotY(ymin) : ymin
-                        var plotYmax = dataToPlotY ? dataToPlotY(ymax) : ymax
-                        var plotRect = {x:plotXmin, width: plotXmax - plotXmin, y:plotYmin, height: plotYmax - plotYmin}
-                        element.plot.navigation.setVisibleRect(plotRect)
+
+                        if(values.length > 4) 
+                            throw "data-idd-visible-region must contain exactly 4 values (xmin xmax ymin ymax) separated by single space"
+                        else if(values.length < 4) {
+                            for (var i = 0; i < 4 - values.length; i++) {
+                                values.push("auto");
+                            }
+                        }
+
+                        var empty_str_at_i = [];
+                        for(var i = 0; i < values.length; i++)
+                            if (!values[i]) values[i] = "auto";
+
+                        element.plot.isAutoFitEnabled = values;
                     }
                     else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
                         //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element                        
