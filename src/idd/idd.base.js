@@ -282,8 +282,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // The flag is reset when any other update request is received.
         var _suppressNotifyBoundPlots = false;
         var _tooltipSettings = undefined;
-        var _verticalBoundaryLines = [];
-        var _horizontalBoundaryLines = [];
 
         var _plotRect;
 
