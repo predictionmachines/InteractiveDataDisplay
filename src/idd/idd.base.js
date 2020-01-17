@@ -586,42 +586,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 }
             }
         );
-        
-        this.verticalBoundaryLinesUpdated = function (data) {
-            for (var i = 0; i < _verticalBoundaryLines.length; i++) {
-                var x_i = _verticalBoundaryLines[i];
-                var div = $("<div></div>")
-                    .attr("data-idd-name", "vbl_" + x_i)
-                    .attr("data-bind", "iddX: " + x_i)
-                    .attr("data-idd-plot", "boundaryLine")
-                    .appendTo(this.host);
-                var plot = new InteractiveDataDisplay.BoundaryLinePlot(div, this.master);
-                this.addChild(plot);
-                this.assignChildOrder(plot);
-            }
-            //return plot;
-        }
-
-        Object.defineProperty(this, "verticalBoundaryLines", {
-            get: function () { return _verticalBoundaryLines; },
-            set: function (value) {
-                if (_verticalBoundaryLines === value) return;
-                _verticalBoundaryLines = value;
-                this.verticalBoundaryLinesUpdated();
-                this.fireOrderChanged();
-            },
-            configurable: false
-        });
-
-        Object.defineProperty(this, "horizontalBoundaryLines", {
-            get: function () { return _horizontalBoundaryLines; },
-            set: function (value) {
-                if (_horizontalBoundaryLines === value) return;
-                _horizontalBoundaryLines = value;
-                this.fireOrderChanged();
-            },
-            configurable: false
-        });
 
         // DG: Why does master plot base code operates with .map, _mapControl?
         // Reint
