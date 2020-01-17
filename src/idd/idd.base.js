@@ -111,6 +111,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             case "bingMaps":
                 plot = new InteractiveDataDisplay.BingMapsPlot(jqDiv, master);
                 break;
+            case "boundaryLine":
+                plot = new InteractiveDataDisplay.BoundaryLinePlot(jqDiv, master);
         }
 
         var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
@@ -2628,39 +2630,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return $toolTip;
         };
 
-        var getArrayToSetLineDash = function (ld) {
-            switch (ld){
-                case "dot":
-                    ld = [_thickness, 2 * _thickness];
-                    break;
-                case "dash":
-                    ld = [3 * _thickness, 2 * _thickness];
-                    break;
-                case "dash dot":
-                    ld = [3 * _thickness, 2 * _thickness, _thickness, 2 * _thickness];
-                    break;
-                case "long dash":
-                    ld = [8 * _thickness, 2 * _thickness];
-                    break;
-                case "long dash dot":
-                    ld = [8 * _thickness, 2 * _thickness, _thickness, 2 * _thickness];
-                    break;
-                case "long dash dot dot":
-                    ld = [8 * _thickness, 2 * _thickness, _thickness, 2 * _thickness, _thickness, 2 * _thickness];
-                    break;
-                default:
-                    break;
-            }
-            var dashArray = [];
-            for (var i = 0; i < ld.length; i=i+2){
-                if(typeof ld[i] === "number" && typeof ld[i+1] === "number"){
-                    dashArray.push(ld[i]);
-                    dashArray.push(ld[i+1]);
-                }
-            }
-            return dashArray;
-        }
-
         var renderLine = function (_x, _y, _stroke, _thickness, plotRect, screenSize, context) {
             if (_x === undefined || _y == undefined)
                 return;
@@ -2684,7 +2653,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             context.lineCap = _lineCap;
             context.lineJoin = _lineJoin;
             
-            context.setLineDash(getArrayToSetLineDash(_lineDash));
+            context.setLineDash(InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, _thickness));
 
             context.beginPath();
             var x1, x2, y1, y2;
@@ -2812,7 +2781,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             var strokeColor = 'rgb('+strokeRgba.r+','+strokeRgba.g+','+strokeRgba.b+')'
     
             var drawSegment = function () {
-                svg.polyline(segment).style({ fill: "none", stroke: strokeColor, "stroke-width": _thickness, 'stroke-opacity': strokeRgba.a, 'stroke-linecap': _lineCap}).attr("stroke-dasharray", getArrayToSetLineDash(_lineDash)).attr("stroke-linejoin", _lineJoin);
+                svg.polyline(segment).style({ fill: "none", stroke: strokeColor, "stroke-width": _thickness, 'stroke-opacity': strokeRgba.a, 'stroke-linecap': _lineCap}).attr("stroke-dasharray", InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, _thickness)).attr("stroke-linejoin", _lineJoin);
             }
             // Looking for non-missing value
             var nextValuePoint = function () {
@@ -3052,7 +3021,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
             ctx.strokeStyle = _stroke;
             ctx.lineWidth = _thickness;
-            ctx.setLineDash(getArrayToSetLineDash(_lineDash));
+            ctx.setLineDash(InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, _thickness));
             ctx.moveTo(0, 0);
             ctx.lineTo(40, 40);
             ctx.stroke();
@@ -3104,7 +3073,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                         ctx.stroke();
                         ctx.closePath();
                     }
-                    ctx.setLineDash(getArrayToSetLineDash(_lineDash));
+                    ctx.setLineDash(InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, _thickness));
                     ctx.strokeStyle = _stroke;
                     ctx.lineWidth = _thickness;
                     ctx.moveTo(0, 0);
@@ -3140,7 +3109,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             if (isUncertainData95) svg.add(svg.polyline([[0, 0], [0, 9], [9, 18], [18, 18], [18, 9], [9, 0], [0, 0]]).fill(fill95Color).opacity(fill95Rgba.a).translate(5, 5));
             if (isUncertainData68) svg.add(svg.polyline([[0, 0], [0, 4.5], [13.5, 18], [18, 18], [18, 13.5], [4.5, 0], [0, 0]]).fill(fill68Color).opacity(fill68Rgba.a).translate(5, 5));
-            svg.add(svg.line(0, 0, 18, 18).stroke({ width: _thickness, color: strokeColor }).translate(5, 5).attr("stroke-dasharray", getArrayToSetLineDash(_lineDash)));
+            svg.add(svg.line(0, 0, 18, 18).stroke({ width: _thickness, color: strokeColor }).translate(5, 5).attr("stroke-dasharray", InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, _thickness)));
             var style = window.getComputedStyle(legendSettings.legendDiv.children[0].children[1], null);
             var fontSize = parseFloat(style.getPropertyValue('font-size'));
             var fontFamily = style.getPropertyValue('font-family');
@@ -3662,4 +3631,214 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
     }
     InteractiveDataDisplay.GridlinesPlot.prototype = new InteractiveDataDisplay.CanvasPlot;
+
+    InteractiveDataDisplay.BoundaryLinePlot = function (host, master) {
+        var that = this;
+
+        this.base = InteractiveDataDisplay.CanvasPlot;
+        this.base(host, master);
+
+        var _x, _y;
+        var _thickness = "1px";
+        var _stroke = "Gray";
+        var _lineDash = "";
+
+        if(!_x && !_y) {
+            var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(host, InteractiveDataDisplay.readCsv);
+            var initialData = initializer(host);
+            if(initialData){
+                if(initialData.x)
+                    _x = initialData.x;
+                else if(initialData.y)
+                _y = initialData.y;
+                if(initialData.thickness)
+                    _thickness = initialData.thickness;
+                if(initialData.stroke)
+                    _stroke = initialData.stroke;
+                if(initialData.lineDash)
+                    _lineDash = initialData.lineDash;
+            }
+        }
+
+        var style = {};
+        InteractiveDataDisplay.Utils.readStyle(this.host, style);
+        if (style) {
+            _stroke = typeof style.stroke != "undefined" ? style.stroke : _stroke;
+            _thickness = typeof style.thickness != "undefined" ? style.thickness : _thickness;
+        }
+
+        Object.defineProperty(this, "x", {
+            get: function () { return _x; },
+            set: function (value) {
+                if (value == _x) return;
+                _x = value;
+                this.requestUpdateLayout();
+            },
+            configurable: false
+        });
+
+        Object.defineProperty(this, "y", {
+            get: function () { return _y; },
+            set: function (value) {
+                if (value == _y) return;
+                _y = value;
+                this.requestUpdateLayout();
+            },
+            configurable: false
+        });
+
+        Object.defineProperty(this, "thickness", {
+            get: function () { return _thickness; },
+            set: function (value) {
+                if (value == _thickness) return;
+                if (value <= 0) throw "Boundary line thickness must be positive";
+                _thickness = value;
+
+                this.requestNextFrameOrUpdate();
+            },
+            configurable: false
+        });
+
+        Object.defineProperty(this, "stroke", {
+            get: function () { return _stroke; },
+            set: function (value) {
+                if (value == _stroke) return;
+                _stroke = value;
+
+                this.requestNextFrameOrUpdate();
+            },
+            configurable: false
+        });
+
+        Object.defineProperty(this, "lineDash", {
+            get: function () { return _lineDash; },
+            set: function (value) {
+                if (value == _lineDash) return;
+                _lineDash = value;
+
+                this.requestNextFrameOrUpdate();
+            },
+            configurable: false
+        });
+
+        this.renderCore = function (plotRect, screenSize) {
+            InteractiveDataDisplay.BoundaryLinePlot.prototype.renderCore.call(this, plotRect, screenSize);
+
+            var ctx = this.getContext(true);
+            ctx.strokeStyle = _stroke;
+            ctx.fillStyle = _stroke;
+            ctx.setLineDash(InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, _thickness));
+            ctx.lineWidth = parseInt(_thickness);
+
+            var t = that.getTransform();
+            var dataToScreenX = t.dataToScreenX;
+            var dataToScreenY = t.dataToScreenY;
+
+            ctx.font = "10px serif";
+            
+            if (_x) {
+                var screenX = dataToScreenX(_x);
+                if(parseInt(_thickness) % 2) screenX += 0.5
+
+                ctx.beginPath();
+                ctx.moveTo(screenX, 0);
+                ctx.lineTo(screenX, screenSize.height);
+                ctx.stroke();
+
+                ctx.translate(screenX - 3, screenSize.height - 10);
+                ctx.rotate(-Math.PI/2);
+                if(this.name) ctx.fillText(this.name, 0, 0);
+                else ctx.fillText("x = " + _x, 0, 0);
+                ctx.rotate(Math.PI/2);
+                ctx.translate(3 - screenX, 10 - screenSize.height);
+            }
+            if (_y) {
+                var screenY = dataToScreenY(_y);
+                if(parseInt(_thickness) % 2) screenY += 0.5;
+
+                ctx.beginPath();
+                ctx.moveTo(0, screenY);
+                ctx.lineTo(screenSize.width, screenY);
+                ctx.stroke(); 
+
+                if(this.name) ctx.fillText(this.name, 10, screenY - 3);
+                else ctx.fillText("y = " + _y, 10, screenY - 3);
+            }
+        };
+
+        this.renderCoreSvg = function (plotRect, screenSize, svg) {
+            var t = that.getTransform();
+            var dataToScreenX = t.dataToScreenX;
+            var dataToScreenY = t.dataToScreenY;
+
+            var style = { width: parseInt(_thickness), color: _stroke };
+
+            if (_x) {                
+                var screenX = dataToScreenX(_x);
+                svg.polyline([[screenX, 0], [screenX, screenSize.height - 1]])
+                    .stroke(style)
+                    .attr("stroke-dasharray", InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, parseInt(_thickness)))
+                    .fill('none');
+                if(this.name) {
+                    svg.text(this.name, 0, 0)
+                    .transform({ rotation: -90 })
+                    //.center(73 - screenSize.height, screenX - 12)
+                    .center(103 - screenSize.height, screenX - 27)
+                    .font({
+                        family: 'serif'
+                      , size: 10
+                      , fill: _stroke
+                    });
+                }
+                else {
+                    svg.text("x = " + _x, 0, 0)
+                    .transform({ rotation: -90 })
+                    .center(60 - screenSize.height, screenX - 5)
+                    .font({
+                        family: 'serif'
+                      , size: 10
+                      , fill: _stroke
+                    });
+                }
+            }
+            if (_y) {
+                var screenY = dataToScreenY(_y);
+                svg.polyline([[0, screenY], [screenSize.width - 1, screenY]])
+                    .stroke(style)
+                    .attr("stroke-dasharray", InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, parseInt(_thickness)))
+                    .fill('none');
+                if(this.name) {
+                    svg.text(this.name)
+                    .transform({ x: 10 })
+                    .transform({ y: screenY - 18 }, true)
+                    .font({
+                        family: 'serif'
+                      , size: 10
+                      , fill: _stroke
+                    });
+                }
+                else {
+                    svg.text("y = " + _y)
+                    .transform({ x: 10 })
+                    .transform({ y: screenY - 18 }, true)
+                    .font({
+                        family: 'serif'
+                      , size: 10
+                      , fill: _stroke
+                    });
+                }
+            }
+        };
+
+        this.draw = function (data) {
+            if(data.x) this.x = data.x;
+            if(data.y) this.y = data.y;
+
+            this.invalidateLocalBounds();
+
+            this.requestNextFrameOrUpdate();
+            this.fireAppearanceChanged();
+        }
+    }
+    InteractiveDataDisplay.BoundaryLinePlot.prototype = new InteractiveDataDisplay.CanvasPlot;
 }();
