@@ -25,7 +25,7 @@
 			X : ko.observable(x_values),
 			Y : ko.observable(y_values),
 
-            ActiveColour : ko.observable("Green"),            
+            ActiveColour : ko.observable("Red"),            
             ColoursToChoose: ["Red","Green","Blue","Black"],
 
             Thickness: ko.observable(10),
@@ -57,6 +57,8 @@
                 iddLineCap: LineCap,
                 iddLineJoin: LineJoin">				
         </div>
+        <div id="boundaryLineVertical" data-idd-plot='boundaryLine' data-idd-style='stroke: Green; thickness: 4px;' data-bind="iddX: 4"></div>
+        <div id="boundaryLineHorizontal" data-idd-plot='boundaryLine' data-idd-style='stroke: Yellow; thickness: 4px;' data-bind="iddY: 3"></div>
 	</div>
     <div style="float: right; margin: 2em">
         <p>Colour:

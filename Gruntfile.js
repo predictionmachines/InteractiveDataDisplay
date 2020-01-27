@@ -39,7 +39,8 @@
         "src/idd/idd.ko.domplot.js",
         "src/idd/idd.ko.area.js",
         "src/idd/idd.ko.heatmap.js",
-		"src/idd/idd.ko.labels.js"
+        "src/idd/idd.ko.labels.js",
+        "src/idd/idd.ko.boundaryLine.js"
 	]
 
     grunt.initConfig({

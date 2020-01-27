@@ -432,5 +432,42 @@ InteractiveDataDisplay.Utils =
                     throw "Unexpected array type: "+typeStr
             }
             return res
+        },
+
+        getArrayToSetLineDash: function (dash_string, thickness) {
+            var thckns = thickness;
+            if(!thickness) thckns = 1;
+            thckns = parseInt(thckns);
+            if(!thckns) thckns = 1;
+            switch (dash_string){
+                case "dot":
+                    dash_string = [thckns, 2 * thckns];
+                    break;
+                case "dash":
+                    dash_string = [3 * thckns, 2 * thckns];
+                    break;
+                case "dash dot":
+                    dash_string = [3 * thckns, 2 * thckns, thckns, 2 * thckns];
+                    break;
+                case "long dash":
+                    dash_string = [8 * thckns, 2 * thckns];
+                    break;
+                case "long dash dot":
+                    dash_string = [8 * thckns, 2 * thckns, thckns, 2 * thckns];
+                    break;
+                case "long dash dot dot":
+                    dash_string = [8 * thckns, 2 * thckns, thckns, 2 * thckns, thckns, 2 * thckns];
+                    break;
+                default:
+                    break;
+            }
+            var dashArray = [];
+            for (var i = 0; i < dash_string.length; i=i+2){
+                if(typeof dash_string[i] === "number" && typeof dash_string[i+1] === "number"){
+                    dashArray.push(dash_string[i]);
+                    dashArray.push(dash_string[i+1]);
+                }
+            }
+            return dashArray;
         }
     };
