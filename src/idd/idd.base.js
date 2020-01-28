@@ -3943,57 +3943,61 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             if (_x) {                
                 var screenX = dataToScreenX(_x);
-                svg.polyline([[screenX, 0], [screenX, screenSize.height - 1]])
-                    .stroke(style)
-                    .attr("stroke-dasharray", InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, parseInt(_thickness)))
-                    .fill('none');
-                if(this.name) {
-                    svg.text(this.name, 0, 0)
-                    .transform({ rotation: -90 })
-                    //.center(73 - screenSize.height, screenX - 12)
-                    .center(103 - screenSize.height, screenX - 27)
-                    .font({
-                        family: 'serif'
-                      , size: 10
-                      , fill: _stroke
-                    });
-                }
-                else {
-                    svg.text("x = " + _x, 0, 0)
-                    .transform({ rotation: -90 })
-                    .center(60 - screenSize.height, screenX - 5)
-                    .font({
-                        family: 'serif'
-                      , size: 10
-                      , fill: _stroke
-                    });
+                if(screenX > 0 && screenX < screenSize.width){
+                    svg.polyline([[screenX, 0], [screenX, screenSize.height - 1]])
+                        .stroke(style)
+                        .attr("stroke-dasharray", InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, parseInt(_thickness)))
+                        .fill('none');
+                    if(this.name) {
+                        svg.text(this.name, 0, 0)
+                        .transform({ rotation: -90 })
+                        //.center(73 - screenSize.height, screenX - 12)
+                        .center(103 - screenSize.height, screenX - 27)
+                        .font({
+                            family: 'serif'
+                        , size: 10
+                        , fill: _stroke
+                        });
+                    }
+                    else {
+                        svg.text("x = " + _x, 0, 0)
+                        .transform({ rotation: -90 })
+                        .center(60 - screenSize.height, screenX - 5)
+                        .font({
+                            family: 'serif'
+                        , size: 10
+                        , fill: _stroke
+                        });
+                    }
                 }
             }
             if (_y) {
                 var screenY = dataToScreenY(_y);
-                svg.polyline([[0, screenY], [screenSize.width - 1, screenY]])
-                    .stroke(style)
-                    .attr("stroke-dasharray", InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, parseInt(_thickness)))
-                    .fill('none');
-                if(this.name) {
-                    svg.text(this.name)
-                    .transform({ x: 10 })
-                    .transform({ y: screenY - 18 }, true)
-                    .font({
-                        family: 'serif'
-                      , size: 10
-                      , fill: _stroke
-                    });
-                }
-                else {
-                    svg.text("y = " + _y)
-                    .transform({ x: 10 })
-                    .transform({ y: screenY - 18 }, true)
-                    .font({
-                        family: 'serif'
-                      , size: 10
-                      , fill: _stroke
-                    });
+                if(screenY > 0 && screenY < screenSize.height){
+                    svg.polyline([[0, screenY], [screenSize.width - 1, screenY]])
+                        .stroke(style)
+                        .attr("stroke-dasharray", InteractiveDataDisplay.Utils.getArrayToSetLineDash(_lineDash, parseInt(_thickness)))
+                        .fill('none');
+                    if(this.name) {
+                        svg.text(this.name)
+                        .transform({ x: 10 })
+                        .transform({ y: screenY - 18 }, true)
+                        .font({
+                            family: 'serif'
+                        , size: 10
+                        , fill: _stroke
+                        });
+                    }
+                    else {
+                        svg.text("y = " + _y)
+                        .transform({ x: 10 })
+                        .transform({ y: screenY - 18 }, true)
+                        .font({
+                            family: 'serif'
+                        , size: 10
+                        , fill: _stroke
+                        });
+                    }
                 }
             }
         };

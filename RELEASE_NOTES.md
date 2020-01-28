@@ -1,4 +1,4 @@
-### 1.5.36 (January TBD, 2020)
+### 1.5.36 (January 28, 2020)
 
 New features:
  - Added Boundary line plot. It represents infinite horizontal or vertical lines that are not presented in a legend. A boundary line name is displayed alongside on the canvas.
