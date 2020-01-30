@@ -27,7 +27,11 @@
         }
 
         $(document).ready(function () {
-            var chart = InteractiveDataDisplay.asPlot($("#chart"));			
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));            
+
+            chart.boundaryLine("This is vertical boundary line x = 0", { x: 0, stroke: "thistle", thickness: 3 });
+            chart.boundaryLine(undefined, { y: 0, stroke: "thistle", thickness: 3 });
+
             ko.applyBindings(vm)
         });
 
@@ -50,10 +54,16 @@
                     iddStroke: 'darkmagenta',
                     iddThickness: 2">				
             </div>
-            <div data-idd-name="Name x = 2" data-idd-plot='boundaryLine' data-idd-style='stroke: darkcyan; thickness: 5px;' data-bind="iddX: 2"></div>
-            <div data-idd-plot='boundaryLine' data-idd-style='stroke: darkseagreen; thickness: 3px;' data-bind="iddX: 4"></div>
-            <div id="Name y = 1" data-idd-plot='boundaryLine' data-idd-style='stroke: darksalmon; thickness: 1px;' data-bind="iddY: 1"></div>
-            <div data-idd-plot='boundaryLine' data-bind="iddY: 5"></div>
+            <div data-idd-name="Name x = 2" data-idd-plot='boundaryLine' data-idd-style='stroke: darkcyan; thickness: 2px;' data-bind="iddX: 2"></div>
+            <div data-idd-plot='boundaryLine' data-idd-style='stroke: darkseagreen; thickness: 4px;'>
+                x
+                4
+            </div>
+            <div id="Name y = 1" data-idd-plot='boundaryLine' data-idd-style='stroke: deeppink;'>
+                y
+                1
+            </div>
+            <div data-idd-plot='boundaryLine' data-bind="iddY: 5" data-idd-style='stroke: steelblue; thickness: 5px;'></div>
         </div>
         <div id="chart_svg" style="display: inline-grid; width: 600px; height: 400px; margin: 20 0 20 0; background-color: lightgrey;" onclick="exportSvg(1); $('#chart_svg').css('background-color', 'transparent');">
             Every time you click here you get an SVG snapshot of the chart below.

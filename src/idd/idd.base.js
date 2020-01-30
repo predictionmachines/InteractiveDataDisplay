@@ -1994,6 +1994,22 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return plot;
         }
 
+        this.boundaryLine = function (name, data) {
+            var plot = this.get(name);
+            if (!plot) {
+                var div = $("<div></div>")
+                    .attr("data-idd-name", name)
+                    .appendTo(this.host);
+                plot = new InteractiveDataDisplay.BoundaryLinePlot(div, this.master);
+                this.addChild(plot);
+                this.assignChildOrder(plot);
+            }
+            if (data !== undefined) {
+                plot.draw(data);
+            }
+            return plot;
+        };
+
         //------------------------------------------------------------------------------
         //Navigation
         if (_isMaster) {
@@ -3811,7 +3827,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _stroke = "Gray";
         var _lineDash = "";
 
-        if(!_x && !_y) {
+        if(typeof _x === "undefined" && typeof _y === "undefined") {
             var initializer = InteractiveDataDisplay.Utils.getDataSourceFunction(host, InteractiveDataDisplay.readCsv);
             var initialData = initializer(host);
             if(initialData){
@@ -3904,7 +3920,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             ctx.font = "10px serif";
             
-            if (_x) {
+            if (typeof _x !== "undefined") {
                 var screenX = dataToScreenX(_x);
                 if(parseInt(_thickness) % 2) screenX += 0.5
 
@@ -3920,7 +3936,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 ctx.rotate(Math.PI/2);
                 ctx.translate(3 - screenX, 10 - screenSize.height);
             }
-            if (_y) {
+            if (typeof _y !== "undefined") {
                 var screenY = dataToScreenY(_y);
                 if(parseInt(_thickness) % 2) screenY += 0.5;
 
@@ -3941,7 +3957,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
             var style = { width: parseInt(_thickness), color: _stroke };
 
-            if (_x) {                
+            if (typeof _x !== "undefined") {                
                 var screenX = dataToScreenX(_x);
                 if(screenX > 0 && screenX < screenSize.width){
                     svg.polyline([[screenX, 0], [screenX, screenSize.height - 1]])
@@ -3950,9 +3966,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                         .fill('none');
                     if(this.name) {
                         svg.text(this.name, 0, 0)
-                        .transform({ rotation: -90 })
-                        //.center(73 - screenSize.height, screenX - 12)
-                        .center(103 - screenSize.height, screenX - 27)
+                        .rotate(-90, 0, 0)
+                        .translate(screenX - 16, screenSize.height - 10)
                         .font({
                             family: 'serif'
                         , size: 10
@@ -3961,8 +3976,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     }
                     else {
                         svg.text("x = " + _x, 0, 0)
-                        .transform({ rotation: -90 })
-                        .center(60 - screenSize.height, screenX - 5)
+                        .rotate(-90, 0, 0)
+                        .translate(screenX - 16, screenSize.height - 10)
                         .font({
                             family: 'serif'
                         , size: 10
@@ -3971,7 +3986,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     }
                 }
             }
-            if (_y) {
+            if (typeof _y !== "undefined") {
                 var screenY = dataToScreenY(_y);
                 if(screenY > 0 && screenY < screenSize.height){
                     svg.polyline([[0, screenY], [screenSize.width - 1, screenY]])
@@ -4003,8 +4018,10 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
 
         this.draw = function (data) {
-            if(data.x) this.x = data.x;
-            if(data.y) this.y = data.y;
+            if(typeof data.x !== "undefined") this.x = data.x;
+            if(typeof data.y !== "undefined") this.y = data.y;
+            if(typeof data.thickness !== "undefined") this.thickness = data.thickness;
+            if(typeof data.stroke !== "undefined") this.stroke = data.stroke;
 
             this.invalidateLocalBounds();
 
