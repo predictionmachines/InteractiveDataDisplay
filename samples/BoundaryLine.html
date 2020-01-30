@@ -27,7 +27,11 @@
         }
 
         $(document).ready(function () {
-            var chart = InteractiveDataDisplay.asPlot($("#chart"));			
+            var chart = InteractiveDataDisplay.asPlot($("#chart"));            
+
+            chart.boundaryLine("This is vertical boundary line x = 0", { x: 0, stroke: "thistle", thickness: 3 });
+            chart.boundaryLine(undefined, { y: 0, stroke: "thistle", thickness: 3 });
+
             ko.applyBindings(vm)
         });
 
@@ -40,7 +44,14 @@
     </script>
 </head>
 <body>
-    <div style="display: inline-block">
+    <div>
+        <div style="margin: 2em 1em 3em 1em;">
+            <p>This sample demonstrates various options to work with boundary line settings.</p>
+            <p>Boundary line name can be set either via data-idd-name attribute or div's id.</p>
+            <p>Boundary line can be styled with stroke and thickness.</p>
+            <p>X or Y coordinate for a boundary line can be set by iddX/iddY knockout binding or by a plain text in html.</p>
+            <p>Boundary line itself set be added in html (with data-idd-plot='boundaryLine' attribute) or in javascript (chart.boundaryLine(name, settings))</p>
+        </div>
         <div id="chart" data-idd-plot="chart" style="width: 600px; height: 400px; float:left">
             <div data-idd-plot="polyline"
                 data-idd-name="Line 1"
@@ -50,14 +61,19 @@
                     iddStroke: 'darkmagenta',
                     iddThickness: 2">				
             </div>
-            <div data-idd-name="Name x = 2" data-idd-plot='boundaryLine' data-idd-style='stroke: darkcyan; thickness: 5px;' data-bind="iddX: 2"></div>
-            <div data-idd-plot='boundaryLine' data-idd-style='stroke: darkseagreen; thickness: 3px;' data-bind="iddX: 4"></div>
-            <div id="Name y = 1" data-idd-plot='boundaryLine' data-idd-style='stroke: darksalmon; thickness: 1px;' data-bind="iddY: 1"></div>
-            <div data-idd-plot='boundaryLine' data-bind="iddY: 5"></div>
+            <div data-idd-name="Name x = 2" data-idd-plot='boundaryLine' data-idd-style='stroke: darkcyan; thickness: 2px;' data-bind="iddX: 2"></div>
+            <div data-idd-plot='boundaryLine' data-idd-style='stroke: darkseagreen; thickness: 4px;'>
+                x
+                4
+            </div>
+            <div id="Name y = 1" data-idd-plot='boundaryLine' data-idd-style='stroke: deeppink;'>
+                y
+                1
+            </div>
+            <div data-idd-plot='boundaryLine' data-bind="iddY: 5" data-idd-style='stroke: steelblue; thickness: 5px;'></div>
         </div>
         <div id="chart_svg" style="display: inline-grid; width: 600px; height: 400px; margin: 20 0 20 0; background-color: lightgrey;" onclick="exportSvg(1); $('#chart_svg').css('background-color', 'transparent');">
             Every time you click here you get an SVG snapshot of the chart below.
         </div>
-    </div>
 </body>
 </html>

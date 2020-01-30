@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10; IE=Edge" />
+    <title>KO binding AutoFitMode</title>
+    <link rel="stylesheet" type="text/css" href="../dist/idd.css" />
+    <link rel="stylesheet" type="text/css" href="../src/css/IDDTheme.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/3.1.2/rx.lite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.4.0/svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> 
+    <script src="../dist/idd_knockout.js"></script>
+
+    <script type="text/javascript">
+        var t = 0;
+        var every_n_sec = 2;
+        
+		var x_values = [] 
+        var y_values = []
+        
+        function addData() {
+            x_values = [];
+            y_values = [];
+
+            for (var i = 0; i < 3; i+=0.05) {
+                x_values.push(t + i);
+                y_values.push(Math.sin(t + i) + Math.cos(Math.sqrt(3)*(t + i)));
+            }
+            t+=i/6;
+            vm.X(x_values);
+            vm.Y(y_values);
+            if(t < every_n_sec * 20){
+                setTimeout(addData, every_n_sec * 1000)
+                $("#addedDataDiv").fadeIn()
+                $("#addedDataDiv").fadeOut(every_n_sec * 600)
+            }
+            else {
+                $("#addedDataDiv").text("All data is added")
+                $("#addedDataDiv").fadeIn()
+            }
+        }
+
+        var vm = {
+			X : ko.observable(x_values),
+			Y : ko.observable(y_values),
+            x_left: ko.observable("auto"),
+            x_right: ko.observable("auto"),
+            y_low: ko.observable("auto"),
+            y_high: ko.observable("auto"),
+            autoFitModeOption: ko.observable("true")
+        }
+
+        vm.x1x2y1y2String = ko.pureComputed({
+            read: function () {                
+                var left = (vm.x_left() !== "") ? vm.x_left() : "auto";
+                var right = (vm.x_right() !== "") ? vm.x_right() : "auto";
+                var low = (vm.y_low() !== "") ? vm.y_low() : "auto";
+                var high = (vm.y_high() !== "") ? vm.y_high() : "auto";
+                return "bounds(" + left + "," + right + "," + low + "," + high + ")";
+            },
+            owner: this
+        });
+
+        vm.autoFitMode = ko.pureComputed({
+            read: function () {
+                if(vm.autoFitModeOption() === "true" || vm.autoFitModeOption() === "false") return vm.autoFitModeOption();
+                return vm.x1x2y1y2String();
+            },
+            owner: this
+        });
+
+        vm.areBoundsVisible = ko.pureComputed({
+            read: function () {
+                if(vm.autoFitModeOption() === "bounds") return true;
+                return false;
+            },
+            owner: this
+        });
+
+        $(document).ready(function () {
+            var chart1 = InteractiveDataDisplay.asPlot($("#chart"));
+            ko.applyBindings(vm);
+            addData();
+        });
+    </script>
+</head>
+<body>
+    <div>
+        <div id="chart"
+            data-idd-plot="chart"
+            data-bind="iddAutoFitMode: autoFitMode"
+            data-idd-style="padding: 0;"
+            style="width: 300px; height: 200px; float:left; margin: 1em;">
+            <div data-idd-plot="polyline"
+                data-idd-name="Line 1"
+                id="Line1"
+                data-bind="
+                    iddX: X,
+                    iddY: Y,
+                    iddStroke: 'Red',
+                    iddThickness: 2">				
+            </div>
+        </div>
+
+        <div style="margin: 1em; display: flex; flex-direction: column;">
+            <p>Please select auto fit mode:</p>
+            <div>
+                <input type="radio" id="autoFitMode1" name="autoFitMode" value="true" data-bind="checked: autoFitModeOption">
+                <label for="autoFitMode1">Enable</label>
+
+                <input type="radio" id="autoFitMode2" name="autoFitMode" value="false" data-bind="checked: autoFitModeOption">
+                <label for="autoFitMode2">Disable</label>
+
+                <input type="radio" id="autoFitMode3" name="autoFitMode" value="bounds" data-bind="checked: autoFitModeOption">
+                <label for="autoFitMode3">Bounds(x1, x2, y1, y2)</label>
+                <div style="margin: 2em;" data-bind="visible: areBoundsVisible">
+                    <p>Set visible region
+                        <p>Left boundary: <input data-bind="textInput: x_left" /></p>
+                        <p>Right boundary: <input data-bind="textInput: x_right" /></p>
+                        <p>Lower boundary: <input data-bind="textInput: y_low" /></p>
+                        <p>Upper boundary: <input data-bind="textInput: y_high" /></p>
+                    </p>
+                </div>
+            </div>
+            <div>iddAutoFitMode: "<span data-bind="text: autoFitMode"></span>"</div>
+        </div>
+
+        <div id="addedDataDiv" style="color: green;">Added data</div>
+    </div>
+</body>
+</html>
