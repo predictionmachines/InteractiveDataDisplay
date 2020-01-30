@@ -1,8 +1,8 @@
-### 1.5.36 (January 28, 2020)
+### 1.5.36 (January 30, 2020)
 
 New features:
  - Added Boundary line plot. It represents infinite horizontal or vertical lines that are not presented in a legend. A boundary line name is displayed alongside on the canvas.
- - Added iddVisibleRegion ko.binding ("x_left x_right y_low y_high" string) that allows to set a visible region for a chart. Can contain 'auto' values.
+ - Added iddAutoFitMode ko.binding that allows to set a visible region for a master chart. Switches between three modes: 1. fit-to-view is enabled for a master plot ("enable" value, is set by default); 2. fit-to-view is disabled for a master plot ("disable" value); 3. fit-to-view is enabled, but constraints are applied. Notation: "bounds(x_left, x_right, y_low, y_high)". Values can be numbers or special 'auto' string.
 
 ### 1.5.35 (December 19, 2019)
 

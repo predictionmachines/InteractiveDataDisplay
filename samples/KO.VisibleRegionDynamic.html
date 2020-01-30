@@ -54,7 +54,7 @@
 
         vm.x1x2y1y2String = ko.pureComputed({
             read: function () {
-                return vm.x_left() + " " + vm.x_right() + " " + vm.y_low() + " " + vm.y_high();
+                return "bounds(" + vm.x_left() + "," + vm.x_right() + "," + vm.y_low() + "," + vm.y_high() + ")";
             },
             owner: this
         });
@@ -75,7 +75,7 @@
         <div style="display: inline-block; position: relative;">
             <p>Zero padding</p>
             <div id="chrt1" data-idd-plot="chart"
-                            data-bind="iddAutoFitBounds: x1x2y1y2String"
+                            data-bind="iddAutoFitMode: x1x2y1y2String"
                             data-idd-navigation-enabled="true"
                             data-idd-style="padding: 0;"
                             style="width: 300px; height:300px; float:left">
@@ -92,7 +92,7 @@
         <div style="display: inline-block; position: relative;">
             <p>Auto padding</p>
             <div id="chrt2" data-idd-plot="chart"
-                            data-bind="iddAutoFitBounds: x1x2y1y2String"
+                            data-bind="iddAutoFitMode: x1x2y1y2String"
                             data-idd-navigation-enabled="true"
                             style="width: 300px; height: 300px; float:left">
                 <div data-idd-plot="polyline"

@@ -221,6 +221,7 @@
                 }
             }
         };
+
         ko.bindingHandlers.iddEditorColorPalette = {
             update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
@@ -233,6 +234,7 @@
                 }
             }
         };
+
         ko.bindingHandlers.iddXAxisSettings = {
             update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
@@ -313,6 +315,7 @@
                 }
             }
         };
+
         ko.bindingHandlers.iddYAxisSettings = {
             update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
@@ -393,6 +396,7 @@
                 }
             }
         };
+
         ko.bindingHandlers.iddPlotOrder = {
             update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
@@ -410,7 +414,8 @@
                 }
             }
         };
-        ko.bindingHandlers.iddAutoFitBounds = {
+
+        ko.bindingHandlers.iddAutoFitMode = {
             update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 var value = valueAccessor();
                 var unwrappedVal = ko.unwrap(value);
@@ -418,21 +423,44 @@
                 var plotAttr = element.getAttribute("data-idd-plot");
                 if(plotAttr != null) {
                     if(typeof element.plot != 'undefined') {
-                        var values = unwrappedVal.split(' ')
+                        switch(typeof unwrappedVal) {
+                            case 'boolean':
+                                element.plot.isAutoFitEnabled = unwrappedVal;
+                                break;
+                            case 'string':
+                                if(unwrappedVal === "true" || unwrappedVal === "enable" || unwrappedVal === "enabled")
+                                    element.plot.isAutoFitEnabled = true;
+                                else if(unwrappedVal === "false" || unwrappedVal === "disable" || unwrappedVal === "disabled")
+                                    element.plot.isAutoFitEnabled = false;
+                                else {
+                                    var bounds_word = unwrappedVal.slice(0, 7);
+                                    var parenthesis = unwrappedVal.slice(-1);
+                                    if(bounds_word === "bounds(" && parenthesis === ")"){
+                                        var values = unwrappedVal.slice(7, -1).split(/[ ,]+/);
 
-                        if(values.length > 4) 
-                            throw "data-idd-visible-region must contain exactly 4 values (xmin xmax ymin ymax) separated by single space"
-                        else if(values.length < 4) {
-                            for (var i = 0; i < 4 - values.length; i++) {
-                                values.push("auto");
-                            }
+                                        if(values.length != 4) 
+                                            throw "iddAutoFitMode binding value should conform the 'bounds(x1,x2,y1,y2)' pattern"
+
+                                        for(var i = 0; i < 4; i++)
+                                            if (!isNaN(parseFloat(values[i]))) {
+                                                values[i] = parseFloat(values[i]);
+                                            }
+                                            else {
+                                                if(values[i] !== "auto")
+                                                    console.log("iddAutoFitMode bounds should be set by numbers or 'auto' string. Changing " + values[i] + " value to 'auto'");
+                                                values[i] = "auto";
+                                            }
+
+                                        element.plot.isAutoFitEnabled = values;
+                                    }
+                                    else
+                                        throw "iddAutoFitMode binding value can be 'enable'/'disable' string or 'bounds(x1,x2,y1,y2)' string"
+                                }
+                                break;
+                            default:
+                                throw "unknown value type for iddAutoFitMode binding"
                         }
-
-                        var empty_str_at_i = [];
-                        for(var i = 0; i < values.length; i++)
-                            if (!values[i]) values[i] = "auto";
-
-                        element.plot.isAutoFitEnabled = values;
+                        
                     }
                     else { //the case when the element was not yet initialized and not yet bound to the logical entity (plot)
                         //storing the data in the DOM. it will be used by IDD during IDD-initializing of the dom element                        
