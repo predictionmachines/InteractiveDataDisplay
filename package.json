@@ -14,7 +14,7 @@
   "types": "dist/idd.webpack.d.ts",
   "main": "dist/idd.webpack.js",
   "dependencies": {
-    "file-saver": "~1.3.3",
+    "file-saver": "~1.3.3",    
     "jasmine": "~2.99.0",
     "jquery": "~3.4.0",
     "jquery-mousewheel": "~3.1.13",
@@ -29,6 +29,7 @@
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-base64": "^0.1.0",
+    "grunt-cli": "^1.3.2",
     "grunt-contrib-concat": "^0.5.1",
     "grunt-contrib-copy": "^0.8.2",
     "grunt-contrib-jasmine": "^1.0.0",
@@ -40,7 +41,7 @@
     "test": "grunt default test --verbose"
   },
   "engines": {
-    "yarn": "~1.21.1"
+    "yarn": "^1.15.2"
   },
   "author": "Microsoft Research, MSU ITIS Lab"
 }
