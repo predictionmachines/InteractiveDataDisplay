@@ -2,7 +2,7 @@ language: node_js
 node_js:
 - lts/*
 before_script:
-- npm install grunt-cli -g
+- yarn install --pure-lockfile
 deploy:
   provider: npm
   email: dmitry@itis.cs.msu.ru
