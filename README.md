@@ -30,11 +30,9 @@ Clone a copy of the IDD git repo, enter IDD directory and install development to
 
 `cd idd`
 
-`npm install`
+`npm install -g yarn`
 
-IDD uses Grunt to run build tasks. You will need to install grunt command line interface as a global package (if not already installed):
-
-`npm install -g grunt-cli`
+`yarn install`
 
 Now you can build and test IDD by running the grunt command without arguments:
 
