@@ -1,6 +1,6 @@
 
 
-import Charting = require("../../dist/idd.umd");
+import Charting = require("../../dist/idd.webpack");
 Charting.InteractiveDataDisplay.show(document.getElementById("chart"), {
     "elem1": Charting.Plot.line({
         x: [1, 2, 3, 4],
