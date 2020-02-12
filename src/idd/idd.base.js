@@ -115,6 +115,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 plot = new InteractiveDataDisplay.BoundaryLinePlot(jqDiv, master);
         }
 
+        // ToDo: check whether Observer must be activated only for master plot 
         var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
         if (MutationObserver) {
             var observer = new MutationObserver(function (mutations, observer) {
@@ -159,7 +160,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return plot;
         };
 
-
+        // the following runs for unknown string value of data-idd-plot attribute
         var factory = InteractiveDataDisplay.factory[plotType];
         if (factory) {
             return factory(jqDiv, master);
@@ -235,6 +236,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     // Occurs when master plot has rendered a frame. It is fired only for the master plot.    
     InteractiveDataDisplay.Event.frameRendered = jQuery.Event("frameRendered");
 
+
+
     var _plotCounter = 0;
 
     InteractiveDataDisplay.Plot = function (div, master, myCentralPart) {
@@ -287,6 +290,27 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // It is usually set to explicit value via navigation.SetVisibleRect (user has requested instant navigation)
         // or it's set by FitToView to include all of the data (except for explicitly ignored by fit-to-view)
         var _plotRect;
+        
+        var _initialized = false;
+        var _initializedPromise = (function() {
+            var res, rej;
+        
+            /*var promise = new Promise((resolve, reject) => {
+                res = resolve;
+                rej = reject;
+            });*/
+
+            var promise = new Promise(function(resolve, reject) {
+                res = resolve;
+                rej = reject;
+            });
+        
+            promise.resolve = res;
+            promise.reject = rej;
+        
+            return promise;
+        })();
+
 
         // reading property overrides from attributes
         // Note: data-idd-visible-region attribute is handled at the end of the constructor, as it needs more plot objects to be defined and valid 
@@ -362,6 +386,13 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         // 4-value array [x1, x2, y1, y2] that adds constraints to the visible region (padding excluded)
         // some of the values can be 'auto'
         var _autoFitConstraints = undefined;
+        
+        var SetIsErrorVisible = function (value) {
+            if (_isErrorVisible === value) return;
+            _isErrorVisible = value;
+            this.onIsVisibleChanged();
+            this.fireVisibleChanged(this);
+        }
 
         // Plot properties
         Object.defineProperty(this, "instanceId", { get: function () { return _plotInstanceId; }, configurable: false });
@@ -435,25 +466,21 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         });
         Object.defineProperty(this, "xDataTransform", { get: function () { return _xDataTransform; }, set: function (value) { _xDataTransform = value; this.onDataTransformChanged("x"); }, configurable: false });
         Object.defineProperty(this, "yDataTransform", { get: function () { return _yDataTransform; }, set: function (value) { _yDataTransform = value; this.onDataTransformChanged("y"); }, configurable: false });
-        Object.defineProperty(this, "coordinateTransform",
-            {
-                get: function () { return _isMaster ? _coordinateTransform.clone() : _master.coordinateTransform; },
-                configurable: false
-            }
-        );
-        Object.defineProperty(this, "doFitOnDataTransformChanged",
-            {
-                get: function () { return _isMaster ? _doFitOnDataTransformChanged : _master.doFitOnDataTransformChanged; },
-                set: function (value) {
-                    if (_isMaster) {
-                        _doFitOnDataTransformChanged = value;
-                    } else {
-                        _master.doFitOnDataTransformChanged = value;
-                    }
-                },
-                configurable: false
-            }
-        );
+        Object.defineProperty(this, "coordinateTransform", {
+            get: function () { return _isMaster ? _coordinateTransform.clone() : _master.coordinateTransform; },
+            configurable: false
+        });
+        Object.defineProperty(this, "doFitOnDataTransformChanged", {
+            get: function () { return _isMaster ? _doFitOnDataTransformChanged : _master.doFitOnDataTransformChanged; },
+            set: function (value) {
+                if (_isMaster) {
+                    _doFitOnDataTransformChanged = value;
+                } else {
+                    _master.doFitOnDataTransformChanged = value;
+                }
+            },
+            configurable: false
+        });
 
         /// Actually scale ratio (xScale/yScale). Value 1.0 indicates that square in plot coords will be square on screen
         Object.defineProperty(this, "aspectRatio", {
@@ -589,12 +616,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             get: function () { return _isErrorVisible; },
             configurable: true
         });
-        var SetIsErrorVisible = function (value) {
-            if (_isErrorVisible === value) return;
-            _isErrorVisible = value;
-            this.onIsVisibleChanged();
-            this.fireVisibleChanged(this);
-        }
+        
         Object.defineProperty(this, "order", {
             get: function () { return _order; },
             set: function (value) {
@@ -628,56 +650,59 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             configurable: false
         });
 
-
         var _mapControl = undefined;
-        Object.defineProperty(this, "mapControl",
-            {
-                get: function () { return _isMaster ? _mapControl : _master.mapControl; },
-                configurable: false
-            }
-        );
+        Object.defineProperty(this, "mapControl", {
+            get: function () { return _isMaster ? _mapControl : _master.mapControl; },
+            configurable: false
+        });
         
-        Object.defineProperty(this, "tooltipSettings",
-            {
-                get: function () { return _isMaster ? _tooltipSettings : _master.tooltipSettings; },
-                set: function (value) {
-                    if (_isMaster) {
-                        _tooltipSettings = value;
-                    } else {
-                        _master.tooltipSettings = value;
-                    }
-                },
-                configurable: false
-            }
-        );
+        Object.defineProperty(this, "tooltipSettings", {
+            get: function () { return _isMaster ? _tooltipSettings : _master.tooltipSettings; },
+            set: function (value) {
+                if (_isMaster) {
+                    _tooltipSettings = value;
+                } else {
+                    _master.tooltipSettings = value;
+                }
+            },
+            configurable: false
+        });
 
         var _isToolTipEnabled = true;
-        Object.defineProperty(this, "isToolTipEnabled",
-            {
-                get: function () { return _isMaster ? _isToolTipEnabled : _master.isToolTipEnabled; },
-                set: function (value) {
-                    if (_isMaster) {
-                        _isToolTipEnabled = value;
-                    } else {
-                        _master.isToolTipEnabled = value;
-                    }
-                },
-                configurable: false
-            }
-        );
-
-        Object.defineProperty(this, "titles",
-            {
-                get: function () { return $.extend({}, _titles); },
-
-                // Allows to set titles for the plot's properties.
-                // E.g. "{ color:'age' }" sets the 'age' title for the color data series.
-                // Given titles are displayed in legends and tooltips.
-                set: function (titles) {
-                    this.setTitles(titles, false);
+        Object.defineProperty(this, "isToolTipEnabled", {
+            get: function () { return _isMaster ? _isToolTipEnabled : _master.isToolTipEnabled; },
+            set: function (value) {
+                if (_isMaster) {
+                    _isToolTipEnabled = value;
+                } else {
+                    _master.isToolTipEnabled = value;
                 }
+            },
+            configurable: false
+        });
+
+        Object.defineProperty(this, "titles", {
+            get: function () { return $.extend({}, _titles); },
+
+            // Allows to set titles for the plot's properties.
+            // E.g. "{ color:'age' }" sets the 'age' title for the color data series.
+            // Given titles are displayed in legends and tooltips.
+            set: function (titles) {
+                this.setTitles(titles, false);
             }
-        );
+        });
+
+        Object.defineProperty(this, "initialized", {
+            get: function () {
+                if (_isMaster) {
+                    return _initializedPromise;
+                }
+                else {
+                    return _master.initialized;
+                }
+            },
+            configurable: false
+        });
 
 
         // DG: Why does master plot base code operates with .map, _mapControl?
@@ -1001,6 +1026,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
 
         // Makes children plots to render (recursive).
         // If renderAll is false, renders only plots with the property requestsRender set to true.
+        // REMARK: Figure plot relies on this function to be called as a part of initialization (scheduled by the first call .asPlot(...))
         var updatePlotsOutput = function () {            
             if (_master.flatRendering) { // flat rendering mode
                 renderAll = true;
@@ -1383,6 +1409,13 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     var finalSize = that.measure({ width: 1, height: 1 }); // I pass ones here to avoid singularities
                     // first "arrange" call initializes _canvas, etc.
                     that.arrange(finalSize);
+
+                    if(!_initialized) {
+                        _initializedPromise.resolve();
+                        _initialized = true;
+                    }
+
+                    // ToDO: check whether it is safe to return without calling updatePlotsOutput()
                     return;
                 }
 
@@ -1441,6 +1474,11 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     }
                 }
                 _suppressNotifyBoundPlots = false;
+
+                if(!_initialized) {
+                    _initializedPromise.resolve();
+                    _initialized = true;
+                }
             }
             else {
                 _master.updateLayout();
@@ -1499,36 +1537,6 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 that.requestUpdateLayout(settings);
             }
         };
-
-        if(div) {
-            if(div.attr("data-idd-visible-region")) {
-                var regionStr = div.attr("data-idd-visible-region")
-                
-                var values = regionStr.split(' ')
-                if(values.length != 4) 
-                    throw "data-idd-visible-region must contain exactly 4 numbers (xmin,xmax,ymin,ymax) separated by single space"
-                var xmin = Number(values[0])
-                var xmax = Number(values[1])
-                var ymin = Number(values[2])
-                var ymax = Number(values[3])
-
-                if(xmin>xmax)
-                    throw "data-idd-visible-region attribute: xmax is less than xmin"
-                if(ymin>ymax)
-                    throw "data-idd-visible-region attribute: ymax is less than ymin"
-                
-                var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
-                var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
-
-                var plotXmin = dataToPlotX ? dataToPlotX(xmin) : xmin
-                var plotXmax = dataToPlotX ? dataToPlotX(xmax) : xmax
-                var plotYmin = dataToPlotY ? dataToPlotY(ymin) : ymin
-                var plotYmax = dataToPlotY ? dataToPlotY(ymax) : ymax
-                var plotRect = {x:plotXmin, width: plotXmax - plotXmin, y:plotYmin, height: plotYmax - plotYmin}
-
-                setVisibleRegion(plotRect) // this call will disable fit to view
-            }
-        }
 
         //Disables IsAutoFitEnabled and fits all visible objects into screen with padding
         this.fitToView = function () {
@@ -1616,6 +1624,36 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             }
             f(plot);
         };
+
+        if(div) {
+            if(div.attr("data-idd-visible-region")) {
+                var regionStr = div.attr("data-idd-visible-region")
+                
+                var values = regionStr.split(' ')
+                if(values.length != 4) 
+                    throw "data-idd-visible-region must contain exactly 4 numbers (xmin,xmax,ymin,ymax) separated by single space"
+                var xmin = Number(values[0])
+                var xmax = Number(values[1])
+                var ymin = Number(values[2])
+                var ymax = Number(values[3])
+
+                if(xmin>xmax)
+                    throw "data-idd-visible-region attribute: xmax is less than xmin"
+                if(ymin>ymax)
+                    throw "data-idd-visible-region attribute: ymax is less than ymin"
+                
+                var dataToPlotX = this.xDataTransform && this.xDataTransform.dataToPlot;
+                var dataToPlotY = this.yDataTransform && this.yDataTransform.dataToPlot;
+
+                var plotXmin = dataToPlotX ? dataToPlotX(xmin) : xmin
+                var plotXmax = dataToPlotX ? dataToPlotX(xmax) : xmax
+                var plotYmin = dataToPlotY ? dataToPlotY(ymin) : ymin
+                var plotYmax = dataToPlotY ? dataToPlotY(ymax) : ymax
+                var plotRect = {x:plotXmin, width: plotXmax - plotXmin, y:plotYmin, height: plotYmax - plotYmin}
+
+                setVisibleRegion(plotRect) // this call will disable fit to view
+            }
+        }
 
         if (_isMaster) {
             var _tooltipTimer; // descriptor of the set timer to show the tooltip
@@ -2078,6 +2116,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         }
     };
 
+
+
     var _plotLegends = [];
     // Legend with hide/show function
     // _plot - where to find the children for gathering legend info from
@@ -2396,6 +2436,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     //--------------------------------------------------------------------------------------------
     // Transforms
 
+
+
     //Class for coordinate transform, cs is build from plot rect and screen size
     InteractiveDataDisplay.CoordinateTransform = function (plotRect, screenRect, aspectRatio) {
         var offsetX = 0;
@@ -2497,6 +2539,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
             return cloneTransform;
         };
     };
+
 
 
     //-------------------------------------------------------------------------------------
@@ -2618,6 +2661,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
     };
     InteractiveDataDisplay.CanvasPlot.prototype = new InteractiveDataDisplay.Plot();
+
 
 
     // Renders a function y=f(x) as a polyline.
@@ -3674,6 +3718,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
     }
     InteractiveDataDisplay.DOMPlot.prototype = new InteractiveDataDisplay.Plot;
 
+
+
     InteractiveDataDisplay.GridlinesPlot = function (host, master) {
         this.base = InteractiveDataDisplay.CanvasPlot;
         this.base(host, master);
@@ -3815,6 +3861,8 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         };
     }
     InteractiveDataDisplay.GridlinesPlot.prototype = new InteractiveDataDisplay.CanvasPlot;
+
+
 
     InteractiveDataDisplay.BoundaryLinePlot = function (host, master) {
         var that = this;

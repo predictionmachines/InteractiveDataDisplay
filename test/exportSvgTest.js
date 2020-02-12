@@ -10,13 +10,16 @@ describe('idd.js exportToSvg', function () {
     var divWidth = 800;
     var divHeight = 600;
     var isPhantomJS = /PhantomJS/.test(window.navigator.userAgent);
-    beforeEach(function () {
+    beforeEach(async function () {
         var div = $("<div id='chart' data-idd-plot='chart' style='width:800px;height:600px'></div>");
         chart = InteractiveDataDisplay.asPlot($(div));
         var div2 = $("<div id='chart' data-idd-plot='plot' style='width:800px;height:600px'></div>");
         plot = InteractiveDataDisplay.asPlot($(div2));
         var div3 = $("<div id='chart' data-idd-plot='chart' style='width:800px;height:600px'><div data-idd-placement='top' class='idd-title'>Polyline sample</div><div data-idd-placement='bottom' class='idd-horizontalTitle'>X</div><div data-idd-placement='left' class='idd-verticalTitle' ><div class='idd-verticalTitle-inner'>Y</div></div></div>");
         chartWithTitles = InteractiveDataDisplay.asPlot($(div3));
+        await chart.initialized;
+        await plot.initialized;
+        await chartWithTitles.initialized;
     });
     it('polyline export', function () {
         var line = plot.polyline("p1", { x: [1, 2, 3], y: [1, 2, 3] });
@@ -33,9 +36,9 @@ describe('idd.js exportToSvg', function () {
         var points = svgline.attr("points").split(' ');
         expect(points.length).toBe(3);
         //style
-        expect(svgline.style("stroke")).toBe("#4169ed");
+        expect(svgline.style("stroke")).toBe("rgb(65, 105, 237)");
         expect(svgline.style("fill")).toBe("none");
-        expect(svgline.style("stroke-width")).toBe("1px");
+        expect(svgline.style("stroke-width")).toBe("1");
     });
     it('markers export', function () {
         var markers = plot.markers("mark", { x: [1, 2, 3], y: [1, 2, 3], color: "green", border: "gray" });
@@ -51,10 +54,9 @@ describe('idd.js exportToSvg', function () {
         expect(children.length).toBe(3);
         for (var i = 0; i < children.length; i++) {
             expect(children[i].node.nodeName).toBe("rect");
-            expect(children[i].style("stroke")).toBe("#808080");
+            expect(children[i].style("stroke")).toBe("gray");
             expect(children[i].attr("fill")).toBe("green");
         }
-
     });
     it('area export', function () {
         var area = plot.area("p1", { x: [1, 2, 3], y1: [1, 2, 3], y2: [3, 5, 8] });
@@ -85,7 +87,7 @@ describe('idd.js exportToSvg', function () {
         for (var i = 0; i < 6; i++) 
             expect(children[i].node.nodeName).toBe("polyline");
     });
-    it('chart export', function () {
+    it('chart export', async function () {
         var svg = chart.exportToSvg();
         expect(svg.width()).toBe(divWidth + 220);
         expect(svg.height()).toBe(divHeight);
@@ -103,7 +105,7 @@ describe('idd.js exportToSvg', function () {
         expect(group2.children().length).toBe(1);
         expect(group2.get(0).node.nodeName).toBe("svg");
     });
-    it('chart titles export', function () {
+    it('chart titles export', async function () {
         var svg = chartWithTitles.exportToSvg();
         expect(svg.node.nodeName).toBe("svg");
         //chart group
@@ -118,8 +120,6 @@ describe('idd.js exportToSvg', function () {
         expect(leftGroupChildern.length).toBe(2); // axis and Y title
         expect(leftGroupChildern[0].node.nodeName).toBe("g")
         expect(leftGroupChildern[0].children()[0].node.nodeName).toBe("text")
-        
-        
 
         var topGroupChildern = children[1].children();
         expect(topGroupChildern.length).toBe(1); // chart title        
@@ -130,7 +130,6 @@ describe('idd.js exportToSvg', function () {
         expect(bottomGroupChildern.length).toBe(2); // axis and X title
         expect(bottomGroupChildern[1].node.nodeName).toBe("g") // note that title is below the axis, so its index is 1
         expect(bottomGroupChildern[1].children()[0].node.nodeName).toBe("text")
-        
     });
     it("legend export", function () {
         var line = chart.polyline("p1", { x: [1, 2, 3], y: [1, 2, 3] });
