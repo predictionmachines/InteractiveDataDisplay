@@ -2,7 +2,10 @@
 
 Feature:
  - Master plot got new 'initialized' property (jQuery Promise) which provides the way to use the plot after it is fully initialized.
+
+Other changes:
  - Updated dependencies: grunt, grunt-contrib-concat, grunt-contrib-copy, grunt-contrib-jasmine, grunt-contrib-uglify, grunt-ts
+ - Switched to typescript 2.4.0
 
 ### 1.5.36 (January 30, 2020)
 

@@ -1,5 +1,4 @@
 /// <reference path="ChartViewerControl.ts" />
-/// <reference path="../../typings/jquery/jquery.d.ts" />
 
 module InteractiveDataDisplay {
     export interface ViewState {

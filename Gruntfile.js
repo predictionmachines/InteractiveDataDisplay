@@ -181,7 +181,7 @@
                     sourceMap: false,
                     module: ""
                 },
-                files: [{src: "test/manual/mainGlobal.ts", outDir: 'test/manual'} ]
+                files: [{src: "test/manual/mainGlobal.ts", outDir: 'test/manual'} ],
             },
             test: {
                 options: {
@@ -192,25 +192,6 @@
                 files: [{ src: "test/manual/main.ts", outDir: 'test/manual' }]
             }
         },
-        tsd: {
-            refresh: {
-                options: {
-                    // execute a command
-                    command: 'reinstall',
-
-                    //optional: always get from HEAD
-                    latest: true,
-                    
-                    // specify config file
-                    config: 'tsd.json',
-
-                    // experimental: options to pass to tsd.API
-                    opts: {
-                        // props from tsd.Options
-                    }
-                }
-            }
-        },
     });
 
     grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -219,9 +200,23 @@
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-base64');    
     grunt.loadNpmTasks("grunt-ts");
-    grunt.loadNpmTasks('grunt-tsd');
 
-    grunt.registerTask('update-tsd', ['tsd']);
-    grunt.registerTask('default', ['concat:heatmap_worker', 'base64', 'concat:heatmap_worker_embedded', 'concat:styles', 'concat:dist_ko', 'ts:dist', 'concat:dist_webpack','concat:dist', 'uglify', 'copy', 'concat:umd', 'concat:umdTs','concat:webpackTs', 'ts:testGlobal', 'ts:test', 'jasmine']);
+    grunt.registerTask('default', [
+        'concat:heatmap_worker',
+        'base64',
+        'concat:heatmap_worker_embedded',
+        'concat:styles',
+        'ts:dist',
+        'concat:dist_ko',
+        'concat:dist_webpack',
+        'concat:dist',
+        'uglify',
+        'copy',
+        'concat:umd',
+        'concat:umdTs',
+        'concat:webpackTs',
+        'ts:testGlobal',
+        'ts:test',
+        'jasmine']);
     grunt.registerTask('test', ['jasmine']);
 };
