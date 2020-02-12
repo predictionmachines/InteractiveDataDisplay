@@ -1,6 +1,6 @@
 {
   "name": "interactive-data-display",
-  "version": "1.5.36",
+  "version": "1.5.37",
   "license": "Apache-2.0",
   "homepage": "https://github.com/predictionmachines/InteractiveDataDisplay/wiki",
   "description": "A JavaScript visualization library for dynamic data",
@@ -14,28 +14,28 @@
   "types": "dist/idd.webpack.d.ts",
   "main": "dist/idd.webpack.js",
   "dependencies": {
-    "file-saver": "~1.3.3",    
+    "file-saver": "~1.3.3",
     "jasmine": "~2.99.0",
     "jquery": "~3.4.0",
     "jquery-mousewheel": "~3.1.13",
     "jqueryui": "~1.11.1",
     "npm-modernizr": "^2.8.3",
-    "request": "^2.81.0",
     "require-css": "~0.1.8",
     "requirejs": "~2.1.22",
     "rx": "~4.1.0",
-    "svg.js": "~2.3.6"
+    "svg.js": "~2.7"
   },
   "devDependencies": {
-    "grunt": "^0.4.5",
+    "grunt": "^1.0.3",
     "grunt-base64": "^0.1.0",
     "grunt-cli": "^1.3.2",
-    "grunt-contrib-concat": "^0.5.1",
-    "grunt-contrib-copy": "^0.8.2",
-    "grunt-contrib-jasmine": "^1.0.0",
-    "grunt-contrib-uglify": "^0.9.1",
-    "grunt-ts": "^5.2.0",
-    "grunt-tsd": "^0.1.0"
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-jasmine": "^2.1.0",
+    "grunt-contrib-uglify": "^4.0.1",
+    "grunt-ts": "^5.5.1",
+    "grunt-tsd": "^0.1.0",
+    "request": "^2.81.0"
   },
   "scripts": {
     "test": "grunt default test --verbose"

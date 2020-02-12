@@ -587,39 +587,41 @@ InteractiveDataDisplay.Heatmap = function (div, master) {
                 !this.master.isInAnimation &&
                 (!lastCompletedTask || lastCompletedTask.scaleX != scale.x || lastCompletedTask.scaleY != scale.y || !InteractiveDataDisplay.Utils.includes(lastCompletedTask.plotRect, visibleRect))) {
 
-                if (!_imageData || _imageData.width !== visibleRect_s.width || _imageData.height !== visibleRect_s.height) {
-                    // avoiding creating new image data, 
-                    // it is possible to reuse the image data since web worker marshalling makes a copy of it
-                    _imageData = context.createImageData(visibleRect_s.width, visibleRect_s.height);
+                if(visibleRect_s.width !== 0 && visibleRect_s.heigh !== 0){
+                    if (!_imageData || _imageData.width !== visibleRect_s.width || _imageData.height !== visibleRect_s.height) {
+                        // avoiding creating new image data, 
+                        // it is possible to reuse the image data since web worker marshalling makes a copy of it
+                            _imageData = context.createImageData(visibleRect_s.width, visibleRect_s.height);
+                    }
+
+                    var task = {
+                        image: _imageData,
+                        width: _imageData.width,
+                        height: _imageData.height,
+                        x: _x,
+                        y: _y,
+                        f: _logColors ? _log_f : _f,
+                        fmin: _logColors ? _log_fmin : _fmin,
+                        fmax: _logColors ? _log_fmax : _fmax,
+                        plotRect: visibleRect,
+                        scaleX: scale.x,
+                        scaleY: scale.y,
+                        offsetX: offset.x - visibleRect_s.left,
+                        offsetY: offset.y - visibleRect_s.top,
+                        palette: {
+                            isNormalized: _palette.isNormalized,
+                            range: _palette.range,
+                            points: _palette.points,
+                            colors: _paletteColors
+                        },
+                        xDataTransform: this.xDataTransform && this.xDataTransform.type,
+                        yDataTransform: this.yDataTransform && this.yDataTransform.type
+                    };
+
+                    //console.log("Heatmap " + this.name + " enqueues a task (isInAnimation: " + this.master.isInAnimation + ")");
+                    InteractiveDataDisplay.heatmapBackgroundRenderer.enqueue(task, this);
+                    _dataChanged = false;
                 }
-
-                var task = {
-                    image: _imageData,
-                    width: _imageData.width,
-                    height: _imageData.height,
-                    x: _x,
-                    y: _y,
-                    f: _logColors ? _log_f : _f,
-                    fmin: _logColors ? _log_fmin : _fmin,
-                    fmax: _logColors ? _log_fmax : _fmax,
-                    plotRect: visibleRect,
-                    scaleX: scale.x,
-                    scaleY: scale.y,
-                    offsetX: offset.x - visibleRect_s.left,
-                    offsetY: offset.y - visibleRect_s.top,
-                    palette: {
-                        isNormalized: _palette.isNormalized,
-                        range: _palette.range,
-                        points: _palette.points,
-                        colors: _paletteColors
-                    },
-                    xDataTransform: this.xDataTransform && this.xDataTransform.type,
-                    yDataTransform: this.yDataTransform && this.yDataTransform.type
-                };
-
-                //console.log("Heatmap " + this.name + " enqueues a task (isInAnimation: " + this.master.isInAnimation + ")");
-                InteractiveDataDisplay.heatmapBackgroundRenderer.enqueue(task, this);
-                _dataChanged = false;
             }
             //}
         }

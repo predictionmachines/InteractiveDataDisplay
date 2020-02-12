@@ -1,3 +1,9 @@
+### 1.5.37 (February 12, 2020)
+
+Feature:
+ - Master plot got new 'initialized' property (jQuery Promise) which provides the way to use the plot after it is fully initialized.
+ - Updated dependencies: grunt, grunt-contrib-concat, grunt-contrib-copy, grunt-contrib-jasmine, grunt-contrib-uglify, grunt-ts
+
 ### 1.5.36 (January 30, 2020)
 
 New features:
