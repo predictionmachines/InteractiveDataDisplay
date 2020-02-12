@@ -1,5 +1,4 @@
-﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="PlotRegistry.ts" />
+﻿/// <reference path="PlotRegistry.ts" />
 /// <reference path="Utils.ts" />
 
 module InteractiveDataDisplay {

@@ -1,5 +1,4 @@
-﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="ChartViewer.ts" />
+﻿/// <reference path="ChartViewer.ts" />
 module InteractiveDataDisplay {
     export type Map = {
         [key: string]: any;

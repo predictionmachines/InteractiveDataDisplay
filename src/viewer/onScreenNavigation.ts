@@ -1,7 +1,4 @@
-﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
-
-module InteractiveDataDisplay {
+﻿module InteractiveDataDisplay {
     export function createSmallProbe (jqDiv, num?, fill?, scale?) {
         jqDiv.empty();
 

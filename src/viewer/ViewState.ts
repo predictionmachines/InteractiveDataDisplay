@@ -1,5 +1,4 @@
-﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
-module InteractiveDataDisplay {
+﻿module InteractiveDataDisplay {
     export function PersistentViewState() {
         var that = this;
 
