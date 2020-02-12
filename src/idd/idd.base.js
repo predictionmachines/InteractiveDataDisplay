@@ -292,24 +292,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         var _plotRect;
         
         var _initialized = false;
-        var _initializedPromise = (function() {
-            var res, rej;
-        
-            /*var promise = new Promise((resolve, reject) => {
-                res = resolve;
-                rej = reject;
-            });*/
-
-            var promise = new Promise(function(resolve, reject) {
-                res = resolve;
-                rej = reject;
-            });
-        
-            promise.resolve = res;
-            promise.reject = rej;
-        
-            return promise;
-        })();
+        var _initializedDeferred = $.Deferred();
 
 
         // reading property overrides from attributes
@@ -695,7 +678,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
         Object.defineProperty(this, "initialized", {
             get: function () {
                 if (_isMaster) {
-                    return _initializedPromise;
+                    return _initializedDeferred.promise();
                 }
                 else {
                     return _master.initialized;
@@ -1411,7 +1394,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                     that.arrange(finalSize);
 
                     if(!_initialized) {
-                        _initializedPromise.resolve();
+                        _initializedDeferred.resolve();
                         _initialized = true;
                     }
 
@@ -1476,7 +1459,7 @@ var _initializeInteractiveDataDisplay = function () { // determines settings dep
                 _suppressNotifyBoundPlots = false;
 
                 if(!_initialized) {
-                    _initializedPromise.resolve();
+                    _initializedDeferred.resolve();
                     _initialized = true;
                 }
             }
