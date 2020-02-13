@@ -1,4 +1,5 @@
 ///<reference path="../../dist/idd.d.ts"/>
+import {InteractiveDataDisplay, Plot} from "../../dist/idd.webpack"
 module main {
     export function start() {
         var el = document.getElementById("chart");

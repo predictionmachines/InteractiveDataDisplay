@@ -1,4 +1,10 @@
-### 1.5.37 (February 12, 2020)
+### 1.5.38 (February 13, 2020)
+
+Changes:
+ - New type definitions (idd.umd.d.ts and idd.webpack.d.ts)
+ - Switched to typescript 3.7
+
+### 1.5.37 (February 13, 2020)
 
 Feature:
  - Master plot got new 'initialized' property (jQuery Promise) which provides the way to use the plot after it is fully initialized.
