@@ -2,8 +2,8 @@ Interactive Data Display
 ------------------------
 
 [![Build Status](https://travis-ci.org/predictionmachines/InteractiveDataDisplay.svg?branch=master)](https://travis-ci.org/predictionmachines/InteractiveDataDisplay)
-![npm](https://img.shields.io/npm/v/interactive-data-display.svg)
-![CDNJS](https://img.shields.io/cdnjs/v/interactive-data-display.svg)
+[![npm](https://img.shields.io/npm/v/interactive-data-display.svg)](https://www.npmjs.com/package/interactive-data-display)
+[![CDNJS](https://img.shields.io/cdnjs/v/interactive-data-display.svg)](https://cdnjs.com/libraries/interactive-data-display)
 [![jsdelivr](https://data.jsdelivr.com/v1/package/npm/interactive-data-display/badge)](https://www.jsdelivr.com/package/npm/interactive-data-display)
 
 Interactive Data Display for JavaScript (IDD for short) is a set of controls for adding interactive visualization of dynamic data to your application. 
@@ -44,9 +44,13 @@ for security reasons so some samples may not work if opening IDDSamples.html as 
 Referencing IDD
 ---------------
 
-Interactive Data Display is available as Bower package. You can download IDD as bower package by running:
+Interactive Data Display is available as [NPM package](https://www.npmjs.com/package/interactive-data-display).
 
-`bower install idd`
+Use yarn:
+`yarn add interactive-data-display`
+
+or npm:
+`npm i interactive-data-display`
 
 Licensing
 ---------
