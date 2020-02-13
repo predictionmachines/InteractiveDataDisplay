@@ -1,4 +1,4 @@
-### 1.5.38 (February 12, 2020)
+### 1.5.37 (February 12, 2020)
 
 Feature:
  - Master plot got new 'initialized' property (jQuery Promise) which provides the way to use the plot after it is fully initialized.
