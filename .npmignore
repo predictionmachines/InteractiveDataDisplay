@@ -10,8 +10,7 @@ jsconfig.json
 Gruntfile.js
 IDDSamples.html
 package.json
-tsd.json
-RELEASE_NOTES.md
+/generated/**
 /.vscode/**
 /test/**
 !/dist/**
