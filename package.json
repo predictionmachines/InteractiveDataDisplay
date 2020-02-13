@@ -1,6 +1,6 @@
 {
   "name": "interactive-data-display",
-  "version": "1.5.37",
+  "version": "1.5.38",
   "license": "Apache-2.0",
   "homepage": "https://github.com/predictionmachines/InteractiveDataDisplay/wiki",
   "description": "A JavaScript visualization library for dynamic data",
@@ -35,7 +35,7 @@
     "grunt-contrib-uglify": "^4.0.1",
     "grunt-ts": "^6.0.0-beta",
     "request": "^2.81.0",
-    "typescript": "~2.4.0",
+    "typescript": "^3.7.0",
     "@types/jquery": "^3.3.32",
     "@types/jqueryui": "^1.12.10"
   },

@@ -110,17 +110,11 @@
             },
             umdTs: {
                 dest: "dist/idd.umd.d.ts",
-                src: ["src/viewer/chartViewer.d.ts"],
-                options: {
-                    footer: "export = { InteractiveDataDisplay, Plot };"
-                }
+                src: ["src/viewer/chartViewer.d.ts"]
             },
             webpackTs: {
                 dest: "dist/idd.webpack.d.ts",
                 src: ["src/viewer/chartViewer.d.ts"],
-                options: {
-                    footer: "export = { InteractiveDataDisplay, Plot };"
-                }
             }
         },
         uglify: {
