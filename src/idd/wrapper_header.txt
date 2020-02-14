@@ -12,7 +12,7 @@
 			//Node, CommonJS-like
 			var $ = root.jQuery = require('jquery');
 		    require('jquery-mousewheel')($);
-		    require('jqueryui');
+		    require('jquery-ui');
 			var filesaver = require('filesaver.js');
 			module.exports = factory(root, $, require('rx'), require('svg.js'), filesaver.saveAs);
 		} else {

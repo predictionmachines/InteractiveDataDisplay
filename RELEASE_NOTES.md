@@ -1,3 +1,8 @@
+### 1.5.39 (TBD)
+
+Fixes:
+ - Package.json now references "jquery-ui" dependency instead of "jqueryui"
+
 ### 1.5.38 (February 13, 2020)
 
 Changes:

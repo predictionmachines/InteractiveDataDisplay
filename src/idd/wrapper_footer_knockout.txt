@@ -2,7 +2,7 @@
 }
 (function () {
     if (window.define) {
-        define(['jquery', 'rx', 'knockout', 'svg', 'filesaver', 'jqueryui', 'jquery-mousewheel'],
+        define(['jquery', 'rx', 'knockout', 'svg', 'filesaver', 'jquery-ui', 'jquery-mousewheel'],
             function ($, Rx, ko, SVG, filesaver) {
                 var InteractiveDataDisplay = IDD($, Rx, ko, SVG, filesaver);
                 return InteractiveDataDisplay;
