@@ -12,8 +12,8 @@ InteractiveDataDisplay.Navigation = function (_plot, _setVisibleRegion) {
         var screenWidth = plot.screenSize.width;
         var screenHeight = plot.screenSize.width;            
             
-        ct = plot.coordinateTransform;
-        vis = ct.getPlotRect({ x: 0, y: 0, width: screenWidth, height: screenHeight });
+        var ct = plot.coordinateTransform;
+        var vis = ct.getPlotRect({ x: 0, y: 0, width: screenWidth, height: screenHeight });
 
         var scaleToReport = screenWidth/vis.width;
         //console.log('navigation: plot x='+vis.x+' y='+vis.y+' w='+vis.width+' h='+vis.height);

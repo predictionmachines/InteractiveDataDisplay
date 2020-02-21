@@ -55,6 +55,11 @@ InteractiveDataDisplay.PanZoomAnimation = function () {
     var screenSize = undefined;
     var startPlotRect = undefined;
     var estimatedPlotRect = undefined;
+    var startCS = undefined;
+
+    var startScreenCenter = undefined;
+    var previousFrameScreenCenter = undefined;
+    var endScreenCenter = undefined;
 
     var prevTime = new Date();
     var prevFramePlotRect = undefined;
