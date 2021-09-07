@@ -7,4 +7,4 @@ steps:
   image: node:lts
   commands:
   - yarn install --pure-lockfile
-  - yarn run test
+  - yarn run test --unhandled-rejections=strict
