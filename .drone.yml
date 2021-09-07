@@ -4,7 +4,7 @@ name: default
 
 steps:
 - name: build
-  image: node:lts-alpine
+  image: node:lts
   commands:
   - yarn install --pure-lockfile
   - yarn run test

@@ -40,7 +40,7 @@
     "@types/jqueryui": "^1.12.10"
   },
   "scripts": {
-    "test": "grunt default test --verbose"
+    "test": "grunt default --verbose"
   },
   "engines": {
     "yarn": "^1.15.2"
