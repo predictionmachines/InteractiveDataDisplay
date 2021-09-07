@@ -4,7 +4,7 @@ name: default
 
 steps:
 - name: build
-  image: node:lts
+  image: node:lts-stretch
   commands:
   - yarn install --pure-lockfile
   - yarn run test
