@@ -1315,10 +1315,10 @@ grunt-contrib-copy@^1.0.0:
     chalk "^1.1.1"
     file-sync-cmp "^0.1.0"
 
-grunt-contrib-jasmine@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/grunt-contrib-jasmine/-/grunt-contrib-jasmine-2.1.0.tgz#ffaaa47981265ebc686c4fafbbd9733066f4e33c"
-  integrity sha512-nkOIG3Rvv9iedz/CC5hRKHUMJ1aSGOac87h5Xm4fuBUh9RQpbhiQ7xw1lWyhxrLUN3M0ksBKNWBB6KM+rgmI2A==
+grunt-contrib-jasmine@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/grunt-contrib-jasmine/-/grunt-contrib-jasmine-2.2.0.tgz#4886cb885a51cd01c224868279a33f0468519493"
+  integrity sha512-iGMA16G3cze42g3c74DYosA+NNGqgByIqWatNp+IYYvlic5kWH4bHxDAk+F3asvn1lkXXsd1E7ekQLVW2n8cYQ==
   dependencies:
     chalk "^2.4.2"
     grunt-eslint "^22.0.0"
