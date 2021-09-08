@@ -4,7 +4,7 @@ name: default
 
 steps:
 - name: build
-  image: dgrechka/node-with-chromium-build-agent:2021090802
+  image: dgrechka/node-with-chromium-build-agent:2021090803
   commands:
   - yarn install --pure-lockfile
   - yarn run build
