@@ -7,4 +7,4 @@ steps:
   image: node:lts-stretch
   commands:
   - yarn install --pure-lockfile
-  - yarn run test
+  - yarn run build
