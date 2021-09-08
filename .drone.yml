@@ -8,4 +8,6 @@ steps:
   commands:
   - yarn install --pure-lockfile
   # the chromium does not run with root privileges. thus switching to node user
-  - sudo -u node yarn run build
+  - chown -R node .
+  - su node
+  - yarn run build
