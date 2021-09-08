@@ -4,7 +4,7 @@ name: default
 
 steps:
 - name: build
-  image: node:lts-stretch
+  image: dgrechka/node-with-chromium-build-agent:2021090801
   commands:
   - yarn install --pure-lockfile
   - yarn run build
