@@ -139,7 +139,7 @@
                     "<%= concat.dist.dest %>"
                 ],
                 sandboxArgs: {
-                    args: ["--no-sandbox"]
+                    args: ["--no-sandbox","--no-zygote"]
                 }
             },
 
