@@ -137,7 +137,10 @@
                     "node_modules/svg.js/dist/svg.js",
                     "node_modules/jquery-mousewheel/jquery.mousewheel.js",
                     "<%= concat.dist.dest %>"
-                ]
+                ],
+                sandboxArgs: {
+                    args: ["--no-sandbox"]
+                }
             },
 
             src: ['test/*.js'] 
