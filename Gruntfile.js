@@ -140,7 +140,8 @@
                 ],
                 sandboxArgs: {
                     args: ["--no-sandbox","--no-zygote"]
-                }
+                },
+                version: "3.8.0" // latest fails
             },
 
             src: ['test/*.js'] 
