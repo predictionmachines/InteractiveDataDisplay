@@ -138,11 +138,12 @@
                     "node_modules/jquery-mousewheel/jquery.mousewheel.js",
                     "<%= concat.dist.dest %>"
                 ],
-                sandboxArgs: {
-                    args: ["--no-sandbox","--no-zygote"]
-                },
-                template: 'test/jasmine.tmpl'
-                //version: "3.6.0" // latest fails
+                // sandboxArgs: {
+                //     args: ["--no-sandbox","--no-zygote"]
+                // },
+                //template: 'test/jasmine.tmpl',
+                noSandbox: true,
+                version: "3.8.0" // latest fails
             },
 
             src: ['test/*.js'] 
