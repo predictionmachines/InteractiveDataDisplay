@@ -141,7 +141,8 @@
                 sandboxArgs: {
                     args: ["--no-sandbox","--no-zygote"]
                 },
-                version: "3.6.0" // latest fails
+                template: 'test/jasmine.tmpl'
+                //version: "3.6.0" // latest fails
             },
 
             src: ['test/*.js'] 
