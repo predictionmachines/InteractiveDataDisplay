@@ -1,7 +1,7 @@
 Interactive Data Display
 ------------------------
 
-[![Build Status](https://travis-ci.org/predictionmachines/InteractiveDataDisplay.svg?branch=master)](https://travis-ci.org/predictionmachines/InteractiveDataDisplay)
+[![Build Status](https://drone.k8s.grechka.family/api/badges/predictionmachines/InteractiveDataDisplay/status.svg)](https://drone.k8s.grechka.family/predictionmachines/InteractiveDataDisplay)
 [![npm](https://img.shields.io/npm/v/interactive-data-display.svg)](https://www.npmjs.com/package/interactive-data-display)
 [![CDNJS](https://img.shields.io/cdnjs/v/interactive-data-display.svg)](https://cdnjs.com/libraries/interactive-data-display)
 [![jsdelivr](https://data.jsdelivr.com/v1/package/npm/interactive-data-display/badge)](https://www.jsdelivr.com/package/npm/interactive-data-display)

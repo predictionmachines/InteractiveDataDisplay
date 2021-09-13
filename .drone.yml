@@ -1,3 +1,4 @@
+---
 kind: pipeline
 type: kubernetes
 name: default
@@ -8,3 +9,8 @@ steps:
   commands:
   - yarn install --pure-lockfile
   - yarn run build
+---
+kind: signature
+hmac: 84c8785d9dd8a1a4b55aedd73c8d171bc7247292c30a7b89b22ea585f5695c98
+
+...
