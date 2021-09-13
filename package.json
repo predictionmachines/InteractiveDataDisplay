@@ -11,6 +11,10 @@
     "chart",
     "plot"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/predictionmachines/InteractiveDataDisplay.git"
+  },
   "types": "dist/idd.webpack.d.ts",
   "main": "dist/idd.webpack.js",
   "dependencies": {
