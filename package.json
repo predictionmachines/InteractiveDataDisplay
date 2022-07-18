@@ -22,7 +22,7 @@
     "jasmine": "~2.99.0",
     "jquery": "~3.4.0",
     "jquery-mousewheel": "~3.1.13",
-    "jquery-ui": "~1.12.1",
+    "jquery-ui": "~1.13.2",
     "npm-modernizr": "^2.8.3",
     "require-css": "~0.1.8",
     "requirejs": "~2.1.22",
